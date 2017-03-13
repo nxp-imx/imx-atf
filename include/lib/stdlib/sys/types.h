@@ -59,6 +59,10 @@ typedef	unsigned int	uint;		/* Sys V compatibility */
  */
 #include <sys/_stdint.h>
 
+#define bool	_Bool
+#define true	1
+#define false	0
+
 typedef __uint8_t	u_int8_t;	/* unsigned integrals (deprecated) */
 typedef __uint16_t	u_int16_t;
 typedef __uint32_t	u_int32_t;
