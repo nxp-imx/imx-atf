@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013-2017, ARM Limited and Contributors. All rights reserved.
+ * Copyright 2017 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -14,6 +15,9 @@
 #include <smcc.h>
 #include <string.h>
 #include "psci_private.h"
+
+extern void imx8qm_kill_cpu(unsigned int target_idx);
+extern void imx8qxp_kill_cpu(unsigned int target_idx);
 
 /*******************************************************************************
  * PSCI frontend api for servicing SMCs. Described in the PSCI spec.
@@ -209,7 +213,8 @@ int psci_cpu_off(void)
 int psci_affinity_info(u_register_t target_affinity,
 		       unsigned int lowest_affinity_level)
 {
-	int target_idx;
+	unsigned int target_idx;
+	int ret;
 
 	/* We dont support level higher than PSCI_CPU_PWR_LVL */
 	if (lowest_affinity_level > PSCI_CPU_PWR_LVL)
@@ -220,7 +225,23 @@ int psci_affinity_info(u_register_t target_affinity,
 	if (target_idx == -1)
 		return PSCI_E_INVALID_PARAMS;
 
-	return psci_get_aff_info_state_by_idx(target_idx);
+	ret = psci_get_aff_info_state_by_idx(target_idx);
+
+	/*
+	 * PSCI v0.2 affinity level state returned by AFFINITY_INFO
+	 * #define PSCI_0_2_AFFINITY_LEVEL_ON              0
+	 * #define PSCI_0_2_AFFINITY_LEVEL_OFF             1
+	 * #define PSCI_0_2_AFFINITY_LEVEL_ON_PENDING      2
+	 */
+	if (ret == 1)
+#ifdef PLAT_IMX8QM
+		imx8qm_kill_cpu(target_idx);
+#endif
+#ifdef PLAT_IMX8QXP
+		imx8qxp_kill_cpu(target_idx);
+#endif
+
+	return ret;
 }
 
 int psci_migrate(u_register_t target_cpu)
