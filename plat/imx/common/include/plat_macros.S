@@ -45,3 +45,14 @@
 .macro plat_print_interconnect_regs
 	/* TODO */
 .endm
+
+/* ---------------------------------------------
+ * The below required platform porting macro
+ * prints out relevant platform registers
+ * whenever an unhandled exception is taken in
+ * BL31.
+ * ---------------------------------------------
+ */
+.macro plat_crash_print_regs
+      /* TODO */
+.endm
