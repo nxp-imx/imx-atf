@@ -37,14 +37,9 @@
 
 #include <types.h>
 #include <sci/ipc.h>
-//#include <sci/svc/irq/api.h>
-//#include <sci/svc/misc/api.h>
-//#include <sci/svc/otp/api.h>
 #include <sci/svc/pad/api.h>
 #include <sci/svc/pm/api.h>
-//#include <sci/svc/rm/api.h>
-//#include <sci/svc/timer/api.h>
-//#include <asm/arch/pins.h>
+#include <sci/svc/rm/api.h>
 
 #ifdef PLAT_IMX8QM
 #define MU_BASE_ADDR(id)	((0x5D1B0000UL + (id*0x10000)))
@@ -58,13 +53,6 @@
 #define SC_IPC_AP_CH3       	(MU_BASE_ADDR(3))
 #define SC_IPC_AP_CH4       	(MU_BASE_ADDR(4))
 
-#define SC_IPC_CH		SC_IPC_AP_CH0
-
-/* Types */
-
-/* Functions */
+#define SC_IPC_CH		SC_IPC_AP_CH1
 
 #endif /* _SC_SCI_H */
-
-/**@}*/
-

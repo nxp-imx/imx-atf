@@ -44,6 +44,7 @@
 #include <sci/sci.h>
 #include <xlat_tables.h>
 #include <lpuart.h>
+#include <sec_rsrc.h>
 
 /* linker defined symbols */
 extern unsigned long __RO_START__;
@@ -182,6 +183,45 @@ static int lpuart32_serial_init(unsigned int base)
 	return 0;
 }
 
+void mx8_partition_resources(void)
+{
+        sc_err_t err;
+        sc_rm_pt_t secure_part, os_part;
+        int i;
+
+        err = sc_rm_get_partition(ipc_handle, &secure_part);
+
+        err = sc_rm_partition_alloc(ipc_handle, &os_part, false, false,
+              false, false, false);
+
+        err = sc_rm_set_parent(ipc_handle, os_part, secure_part);
+
+        /* set secure resources to NOT-movable */
+        for(i = 0; i<(sizeof(secure_rsrcs)/sizeof(sc_rsrc_t)); i++){
+          err = sc_rm_set_resource_movable(ipc_handle, secure_rsrcs[i],
+                      secure_rsrcs[i], false);
+
+        }
+
+        /* move all movable resources and pins to non-secure partition */
+        err = sc_rm_move_all(ipc_handle, secure_part, os_part, true, true);
+
+        /*
+         * sc_rm_set_peripheral_permissions
+         *
+         * sc_rm_set_memreg_permissions
+         *
+         * sc_rm_set_pin_movable
+         *
+         */
+
+        if(err)
+          NOTICE("Partitioning Failed\n");
+        else
+          NOTICE("Non-secure Partitioning Succeeded\n");
+
+}
+
 void bl31_early_platform_setup(bl31_params_t *from_bl2,
 				void *plat_params_from_bl2)
 {
@@ -221,6 +261,12 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 	console_init(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
 		     IMX_CONSOLE_BAUDRATE);
 #endif
+        /* create new partition for non-secure OS/Hypervisor
+         *
+         * uses global structs defined in sec_rsrc.h */
+
+        mx8_partition_resources();
+
 	/*
 	 * tell BL3-1 where the non-secure software image is located
 	 * and the entry state information.
