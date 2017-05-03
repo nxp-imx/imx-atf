@@ -206,6 +206,12 @@ void mx8_partition_resources(void)
         /* move all movable resources and pins to non-secure partition */
         err = sc_rm_move_all(ipc_handle, secure_part, os_part, true, true);
 
+        /* iterate through peripherals to give NS OS part access */
+        for(i = 0; i<(sizeof(ns_access_allowed)/sizeof(sc_rsrc_t)); i++){
+          err = sc_rm_set_peripheral_permissions(ipc_handle, ns_access_allowed[i],
+                    os_part, SC_RM_PERM_FULL);
+        }
+
         /*
          * sc_rm_set_peripheral_permissions
          *
