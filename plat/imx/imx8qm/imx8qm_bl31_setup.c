@@ -300,7 +300,7 @@ void bl31_plat_arch_setup(void)
 			MT_MEMORY | MT_RO);
 	mmap_add_region(IMX_BOOT_UART_BASE, IMX_BOOT_UART_BASE,
 			0x1000,	MT_DEVICE | MT_RW);
-	mmap_add_region(0x5d1b0000, 0x5d1b0000, 0x10000,
+	mmap_add_region(SC_IPC_CH, SC_IPC_CH, 0x10000,
 			MT_DEVICE | MT_RW);
 	mmap_add_region(PLAT_GICD_BASE, PLAT_GICD_BASE, 0x10000,
 			MT_DEVICE | MT_RW);
