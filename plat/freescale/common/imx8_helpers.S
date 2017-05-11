@@ -30,6 +30,7 @@
 
 #include <asm_macros.S>
 #include <platform_def.h>
+#include <cortex_a72.h>
 
 	.globl	plat_is_my_cpu_primary
 	.globl	plat_my_core_pos
@@ -41,6 +42,20 @@
 	.globl	plat_crash_console_putc
 	.globl	platform_mem_init
 	.globl  imx_mailbox_init
+
+	/* --------------------------------------------------------------------
+	 * Helper macro that reads the part number of the current CPU and jumps
+	 * to the given label if it matches the CPU MIDR provided.
+	 *
+	 * Clobbers x0.
+	 * --------------------------------------------------------------------
+	 */
+	.macro  jump_if_cpu_midr _cpu_midr, _label
+	mrs	x0, midr_el1
+	ubfx	x0, x0, MIDR_PN_SHIFT, #12
+	cmp     w0, #((\_cpu_midr >> MIDR_PN_SHIFT) & MIDR_PN_MASK)
+	b.eq	\_label
+	.endm
 
 	/* ----------------------------------------------
 	 * The mailbox_base is used to distinguish warm/cold
@@ -101,6 +116,21 @@ func plat_reset_handler
 	mov	x0, #0x73
 	msr	actlr_el3, x0
 	msr	actlr_el2, x0
+	isb
+	/* --------------------------------------------------------------------
+	 * Nothing to do on Cortex-A53.
+	 * --------------------------------------------------------------------
+	 */
+	jump_if_cpu_midr CORTEX_A72_MIDR, A72
+	ret
+
+A72:
+	/* --------------------------------------------------------------------
+	 * Cortex-A72 specific settings
+	 * --------------------------------------------------------------------
+	 */
+	mov	x0, #(CORTEX_A72_L2_DATA_RAM_LATENCY_3_CYCLES << CORTEX_A72_L2CTLR_DATA_RAM_LATENCY_SHIFT)
+	msr     CORTEX_A72_L2CTLR_EL1, x0
 	isb
 	ret
 endfunc plat_reset_handler
