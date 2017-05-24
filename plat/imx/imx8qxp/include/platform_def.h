@@ -75,6 +75,6 @@
 
 #define COUNTER_FREQUENCY		8000000 /* 8MHz */
 
-#define DEBUG_CONSOLE			1
-#define DEBUG_CONSOLE_A35		1
+#define DEBUG_CONSOLE			0
+#define DEBUG_CONSOLE_A35		0
 #define PLAT_IMX8QXP			1
