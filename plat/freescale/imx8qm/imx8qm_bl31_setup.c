@@ -91,6 +91,7 @@ static uint32_t get_spsr_for_bl33_entry(void)
 	return spsr;
 }
 
+#if DEBUG_CONSOLE_A53
 static void lpuart32_serial_setbrg(unsigned int base, int baudrate)
 {
 	unsigned int sbr, osr, baud_diff, tmp_osr, tmp_sbr, tmp_diff, tmp;
@@ -182,6 +183,7 @@ static int lpuart32_serial_init(unsigned int base)
 
 	return 0;
 }
+#endif
 
 void mx8_partition_resources(void)
 {
@@ -236,6 +238,7 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 		/* No console available now */
 		while (1);
 	}
+#if DEBUG_CONSOLE_A53
 	/* This maybe updated, need to check SCFW */
 	#define SC_P_UART0_RX				30
 	#define SC_P_UART0_TX				31
@@ -262,6 +265,7 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 	sc_pad_set(ipc_handle, SC_P_UART0_CTS_B, 0xc600004c);
 
 	lpuart32_serial_init(IMX_BOOT_UART_BASE);
+#endif
 
 #if DEBUG_CONSOLE
 	console_init(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
