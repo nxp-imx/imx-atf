@@ -1,31 +1,8 @@
 /*
+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
  * Copyright 2017 NXP
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
- * Neither the name of NXP nor the names of its contributors may be used
- * to endorse or promote products derived from this software without specific
- * prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * SPDX-License-Identifier:     GPL-2.0+
  */
 
 /*!
@@ -54,10 +31,10 @@
  * @name Defines for type widths
  */
 /*@{*/
-#define SC_PM_POWER_MODE_W      2       //!< Width of sc_pm_power_mode_t
-#define SC_PM_CLOCK_MODE_W      2       //!< Width of sc_pm_clock_mode_t
-#define SC_PM_RESET_TYPE_W      1       //!< Width of sc_pm_reset_type_t
-#define SC_PM_RESET_REASON_W    3       //!< Width of sc_pm_reset_reason_t
+#define SC_PM_POWER_MODE_W      2       /*!< Width of sc_pm_power_mode_t */
+#define SC_PM_CLOCK_MODE_W      3       /*!< Width of sc_pm_clock_mode_t */
+#define SC_PM_RESET_TYPE_W      1       /*!< Width of sc_pm_reset_type_t */
+#define SC_PM_RESET_REASON_W    3       /*!< Width of sc_pm_reset_reason_t */
 /*@}*/
 
 /*!
@@ -70,7 +47,7 @@
  * @name Defines for ALL parameters
  */
 /*@{*/
-#define SC_PM_CLK_ALL   UINT8_MAX       //!< All clocks
+#define SC_PM_CLK_ALL   UINT8_MAX       /*!< All clocks */
 /*@}*/
 
 /* Types */
@@ -82,10 +59,10 @@
  */
 typedef enum sc_pm_power_mode_e
 {
-    SC_PM_PW_MODE_OFF           = 0,    //!< Power off
-    SC_PM_PW_MODE_STBY          = 1,    //!< Power in standby
-    SC_PM_PW_MODE_LP            = 2,    //!< Power in low-power
-    SC_PM_PW_MODE_ON            = 3     //!< Power on
+    SC_PM_PW_MODE_OFF           = 0,    /*!< Power off */
+    SC_PM_PW_MODE_STBY          = 1,    /*!< Power in standby */
+    SC_PM_PW_MODE_LP            = 2,    /*!< Power in low-power */
+    SC_PM_PW_MODE_ON            = 3     /*!< Power on */
 } sc_pm_power_mode_t;
 
 /*!
@@ -93,19 +70,19 @@ typedef enum sc_pm_power_mode_e
  */
 typedef enum sc_pm_clk_e
 {
-    SC_PM_CLK_SLV_BUS           = 0,    //!< Slave bus clock
-    SC_PM_CLK_MST_BUS           = 1,    //!< Master bus clock
-    SC_PM_CLK_PER               = 2,    //!< Peripheral clock
-    SC_PM_CLK_PHY               = 3,    //!< Phy clock
-    SC_PM_CLK_MISC              = 4,    //!< Misc clock
-    SC_PM_CLK_MISC0             = 0,    //!< Misc 0 clock
-    SC_PM_CLK_MISC1             = 1,    //!< Misc 1 clock
-    SC_PM_CLK_MISC2             = 2,    //!< Misc 2 clock
-    SC_PM_CLK_MISC3             = 3,    //!< Misc 3 clock
-    SC_PM_CLK_MISC4             = 4,    //!< Misc 4 clock
-    SC_PM_CLK_CPU               = 2,    //!< CPU clock
-    SC_PM_CLK_PLL               = 4,    //!< PLL
-    SC_PM_CLK_BYPASS            = 4     //!< Bypass clock
+    SC_PM_CLK_SLV_BUS           = 0,    /*!< Slave bus clock */
+    SC_PM_CLK_MST_BUS           = 1,    /*!< Master bus clock */
+    SC_PM_CLK_PER               = 2,    /*!< Peripheral clock */
+    SC_PM_CLK_PHY               = 3,    /*!< Phy clock */
+    SC_PM_CLK_MISC              = 4,    /*!< Misc clock */
+    SC_PM_CLK_MISC0             = 0,    /*!< Misc 0 clock */
+    SC_PM_CLK_MISC1             = 1,    /*!< Misc 1 clock */
+    SC_PM_CLK_MISC2             = 2,    /*!< Misc 2 clock */
+    SC_PM_CLK_MISC3             = 3,    /*!< Misc 3 clock */
+    SC_PM_CLK_MISC4             = 4,    /*!< Misc 4 clock */
+    SC_PM_CLK_CPU               = 2,    /*!< CPU clock */
+    SC_PM_CLK_PLL               = 4,    /*!< PLL */
+    SC_PM_CLK_BYPASS            = 4     /*!< Bypass clock */
 } sc_pm_clk_t;
 
 /*!
@@ -113,11 +90,25 @@ typedef enum sc_pm_clk_e
  */
 typedef enum sc_pm_clk_mode_e
 {
-    SC_PM_CLK_MODE_OFF          = 0,    //!< Clock is disabled
-    SC_PM_CLK_MODE_AUTOGATE_SW  = 1,    //!< Clock is in SW autogate mode
-    SC_PM_CLK_MODE_AUTOGATE_HW  = 2,    //!< Clock is in HW autogate mode
-    SC_PM_CLK_MODE_ON           = 3     //!< Clock is enabled.
+    SC_PM_CLK_MODE_ROM_INIT        = 0,    /*!< Clock is initialized by ROM. */
+    SC_PM_CLK_MODE_OFF             = 1,    /*!< Clock is disabled */
+    SC_PM_CLK_MODE_ON              = 2,    /*!< Clock is enabled. */
+    SC_PM_CLK_MODE_AUTOGATE_SW     = 3,    /*!< Clock is in SW autogate mode */
+    SC_PM_CLK_MODE_AUTOGATE_HW     = 4,    /*!< Clock is in HW autogate mode */
+    SC_PM_CLK_MODE_AUTOGATE_SW_HW  = 5,    /*!< Clock is in SW-HW autogate mode */
 } sc_pm_clk_mode_t;
+
+/*!
+ * This type is used to declare the clock parent.
+ */
+typedef enum sc_pm_clk_parent_e
+{
+    XTAL      = 0,          /*! < Parent is XTAL. */
+    PLL0      = 1,          /*! < Parent is PLL0 */
+    PLL1      = 2,          /*! < Parent is PLL1 or PLL0/2 */
+    PLL2      = 3,          /*! < Parent in PLL2 or PLL0/4 */
+    BYPS      = 4           /*! < Parent is a bypass clock. */
+} sc_pm_clk_parent_t;
 
 /*!
  * This type is used to declare clock rates.
@@ -129,8 +120,8 @@ typedef uint32_t sc_pm_clock_rate_t;
  */
 typedef enum sc_pm_reset_type_e
 {
-    SC_PM_RESET_TYPE_COLD       = 0,    //!< Cold reset
-    SC_PM_RESET_TYPE_WARM       = 1     //!< Warm reset
+    SC_PM_RESET_TYPE_COLD       = 0,    /*!< Cold reset */
+    SC_PM_RESET_TYPE_WARM       = 1     /*!< Warm reset */
 } sc_pm_reset_type_t;
 
 /*!
@@ -138,14 +129,14 @@ typedef enum sc_pm_reset_type_e
  */
 typedef enum sc_pm_reset_reason_e
 {
-    SC_PM_RESET_REASON_POR      = 0,    //!< Power on reset
-    SC_PM_RESET_REASON_WARM     = 1,    //!< Warm reset
-    SC_PM_RESET_REASON_SW       = 2,    //!< Software reset
-    SC_PM_RESET_REASON_WDOG     = 3,    //!< Watchdog reset
-    SC_PM_RESET_REASON_LOCKUP   = 4,    //!< Lockup reset
-    SC_PM_RESET_REASON_TAMPER   = 5,    //!< Tamper reset
-    SC_PM_RESET_REASON_TEMP     = 6,    //!< Temp reset
-    SC_PM_RESET_REASON_LOW_VOLT = 7,    //!< Low voltage reset
+    SC_PM_RESET_REASON_POR      = 0,    /*!< Power on reset */
+    SC_PM_RESET_REASON_WARM     = 1,    /*!< Warm reset */
+    SC_PM_RESET_REASON_SW       = 2,    /*!< Software reset */
+    SC_PM_RESET_REASON_WDOG     = 3,    /*!< Watchdog reset */
+    SC_PM_RESET_REASON_LOCKUP   = 4,    /*!< Lockup reset */
+    SC_PM_RESET_REASON_TAMPER   = 5,    /*!< Tamper reset */
+    SC_PM_RESET_REASON_TEMP     = 6,    /*!< Temp reset */
+    SC_PM_RESET_REASON_LOW_VOLT = 7,    /*!< Low voltage reset */
 } sc_pm_reset_reason_t;
 
 /* Functions */
@@ -302,12 +293,82 @@ sc_err_t sc_pm_get_clock_rate(sc_ipc_t ipc, sc_rsrc_t resource,
 sc_err_t sc_pm_clock_enable(sc_ipc_t ipc, sc_rsrc_t resource,
     sc_pm_clk_t clk, bool enable, bool autog);
 
+
+/*!
+ * This function sets the parent of a resource's clock.
+ * This function should only be called when the clock is disabled.
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[in]     resource    ID of the resource
+ * @param[in]     clk         clock to affect
+ * @param[in]     parent      New parent of the clock.
+ *
+ * @return Returns an error code (SC_ERR_NONE = success).
+ *
+ * Return errors:
+ * - SC_ERR_PARM if invalid resource or clock,
+ * - SC_ERR_NOACCESS if caller's partition is not the resource owner
+ *   or parent of the owner,
+ * - SC_ERR_UNAVAILABLE if clock not applicable to this resource
+ * - SC_ERR_BUSY if clock is currently enabled.
+ *
+ * Refer to the [Clock List](@ref CLOCKS) for valid clock values.
+ */
+sc_err_t sc_pm_set_clock_parent(sc_ipc_t ipc, sc_rsrc_t resource,
+    sc_pm_clk_t clk, sc_pm_clk_parent_t parent);
+
+/*!
+ * This function gets the parent of a resource's clock.
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[in]     resource    ID of the resource
+ * @param[in]     clk         clock to affect
+ * @param[out]     parent     pointer to return parent of clock.
+ *
+ * @return Returns an error code (SC_ERR_NONE = success).
+ *
+ * Return errors:
+ * - SC_ERR_PARM if invalid resource or clock,
+ * - SC_ERR_NOACCESS if caller's partition is not the resource owner
+ *   or parent of the owner,
+ * - SC_ERR_UNAVAILABLE if clock not applicable to this resource
+ *
+ * Refer to the [Clock List](@ref CLOCKS) for valid clock values.
+ */
+sc_err_t sc_pm_get_clock_parent(sc_ipc_t ipc, sc_rsrc_t resource,
+    sc_pm_clk_t clk, sc_pm_clk_parent_t *parent);
+
 /* @} */
 
 /*!
  * @name Reset Functions
  * @{
  */
+
+/*!
+ * This function is used to reset the system. Only the owner of the
+ * SC_R_SYSTEM resource can do this.
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[in]     type        reset type
+ *
+ * @return Returns an error code (SC_ERR_NONE = success).
+ *
+ * Return errors:
+ * - SC_ERR_PARM if invalid type
+ *
+ * If this function returns, then the reset did not occur due to an
+ * invalid parameter.
+ */
+sc_err_t sc_pm_reset(sc_ipc_t ipc, sc_pm_reset_type_t type);
+
+/*!
+ * This function gets a caller's reset reason.
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[out]    reason      pointer to return reset reason
+ */
+sc_err_t sc_pm_reset_reason(sc_ipc_t ipc, sc_pm_reset_reason_t *reason);
 
 /*!
  * This function is used to boot a partition.
@@ -317,6 +378,7 @@ sc_err_t sc_pm_clock_enable(sc_ipc_t ipc, sc_rsrc_t resource,
  * @param[in]     resource_cpu ID of the CPU resource to start
  * @param[in]     boot_addr    64-bit boot address
  * @param[in]     resource_mu  ID of the MU that must be powered
+ * @param[in]     resource_dev ID of the boot device that must be powered
  *
  * @return Returns an error code (SC_ERR_NONE = success).
  *
@@ -327,7 +389,7 @@ sc_err_t sc_pm_clock_enable(sc_ipc_t ipc, sc_rsrc_t resource,
  */
 sc_err_t sc_pm_boot(sc_ipc_t ipc, sc_rm_pt_t pt,
     sc_rsrc_t resource_cpu, sc_faddr_t boot_addr,
-    sc_rsrc_t resource_mu);
+    sc_rsrc_t resource_mu, sc_rsrc_t resource_dev);
 
 /*!
  * This function is used to reboot the caller's partition.
@@ -349,32 +411,6 @@ sc_err_t sc_pm_boot(sc_ipc_t ipc, sc_rm_pt_t pt,
  * invalid parameter.
  */
 void sc_pm_reboot(sc_ipc_t ipc, sc_pm_reset_type_t type);
-
-/*!
- * This function gets a caller's reset reason.
- *
- * @param[in]     ipc         IPC handle
- * @param[out]    reason      pointer to return reset reason
- */
-void sc_pm_reset_reason(sc_ipc_t ipc, sc_pm_reset_reason_t *reason);
-
-/*!
- * This function is used to start/stop a CPU.
- *
- * @param[in]     ipc         IPC handle
- * @param[in]     resource    ID of the CPU resource
- * @param[in]     enable      start if true; otherwise stop
- * @param[in]     address     64-bit boot address
- *
- * @return Returns an error code (SC_ERR_NONE = success).
- *
- * Return errors:
- * - SC_ERR_PARM if invalid resource or address,
- * - SC_ERR_NOACCESS if caller's partition is not the parent of the
- *   resource (CPU) owner
- */
-sc_err_t sc_pm_cpu_start(sc_ipc_t ipc, sc_rsrc_t resource, bool enable,
-    sc_faddr_t address);
 
 /*!
  * This function is used to reboot a partition.
@@ -408,21 +444,22 @@ sc_err_t sc_pm_reboot_partition(sc_ipc_t ipc, sc_rm_pt_t pt,
     sc_pm_reset_type_t type);
 
 /*!
- * This function is used to reset the system. Only the owner of the
- * SC_R_SYSTEM resource can do this.
+ * This function is used to start/stop a CPU.
  *
  * @param[in]     ipc         IPC handle
- * @param[in]     type        reset type
+ * @param[in]     resource    ID of the CPU resource
+ * @param[in]     enable      start if true; otherwise stop
+ * @param[in]     address     64-bit boot address
  *
  * @return Returns an error code (SC_ERR_NONE = success).
  *
  * Return errors:
- * - SC_ERR_PARM if invalid type
- *
- * If this function returns, then the reset did not occur due to an
- * invalid parameter.
+ * - SC_ERR_PARM if invalid resource or address,
+ * - SC_ERR_NOACCESS if caller's partition is not the parent of the
+ *   resource (CPU) owner
  */
-sc_err_t sc_pm_reset(sc_ipc_t ipc, sc_pm_reset_type_t type);
+sc_err_t sc_pm_cpu_start(sc_ipc_t ipc, sc_rsrc_t resource, bool enable,
+    sc_faddr_t address);
 
 /* @} */
 

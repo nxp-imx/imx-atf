@@ -1,37 +1,14 @@
 /*
+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
  * Copyright 2017 NXP
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
- * Neither the name of NXP nor the names of its contributors may be used
- * to endorse or promote products derived from this software without specific
- * prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * SPDX-License-Identifier:     GPL-2.0+
  */
 
 /*!
  * Header file containing the public API for the System Controller (SC)
  * Resource Management (RM) function. This includes functions for
- * partitioning resources, pins, and memory regions.
+ * partitioning resources, pads, and memory regions.
  *
  * @addtogroup RM_SVC (SVC) Resource Management Service
  *
@@ -53,20 +30,20 @@
  * @name Defines for type widths
  */
 /*@{*/
-#define SC_RM_PARTITION_W   5       //!< Width of sc_rm_pt_t
-#define SC_RM_MEMREG_W      6       //!< Width of sc_rm_mr_t
-#define SC_RM_DID_W         4       //!< Width of sc_rm_did_t
-#define SC_RM_SID_W         6       //!< Width of sc_rm_sid_t
-#define SC_RM_SPA_W         2       //!< Width of sc_rm_spa_t
-#define SC_RM_PERM_W        3       //!< Width of sc_rm_perm_t
+#define SC_RM_PARTITION_W   5       /*!< Width of sc_rm_pt_t */
+#define SC_RM_MEMREG_W      6       /*!< Width of sc_rm_mr_t */
+#define SC_RM_DID_W         4       /*!< Width of sc_rm_did_t */
+#define SC_RM_SID_W         6       /*!< Width of sc_rm_sid_t */
+#define SC_RM_SPA_W         2       /*!< Width of sc_rm_spa_t */
+#define SC_RM_PERM_W        3       /*!< Width of sc_rm_perm_t */
 /*@}*/
 
 /*!
  * @name Defines for ALL parameters
  */
 /*@{*/
-#define SC_RM_PT_ALL        UINT8_MAX   //!< All partitions
-#define SC_RM_MR_ALL        UINT8_MAX   //!< All memory regions
+#define SC_RM_PT_ALL        UINT8_MAX   /*!< All partitions */
+#define SC_RM_MR_ALL        UINT8_MAX   /*!< All memory regions */
 /*@}*/
 
 /* Types */
@@ -97,10 +74,10 @@ typedef uint16_t sc_rm_sid_t;
  */
 typedef enum sc_rm_spa_e
 {
-    SC_RM_SPA_PASSTHRU = 0,        //!< Pass through (attribute driven by master)
-    SC_RM_SPA_PASSSID  = 1,        //!< Pass through and output on SID
-    SC_RM_SPA_ASSERT   = 2,        //!< Assert (force to be secure/privileged)
-    SC_RM_SPA_NEGATE   = 3         //!< Negate (force to be non-secure/user)
+    SC_RM_SPA_PASSTHRU = 0,        /*!< Pass through (attribute driven by master) */
+    SC_RM_SPA_PASSSID  = 1,        /*!< Pass through and output on SID */
+    SC_RM_SPA_ASSERT   = 2,        /*!< Assert (force to be secure/privileged) */
+    SC_RM_SPA_NEGATE   = 3         /*!< Negate (force to be non-secure/user) */
 } sc_rm_spa_t;
 
 /*!
@@ -109,14 +86,14 @@ typedef enum sc_rm_spa_e
  */
 typedef enum sc_rm_perm_e
 {
-    SC_RM_PERM_NONE       = 0,    //!< No access
-    SC_RM_PERM_SEC_R      = 1,    //!< Secure RO
-    SC_RM_PERM_SECPRIV_RW = 2,    //!< Secure privilege R/W
-    SC_RM_PERM_SEC_RW     = 3,    //!< Secure R/W
-    SC_RM_PERM_NSPRIV_R   = 4,    //!< Secure R/W, non-secure privilege RO
-    SC_RM_PERM_NS_R       = 5,    //!< Secure R/W, non-secure RO
-    SC_RM_PERM_NSPRIV_RW  = 6,    //!< Secure R/W, non-secure privilege R/W
-    SC_RM_PERM_FULL       = 7     //!< Full access
+    SC_RM_PERM_NONE       = 0,    /*!< No access */
+    SC_RM_PERM_SEC_R      = 1,    /*!< Secure RO */
+    SC_RM_PERM_SECPRIV_RW = 2,    /*!< Secure privilege R/W */
+    SC_RM_PERM_SEC_RW     = 3,    /*!< Secure R/W */
+    SC_RM_PERM_NSPRIV_R   = 4,    /*!< Secure R/W, non-secure privilege RO */
+    SC_RM_PERM_NS_R       = 5,    /*!< Secure R/W, non-secure RO */
+    SC_RM_PERM_NSPRIV_RW  = 6,    /*!< Secure R/W, non-secure privilege R/W */
+    SC_RM_PERM_FULL       = 7     /*!< Full access */
 } sc_rm_perm_t;
 
 /* Functions */
@@ -175,10 +152,23 @@ sc_err_t sc_rm_partition_alloc(sc_ipc_t ipc, sc_rm_pt_t *pt, bool secure,
  * - SC_ERR_NOACCESS if caller's partition is not the parent of \a pt,
  * - SC_ERR_LOCKED if \a pt or caller's partition is locked
  *
- * All resources, memory regions, and pins are assigned to the caller/parent.
+ * All resources, memory regions, and pads are assigned to the caller/parent.
  * The partition watchdog is disabled (even if locked). DID is freed.
  */
 sc_err_t sc_rm_partition_free(sc_ipc_t ipc, sc_rm_pt_t pt);
+
+/*!
+ * This function returns the DID of a partition.
+ *
+ * @param[in]     ipc         IPC handle
+ *
+ * @return Returns the domain ID (DID) of the caller's partition.
+ *
+ * The DID is a SoC-specific internal ID used by the HW resource
+ * protection mechanism. It is only required by clients when using the
+ * SEMA42 module as the DID is sometimes connected to the master ID.
+ */
+sc_rm_did_t sc_rm_get_did(sc_ipc_t ipc);
 
 /*!
  * This function forces a partition to use a specific static DID.
@@ -213,7 +203,7 @@ sc_err_t sc_rm_partition_static(sc_ipc_t ipc, sc_rm_pt_t pt,
  * - SC_PARM if \a pt out of range,
  * - SC_ERR_NOACCESS if caller's partition is not the parent of \a pt
  *
- * If a partition is locked it cannot be freed, have resources/pins assigned
+ * If a partition is locked it cannot be freed, have resources/pads assigned
  * to/from it, memory regions created/assigned, DID changed, or parent changed.
  */
 sc_err_t sc_rm_partition_lock(sc_ipc_t ipc, sc_rm_pt_t pt);
@@ -248,7 +238,7 @@ sc_err_t sc_rm_set_parent(sc_ipc_t ipc, sc_rm_pt_t pt,
     sc_rm_pt_t pt_parent);
 
 /*!
- * This function moves all movable resources/pins owned by a source partition
+ * This function moves all movable resources/pads owned by a source partition
  * to a destination partition. It can be used to more quickly set up a new
  * partition if a majority of the caller's resources are to be moved to a
  * new partition.
@@ -259,7 +249,7 @@ sc_err_t sc_rm_set_parent(sc_ipc_t ipc, sc_rm_pt_t pt,
  * @param[in]     pt_dst      handle of partition to which resources should be
  *                            moved to
  * @param[in]     move_rsrc   boolean to indicate if resources should be moved
- * @param[in]     move_pins   boolean to indicate if pins should be moved
+ * @param[in]     move_pads   boolean to indicate if pads should be moved
  *
  * @return Returns an error code (SC_ERR_NONE = success).
  *
@@ -275,7 +265,7 @@ sc_err_t sc_rm_set_parent(sc_ipc_t ipc, sc_rm_pt_t pt,
  * - SC_ERR_LOCKED if either partition is locked
  */
 sc_err_t sc_rm_move_all(sc_ipc_t ipc, sc_rm_pt_t pt_src, sc_rm_pt_t pt_dst,
-    bool move_rsrc, bool move_pins);
+    bool move_rsrc, bool move_pads);
 
 /* @} */
 
@@ -576,63 +566,63 @@ sc_err_t sc_rm_get_memreg_info(sc_ipc_t ipc, sc_rm_mr_t mr,
 /* @} */
 
 /*!
- * @name Pin Functions
+ * @name Pad Functions
  * @{
  */
 
 /*!
- * This function assigns ownership of a pin to a partition.
+ * This function assigns ownership of a pad to a partition.
  *
  * @param[in]     ipc         IPC handle
- * @param[in]     pt          handle of partition to which pin should
+ * @param[in]     pt          handle of partition to which pad should
  *                            be assigned
- * @param[in]     pin         pin to assign
+ * @param[in]     pad         pad to assign
  *
  * @return Returns an error code (SC_ERR_NONE = success).
  *
  * Return errors:
  * - SC_ERR_NOACCESS if caller's partition is restricted,
  * - SC_PARM if arguments out of range or invalid,
- * - SC_ERR_NOACCESS if caller's partition is not the pin owner or parent
+ * - SC_ERR_NOACCESS if caller's partition is not the pad owner or parent
  *   of the owner,
  * - SC_ERR_LOCKED if the owning partition or \a pt is locked
  */
-sc_err_t sc_rm_assign_pin(sc_ipc_t ipc, sc_rm_pt_t pt, sc_pin_t pin);
+sc_err_t sc_rm_assign_pad(sc_ipc_t ipc, sc_rm_pt_t pt, sc_pad_t pad);
 
 /*!
- * This function flags pins as movable or not.
+ * This function flags pads as movable or not.
  *
  * @param[in]     ipc         IPC handle
- * @param[in]     pin_fst     first pin for which flag should be set
- * @param[in]     pin_lst     last pin for which flag should be set
+ * @param[in]     pad_fst     first pad for which flag should be set
+ * @param[in]     pad_lst     last pad for which flag should be set
  * @param[in]     movable     movable flag (true) is movable
  *
  * @return Returns an error code (SC_ERR_NONE = success).
  *
  * Return errors:
- * - SC_PARM if pins are out of range,
- * - SC_ERR_NOACCESS if caller's partition is not a parent of a pin owner,
+ * - SC_PARM if pads are out of range,
+ * - SC_ERR_NOACCESS if caller's partition is not a parent of a pad owner,
  * - SC_ERR_LOCKED if the owning partition is locked
  *
- * This function is used to determine the set of pins that will be
- * moved using the sc_rm_move_all() function. All pins are movable
+ * This function is used to determine the set of pads that will be
+ * moved using the sc_rm_move_all() function. All pads are movable
  * by default so this function is normally used to prevent a set of
- * pins from moving.
+ * pads from moving.
  */
-sc_err_t sc_rm_set_pin_movable(sc_ipc_t ipc, sc_pin_t pin_fst,
-    sc_pin_t pin_lst, bool movable);
+sc_err_t sc_rm_set_pad_movable(sc_ipc_t ipc, sc_pad_t pad_fst,
+    sc_pad_t pad_lst, bool movable);
 
 /*!
- * This function gets ownership status of a pin.
+ * This function gets ownership status of a pad.
  *
  * @param[in]     ipc         IPC handle
- * @param[in]     pin         pin to check
+ * @param[in]     pad         pad to check
  *
- * @return Returns a boolean (true if caller's partition owns the pin).
+ * @return Returns a boolean (true if caller's partition owns the pad).
  *
- * If \a pin is out of range then false is returned.
+ * If \a pad is out of range then false is returned.
  */
-bool sc_rm_is_pin_owned(sc_ipc_t ipc, sc_pin_t pin);
+bool sc_rm_is_pad_owned(sc_ipc_t ipc, sc_pad_t pad);
 
 /* @} */
 

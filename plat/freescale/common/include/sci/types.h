@@ -1,31 +1,8 @@
 /*
+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
  * Copyright 2017 NXP
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
- * Neither the name of NXP nor the names of its contributors may be used
- * to endorse or promote products derived from this software without specific
- * prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * SPDX-License-Identifier:     GPL-2.0+
  */
 
 /*!
@@ -45,96 +22,109 @@
  * @name Defines for common frequencies
  */
 /*@{*/
-#define SC_32KHZ            32768   //!< 32KHz
-#define SC_10MHZ         10000000   //!< 10MHz
-#define SC_20MHZ         20000000   //!< 20MHz
-#define SC_25MHZ         25000000   //!< 25MHz
-#define SC_40MHZ         40000000   //!< 40MHz
-#define SC_50MHZ         50000000   //!< 50MHz
-#define SC_60MHZ         60000000   //!< 60MHz
-#define SC_66MHZ         66666666   //!< 66MHz
-#define SC_80MHZ         80000000   //!< 80MHz
-#define SC_83MHZ         83333333   //!< 83MHz
-#define SC_100MHZ       100000000   //!< 100MHz
-#define SC_125MHZ       125000000   //!< 125MHz
-#define SC_133MHZ       133333333   //!< 133MHz
-#define SC_150MHZ       150000000   //!< 150MHz
-#define SC_160MHZ       160000000   //!< 160MHz
-#define SC_166MHZ       166666666   //!< 160MHz
-#define SC_175MHZ       175000000   //!< 175MHz
-#define SC_200MHZ       200000000   //!< 200MHz
-#define SC_250MHZ       250000000   //!< 250MHz
-#define SC_266MHZ       266666666   //!< 266MHz
-#define SC_300MHZ       300000000   //!< 300MHz
-#define SC_320MHZ       320000000   //!< 320MHz
-#define SC_325MHZ       325000000   //!< 325MHz
-#define SC_333MHZ       333333333   //!< 333MHz
-#define SC_350MHZ       350000000   //!< 350MHz
-#define SC_375MHZ       375000000   //!< 375MHz
-#define SC_400MHZ       400000000   //!< 400MHz
-#define SC_500MHZ       500000000   //!< 500MHz
-#define SC_650MHZ       650000000   //!< 650MHz
-#define SC_667MHZ       666666667   //!< 667MHz
-#define SC_700MHZ       700000000   //!< 700MHz
-#define SC_720MHZ       720000000   //!< 720MHz
-#define SC_750MHZ       750000000   //!< 750MHz
-#define SC_800MHZ       800000000   //!< 800MHz
-#define SC_1000MHZ     1000000000   //!< 1GHz
-#define SC_1300MHZ     1300000000   //!< 1.3GHz
-#define SC_1400MHZ     1400000000   //!< 1.4GHz
-#define SC_1500MHZ     1500000000   //!< 1.5GHz
-#define SC_1600MHZ     1600000000   //!< 1.6GHz
-#define SC_1800MHZ     1800000000   //!< 1.8GHz
-#define SC_2000MHZ     2000000000   //!< 2.0GHz
+#define SC_32KHZ            32768   /*!< 32KHz */
+#define SC_10MHZ         10000000   /*!< 10MHz */
+#define SC_20MHZ         20000000   /*!< 20MHz */
+#define SC_25MHZ         25000000   /*!< 25MHz */
+#define SC_40MHZ         40000000   /*!< 40MHz */
+#define SC_45MHZ         45000000   /*!< 45MHz */
+#define SC_50MHZ         50000000   /*!< 50MHz */
+#define SC_60MHZ         60000000   /*!< 60MHz */
+#define SC_66MHZ         66666666   /*!< 66MHz */
+#define SC_74MHZ         74250000   /*!< 74.25MHz */
+#define SC_80MHZ         80000000   /*!< 80MHz */
+#define SC_83MHZ         83333333   /*!< 83MHz */
+#define SC_84MHZ         84375000   /*!< 84.37MHz */
+#define SC_100MHZ       100000000   /*!< 100MHz */
+#define SC_125MHZ       125000000   /*!< 125MHz */
+#define SC_133MHZ       133333333   /*!< 133MHz */
+#define SC_135MHZ       135000000   /*!< 135MHz */
+#define SC_150MHZ       150000000   /*!< 150MHz */
+#define SC_160MHZ       160000000   /*!< 160MHz */
+#define SC_166MHZ       166666666   /*!< 160MHz */
+#define SC_175MHZ       175000000   /*!< 175MHz */
+#define SC_180MHZ       180000000   /*!< 180MHz */
+#define SC_200MHZ       200000000   /*!< 200MHz */
+#define SC_250MHZ       250000000   /*!< 250MHz */
+#define SC_266MHZ       266666666   /*!< 266MHz */
+#define SC_300MHZ       300000000   /*!< 300MHz */
+#define SC_320MHZ       320000000   /*!< 320MHz */
+#define SC_325MHZ       325000000   /*!< 325MHz */
+#define SC_333MHZ       333333333   /*!< 333MHz */
+#define SC_350MHZ       350000000   /*!< 350MHz */
+#define SC_375MHZ       375000000   /*!< 375MHz */
+#define SC_400MHZ       400000000   /*!< 400MHz */
+#define SC_500MHZ       500000000   /*!< 500MHz */
+#define SC_594MHZ       594000000   /*!< 594MHz */
+#define SC_650MHZ       650000000   /*!< 650MHz */
+#define SC_667MHZ       666666667   /*!< 667MHz */
+#define SC_675MHZ       675000000   /*!< 675MHz */
+#define SC_700MHZ       700000000   /*!< 700MHz */
+#define SC_720MHZ       720000000   /*!< 720MHz */
+#define SC_750MHZ       750000000   /*!< 750MHz */
+#define SC_800MHZ       800000000   /*!< 800MHz */
+#define SC_900MHZ       900000000   /*!< 900MHz */
+#define SC_1000MHZ     1000000000   /*!< 1GHz */
+#define SC_1056MHZ     1056000000   /*!< 1.056GHz */
+#define SC_1188MHZ     1188000000   /*!< 1.188GHz */
+#define SC_1300MHZ     1300000000   /*!< 1.3GHz */
+#define SC_1400MHZ     1400000000   /*!< 1.4GHz */
+#define SC_1500MHZ     1500000000   /*!< 1.5GHz */
+#define SC_1600MHZ     1600000000   /*!< 1.6GHz */
+#define SC_1800MHZ     1800000000   /*!< 1.8GHz */
+#define SC_2000MHZ     2000000000   /*!< 2.0GHz */
+#define SC_2112MHZ     2112000000   /*!< 2.12GHz */
+
 /*@}*/
 
 /*!
  * @name Defines for 24M related frequencies
  */
 /*@{*/
-#define SC_12MHZ         12000000   //!< 12MHz
-#define SC_19MHZ         19800000   //!< 19.8MHz
-#define SC_24MHZ         24000000   //!< 24MHz
-#define SC_120MHZ       120000000   //!< 120MHz
-#define SC_132MHZ       132000000   //!< 132MHz
-#define SC_192MHZ       192000000   //!< 192MHz
-#define SC_211MHZ       211200000   //!< 211.2MHz
-#define SC_240MHZ       240000000   //!< 240MHz
-#define SC_264MHZ       264000000   //!< 264MHz
-#define SC_352MHZ       352000000   //!< 352MHz
-#define SC_360MHZ       360000000   //!< 360MHz
-#define SC_384MHZ       384000000   //!< 384MHz
-#define SC_396MHZ       396000000   //!< 396MHz
-#define SC_480MHZ       480000000   //!< 480MHz
-#define SC_600MHZ       600000000   //!< 600MHz
-#define SC_792MHZ       792000000   //!< 792MHz
-#define SC_960MHZ       960000000   //!< 960MHz
-#define SC_1056MHZ     1056000000   //!< 1056MHz
-#define SC_1200MHZ     1200000000   //!< 1.2GHz
-#define SC_2400MHZ     2400000000   //!< 2.4GHz
+#define SC_12MHZ         12000000   /*!< 12MHz */
+#define SC_19MHZ         19800000   /*!< 19.8MHz */
+#define SC_24MHZ         24000000   /*!< 24MHz */
+#define SC_120MHZ       120000000   /*!< 120MHz */
+#define SC_132MHZ       132000000   /*!< 132MHz */
+#define SC_192MHZ       192000000   /*!< 192MHz */
+#define SC_211MHZ       211200000   /*!< 211.2MHz */
+#define SC_240MHZ       240000000   /*!< 240MHz */
+#define SC_264MHZ       264000000   /*!< 264MHz */
+#define SC_352MHZ       352000000   /*!< 352MHz */
+#define SC_360MHZ       360000000   /*!< 360MHz */
+#define SC_384MHZ       384000000   /*!< 384MHz */
+#define SC_396MHZ       396000000   /*!< 396MHz */
+#define SC_480MHZ       480000000   /*!< 480MHz */
+#define SC_600MHZ       600000000   /*!< 600MHz */
+#define SC_744MHZ       744000000   /*!< 744MHz */
+#define SC_792MHZ       792000000   /*!< 792MHz */
+#define SC_960MHZ       960000000   /*!< 960MHz */
+#define SC_1056MHZ     1056000000   /*!< 1056MHz */
+#define SC_1200MHZ     1200000000   /*!< 1.2GHz */
+#define SC_2400MHZ     2400000000   /*!< 2.4GHz */
 /*@}*/
 
 /*!
  * @name Defines for A/V related frequencies
  */
 /*@{*/
-#define SC_62MHZ         62937500   //!< 62.9375MHz
-#define SC_755MHZ       755250000   //!< 755.25MHz
+#define SC_62MHZ         62937500   /*!< 62.9375MHz */
+#define SC_755MHZ       755250000   /*!< 755.25MHz */
 /*@}*/
 
 /*!
  * @name Defines for type widths
  */
 /*@{*/
-#define SC_FADDR_W      36          //!< Width of sc_faddr_t
-#define SC_BOOL_W       1           //!< Width of bool
-#define SC_ERR_W        4           //!< Width of sc_err_t
-#define SC_RSRC_W       10          //!< Width of sc_rsrc_t
-#define SC_CTRL_W       5           //!< Width of sc_ctrl_t
+#define SC_FADDR_W      36          /*!< Width of sc_faddr_t */
+#define SC_BOOL_W       1           /*!< Width of bool */
+#define SC_ERR_W        4           /*!< Width of sc_err_t */
+#define SC_RSRC_W       10          /*!< Width of sc_rsrc_t */
+#define SC_CTRL_W       6           /*!< Width of sc_ctrl_t */
 /*@}*/
 
-#define SC_R_ALL        UINT16_MAX  //!< All resources
-#define SC_P_ALL        UINT16_MAX  //!< All pins
+#define SC_R_ALL        UINT16_MAX  /*!< All resources */
+#define SC_P_ALL        UINT16_MAX  /*!< All pads */
 
 /*!
  * This type is used to store a system (full-size) address.
@@ -146,16 +136,17 @@ typedef uint64_t sc_faddr_t;
  */
 typedef enum sc_err_e
 {
-    SC_ERR_NONE         = 0,    //!< Success
-    SC_ERR_VERSION      = 1,    //!< Incompatible API version
-    SC_ERR_CONFIG       = 2,    //!< Configuration error
-    SC_ERR_PARM         = 3,    //!< Bad parameter
-    SC_ERR_NOACCESS     = 4,    //!< Permission error (no access)
-    SC_ERR_LOCKED       = 5,    //!< Permission error (locked)
-    SC_ERR_UNAVAILABLE  = 6,    //!< Unavailable (out of resources)
-    SC_ERR_NOTFOUND     = 7,    //!< Not found
-    SC_ERR_NOPOWER      = 8,    //!< No power
-    SC_ERR_IPC          = 9,    //!< Generic IPC error
+    SC_ERR_NONE         = 0,    /*!< Success */
+    SC_ERR_VERSION      = 1,    /*!< Incompatible API version */
+    SC_ERR_CONFIG       = 2,    /*!< Configuration error */
+    SC_ERR_PARM         = 3,    /*!< Bad parameter */
+    SC_ERR_NOACCESS     = 4,    /*!< Permission error (no access) */
+    SC_ERR_LOCKED       = 5,    /*!< Permission error (locked) */
+    SC_ERR_UNAVAILABLE  = 6,    /*!< Unavailable (out of resources) */
+    SC_ERR_NOTFOUND     = 7,    /*!< Not found */
+    SC_ERR_NOPOWER      = 8,    /*!< No power */
+    SC_ERR_IPC          = 9,    /*!< Generic IPC error */
+    SC_ERR_BUSY         = 10,   /*!< Resource is currently busy/active */
     SC_ERR_LAST
 } sc_err_t;
 
@@ -574,9 +565,9 @@ typedef enum sc_rsrc_e
     SC_R_CSI_1_PWM_0        = 405,
     SC_R_CSI_1_I2C_0        = 406,
     SC_R_HDMI               = 407,
-    SC_R_HDMI_BYPASS        = 408,
+    SC_R_HDMI_I2S           = 408,
     SC_R_HDMI_I2C_0         = 409,
-    SC_R_AUDIO_PLL_2        = 410,
+    SC_R_HDMI_PLL_0         = 410,
     SC_R_HDMI_RX            = 411,
     SC_R_HDMI_RX_BYPASS     = 412,
     SC_R_HDMI_RX_I2C_0      = 413,
@@ -680,6 +671,16 @@ typedef enum sc_rsrc_e
     SC_R_A35_3              = 511,
     SC_R_HIFI               = 512,
     SC_R_HIFI_RAM           = 513,
+    SC_R_CAAM_JR1_OUT       = 514,
+    SC_R_CAAM_JR2_OUT       = 515,
+    SC_R_CAAM_JR3_OUT       = 516,
+    SC_R_VPU_DEC            = 517,
+    SC_R_VPU_ENC            = 518,
+    SC_R_CAAM_JR0           = 519,
+    SC_R_CAAM_JR0_OUT       = 520,
+    SC_R_PMIC_2             = 521,
+    SC_R_DBLOGIC            = 522,
+    SC_R_HDMI_PLL_1         = 523,
     SC_R_LAST
 } sc_rsrc_t;
 
@@ -718,15 +719,25 @@ typedef enum sc_ctrl_e
     SC_C_DISABLE_50         = 26,
     SC_C_DISABLE_125        = 27,
     SC_C_SEL_125            = 28,
+    SC_C_MODE               = 29,
+    SC_C_SYNC_CTRL0         = 30,
+    SC_C_KACHUNK_CNT        = 31,
+    SC_C_KACHUNK_SEL        = 32,
+    SC_C_SYNC_CTRL1         = 33,
+    SC_C_DPI_RESET          = 34,
+    SC_C_MIPI_RESET         = 35,
+    SC_C_DUAL_MODE          = 36,
+    SC_C_VOLTAGE            = 37,
+    SC_C_PXL_LINK_SEL       = 38,
     SC_C_LAST
 } sc_ctrl_t;
 
 /*!
- * This type is used to indicate a pin. Valid values are SoC specific.
+ * This type is used to indicate a pad. Valid values are SoC specific.
  *
- * Refer to the SoC [Pin List](@ref PINS) for valid pin values.
+ * Refer to the SoC [Pad List](@ref PADS) for valid pad values.
  */
-typedef uint16_t sc_pin_t;
+typedef uint16_t sc_pad_t;
 
 /* Extra documentation of standard types */
 
