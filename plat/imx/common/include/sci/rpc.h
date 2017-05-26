@@ -1,31 +1,8 @@
 /*
+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
  * Copyright 2017 NXP
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
- * Neither the name of ARM nor the names of its contributors may be used
- * to endorse or promote products derived from this software without specific
- * prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * SPDX-License-Identifier:     GPL-2.0+
  */
 
 /*!
@@ -51,10 +28,12 @@
 #define RPC_SVC(MSG)            ((MSG)->svc)
 #define RPC_FUNC(MSG)           ((MSG)->func)
 #define RPC_R8(MSG)             ((MSG)->func)
-#define RPC_D32(MSG, IDX)       ((MSG)->DATA.d32[IDX / 4])
-#define RPC_F32(MSG, IDX)       ((MSG)->DATA.f32[IDX / 4])
-#define RPC_D16(MSG, IDX)       ((MSG)->DATA.d16[IDX / 2])
-#define RPC_D8(MSG, IDX)        ((MSG)->DATA.d8[IDX])
+#define RPC_I32(MSG, IDX)       ((MSG)->DATA.i32[IDX / 4])
+#define RPC_I16(MSG, IDX)       ((MSG)->DATA.i16[IDX / 2])
+#define RPC_I8(MSG, IDX)        ((MSG)->DATA.i8[IDX])
+#define RPC_U32(MSG, IDX)       ((MSG)->DATA.u32[IDX / 4])
+#define RPC_U16(MSG, IDX)       ((MSG)->DATA.u16[IDX / 2])
+#define RPC_U8(MSG, IDX)        ((MSG)->DATA.u8[IDX])
 
 /* Types */
 
@@ -64,7 +43,6 @@ typedef enum sc_rpc_svc_e
     SC_RPC_SVC_RETURN           = 1,
     SC_RPC_SVC_PM               = 2,
     SC_RPC_SVC_RM               = 3,
-    SC_RPC_SVC_OTP              = 4,
     SC_RPC_SVC_TIMER            = 5,
     SC_RPC_SVC_PAD              = 6,
     SC_RPC_SVC_MISC             = 7,
@@ -80,9 +58,12 @@ typedef struct sc_rpc_msg_s
     uint8_t func;
     union
     {
-        uint32_t d32[(SC_RPC_MAX_MSG - 1)];
-        uint16_t d16[(SC_RPC_MAX_MSG - 1) * 2];
-        uint8_t d8[(SC_RPC_MAX_MSG - 1) * 4];
+        int32_t i32[(SC_RPC_MAX_MSG - 1)];
+        int16_t i16[(SC_RPC_MAX_MSG - 1) * 2];
+        int8_t i8[(SC_RPC_MAX_MSG - 1) * 4];
+        uint32_t u32[(SC_RPC_MAX_MSG - 1)];
+        uint16_t u16[(SC_RPC_MAX_MSG - 1) * 2];
+        uint8_t u8[(SC_RPC_MAX_MSG - 1) * 4];
     } DATA;
 } sc_rpc_msg_t;
 
@@ -138,7 +119,7 @@ void sc_rpc_dispatch(sc_rsrc_t mu, sc_rpc_msg_t *msg);
  * @param[in,out] msg         handle to a message
  *
  * This function decodes a message, calls macros to translate the
- * resources, pins, addresses, partitions, memory regions, etc. and
+ * resources, pads, addresses, partitions, memory regions, etc. and
  * then forwards on to the hypervisors SCFW API.Return results are
  * translated back abd placed back into the message to be returned
  * to the original API.
