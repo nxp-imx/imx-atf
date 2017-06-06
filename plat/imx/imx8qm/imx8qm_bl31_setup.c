@@ -45,6 +45,8 @@
 #include <xlat_tables.h>
 #include <lpuart.h>
 #include <sec_rsrc.h>
+#include <imx8-pins.h>
+#include <iomux.h>
 
 /* linker defined symbols */
 extern unsigned long __RO_START__;
@@ -239,12 +241,6 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		while (1);
 	}
 #if DEBUG_CONSOLE_A53
-	/* This maybe updated, need to check SCFW */
-	#define SC_P_UART0_RX				30
-	#define SC_P_UART0_TX				31
-	#define SC_P_UART0_RTS_B			32
-	#define SC_P_UART0_CTS_B			33
-
 	/* Power up UART0 */
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_UART_0, SC_PM_PW_MODE_ON);
 
@@ -255,14 +251,16 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	/* Enable UART0 clock root */
 	sc_pm_clock_enable(ipc_handle, SC_R_UART_0, 2, true, false);
 
+#define UART_PAD_CTRL	((SC_PAD_CONFIG_OUT_IN << PADRING_CONFIG_SHIFT) | (SC_PAD_ISO_OFF << PADRING_LPCONFIG_SHIFT) \
+			| (SC_PAD_28FDSOI_DSE_DV_LOW << PADRING_DSE_SHIFT) | (SC_PAD_28FDSOI_PS_PD << PADRING_PULL_SHIFT))
 	/* Configure UART pads */
-	sc_pad_set(ipc_handle, SC_P_UART0_RX, 0xc600004c);
+	sc_pad_set(ipc_handle, SC_P_UART0_RX, UART_PAD_CTRL);
 
-	sc_pad_set(ipc_handle, SC_P_UART0_TX, 0xc600004c);
+	sc_pad_set(ipc_handle, SC_P_UART0_TX, UART_PAD_CTRL);
 
-	sc_pad_set(ipc_handle, SC_P_UART0_RTS_B, 0xc600004c);
+	sc_pad_set(ipc_handle, SC_P_UART0_RTS_B, UART_PAD_CTRL);
 
-	sc_pad_set(ipc_handle, SC_P_UART0_CTS_B, 0xc600004c);
+	sc_pad_set(ipc_handle, SC_P_UART0_CTS_B, UART_PAD_CTRL);
 
 	lpuart32_serial_init(IMX_BOOT_UART_BASE);
 #endif
