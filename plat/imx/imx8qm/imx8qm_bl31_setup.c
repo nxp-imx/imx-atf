@@ -251,8 +251,11 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	/* Enable UART0 clock root */
 	sc_pm_clock_enable(ipc_handle, SC_R_UART_0, 2, true, false);
 
-#define UART_PAD_CTRL	((SC_PAD_CONFIG_OUT_IN << PADRING_CONFIG_SHIFT) | (SC_PAD_ISO_OFF << PADRING_LPCONFIG_SHIFT) \
-			| (SC_PAD_28FDSOI_DSE_DV_LOW << PADRING_DSE_SHIFT) | (SC_PAD_28FDSOI_PS_PD << PADRING_PULL_SHIFT))
+#define UART_PAD_CTRL	(PADRING_IFMUX_EN_MASK | PADRING_GP_EN_MASK | \
+			(SC_PAD_CONFIG_OUT_IN << PADRING_CONFIG_SHIFT) | \
+			(SC_PAD_ISO_OFF << PADRING_LPCONFIG_SHIFT) | \
+			(SC_PAD_28FDSOI_DSE_DV_LOW << PADRING_DSE_SHIFT) | \
+			(SC_PAD_28FDSOI_PS_PD << PADRING_PULL_SHIFT))
 	/* Configure UART pads */
 	sc_pad_set(ipc_handle, SC_P_UART0_RX, UART_PAD_CTRL);
 
