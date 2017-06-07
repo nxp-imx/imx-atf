@@ -92,6 +92,33 @@ endfunc plat_calc_core_pos
 	 * ----------------------------------------------
 	 */
 func plat_reset_handler
+#if ENABLE_L2_DYNAMIC_RETENTION
+	/* ---------------------------
+	 * Enable processor retention
+	 * ---------------------------
+	*/
+	mrs	x0, L2ECTLR_EL1
+	mov	x1, #RETENTION_ENTRY_TICKS_64 << L2ECTLR_RET_CTRL_SHIFT
+	bic	x0, x0, #L2ECTLR_RET_CTRL_MASK
+	orr	x0, x0, x1
+	msr	L2ECTLR_EL1, x0
+	isb
+#endif
+
+#if ENABLE_CPU_DYNAMIC_RETENTION
+	mrs	x1, CORTEX_A72_ECTLR_EL1
+	mov	x2, #RETENTION_ENTRY_TICKS_64 << CPUECTLR_CPU_RET_CTRL_SHIFT
+	bic	x1, x1, #CPUECTLR_CPU_RET_CTRL_MASK
+	orr	x1, x1, x2
+	jump_if_cpu_midr CORTEX_A72_MIDR, SKIP_FP
+	mov	x2, #RETENTION_ENTRY_TICKS_64 << CPUECTLR_FPU_RET_CTRL_SHIFT
+	bic	x1, x1, #CPUECTLR_FPU_RET_CTRL_MASK
+	orr	x1, x1, x2
+SKIP_FP:
+	msr	CORTEX_A72_ECTLR_EL1, x1
+	isb
+#endif
+
 	/* enable EL2 cpuectlr RW access */
 	mov	x0, #0x73
 	msr	actlr_el3, x0

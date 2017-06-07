@@ -48,3 +48,8 @@ $(eval $(call add_define,IMX_USE_UART${IMX_DEBUG_UART}))
 
 DEBUG_CONSOLE		?= 	0
 $(eval $(call add_define,DEBUG_CONSOLE))
+
+ENABLE_CPU_DYNAMIC_RETENTION := 1
+$(eval $(call add_define,ENABLE_CPU_DYNAMIC_RETENTION))
+ENABLE_L2_DYNAMIC_RETENTION := 1
+$(eval $(call add_define,ENABLE_L2_DYNAMIC_RETENTION))
