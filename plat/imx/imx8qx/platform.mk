@@ -33,3 +33,8 @@ include plat/imx/common/sci/sci_api.mk
 
 USE_COHERENT_MEM	:=	1
 RESET_TO_BL31		:=	1
+
+ENABLE_CPU_DYNAMIC_RETENTION := 1
+$(eval $(call add_define,ENABLE_CPU_DYNAMIC_RETENTION))
+ENABLE_L2_DYNAMIC_RETENTION := 1
+$(eval $(call add_define,ENABLE_L2_DYNAMIC_RETENTION))
