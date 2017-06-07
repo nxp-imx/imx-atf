@@ -189,46 +189,57 @@ static int lpuart32_serial_init(unsigned int base)
 
 void mx8_partition_resources(void)
 {
-        sc_err_t err;
-        sc_rm_pt_t secure_part, os_part;
-        int i;
+	sc_err_t err;
+	sc_rm_pt_t secure_part, os_part;
+	sc_rm_mr_t mr;
+	int i;
 
-        err = sc_rm_get_partition(ipc_handle, &secure_part);
+	err = sc_rm_get_partition(ipc_handle, &secure_part);
 
-        err = sc_rm_partition_alloc(ipc_handle, &os_part, false, false,
-              false, false, false);
+	err = sc_rm_partition_alloc(ipc_handle, &os_part, false, false,
+		false, false, false);
 
-        err = sc_rm_set_parent(ipc_handle, os_part, secure_part);
+	err = sc_rm_set_parent(ipc_handle, os_part, secure_part);
 
-        /* set secure resources to NOT-movable */
-        for(i = 0; i<(sizeof(secure_rsrcs)/sizeof(sc_rsrc_t)); i++){
-          err = sc_rm_set_resource_movable(ipc_handle, secure_rsrcs[i],
-                      secure_rsrcs[i], false);
+	/* set secure resources to NOT-movable */
+ 	for (i = 0; i < (sizeof(secure_rsrcs) / sizeof(sc_rsrc_t)); i++) {
+ 		err = sc_rm_set_resource_movable(ipc_handle, secure_rsrcs[i],
+			secure_rsrcs[i], false);
+	}
 
-        }
+	/* move all movable resources and pins to non-secure partition */
+	err = sc_rm_move_all(ipc_handle, secure_part, os_part, true, true);
 
-        /* move all movable resources and pins to non-secure partition */
-        err = sc_rm_move_all(ipc_handle, secure_part, os_part, true, true);
+	/* iterate through peripherals to give NS OS part access */
+	for (i = 0; i < (sizeof(ns_access_allowed) / sizeof(sc_rsrc_t)); i++) {
+		err = sc_rm_set_peripheral_permissions(ipc_handle, ns_access_allowed[i],
+			os_part, SC_RM_PERM_FULL);
+	}
 
-        /* iterate through peripherals to give NS OS part access */
-        for(i = 0; i<(sizeof(ns_access_allowed)/sizeof(sc_rsrc_t)); i++){
-          err = sc_rm_set_peripheral_permissions(ipc_handle, ns_access_allowed[i],
-                    os_part, SC_RM_PERM_FULL);
-        }
+	/*
+	 * sc_rm_set_peripheral_permissions
+	 *
+	 * sc_rm_set_memreg_permissions
+	 *
+	 * sc_rm_set_pin_movable
+	 *
+	 */
 
-        /*
-         * sc_rm_set_peripheral_permissions
-         *
-         * sc_rm_set_memreg_permissions
-         *
-         * sc_rm_set_pin_movable
-         *
-         */
+	for (i = 0; i < (sizeof(ns_mem_region) / sizeof(struct mem_region)); i++) {
+		err = sc_rm_memreg_alloc(ipc_handle, &mr, ns_mem_region[i].start, ns_mem_region[i].end);
+		if (err) {
+			ERROR("Memreg alloc failed, 0x%lx -- 0x%lx\n", ns_mem_region[i].start, ns_mem_region[i].end);
+		} else {
+			err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+			if (err)
+				ERROR("Memreg assign failed, 0x%lx -- 0x%lx\n", ns_mem_region[i].start, ns_mem_region[i].end);
+		}
+	}
 
-        if(err)
-          NOTICE("Partitioning Failed\n");
-        else
-          NOTICE("Non-secure Partitioning Succeeded\n");
+	if (err)
+		NOTICE("Partitioning Failed\n");
+	else
+		NOTICE("Non-secure Partitioning Succeeded\n");
 
 }
 

@@ -189,6 +189,7 @@ void imx8_partition_resources(void)
 {
 	sc_err_t err;
 	sc_rm_pt_t secure_part, os_part;
+	sc_rm_mr_t mr;
 	int i;
 
 	err = sc_rm_get_partition(ipc_handle, &secure_part);
@@ -199,7 +200,7 @@ void imx8_partition_resources(void)
 	err = sc_rm_set_parent(ipc_handle, os_part, secure_part);
 
 	/* set secure resources to NOT-movable */
-	for(i = 0; i<(sizeof(secure_rsrcs)/sizeof(sc_rsrc_t)); i++){
+	for (i = 0; i < (sizeof(secure_rsrcs) / sizeof(sc_rsrc_t)); i++) {
 		err = sc_rm_set_resource_movable(ipc_handle,
 			 secure_rsrcs[i], secure_rsrcs[i], false);
 	}
@@ -208,7 +209,7 @@ void imx8_partition_resources(void)
 	err = sc_rm_move_all(ipc_handle, secure_part, os_part, true, true);
 
 	/* iterate through peripherals to give NS OS part access */
-	for(i = 0; i<(sizeof(ns_access_allowed)/sizeof(sc_rsrc_t)); i++){
+	for (i = 0; i< (sizeof(ns_access_allowed) / sizeof(sc_rsrc_t)); i++) {
 		err = sc_rm_set_peripheral_permissions(ipc_handle,
 			 ns_access_allowed[i], os_part, SC_RM_PERM_FULL);
 	}
@@ -221,6 +222,17 @@ void imx8_partition_resources(void)
 	 * sc_rm_set_pin_movable
 	 *
 	 */
+
+	for (i = 0; i < (sizeof(ns_mem_region) / sizeof(struct mem_region)); i++) {
+		err = sc_rm_memreg_alloc(ipc_handle, &mr, ns_mem_region[i].start, ns_mem_region[i].end);
+		if (err) {
+			ERROR("Memreg alloc failed, 0x%lx -- 0x%lx\n", ns_mem_region[i].start, ns_mem_region[i].end);
+		} else {
+			err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+			if (err)
+				ERROR("Memreg assign failed, 0x%lx -- 0x%lx\n", ns_mem_region[i].start, ns_mem_region[i].end);
+		}
+	}
 
 	if (err)
 		NOTICE("Partitioning Failed\n");
@@ -283,7 +295,7 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 void bl31_plat_arch_setup(void)
 {
 	/*
-	 * add the mmap 
+	 * add the mmap
 	 * Change to 128KB?
 	 * Fix Me
 	 */
