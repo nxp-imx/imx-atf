@@ -286,11 +286,6 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.spsr = get_spsr_for_bl33_entry();
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 
-	/* Terminate all barrier transactions, Disable speculative fetches */
-	mmio_write_32(0x52090000, 0xc);
-	/* Enable non-secure access to CCI registers */
-	mmio_write_32(0x52090008, 0x1);
-
 	/* init the first cluster's cci slave interface */
 	cci_init(PLAT_CCI_BASE, imx8qm_cci_map, PLATFORM_CLUSTER_COUNT);
 	cci_enable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(read_mpidr_el1()));
