@@ -83,10 +83,6 @@
 
 #define COUNTER_FREQUENCY		8000000 /* 8MHz */
 
-/*
- * open debug console, need to comment out console_uninit in
- * ./plat/common/aarch64/plat_common.c as well.
- */
 #define DEBUG_CONSOLE			0
 #define DEBUG_CONSOLE_A53		0
 #define PLAT_IMX8QM			1
