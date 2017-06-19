@@ -16,17 +16,3 @@ sc_rsrc_t secure_rsrcs[] = {
 sc_rsrc_t ns_access_allowed[] = {
 	SC_R_GIC,
 };
-
-struct mem_region {
-	unsigned long start;
-	unsigned long end;
-};
-
-struct mem_region ns_mem_region[] = {
-	{0x000000000, 0x01BFFFFFF},
-	{0x034000000, 0x037FFFFFF},
-	{0x070000000, 0x07FFFFFFF},
-	{0x080000000, 0x0FFFFFFFF},
-	{0x400000000, 0x43FFFFFFF},
-	{0x880000000, 0xFFFFFFFFF},
-};

@@ -183,6 +183,8 @@ void imx8_partition_resources(void)
 	sc_err_t err;
 	sc_rm_pt_t secure_part, os_part;
 	sc_rm_mr_t mr;
+	bool owned;
+	sc_faddr_t start, end;
 	int i;
 
 	err = sc_rm_get_partition(ipc_handle, &secure_part);
@@ -216,14 +218,19 @@ void imx8_partition_resources(void)
 	 *
 	 */
 
-	for (i = 0; i < (sizeof(ns_mem_region) / sizeof(struct mem_region)); i++) {
-		err = sc_rm_memreg_alloc(ipc_handle, &mr, ns_mem_region[i].start, ns_mem_region[i].end);
-		if (err) {
-			ERROR("Memreg alloc failed, 0x%lx -- 0x%lx\n", ns_mem_region[i].start, ns_mem_region[i].end);
-		} else {
-			err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
-			if (err)
-				ERROR("Memreg assign failed, 0x%lx -- 0x%lx\n", ns_mem_region[i].start, ns_mem_region[i].end);
+	for (mr = 0; mr < 64; mr++) {
+		owned = sc_rm_is_memreg_owned(ipc_handle, mr);
+		if (owned) {
+			err = sc_rm_get_memreg_info(ipc_handle, mr, &start, &end);
+			if (err) {
+				ERROR("Memreg get info failed, %u\n", mr);
+			} else {
+				NOTICE("Memreg %u 0x%lx -- 0x%lx\n", mr, start, end);
+
+				err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+				if (err)
+					ERROR("Memreg assign failed, 0x%lx -- 0x%lx\n", start, end);
+			}
 		}
 	}
 
