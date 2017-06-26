@@ -7,6 +7,12 @@
 #ifndef __SOC_IMX_SIP_H
 #define __SOC_IMX_SIP_H
 
+#define FSL_SIP_GPC			0xC2000000
+#define FSL_SIP_CONFIG_GPC_MASK		0x00
+#define FSL_SIP_CONFIG_GPC_UNMASK	0x01
+#define FSL_SIP_CONFIG_GPC_SET_WAKE	0x02
+#define FSL_SIP_CONFIG_GPC_PM_DOMAIN	0x03
+
 #define IMX_SIP_CPUFREQ			0xC2000001
 #define IMX_SIP_SET_CPUFREQ		0x00
 
@@ -44,6 +50,11 @@ int imx_otp_handler(uint32_t smc_fid, void *handle,
 int imx_misc_set_temp_handler(uint32_t smc_fid, u_register_t x1,
 				u_register_t x2, u_register_t x3,
 				u_register_t x4);
+#endif
+
+#if defined(PLAT_IMX8M)
+extern int imx_gpc_handler(uint32_t  smc_fid, u_register_t x1,
+		u_register_t x2, u_register_t x3);
 #endif
 uint64_t imx_buildinfo_handler(uint32_t smc_fid, u_register_t x1,
 				u_register_t x2, u_register_t x3,

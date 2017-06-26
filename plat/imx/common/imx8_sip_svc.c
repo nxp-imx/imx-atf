@@ -34,6 +34,11 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 			      u_register_t flags)
 {
 	switch (smc_fid) {
+#if defined(PLAT_IMX8M)
+	case  FSL_SIP_GPC:
+		SMC_RET1(handle, imx_gpc_handler(smc_fid, x1, x2, x3));
+		break;
+#endif
 #if defined(PLAT_IMX8QM) || defined(PLAT_IMX8QX)
 	case  IMX_SIP_CPUFREQ:
 		SMC_RET1(handle, imx_cpufreq_handler(smc_fid, x1, x2, x3));
