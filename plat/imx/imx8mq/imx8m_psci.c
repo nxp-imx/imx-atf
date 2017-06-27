@@ -190,6 +190,26 @@ void imx_get_sys_suspend_power_state(psci_power_state_t *req_state)
 		req_state->pwr_domain_state[i] = PLAT_MAX_RET_STATE;
 }
 
+void  __attribute__((noreturn)) imx_system_reset(void)
+{
+	uintptr_t wdog_base = IMX_WDOG_BASE;
+	unsigned int val;
+
+	/* WDOG_B reset */
+	val = mmio_read_16(wdog_base);
+#ifdef IMX_WDOG_B_RESET
+	val = (val & 0x00FF) | (7 << 2) | (1 << 0);
+#else
+	val = (val & 0x00FF) | (4 << 2) | (1 << 0);
+#endif
+	mmio_write_16(wdog_base, val);
+
+	mmio_write_16(wdog_base + 0x2, 0x5555);
+	mmio_write_16(wdog_base + 0x2, 0xaaaa);
+	while (1)
+		;
+}
+
 static const plat_psci_ops_t imx_plat_psci_ops = {
 	.pwr_domain_on = imx_pwr_domain_on,
 	.pwr_domain_on_finish = imx_pwr_domain_on_finish,
@@ -200,6 +220,7 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 	.pwr_domain_suspend = imx_domain_suspend,
 	.pwr_domain_suspend_finish = imx_domain_suspend_finish,
 	.get_sys_suspend_power_state = imx_get_sys_suspend_power_state,
+	.system_reset = imx_system_reset,
 };
 
 /* export the platform specific psci ops */
