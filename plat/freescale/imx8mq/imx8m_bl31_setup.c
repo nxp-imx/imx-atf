@@ -126,6 +126,15 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 	mmio_write_32(0x301f004c, 0x0);
 	mmio_write_32(0x301f0050, 0x0);
 
+	/* config the AIPSTZ2 */
+	mmio_write_32(0x305f0000, 0x77777777);
+	mmio_write_32(0x305f0004, 0x77777777);
+	mmio_write_32(0x305f0040, 0x0);
+	mmio_write_32(0x305f0044, 0x0);
+	mmio_write_32(0x305f0048, 0x0);
+	mmio_write_32(0x305f004c, 0x0);
+	mmio_write_32(0x305f0050, 0x0);
+
 	/* config the AIPSTZ3 */
 	mmio_write_32(0x309f0000, 0x77777777);
 	mmio_write_32(0x309f0004, 0x77777777);
