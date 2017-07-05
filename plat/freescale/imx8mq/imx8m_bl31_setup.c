@@ -144,6 +144,10 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 	mmio_write_32(0x309f004c, 0x0);
 	mmio_write_32(0x309f0050, 0x0);
 
+#if DEBUG_CONSOLE
+	console_init(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
+		     IMX_CONSOLE_BAUDRATE);
+#endif
 	/* enable the system counter */
 	system_counter_init();
 
@@ -210,4 +214,9 @@ entry_point_info_t *bl31_plat_get_next_image_ep_info(unsigned int type)
 unsigned int plat_get_syscnt_freq2(void)
 {
 	return freq;
+}
+
+void bl31_plat_runtime_setup(void)
+{
+	return;
 }
