@@ -202,6 +202,7 @@ void bl31_plat_arch_setup(void)
 	mmap_add_region(IMX_WDOG_BASE, IMX_WDOG_BASE, 0x1000, MT_DEVICE | MT_RW);
 	mmap_add_region(IMX_IOMUX_GPR_BASE, IMX_IOMUX_GPR_BASE, 0x1000, MT_DEVICE | MT_RW);
 	mmap_add_region(IMX_ANAMIX_BASE, IMX_ANAMIX_BASE, 0x1000, MT_DEVICE | MT_RW);
+	mmap_add_region(IMX_SNVS_BASE, IMX_SNVS_BASE, 0x1000, MT_DEVICE | MT_RW);
 	mmap_add_region(PLAT_GICD_BASE, PLAT_GICD_BASE, 0x80000,
 			MT_DEVICE | MT_RW);
 	mmap_add_region(PLAT_GICR_BASE, PLAT_GICR_BASE, 0x80000,
