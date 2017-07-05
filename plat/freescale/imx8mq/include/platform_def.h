@@ -20,7 +20,7 @@
 #define PLAT_MAX_RET_STATE		1
 
 #define BL31_BASE			0x40001000
-#define BL31_LIMIT			0x40021000
+#define BL31_LIMIT			0x40020000
 
 /* non-secure uboot base */
 #define PLAT_NS_IMAGE_OFFSET		0x40021000
