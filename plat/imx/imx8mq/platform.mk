@@ -20,6 +20,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S		\
 				lib/cpus/aarch64/cortex_a53.S		\
 				drivers/console/aarch64/console.S	\
 				${PLAT_GIC_SOURCES}			\
+				drivers/arm/tzc/tzc380.c
 
 ENABLE_PLAT_COMPAT	:=	0
 USE_COHERENT_MEM	:=	0
