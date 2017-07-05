@@ -42,6 +42,7 @@
 #include <plat_imx8.h>
 #include <xlat_tables.h>
 #include <soc.h>
+#include <tzc380.h>
 
 /* linker defined symbols */
 extern unsigned long __RO_START__;
@@ -89,6 +90,8 @@ static uint32_t get_spsr_for_bl33_entry(void)
 #define SC_CNTCR_FREQ0          (1 << 8)
 #define SC_CNTCR_FREQ1          (1 << 9)
 
+#define GPR_TZASC_EN		(1 << 0)
+#define GPR_TZASC_EN_LOCK	(1 << 16)
 unsigned int freq;
 
 void system_counter_init(void)
@@ -102,6 +105,34 @@ void system_counter_init(void)
         val &= ~(SC_CNTCR_FREQ0 | SC_CNTCR_FREQ1);
         val |= SC_CNTCR_FREQ0 | SC_CNTCR_ENABLE | SC_CNTCR_HDBG;
         mmio_write_32(SCTR_BASE_ADDR + CNTCR_OFF, val);
+}
+
+void bl31_tzc380_setup(void)
+{
+	unsigned int val;
+
+	NOTICE("Configureing TZASC380\n");
+
+	/* Enable TZASC and lock setting */
+	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x28);
+	val |= GPR_TZASC_EN;
+	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x28, val);
+	val |= GPR_TZASC_EN_LOCK;
+	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x28, val);
+
+	tzc380_init(IMX_TZASC_BASE);
+
+	/*
+	 * Need to substact offset 0x40000000 from CPU address when
+	 * programming tzasc region for i.mx8mq.
+	 */
+
+	/* Enable 1G-5G S/NS RW */
+	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G) | TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
+	/* Enable 0x40000000 - 0x40020000 S RW */
+	tzc380_configure_region(1, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_128K) | TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_S_RW);
+
+	tzc380_dump_state();
 }
 
 void bl31_early_platform_setup(bl31_params_t *from_bl2,
@@ -158,6 +189,8 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 	bl33_image_ep_info.pc = PLAT_NS_IMAGE_OFFSET;
 	bl33_image_ep_info.spsr = get_spsr_for_bl33_entry();
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
+
+	bl31_tzc380_setup();
 }
 
 void bl31_plat_arch_setup(void)
@@ -173,6 +206,7 @@ void bl31_plat_arch_setup(void)
 			0x1000,	MT_DEVICE | MT_RW);
 	mmap_add_region(IMX_GPC_BASE, IMX_GPC_BASE, 0x1000, MT_DEVICE | MT_RW);
 	mmap_add_region(IMX_WDOG_BASE, IMX_WDOG_BASE, 0x1000, MT_DEVICE | MT_RW);
+	mmap_add_region(IMX_IOMUX_GPR_BASE, IMX_IOMUX_GPR_BASE, 0x1000, MT_DEVICE | MT_RW);
 	mmap_add_region(IMX_ANAMIX_BASE, IMX_ANAMIX_BASE, 0x1000, MT_DEVICE | MT_RW);
 	mmap_add_region(PLAT_GICD_BASE, PLAT_GICD_BASE, 0x80000,
 			MT_DEVICE | MT_RW);
