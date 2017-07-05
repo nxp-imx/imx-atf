@@ -45,6 +45,8 @@
 #define GPC_CPU_PGC_SW_PUP_REQ 0xf0
 #define GPC_CPU_PGC_SW_PDN_REQ 0xfc
 
+#define SNVS_LPCR	0x38
+
 extern void imx_gpc_set_core_pdn_pup_by_software(unsigned int cpu, bool pdn);
 extern void imx_gpc_set_cpu_power_gate_by_wfi(unsigned int cpu, bool pdn);
 
@@ -210,6 +212,16 @@ void  __attribute__((noreturn)) imx_system_reset(void)
 		;
 }
 
+void __attribute__((noreturn)) imx_system_off(void)
+{
+	mmio_write_32(IMX_SNVS_BASE + SNVS_LPCR, 0x61);
+
+	tf_printf("Unable to poweroff system\n");
+
+	while (1)
+		;
+}
+
 static const plat_psci_ops_t imx_plat_psci_ops = {
 	.pwr_domain_on = imx_pwr_domain_on,
 	.pwr_domain_on_finish = imx_pwr_domain_on_finish,
@@ -221,6 +233,7 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 	.pwr_domain_suspend_finish = imx_domain_suspend_finish,
 	.get_sys_suspend_power_state = imx_get_sys_suspend_power_state,
 	.system_reset = imx_system_reset,
+	.system_off = imx_system_off,
 };
 
 /* export the platform specific psci ops */
