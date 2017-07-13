@@ -105,14 +105,11 @@ void bl31_tzc380_setup(void)
 {
 	unsigned int val;
 
-	NOTICE("Configureing TZASC380\n");
-
-	/* Enable TZASC and lock setting */
 	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x28);
-	val |= GPR_TZASC_EN;
-	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x28, val);
-	val |= GPR_TZASC_EN_LOCK;
-	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x28, val);
+	if ((val & GPR_TZASC_EN) != GPR_TZASC_EN)
+		return;
+
+	NOTICE("Configureing TZASC380\n");
 
 	tzc380_init(IMX_TZASC_BASE);
 
