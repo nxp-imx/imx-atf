@@ -98,6 +98,7 @@
 #define BM_CPU_PGC_SW_PDN_PUP_REQ 	0x1
 
 #define GPC_ARM_PGC		0x800
+#define GPC_SCU_PGC		0x900
 #define PGC_PCR			0
 
 #define ANAMIX_HW_AUDIO_PLL1_CFG0	0x0
@@ -115,18 +116,23 @@
 
 static uint32_t gpc_saved_imrs[128];
 static uint32_t gpc_wake_irqs[128];
-//static uint32_t gpc_mf_irqs[128];
 
-void imx_gpc_set_m_core_pgc(unsigned int cpu, bool pdn)
+static uint32_t gpc_pu_m_core_offset[11] = {
+	0xc00, 0xc40, 0xc80, 0xcc0,
+	0xdc0, 0xe00, 0xe40, 0xe80,
+	0xec0, 0xf00, 0xf40,
+};
+
+void imx_gpc_set_m_core_pgc(unsigned int offset, bool pdn)
 {
 	uintptr_t val;
 
-	val = mmio_read_32(IMX_GPC_BASE + GPC_ARM_PGC + cpu * 64);
+	val = mmio_read_32(IMX_GPC_BASE + offset);
 	val &= ~(0x1 << PGC_PCR);
 
 	if(pdn)
 		val |= 0x1 << PGC_PCR;
-	mmio_write_32(IMX_GPC_BASE + GPC_ARM_PGC + cpu * 64, val);
+	mmio_write_32(IMX_GPC_BASE + offset, val);
 }
 
 void imx_gpc_set_lpm_mode(enum imx_cpu_pwr_mode mode)
@@ -262,7 +268,7 @@ void imx_gpc_set_core_pdn_pup_by_software(unsigned int cpu, bool pdn)
 		GPC_CPU_PGC_SW_PDN_REQ : GPC_CPU_PGC_SW_PUP_REQ));
 
 	/*Set the core PCR bit before sw PUP/PDN trigger */
-	imx_gpc_set_m_core_pgc(cpu, true);
+	imx_gpc_set_m_core_pgc(GPC_ARM_PGC + cpu * 0x40, true);
 
 	index = cpu < 2 ? cpu : cpu + 1;
 	val |= (BM_CPU_PGC_SW_PDN_PUP_REQ << index);
@@ -275,7 +281,7 @@ void imx_gpc_set_core_pdn_pup_by_software(unsigned int cpu, bool pdn)
 		;
 
 	/*Clear the core PCR bit after sw PUP/PDN trigger */
-	imx_gpc_set_m_core_pgc(cpu, false);
+	imx_gpc_set_m_core_pgc(GPC_ARM_PGC + cpu * 0x40, false);
 }
 
 void imx_gpc_pre_suspend(bool arm_power_off)
@@ -307,8 +313,8 @@ void imx_gpc_pre_suspend(bool arm_power_off)
 
 		imx_gpc_set_slot_ack(6, A53_SCU, true, false);
 		imx_gpc_set_slot_ack(7, A53_CORE0, true, true);
-		imx_gpc_set_m_core_pgc(0, true);
-		imx_gpc_set_m_core_pgc(4, true);
+		imx_gpc_set_m_core_pgc(GPC_ARM_PGC, true);
+		imx_gpc_set_m_core_pgc(GPC_SCU_PGC, true);
 
 		imx_gpc_set_cpu_power_gate_by_lpm(0, true);
 		imx_gpc_set_plat_power_gate_by_lpm(true);
@@ -357,8 +363,8 @@ void imx_gpc_post_resume(void)
 	imx_gpc_set_cpu_power_gate_by_lpm(0, false);
 	imx_gpc_set_plat_power_gate_by_lpm(false);
 	/* clear PGC PDN bit */
-	imx_gpc_set_m_core_pgc(0, false);
-	imx_gpc_set_m_core_pgc(4, false);
+	imx_gpc_set_m_core_pgc(GPC_ARM_PGC, false);
+	imx_gpc_set_m_core_pgc(GPC_SCU_PGC, false);
 
 	for (i = 0; i < 4; i++) {
 		mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + i * 4, gpc_saved_imrs[i]);
@@ -437,11 +443,14 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 	uint32_t val;
 	uintptr_t reg;
 
+	imx_gpc_set_m_core_pgc(gpc_pu_m_core_offset[domain_id], true);
+
 	reg = IMX_GPC_BASE + (on ? 0xf8 : 0x104);
 	val = 1 << domain_id;
 	mmio_write_32(reg, val);
 	while(mmio_read_32(reg) & val)
 		;
+	imx_gpc_set_m_core_pgc(gpc_pu_m_core_offset[domain_id], false);
 }
 
 void imx_gpc_init(void)
