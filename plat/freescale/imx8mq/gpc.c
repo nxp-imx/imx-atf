@@ -445,7 +445,7 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 	imx_gpc_set_m_core_pgc(gpc_pu_m_core_offset[domain_id], true);
 
 	reg = IMX_GPC_BASE + (on ? 0xf8 : 0x104);
-	val = 1 << domain_id;
+	val = 1 << (domain_id > 3 ? (domain_id + 3) : domain_id);
 	mmio_write_32(reg, val);
 	while(mmio_read_32(reg) & val)
 		;
