@@ -141,10 +141,6 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 		mmio_write_32(0x303e0000 + i * 4, 0xffffffff);
 	}
 
-	mmio_write_32(0x303a00ec, 0x0000ffff);
-	/* Power up VPU, DISP, GPU etc */
-	mmio_write_32(0x303a00f8, 0x3fef);
-
 	/* config the AIPSTZ1 */
 	mmio_write_32(0x301f0000, 0x77777777);
 	mmio_write_32(0x301f0004, 0x77777777);
