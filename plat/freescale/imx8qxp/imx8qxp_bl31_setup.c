@@ -189,7 +189,7 @@ void imx8_partition_resources(void)
 {
 	sc_err_t err;
 	sc_rm_pt_t secure_part, os_part;
-	sc_rm_mr_t mr;
+	sc_rm_mr_t mr, mr_record = 64;
 	bool owned;
 	sc_faddr_t start, end;
 	int i;
@@ -234,9 +234,42 @@ void imx8_partition_resources(void)
 			} else {
 				NOTICE("Memreg %u 0x%lx -- 0x%lx\n", mr, start, end);
 
-				err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
-				if (err)
-					ERROR("Memreg assign failed, 0x%lx -- 0x%lx\n", start, end);
+				if (BL31_BASE >= start && (BL31_LIMIT - 1) <= end) {
+					mr_record = mr; /* Record the mr for ATF running */
+				} else {
+					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+					if (err)
+						ERROR("Memreg assign failed, 0x%lx -- 0x%lx, err %d\n", start, end, err);
+				}
+			}
+		}
+	}
+
+	if (mr_record != 64) {
+		err = sc_rm_get_memreg_info(ipc_handle, mr_record, &start, &end);
+		if (err) {
+			ERROR("Memreg get info failed, %u\n", mr_record);
+		} else {
+			if ((BL31_LIMIT - 1) < end) {
+				err = sc_rm_memreg_alloc(ipc_handle, &mr, BL31_LIMIT, end);
+				if (err) {
+					ERROR("sc_rm_memreg_alloc failed, 0x%lx -- 0x%lx\n", (sc_faddr_t)BL31_LIMIT, end);
+				} else {
+					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+					if (err)
+						ERROR("Memreg assign failed, 0x%lx -- 0x%lx\n", (sc_faddr_t)BL31_LIMIT, end);
+				}
+			}
+
+			if (start < (BL31_BASE - 1)) {
+				err = sc_rm_memreg_alloc(ipc_handle, &mr, start, BL31_BASE - 1);
+				if (err) {
+					ERROR("sc_rm_memreg_alloc failed, 0x%lx -- 0x%lx\n", start, (sc_faddr_t)BL31_BASE - 1);
+				} else {
+					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+					if (err)
+						ERROR("Memreg assign failed, 0x%lx -- 0x%lx\n", start, (sc_faddr_t)BL31_BASE - 1);
+				}
 			}
 		}
 	}
