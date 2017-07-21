@@ -484,8 +484,8 @@ void imx_gpc_init(void)
 	val |= 1 << 31;
 	mmio_write_32(IMX_GPC_BASE + GPC_LPCR_M4, val);
 
-	/* set mega/fast mix in A53 domain */
-	mmio_write_32(IMX_GPC_BASE + GPC_PGC_CPU_0_1_MAPPING, 0x1);
+	/* set all mix/PU in A53 domain */
+	mmio_write_32(IMX_GPC_BASE + GPC_PGC_CPU_0_1_MAPPING, 0xfffd);
 
 	/* set SCU timming */
 	mmio_write_32(IMX_GPC_BASE + GPC_PGC_SCU_TIMMING,
