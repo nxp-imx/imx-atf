@@ -21,6 +21,7 @@ by ARM:
 
 -  `Cortex-A53 MPCore Software Developers Errata Notice`_
 -  `Cortex-A57 MPCore Software Developers Errata Notice`_
+-  `Cortex-A72 MPCore Software Developers Errata Notice`_
 
 The errata workarounds are implemented for a particular revision or a set of
 processor revisions. This is checked by the reset handler at runtime. Each
@@ -88,6 +89,12 @@ For Cortex-A57, following errata build flags are defined :
 -  ``ERRATA_A57_833471``: This applies errata 833471 workaround to Cortex-A57
    CPU. This needs to be enabled only for revision <= r1p2 of the CPU.
 
+
+For Cortex-A72, following errata build flags are defined :
+
+-  ``ERRATA_A72_859971``: This applies errata 859971 workaround to Cortex-A72
+   CPU. This needs to be enabled only for revision <= r0p3 of the CPU.
+
 CPU Specific optimizations
 --------------------------
 
@@ -123,5 +130,6 @@ architecture that can be enabled by the platform as desired.
 
 .. _Cortex-A53 MPCore Software Developers Errata Notice: http://infocenter.arm.com/help/topic/com.arm.doc.epm048406/index.html
 .. _Cortex-A57 MPCore Software Developers Errata Notice: http://infocenter.arm.com/help/topic/com.arm.doc.epm049219/cortex_a57_mpcore_software_developers_errata_notice.pdf
+.. _Cortex-A72 MPCore Software Developers Errata Notice: http://infocenter.arm.com/help/topic/com.arm.doc.epm012079/index.html
 .. _Firmware Design guide: firmware-design.rst
 .. _Cortex-A57 Software Optimization Guide: http://infocenter.arm.com/help/topic/com.arm.doc.uan0015b/Cortex_A57_Software_Optimization_Guide_external.pdf
