@@ -14,6 +14,9 @@ ENTRY(bl31_entrypoint)
 
 MEMORY {
     RAM (rwx): ORIGIN = BL31_BASE, LENGTH = BL31_LIMIT - BL31_BASE
+#if XLAT_TABLE_IN_OCRAM_S
+    RAM_S (rwx): ORIGIN = 0x180000, LENGTH = 0x8000
+#endif
 }
 
 #ifdef PLAT_EXTRA_LD_SCRIPT
@@ -214,6 +217,7 @@ SECTIONS
         __BSS_END__ = .;
     } >RAM
 
+#if !XLAT_TABLE_IN_OCRAM_S
     /*
      * The xlat_table section is for full, aligned page tables (4K).
      * Removing them from .bss avoids forcing 4K alignment on
@@ -230,6 +234,7 @@ SECTIONS
 #endif
         *(xlat_table)
     } >RAM
+#endif
 
 #if USE_COHERENT_MEM
     /*
@@ -272,4 +277,16 @@ SECTIONS
 #endif
 
     ASSERT(. <= BL31_LIMIT, "BL31 image has exceeded its limit.")
+
+#if XLAT_TABLE_IN_OCRAM_S
+    /*
+     * The xlat_table section is for full, aligned page tables (4K).
+     * Removing them from .bss avoids forcing 4K alignment on
+     * the .bss section and eliminates the unecessary zero init
+     */
+    . = 0x180000;
+    xlat_table (NOLOAD) : {
+        *(xlat_table)
+    } >RAM_S
+#endif
 }
