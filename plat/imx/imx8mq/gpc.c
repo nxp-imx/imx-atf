@@ -116,6 +116,7 @@
 
 static uint32_t gpc_saved_imrs[128];
 static uint32_t gpc_wake_irqs[128];
+static bool is_pcie1_power_down = true;
 
 static uint32_t gpc_pu_m_core_offset[11] = {
 	0xc00, 0xc40, 0xc80, 0xcc0,
@@ -442,6 +443,24 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 {
 	uint32_t val;
 	uintptr_t reg;
+
+	/*
+	 * PCIE1 and PCIE2 share the same reset signal, if we power down
+	 * PCIE2, PCIE1 will be hold in reset too.
+	 * 1. when we want to power up PCIE1, the PCIE2 power domain also
+	 *    need to be power on;
+	 * 2. when we want to power down PCIE2 power domain, we should make
+	 *    sure PCIE1 is already power down.
+	*/
+	if (domain_id == 1 && !on) {
+		is_pcie1_power_down = true;
+	} else if (domain_id == 1 && on) {
+		imx_gpc_pm_domain_enable(10, true);
+		is_pcie1_power_down = false;
+	}
+
+	if (domain_id == 10 && !on && !is_pcie1_power_down)
+		return;
 
 	imx_gpc_set_m_core_pgc(gpc_pu_m_core_offset[domain_id], true);
 
