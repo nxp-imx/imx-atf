@@ -443,6 +443,8 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 	uint32_t val;
 	uintptr_t reg;
 
+	return;
+
 	/*
 	 * PCIE1 and PCIE2 share the same reset signal, if we power down
 	 * PCIE2, PCIE1 will be hold in reset too.

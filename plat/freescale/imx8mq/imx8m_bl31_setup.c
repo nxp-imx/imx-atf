@@ -177,6 +177,10 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 	mmio_write_32(0x32df004c, 0x0);
 	mmio_write_32(0x32df0050, 0x0);
 
+	mmio_write_32(0x303a00ec, 0x0000ffff);
+	/* Power up VPU, DISP, GPU etc */
+	mmio_write_32(0x303a00f8, 0x3fef);
+
 #if DEBUG_CONSOLE
 	console_init(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
 		     IMX_CONSOLE_BAUDRATE);
