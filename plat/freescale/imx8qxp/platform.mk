@@ -40,6 +40,8 @@ PLAT_GIC_SOURCES	:=	drivers/arm/gic/v3/gicv3_helpers.c	\
 
 BL31_SOURCES		+=	plat/freescale/common/lpuart_console.S		\
 				plat/freescale/common/imx8_helpers.S		\
+				plat/freescale/common/sip_svc.c			\
+				plat/freescale/common/cpufreq.c			\
 				plat/freescale/imx8qxp/imx8qxp_bl31_setup.c	\
 				plat/freescale/imx8qxp/imx8qxp_psci.c		\
 				plat/freescale/common/imx8_topology.c		\
