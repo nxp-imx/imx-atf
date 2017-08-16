@@ -443,8 +443,6 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 	uint32_t val;
 	uintptr_t reg;
 
-	return;
-
 	/*
 	 * PCIE1 and PCIE2 share the same reset signal, if we power down
 	 * PCIE2, PCIE1 will be hold in reset too.
@@ -462,6 +460,23 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 
 	if (domain_id == 10 && !on && !is_pcie1_power_down)
 		return;
+
+	/* need to handle GPC_PU_PWRHSK */
+	/* GPU */
+	if (domain_id == 4 && !on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) & ~0x40);
+	if (domain_id == 4 && on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) | 0x40);
+	/* VPU */
+	if (domain_id == 5 && !on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) & ~0x20);
+	if (domain_id == 5 && on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) | 0x20);
+	/* DISPLAY */
+	if (domain_id == 7 && !on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) & ~0x10);
+	if (domain_id == 7 && on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) | 0x10);
 
 	imx_gpc_set_m_core_pgc(gpc_pu_m_core_offset[domain_id], true);
 
@@ -524,6 +539,18 @@ void imx_gpc_init(void)
 	val &= ~(1 << 31);
 	/* TODO if M4 is not enabled, clear more SLPCR bits */
 	mmio_write_32(IMX_GPC_BASE + GPC_SLPCR, val);
+
+	/*
+	 * USB PHY power up needs to make sure RESET bit in SRC is clear,
+	 * otherwise, the PU power up bit in GPC will NOT self-cleared.
+	 * only need to do it once.
+	 */
+	val = mmio_read_32(0x30390020);
+	val &= ~0x1;
+	mmio_write_32(0x30390020, val);
+	val = mmio_read_32(0x30390024);
+	val &= ~0x1;
+	mmio_write_32(0x30390024, val);
 }
 
 int imx_gpc_handler(uint32_t smc_fid,
