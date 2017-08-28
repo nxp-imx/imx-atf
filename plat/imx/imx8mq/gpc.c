@@ -271,7 +271,7 @@ void imx_gpc_set_core_pdn_pup_by_software(unsigned int cpu, bool pdn)
 	/*Set the core PCR bit before sw PUP/PDN trigger */
 	imx_gpc_set_m_core_pgc(GPC_ARM_PGC + cpu * 0x40, true);
 
-	index = cpu < 2 ? cpu : cpu + 1;
+	index = cpu;
 	val |= (BM_CPU_PGC_SW_PDN_PUP_REQ << index);
 	mmio_write_32(IMX_GPC_BASE + (pdn ?
 		GPC_CPU_PGC_SW_PDN_REQ : GPC_CPU_PGC_SW_PUP_REQ), val);
