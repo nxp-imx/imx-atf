@@ -30,20 +30,44 @@
  * @name Defines for type widths
  */
 /*@{*/
-#define SC_RM_PARTITION_W   5       /*!< Width of sc_rm_pt_t */
-#define SC_RM_MEMREG_W      6       /*!< Width of sc_rm_mr_t */
-#define SC_RM_DID_W         4       /*!< Width of sc_rm_did_t */
-#define SC_RM_SID_W         6       /*!< Width of sc_rm_sid_t */
-#define SC_RM_SPA_W         2       /*!< Width of sc_rm_spa_t */
-#define SC_RM_PERM_W        3       /*!< Width of sc_rm_perm_t */
+#define SC_RM_PARTITION_W   5	/* Width of sc_rm_pt_t */
+#define SC_RM_MEMREG_W      6	/* Width of sc_rm_mr_t */
+#define SC_RM_DID_W         4	/* Width of sc_rm_did_t */
+#define SC_RM_SID_W         6	/* Width of sc_rm_sid_t */
+#define SC_RM_SPA_W         2	/* Width of sc_rm_spa_t */
+#define SC_RM_PERM_W        3	/* Width of sc_rm_perm_t */
 /*@}*/
 
 /*!
  * @name Defines for ALL parameters
  */
 /*@{*/
-#define SC_RM_PT_ALL        UINT8_MAX   /*!< All partitions */
-#define SC_RM_MR_ALL        UINT8_MAX   /*!< All memory regions */
+#define SC_RM_PT_ALL        UINT8_MAX	/* All partitions */
+#define SC_RM_MR_ALL        UINT8_MAX	/* All memory regions */
+/*@}*/
+
+/*!
+ * @name Defines for sc_rm_spa_t
+ */
+/*@{*/
+#define SC_RM_SPA_PASSTHRU  0	/* Pass through (attribute driven by master) */
+#define SC_RM_SPA_PASSSID   1	/* Pass through and output on SID */
+#define SC_RM_SPA_ASSERT    2	/* Assert (force to be secure/privileged) */
+#define SC_RM_SPA_NEGATE    3	/* Negate (force to be non-secure/user) */
+/*@}*/
+
+/*!
+ * @name Defines for sc_rm_perm_t
+ */
+/*@{*/
+#define SC_RM_PERM_NONE         0	/* No access */
+#define SC_RM_PERM_SEC_R        1	/* Secure RO */
+#define SC_RM_PERM_SECPRIV_RW   2	/* Secure privilege R/W */
+#define SC_RM_PERM_SEC_RW       3	/* Secure R/W */
+#define SC_RM_PERM_NSPRIV_R     4	/* Secure R/W, non-secure privilege RO */
+#define SC_RM_PERM_NS_R         5	/* Secure R/W, non-secure RO */
+#define SC_RM_PERM_NSPRIV_RW    6	/* Secure R/W, non-secure privilege R/W */
+#define SC_RM_PERM_FULL         7	/* Full access */
 /*@}*/
 
 /* Types */
@@ -72,29 +96,13 @@ typedef uint16_t sc_rm_sid_t;
 /*!
  * This type is a used to declare master transaction attributes.
  */
-typedef enum sc_rm_spa_e
-{
-    SC_RM_SPA_PASSTHRU = 0,        /*!< Pass through (attribute driven by master) */
-    SC_RM_SPA_PASSSID  = 1,        /*!< Pass through and output on SID */
-    SC_RM_SPA_ASSERT   = 2,        /*!< Assert (force to be secure/privileged) */
-    SC_RM_SPA_NEGATE   = 3         /*!< Negate (force to be non-secure/user) */
-} sc_rm_spa_t;
+typedef uint8_t sc_rm_spa_t;
 
 /*!
  * This type is used to declare a resource/memory region access permission.
  * Refer to the XRDC2 Block Guide for more information.
  */
-typedef enum sc_rm_perm_e
-{
-    SC_RM_PERM_NONE       = 0,    /*!< No access */
-    SC_RM_PERM_SEC_R      = 1,    /*!< Secure RO */
-    SC_RM_PERM_SECPRIV_RW = 2,    /*!< Secure privilege R/W */
-    SC_RM_PERM_SEC_RW     = 3,    /*!< Secure R/W */
-    SC_RM_PERM_NSPRIV_R   = 4,    /*!< Secure R/W, non-secure privilege RO */
-    SC_RM_PERM_NS_R       = 5,    /*!< Secure R/W, non-secure RO */
-    SC_RM_PERM_NSPRIV_RW  = 6,    /*!< Secure R/W, non-secure privilege R/W */
-    SC_RM_PERM_FULL       = 7     /*!< Full access */
-} sc_rm_perm_t;
+typedef uint8_t sc_rm_perm_t;
 
 /* Functions */
 
@@ -135,7 +143,8 @@ typedef enum sc_rm_perm_e
  * in what functions it can call, especially those associated with managing partitions.
  */
 sc_err_t sc_rm_partition_alloc(sc_ipc_t ipc, sc_rm_pt_t *pt, bool secure,
-    bool isolated, bool restricted, bool confidential, bool coherent);
+			       bool isolated, bool restricted,
+			       bool confidential, bool coherent);
 
 /*!
  * This function frees a partition and assigns all resources to the caller.
@@ -188,8 +197,7 @@ sc_rm_did_t sc_rm_get_did(sc_ipc_t ipc);
  * Assumes no assigned resources or memory regions yet! The number of static
  * DID is fixed by the SC at boot.
  */
-sc_err_t sc_rm_partition_static(sc_ipc_t ipc, sc_rm_pt_t pt,
-    sc_rm_did_t did);
+sc_err_t sc_rm_partition_static(sc_ipc_t ipc, sc_rm_pt_t pt, sc_rm_did_t did);
 
 /*!
  * This function locks a partition.
@@ -234,8 +242,7 @@ sc_err_t sc_rm_get_partition(sc_ipc_t ipc, sc_rm_pt_t *pt);
  * - SC_ERR_NOACCESS if caller's partition is not the parent of \a pt,
  * - SC_ERR_LOCKED if either partition is locked
  */
-sc_err_t sc_rm_set_parent(sc_ipc_t ipc, sc_rm_pt_t pt,
-    sc_rm_pt_t pt_parent);
+sc_err_t sc_rm_set_parent(sc_ipc_t ipc, sc_rm_pt_t pt, sc_rm_pt_t pt_parent);
 
 /*!
  * This function moves all movable resources/pads owned by a source partition
@@ -284,7 +291,12 @@ sc_err_t sc_rm_move_all(sc_ipc_t ipc, sc_rm_pt_t pt_src, sc_rm_pt_t pt_dst,
  *
  * @return Returns an error code (SC_ERR_NONE = success).
  *
- * Note a master will defaulted to SMMU bypass.
+ * This action resets the resource's master and peripheral attributes.
+ * Privilege attribute will be PASSTHRU, security attribute will be
+ * ASSERT if the partition si secure and NEGATE if it is not, and
+ * masters will defaulted to SMMU bypass. Access permissions will reset
+ * to SEC_RW for the owning partition only for secure partitions, FULL for
+ * non-secure. DEfault is no access by other partitions.
  *
  * Return errors:
  * - SC_ERR_NOACCESS if caller's partition is restricted,
@@ -293,8 +305,7 @@ sc_err_t sc_rm_move_all(sc_ipc_t ipc, sc_rm_pt_t pt_src, sc_rm_pt_t pt_dst,
  *   of the owner,
  * - SC_ERR_LOCKED if the owning partition or \a pt is locked
  */
-sc_err_t sc_rm_assign_resource(sc_ipc_t ipc, sc_rm_pt_t pt,
-    sc_rsrc_t resource);
+sc_err_t sc_rm_assign_resource(sc_ipc_t ipc, sc_rm_pt_t pt, sc_rsrc_t resource);
 
 /*!
  * This function flags resources as movable or not.
@@ -320,6 +331,25 @@ sc_err_t sc_rm_set_resource_movable(sc_ipc_t ipc, sc_rsrc_t resource_fst,
     sc_rsrc_t resource_lst, bool movable);
 
 /*!
+ * This function flags all of a subsystem's resources as movable
+ * or not.
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[in]     resource    resource to use to identify subsystem
+ * @param[in]     movable     movable flag (true) is movable
+ *
+ * @return Returns an error code (SC_ERR_NONE = success).
+ *
+ * Return errors:
+ * - SC_ERR_PARM if a function argument is out of range
+ *
+ * Note \a resource is used to find the associated subsystem. Only
+ * resources owned by the caller are set.
+ */
+sc_err_t sc_rm_set_subsys_rsrc_movable(sc_ipc_t ipc, sc_rsrc_t resource,
+				       bool movable);
+
+/*!
  * This function sets attributes for a resource which is a bus master (i.e.
  * capable of DMA).
  *
@@ -342,7 +372,8 @@ sc_err_t sc_rm_set_resource_movable(sc_ipc_t ipc, sc_rsrc_t resource_fst,
  * changed if the caller's partition is secure.
  */
 sc_err_t sc_rm_set_master_attributes(sc_ipc_t ipc, sc_rsrc_t resource,
-    sc_rm_spa_t sa, sc_rm_spa_t pa, bool smmu_bypass);
+				     sc_rm_spa_t sa, sc_rm_spa_t pa,
+				     bool smmu_bypass);
 
 /*!
  * This function sets the StreamID for a resource which is a bus master (i.e.
@@ -478,6 +509,34 @@ sc_err_t sc_rm_memreg_alloc(sc_ipc_t ipc, sc_rm_mr_t *mr,
     sc_faddr_t addr_start, sc_faddr_t addr_end);
 
 /*!
+ * This function requests that the SC split a memory region.
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[in]     mr          handle of memory region to split
+ * @param[out]    mr_ret      return handle for new region; used for
+ *                            subsequent function calls
+ *                            associated with this region
+ * @param[in]     addr_start  start address of region (physical)
+ * @param[in]     addr_end    end address of region (physical)
+ *
+ * @return Returns an error code (SC_ERR_NONE = success).
+ *
+ * Return errors:
+ * - SC_ERR_PARM if the new memory region is not start/end part of mr,
+ * - SC_ERR_LOCKED if caller's partition is locked,
+ * - SC_ERR_PARM if the new memory region spans multiple existing regions,
+ * - SC_ERR_NOACCESS if caller's partition does not own the memory containing
+ *   the new region,
+ * - SC_ERR_UNAVAILABLE if memory region table is full (no more allocation
+ *   space)
+ *
+ * Note the new region must start or end on the split region.
+ */
+sc_err_t sc_rm_memreg_split(sc_ipc_t ipc, sc_rm_mr_t mr,
+			    sc_rm_mr_t *mr_ret, sc_faddr_t addr_start,
+			    sc_faddr_t addr_end);
+
+/*!
  * This function frees a memory region.
  *
  * @param[in]     ipc         IPC handle
@@ -491,6 +550,32 @@ sc_err_t sc_rm_memreg_alloc(sc_ipc_t ipc, sc_rm_mr_t *mr,
  * - SC_ERR_LOCKED if the owning partition of \a mr is locked
  */
 sc_err_t sc_rm_memreg_free(sc_ipc_t ipc, sc_rm_mr_t mr);
+
+/*!
+ * Internal SC function to find a memory region.
+ *
+ * @see sc_rm_find_memreg().
+ */
+/*!
+ * This function finds a memory region.
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[out]    mr          return handle for region; used for
+ *                            subsequent function calls
+ *                            associated with this region
+ * @param[in]     addr_start  start address of region to search for
+ * @param[in]     addr_end    end address of region to search for
+ *
+ * @return Returns an error code (SC_ERR_NONE = success).
+ *
+ * Return errors:
+ * - SC_ERR_NOTFOUND if region not found,
+ *
+ * Searches only for regions owned by the caller. Finds first
+ * region containing the range specified.
+ */
+sc_err_t sc_rm_find_memreg(sc_ipc_t ipc, sc_rm_mr_t *mr,
+			   sc_faddr_t addr_start, sc_faddr_t addr_end);
 
 /*!
  * This function assigns ownership of a memory region.
@@ -626,7 +711,20 @@ bool sc_rm_is_pad_owned(sc_ipc_t ipc, sc_pad_t pad);
 
 /* @} */
 
+/*!
+ * @name Debug Functions
+ * @{
+ */
+
+/*!
+ * This function dumps the RM state for debug.
+ *
+ * @param[in]     ipc         IPC handle
+ */
+void sc_rm_dump(sc_ipc_t ipc);
+
+/* @} */
+
 #endif /* _SC_RM_API_H */
 
 /**@}*/
-
