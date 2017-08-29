@@ -7,7 +7,7 @@
 
 /*!
  * File containing client-side RPC functions for the RM service. These
- * function are ported to clients that communicate to the SC.
+ * functions are ported to clients that communicate to the SC.
  *
  * @addtogroup RM_SVC
  * @{
@@ -28,7 +28,8 @@
 /* Local Functions */
 
 sc_err_t sc_rm_partition_alloc(sc_ipc_t ipc, sc_rm_pt_t *pt, bool secure,
-    bool isolated, bool restricted, bool confidential, bool coherent)
+			       bool isolated, bool restricted,
+			       bool confidential, bool coherent)
 {
 	sc_rpc_msg_t msg;
 	uint8_t result;
@@ -84,8 +85,7 @@ sc_rm_did_t sc_rm_get_did(sc_ipc_t ipc)
 	return (sc_rm_did_t) result;
 }
 
-sc_err_t sc_rm_partition_static(sc_ipc_t ipc, sc_rm_pt_t pt,
-    sc_rm_did_t did)
+sc_err_t sc_rm_partition_static(sc_ipc_t ipc, sc_rm_pt_t pt, sc_rm_did_t did)
 {
 	sc_rpc_msg_t msg;
 	uint8_t result;
@@ -138,8 +138,7 @@ sc_err_t sc_rm_get_partition(sc_ipc_t ipc, sc_rm_pt_t *pt)
 	return (sc_err_t)result;
 }
 
-sc_err_t sc_rm_set_parent(sc_ipc_t ipc, sc_rm_pt_t pt,
-    sc_rm_pt_t pt_parent)
+sc_err_t sc_rm_set_parent(sc_ipc_t ipc, sc_rm_pt_t pt, sc_rm_pt_t pt_parent)
 {
 	sc_rpc_msg_t msg;
 	uint8_t result;
@@ -178,8 +177,7 @@ sc_err_t sc_rm_move_all(sc_ipc_t ipc, sc_rm_pt_t pt_src, sc_rm_pt_t pt_dst,
 	return (sc_err_t)result;
 }
 
-sc_err_t sc_rm_assign_resource(sc_ipc_t ipc, sc_rm_pt_t pt,
-    sc_rsrc_t resource)
+sc_err_t sc_rm_assign_resource(sc_ipc_t ipc, sc_rm_pt_t pt, sc_rsrc_t resource)
 {
 	sc_rpc_msg_t msg;
 	uint8_t result;
@@ -217,8 +215,28 @@ sc_err_t sc_rm_set_resource_movable(sc_ipc_t ipc, sc_rsrc_t resource_fst,
 	return (sc_err_t)result;
 }
 
+sc_err_t sc_rm_set_subsys_rsrc_movable(sc_ipc_t ipc, sc_rsrc_t resource,
+				       bool movable)
+{
+	sc_rpc_msg_t msg;
+	uint8_t result;
+
+	RPC_VER(&msg) = SC_RPC_VERSION;
+	RPC_SVC(&msg) = SC_RPC_SVC_RM;
+	RPC_FUNC(&msg) = RM_FUNC_SET_SUBSYS_RSRC_MOVABLE;
+	RPC_U16(&msg, 0) = resource;
+	RPC_U8(&msg, 2) = movable;
+	RPC_SIZE(&msg) = 2;
+
+	sc_call_rpc(ipc, &msg, false);
+
+	result = RPC_R8(&msg);
+	return (sc_err_t)result;
+}
+
 sc_err_t sc_rm_set_master_attributes(sc_ipc_t ipc, sc_rsrc_t resource,
-    sc_rm_spa_t sa, sc_rm_spa_t pa, bool smmu_bypass)
+				     sc_rm_spa_t sa, sc_rm_spa_t pa,
+				     bool smmu_bypass)
 {
 	sc_rpc_msg_t msg;
 	uint8_t result;
@@ -238,8 +256,7 @@ sc_err_t sc_rm_set_master_attributes(sc_ipc_t ipc, sc_rsrc_t resource,
 	return (sc_err_t)result;
 }
 
-sc_err_t sc_rm_set_master_sid(sc_ipc_t ipc, sc_rsrc_t resource,
-    sc_rm_sid_t sid)
+sc_err_t sc_rm_set_master_sid(sc_ipc_t ipc, sc_rsrc_t resource, sc_rm_sid_t sid)
 {
 	sc_rpc_msg_t msg;
 	uint8_t result;
@@ -371,6 +388,31 @@ sc_err_t sc_rm_memreg_alloc(sc_ipc_t ipc, sc_rm_mr_t *mr,
 	return (sc_err_t)result;
 }
 
+sc_err_t sc_rm_memreg_split(sc_ipc_t ipc, sc_rm_mr_t mr,
+			    sc_rm_mr_t *mr_ret, sc_faddr_t addr_start,
+			    sc_faddr_t addr_end)
+{
+	sc_rpc_msg_t msg;
+	uint8_t result;
+
+	RPC_VER(&msg) = SC_RPC_VERSION;
+	RPC_SVC(&msg) = SC_RPC_SVC_RM;
+	RPC_FUNC(&msg) = RM_FUNC_MEMREG_SPLIT;
+	RPC_U32(&msg, 0) = addr_start >> 32;
+	RPC_U32(&msg, 4) = addr_start;
+	RPC_U32(&msg, 8) = addr_end >> 32;
+	RPC_U32(&msg, 12) = addr_end;
+	RPC_U8(&msg, 16) = mr;
+	RPC_SIZE(&msg) = 6;
+
+	sc_call_rpc(ipc, &msg, false);
+
+	result = RPC_R8(&msg);
+	if (mr_ret != NULL)
+		*mr_ret = RPC_U8(&msg, 0);
+	return (sc_err_t)result;
+}
+
 sc_err_t sc_rm_memreg_free(sc_ipc_t ipc, sc_rm_mr_t mr)
 {
 	sc_rpc_msg_t msg;
@@ -385,6 +427,29 @@ sc_err_t sc_rm_memreg_free(sc_ipc_t ipc, sc_rm_mr_t mr)
 	sc_call_rpc(ipc, &msg, false);
 
 	result = RPC_R8(&msg);
+	return (sc_err_t)result;
+}
+
+sc_err_t sc_rm_find_memreg(sc_ipc_t ipc, sc_rm_mr_t *mr,
+			   sc_faddr_t addr_start, sc_faddr_t addr_end)
+{
+	sc_rpc_msg_t msg;
+	uint8_t result;
+
+	RPC_VER(&msg) = SC_RPC_VERSION;
+	RPC_SVC(&msg) = SC_RPC_SVC_RM;
+	RPC_FUNC(&msg) = RM_FUNC_FIND_MEMREG;
+	RPC_U32(&msg, 0) = addr_start >> 32;
+	RPC_U32(&msg, 4) = addr_start;
+	RPC_U32(&msg, 8) = addr_end >> 32;
+	RPC_U32(&msg, 12) = addr_end;
+	RPC_SIZE(&msg) = 5;
+
+	sc_call_rpc(ipc, &msg, false);
+
+	result = RPC_R8(&msg);
+	if (mr != NULL)
+		*mr = RPC_U8(&msg, 0);
 	return (sc_err_t)result;
 }
 
@@ -458,9 +523,11 @@ sc_err_t sc_rm_get_memreg_info(sc_ipc_t ipc, sc_rm_mr_t mr,
 	sc_call_rpc(ipc, &msg, false);
 
 	if (addr_start != NULL)
-        *addr_start = ((uint64_t) RPC_U32(&msg, 0) << 32) | RPC_U32(&msg, 4);
+		*addr_start =
+		    ((uint64_t) RPC_U32(&msg, 0) << 32) | RPC_U32(&msg, 4);
 	if (addr_end != NULL)
-        *addr_end = ((uint64_t) RPC_U32(&msg, 8) << 32) | RPC_U32(&msg, 12);
+		*addr_end =
+		    ((uint64_t) RPC_U32(&msg, 8) << 32) | RPC_U32(&msg, 12);
 	result = RPC_R8(&msg);
 	return (sc_err_t)result;
 }
@@ -520,5 +587,18 @@ bool sc_rm_is_pad_owned(sc_ipc_t ipc, sc_pad_t pad)
 	return (bool)result;
 }
 
-/**@}*/
+void sc_rm_dump(sc_ipc_t ipc)
+{
+	sc_rpc_msg_t msg;
 
+	RPC_VER(&msg) = SC_RPC_VERSION;
+	RPC_SVC(&msg) = SC_RPC_SVC_RM;
+	RPC_FUNC(&msg) = RM_FUNC_DUMP;
+	RPC_SIZE(&msg) = 1;
+
+	sc_call_rpc(ipc, &msg, false);
+
+	return;
+}
+
+/**@}*/
