@@ -14,7 +14,8 @@ sc_rsrc_t secure_rsrcs[] = {
   SC_R_A72_1,
   SC_R_GIC,
   SC_R_GIC_SMMU,
-  SC_R_CCI
+  SC_R_CCI,
+  SC_R_SYSTEM
 };
 
 /* resources that have register access for non-secure domain */
