@@ -172,6 +172,14 @@ void imx_get_sys_suspend_power_state(psci_power_state_t *req_state)
 		req_state->pwr_domain_state[i] = PLAT_MAX_RET_STATE;
 }
 
+void  __attribute__((noreturn)) imx_system_reset(void)
+{
+	sc_pm_reset(ipc_handle, SC_PM_RESET_TYPE_BOARD);
+
+	while (1)
+		;
+}
+
 static const plat_psci_ops_t imx_plat_psci_ops = {
 	.pwr_domain_on = imx_pwr_domain_on,
 	.pwr_domain_on_finish = imx_pwr_domain_on_finish,
@@ -182,6 +190,7 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 	.pwr_domain_suspend = imx_domain_suspend,
 	.pwr_domain_suspend_finish = imx_domain_suspend_finish,
 	.get_sys_suspend_power_state = imx_get_sys_suspend_power_state,
+	.system_reset = imx_system_reset,
 };
 
 /* export the platform specific psci ops */
