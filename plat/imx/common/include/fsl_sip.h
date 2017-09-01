@@ -24,5 +24,7 @@
 #define FSL_SIP_CPUFREQ			0xC2000001
 #define FSL_SIP_SET_CPUFREQ		0x00
 
+#define FSL_SIP_SRTC			0xC2000002
+#define FSL_SIP_SRTC_SET_TIME		0x00
 
 #endif
