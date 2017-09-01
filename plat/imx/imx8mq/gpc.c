@@ -93,7 +93,7 @@
 #define SLPCR_A53_FASTWUP_WAIT		(1 << 16)
 
 #define GPC_CPU_PGC_SW_PUP_REQ		0xf0
-#define GPC_CPU_PGC_SW_PDN_REQ		0xf4
+#define GPC_CPU_PGC_SW_PDN_REQ		0xfc
 #define BM_CPU_PGC_SW_PDN_PUP_REQ 	0x1
 
 #define GPC_ARM_PGC		0x800
