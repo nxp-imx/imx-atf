@@ -39,6 +39,8 @@
 
 extern int imx_gpc_handler(uint32_t  smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
 extern int imx_cpufreq_handler(uint32_t  smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
+extern int imx_srtc_handler(uint32_t smc_fid, u_register_t x1,
+	u_register_t x2, u_register_t x3, u_register_t x4);
 
 /* Setup i.MX platform specific services Services */
 static int32_t plat_svc_setup(void)
@@ -68,6 +70,9 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 #if (defined(PLAT_IMX8QM) || defined(PLAT_IMX8QXP))
 	case  FSL_SIP_CPUFREQ:
 		SMC_RET1(handle, imx_cpufreq_handler(smc_fid, x1, x2, x3));
+		break;
+	case  FSL_SIP_SRTC:
+		SMC_RET1(handle, imx_srtc_handler(smc_fid, x1, x2, x3, x4));
 		break;
 #endif
 	default:

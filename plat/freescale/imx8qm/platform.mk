@@ -42,6 +42,7 @@ BL31_SOURCES		+=	plat/freescale/common/lpuart_console.S		\
 				plat/freescale/common/imx8_helpers.S		\
 				plat/freescale/common/sip_svc.c			\
 				plat/freescale/common/cpufreq.c			\
+				plat/freescale/common/srtc.c			\
 				plat/freescale/imx8qm/imx8qm_bl31_setup.c	\
 				plat/freescale/imx8qm/imx8qm_psci.c		\
 				plat/freescale/common/imx8_topology.c		\
