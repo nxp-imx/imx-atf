@@ -224,6 +224,16 @@ void  __attribute__((noreturn)) imx_system_reset(void)
 		;
 }
 
+void __attribute__((noreturn)) imx_system_off(void)
+{
+	/*
+	 * Never return, no SCFW API is available for
+	 * system poweroff, here just do wfi for now
+	 */
+	while (1)
+		wfi();
+}
+
 static const plat_psci_ops_t imx_plat_psci_ops = {
 	.pwr_domain_on = imx_pwr_domain_on,
 	.pwr_domain_on_finish = imx_pwr_domain_on_finish,
@@ -235,6 +245,7 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 	.pwr_domain_suspend_finish = imx_domain_suspend_finish,
 	.get_sys_suspend_power_state = imx_get_sys_suspend_power_state,
 	.system_reset = imx_system_reset,
+	.system_off = imx_system_off,
 };
 
 /* export the platform specific psci ops */
