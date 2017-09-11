@@ -24,9 +24,11 @@
 
 extern sc_ipc_t ipc_handle;
 
+#ifdef PLAT_IMX8QM
 const static int ap_cluster_index[2] = {
 	SC_R_A53, SC_R_A72,
 };
+#endif
 
 static void imx_cpufreq_set_target(uint32_t cluster_id, unsigned long freq)
 {
