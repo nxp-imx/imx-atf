@@ -36,6 +36,8 @@
 #include <std_svc.h>
 #include <stdint.h>
 #include <uuid.h>
+#include <string.h>
+#include <bl_common.h>
 
 extern int imx_gpc_handler(uint32_t  smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
 extern int imx_cpufreq_handler(uint32_t  smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
@@ -49,6 +51,50 @@ static int32_t plat_svc_setup(void)
 	NOTICE("sip svc init\n");
 	return 0;
 }
+
+uint64_t imx_get_commit_hash(u_register_t x2,
+		    u_register_t x3,
+		    u_register_t x4)
+{
+	/* Parse the version_string */
+	char* parse = (char*)version_string;
+	uint64_t hash = 0;
+
+	do {
+		parse = strchr(parse, '-');
+		if (parse) {
+			parse += 1;
+			if (*(parse) == 'g') {
+				/* Default is 7 hexadecimal digits */
+				memcpy((void *)&hash, (void *)(parse + 1), 7);
+				break;
+			}
+		}
+
+	} while (parse != NULL);
+
+	return hash;
+}
+
+uint64_t imx_buildinfo_handler(uint32_t smc_fid,
+		    u_register_t x1,
+		    u_register_t x2,
+		    u_register_t x3,
+		    u_register_t x4)
+{
+	uint64_t ret;
+
+	switch(x1) {
+	case FSL_SIP_BUILDINFO_GET_COMMITHASH:
+		ret = imx_get_commit_hash(x2, x3, x4);
+		break;
+	default:
+		return SMC_UNK;
+	}
+
+	return ret;
+}
+
 
 /* i.MX platform specific service SMC handler */
 uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
@@ -73,6 +119,9 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 		break;
 	case  FSL_SIP_SRTC:
 		SMC_RET1(handle, imx_srtc_handler(smc_fid, x1, x2, x3, x4));
+		break;
+	case  FSL_SIP_BUILDINFO:
+		SMC_RET1(handle, imx_buildinfo_handler(smc_fid, x1, x2, x3, x4));
 		break;
 #endif
 	default:
