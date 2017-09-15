@@ -234,7 +234,20 @@ exit:
 	 * requested at multiple power levels. This means that the cpu
 	 * context will be preserved.
 	 */
+
+#ifdef SYSTEM_SUSPEND_USE_STANDBY
+	write_icc_igrpen1_el1(1);
+	write_scr_el3(read_scr_el3() | 0x4);
+	isb();
+#endif
+
 	wfi();
+
+#ifdef SYSTEM_SUSPEND_USE_STANDBY
+	write_icc_igrpen1_el1(0);
+	write_scr_el3(read_scr_el3() & (~0x4));
+	isb();
+#endif
 
 #if ENABLE_PSCI_STAT
 	plat_psci_stat_accounting_stop(state_info);

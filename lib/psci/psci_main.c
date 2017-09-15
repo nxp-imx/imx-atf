@@ -182,10 +182,18 @@ int psci_system_suspend(uintptr_t entrypoint, u_register_t context_id)
 	 * might return if the power down was abandoned for any reason, e.g.
 	 * arrival of an interrupt
 	 */
+
+#ifdef SYSTEM_SUSPEND_USE_STANDBY
+	psci_cpu_suspend_start(&ep,
+			    PLAT_MAX_PWR_LVL,
+			    &state_info,
+			    PSTATE_TYPE_STANDBY);
+#else
 	psci_cpu_suspend_start(&ep,
 			    PLAT_MAX_PWR_LVL,
 			    &state_info,
 			    PSTATE_TYPE_POWERDOWN);
+#endif
 
 	return PSCI_E_SUCCESS;
 }
