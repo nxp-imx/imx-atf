@@ -106,6 +106,45 @@ sc_err_t sc_pm_get_resource_power_mode(sc_ipc_t ipc, sc_rsrc_t resource,
     return (sc_err_t) result;
 }
 
+sc_err_t sc_pm_req_low_power_mode(sc_ipc_t ipc, sc_rsrc_t resource,
+				  sc_pm_power_mode_t mode)
+{
+	sc_rpc_msg_t msg;
+	uint8_t result;
+
+	RPC_VER(&msg) = SC_RPC_VERSION;
+	RPC_SVC(&msg) = SC_RPC_SVC_PM;
+	RPC_FUNC(&msg) = PM_FUNC_REQ_LOW_POWER_MODE;
+	RPC_U16(&msg, 0) = resource;
+	RPC_U8(&msg, 2) = mode;
+	RPC_SIZE(&msg) = 2;
+
+	sc_call_rpc(ipc, &msg, false);
+
+	result = RPC_R8(&msg);
+	return (sc_err_t)result;
+}
+
+sc_err_t sc_pm_set_cpu_resume_addr(sc_ipc_t ipc, sc_rsrc_t resource,
+				   sc_faddr_t address)
+{
+	sc_rpc_msg_t msg;
+	uint8_t result;
+
+	RPC_VER(&msg) = SC_RPC_VERSION;
+	RPC_SVC(&msg) = SC_RPC_SVC_PM;
+	RPC_FUNC(&msg) = PM_FUNC_SET_CPU_RESUME_ADDR;
+	RPC_U32(&msg, 0) = address >> 32;
+	RPC_U32(&msg, 4) = address;
+	RPC_U16(&msg, 8) = resource;
+	RPC_SIZE(&msg) = 4;
+
+	sc_call_rpc(ipc, &msg, false);
+
+	result = RPC_R8(&msg);
+	return (sc_err_t)result;
+}
+
 sc_err_t sc_pm_set_clock_rate(sc_ipc_t ipc, sc_rsrc_t resource,
     sc_pm_clk_t clk, sc_pm_clock_rate_t *rate)
 {
