@@ -222,8 +222,7 @@ sc_err_t sc_pm_get_sys_power_mode(sc_ipc_t ipc, sc_rm_pt_t pt,
  * - SC_ERR_NOACCESS if caller's partition is not the resource owner
  *   or parent of the owner
  *
- * Note only SC_PM_PW_MODE_OFF and SC_PM_PW_MODE_ON are valid. Other modes
- * will return an error. Resources set to SC_PM_PW_MODE_ON will reflect the
+ * Resources set to SC_PM_PW_MODE_ON will reflect the
  * power mode of the partition and will change as that changes.
  *
  * Note some resources are still not accessible even when powered up if bus
@@ -250,6 +249,44 @@ sc_err_t sc_pm_set_resource_power_mode(sc_ipc_t ipc, sc_rsrc_t resource,
  */
 sc_err_t sc_pm_get_resource_power_mode(sc_ipc_t ipc, sc_rsrc_t resource,
     sc_pm_power_mode_t *mode);
+
+/*!
+ * This function requests the low power mode some of the resources
+ * can enter based on their state. This API is only valid for the
+ * following resources : SC_R_A53, SC_R_A53_0, SC_R_A53_1, SC_A53_2,
+ * SC_A53_3, SC_R_A72, SC_R_A72_0, SC_R_A72_1, SC_R_CC1, SC_R_A35,
+ * SC_R_A35_0, SC_R_A35_1, SC_R_A35_2, SC_R_A35_3.
+ * For all other resources it will return SC_ERR_PARAM.
+ * This function will set the low power mode the cores, cluster
+ * and cluster associated resources will enter when all the cores
+ * in a given cluster execute WFI
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[in]     resource    ID of the resource
+ * @param[out]    mode        pointer to return power mode
+ *
+ * @return Returns an error code (SC_ERR_NONE = success).
+ *
+ */
+sc_err_t sc_pm_req_low_power_mode(sc_ipc_t ipc, sc_rsrc_t resource,
+				  sc_pm_power_mode_t mode);
+
+/*!
+ * This function is used to set the resume address of a CPU.
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[in]     resource    ID of the CPU resource
+ * @param[in]     address     64-bit resume address
+ *
+ * @return Returns an error code (SC_ERR_NONE = success).
+ *
+ * Return errors:
+ * - SC_ERR_PARM if invalid resource or address,
+ * - SC_ERR_NOACCESS if caller's partition is not the parent of the
+ *   resource (CPU) owner
+ */
+sc_err_t sc_pm_set_cpu_resume_addr(sc_ipc_t ipc, sc_rsrc_t resource,
+				   sc_faddr_t address);
 
 /* @} */
 
