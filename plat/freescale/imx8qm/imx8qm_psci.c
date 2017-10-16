@@ -200,12 +200,37 @@ void imx_cpu_standby(plat_local_state_t cpu_state)
 
 void imx_domain_suspend(const psci_power_state_t *target_state)
 {
-	/* TODO */
+	u_register_t mpidr = read_mpidr_el1();
+	unsigned int cluster_id = MPIDR_AFFLVL1_VAL(mpidr);
+	unsigned int cpu_id = MPIDR_AFFLVL0_VAL(mpidr);
+
+	plat_gic_cpuif_disable();
+
+	cci_disable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(mpidr));
+
+	if (cluster_id == 0) {
+		sc_pm_set_cpu_resume_addr(ipc_handle, ap_core_index[cpu_id], 0x080000000);
+		sc_pm_req_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_OFF);
+	} else {
+		sc_pm_set_cpu_resume_addr(ipc_handle, ap_core_index[cpu_id + 4], 0x080000000);
+		sc_pm_req_low_power_mode(ipc_handle, ap_core_index[cpu_id + 4], SC_PM_PW_MODE_OFF);
+	}
 }
 
 void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 {
-	/* TODO */
+	u_register_t mpidr = read_mpidr_el1();
+	unsigned int cluster_id = MPIDR_AFFLVL1_VAL(mpidr);
+	unsigned int cpu_id = MPIDR_AFFLVL0_VAL(mpidr);
+
+	if (cluster_id == 0)
+		sc_pm_req_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_ON);
+	else
+		sc_pm_req_low_power_mode(ipc_handle, ap_core_index[cpu_id + 4], SC_PM_PW_MODE_ON);
+
+	cci_enable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(mpidr));
+
+	plat_gic_cpuif_enable();
 }
 
 void imx_get_sys_suspend_power_state(psci_power_state_t *req_state)
