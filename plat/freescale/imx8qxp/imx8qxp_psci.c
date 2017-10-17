@@ -177,12 +177,23 @@ void imx_cpu_standby(plat_local_state_t cpu_state)
 
 void imx_domain_suspend(const psci_power_state_t *target_state)
 {
-	//psci_power_down_wfi();
+	u_register_t mpidr = read_mpidr_el1();
+	unsigned int cpu_id = MPIDR_AFFLVL0_VAL(mpidr);
+
+	plat_gic_cpuif_disable();
+
+	sc_pm_set_cpu_resume_addr(ipc_handle, ap_core_index[cpu_id], 0x080000000);
+	sc_pm_req_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_OFF);
 }
 
 void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 {
-	//psci_power_down_wfi();
+	u_register_t mpidr = read_mpidr_el1();
+	unsigned int cpu_id = MPIDR_AFFLVL0_VAL(mpidr);
+
+	sc_pm_req_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_ON);
+
+	plat_gic_cpuif_enable();
 }
 
 void imx_get_sys_suspend_power_state(psci_power_state_t *req_state)
