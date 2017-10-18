@@ -126,8 +126,6 @@ void bl31_tzc380_setup(void)
 
 	/* Enable 1G-5G S/NS RW */
 	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G) | TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
-	/* Enable 0x40000000 - 0x40020000 S RW */
-	tzc380_configure_region(1, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_128K) | TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_S_RW);
 
 	tzc380_dump_state();
 }
