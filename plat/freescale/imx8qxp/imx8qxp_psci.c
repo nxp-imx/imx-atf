@@ -244,5 +244,8 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	/* sec_entrypoint is used for warm reset */
 	*psci_ops = &imx_plat_psci_ops;
 
+	/* request low power mode for A35 cluster, only need to do once */
+	sc_pm_req_low_power_mode(ipc_handle, SC_R_A35, SC_PM_PW_MODE_OFF);
+
 	return 0;
 }
