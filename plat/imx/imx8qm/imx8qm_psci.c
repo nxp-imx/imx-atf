@@ -55,13 +55,8 @@ const static int ap_core_index[PLATFORM_CORE_COUNT] = {
 	SC_R_A53_3, SC_R_A72_0, SC_R_A72_1,
 };
 
-plat_local_state_t plat_get_target_pwr_state(unsigned int lvl,
-				const plat_local_state_t *target_state,
-				unsigned int ncpu)
-{
-	/* TODO */
-	return 0;
-}
+static unsigned int a53_cpu_on_number;
+static unsigned int a72_cpu_on_number;
 
 int imx_pwr_domain_on(u_register_t mpidr)
 {
@@ -74,6 +69,9 @@ int imx_pwr_domain_on(u_register_t mpidr)
 	tf_printf("imx_pwr_domain_on cluster_id %d, cpu_id %d\n", cluster_id, cpu_id);
 
 	if (cluster_id == 0) {
+		if (a53_cpu_on_number == 0)
+			sc_pm_set_resource_power_mode(ipc_handle, SC_R_A53, SC_PM_PW_MODE_ON);
+
 		if (sc_pm_set_resource_power_mode(ipc_handle, ap_core_index[cpu_id],
 			SC_PM_PW_MODE_ON) != SC_ERR_NONE) {
 			ERROR("cluster0 core %d power on failed!\n", cpu_id);
@@ -86,11 +84,8 @@ int imx_pwr_domain_on(u_register_t mpidr)
 			ret = PSCI_E_INTERN_FAIL;
 		}
 	} else {
-		if (sc_pm_set_resource_power_mode(ipc_handle, SC_R_A72,
-			SC_PM_PW_MODE_ON) != SC_ERR_NONE) {
-			ERROR(" cluster1 power on failed!\n");
-			ret = PSCI_E_INTERN_FAIL;
-		}
+		if (a72_cpu_on_number == 0)
+			sc_pm_set_resource_power_mode(ipc_handle, SC_R_A72, SC_PM_PW_MODE_ON);
 
 		if (sc_pm_set_resource_power_mode(ipc_handle, ap_core_index[cpu_id + 4],
 			SC_PM_PW_MODE_ON) != SC_ERR_NONE) {
@@ -114,8 +109,10 @@ void imx_pwr_domain_on_finish(const psci_power_state_t *target_state)
 	unsigned int cluster_id = MPIDR_AFFLVL1_VAL(mpidr);
 	unsigned int cpu_id = MPIDR_AFFLVL0_VAL(mpidr);
 
-	if (cluster_id == 1 && cpu_id == 0)
-		cci_enable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(mpidr));
+	if (cluster_id == 0 && a53_cpu_on_number++ == 0)
+		cci_enable_snoop_dvm_reqs(0);
+	if (cluster_id == 1 && a72_cpu_on_number++ == 0)
+		cci_enable_snoop_dvm_reqs(1);
 
 	/* program the GIC per cpu dist and rdist interface */
 	plat_gic_pcpu_init();
@@ -144,7 +141,6 @@ void imx_pwr_domain_off(const psci_power_state_t *target_state)
 		if (--a72_cpu_on_number == 0)
 			cci_disable_snoop_dvm_reqs(1);
 	}
-
 	tf_printf("turn off cluster:%d core:%d\n", cluster_id, cpu_id);
 }
 
@@ -267,9 +263,22 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			const plat_psci_ops_t **psci_ops)
 {
+	uint64_t mpidr = read_mpidr_el1();
+	unsigned int cluster_id = MPIDR_AFFLVL1_VAL(mpidr);
+
 	imx_mailbox_init(sec_entrypoint);
 	/* sec_entrypoint is used for warm reset */
 	*psci_ops = &imx_plat_psci_ops;
+
+	if (cluster_id == 0)
+		a53_cpu_on_number++;
+	else
+		a72_cpu_on_number++;
+
+	/* request low power mode for cluster/cci, only need to do once */
+	sc_pm_req_low_power_mode(ipc_handle, SC_R_A72, SC_PM_PW_MODE_OFF);
+	sc_pm_req_low_power_mode(ipc_handle, SC_R_A53, SC_PM_PW_MODE_OFF);
+	sc_pm_req_low_power_mode(ipc_handle, SC_R_CCI, SC_PM_PW_MODE_OFF);
 
 	return 0;
 }
