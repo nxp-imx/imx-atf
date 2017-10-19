@@ -36,6 +36,7 @@ PLAT_GIC_SOURCES	:=	drivers/arm/gic/v3/gicv3_helpers.c	\
 				drivers/arm/gic/v3/gicv3_main.c		\
 				drivers/arm/gic/common/gic_common.c	\
 				plat/common/plat_gicv3.c		\
+				plat/common/plat_psci_common.c		\
 				plat/freescale/common/plat_imx8_gic.c
 
 BL31_SOURCES		+=	plat/freescale/common/lpuart_console.S		\
