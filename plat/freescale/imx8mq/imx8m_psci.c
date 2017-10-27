@@ -166,6 +166,7 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 	uint64_t base_addr = BL31_BASE;
 	plat_gic_cpuif_disable();
 
+	ddrc_enter_retention();
 	/* imx gpc pre suspend */
 	imx_gpc_pre_suspend(true);
 
@@ -179,6 +180,7 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 
 void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 {
+	ddrc_exit_retention();
 	/* imx gpc post resume */
 	imx_gpc_post_resume();
 	/* enable the GICv3 cpu interface */

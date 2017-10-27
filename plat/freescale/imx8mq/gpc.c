@@ -164,7 +164,7 @@ void imx_gpc_set_lpm_mode(enum imx_cpu_pwr_mode mode)
 		val2 |= A53_LPM_STOP;
 		val1 &= ~LPCR_A53_BSC_CPU_CLK_ON_LPM;
 		val3 |= SLPCR_EN_DSM;
-		val3 |= SLPCR_A53_FASTWUP_STOP;
+		val3 &= ~SLPCR_A53_FASTWUP_STOP;
 		val3 |= SLPCR_RBC_EN;
 		val3 |= SLPCR_VSTBY;
 		val3 |= SLPCR_SBYOS;
