@@ -52,6 +52,8 @@ void imx_gpc_pre_suspend(bool arm_power_off);
 void imx_gpc_post_resume(void);
 void imx_gpc_init(void);
 
+void ddrc_enter_retention(void);
+void ddrc_exit_retention(void);
 
 void imx_enable_cpu(unsigned int cpu, bool enable);
 int imx_is_m4_enabled(void);
