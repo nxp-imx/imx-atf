@@ -43,6 +43,7 @@ extern int imx_gpc_handler(uint32_t  smc_fid, u_register_t x1, u_register_t x2, 
 extern int imx_cpufreq_handler(uint32_t  smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
 extern int imx_srtc_handler(uint32_t smc_fid, u_register_t x1,
 	u_register_t x2, u_register_t x3, u_register_t x4);
+extern int lpddr4_dvfs_handler(uint32_t  smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
 
 /* Setup i.MX platform specific services Services */
 static int32_t plat_svc_setup(void)
@@ -111,6 +112,9 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 #ifdef PLAT_IMX8M
 	case  FSL_SIP_GPC:
 		SMC_RET1(handle, imx_gpc_handler(smc_fid, x1, x2, x3));
+		break;
+	case FSL_SIP_DDR_DVFS:
+		SMC_RET1(handle, lpddr4_dvfs_handler(smc_fid, x1, x2, x3));
 		break;
 #endif
 #if (defined(PLAT_IMX8QM) || defined(PLAT_IMX8QXP))
