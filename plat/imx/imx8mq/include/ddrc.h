@@ -79,10 +79,72 @@
 #define DDRC_PCFGWQOS0_0 0x49c
 #define DDRC_PCFGWQOS1_0 0x4a0
 
-#define DDRC_FREQ1_DERATEEN	0x2020
-#define DDRC_FREQ1_DERATEINT	0x2024
-#define DDRC_FREQ1_RFSHCTL0	0x2050
-#define DDRC_FREQ1_RFSHTMG	0x2064
+/* shadow register */
+#define DDRC_FREQ1_DERATEEN         0x2020
+#define DDRC_FREQ1_DERATEINT        0x2024
+#define DDRC_FREQ1_RFSHCTL0         0x2050
+#define DDRC_FREQ1_RFSHTMG          0x2064
+#define DDRC_FREQ1_INIT3            0x20dc
+#define DDRC_FREQ1_INIT4            0x20e0
+#define DDRC_FREQ1_INIT6            0x20e8
+#define DDRC_FREQ1_INIT7            0x20ec
+#define DDRC_FREQ1_DRAMTMG0         0x2100
+#define DDRC_FREQ1_DRAMTMG1         0x2104
+#define DDRC_FREQ1_DRAMTMG2         0x2108
+#define DDRC_FREQ1_DRAMTMG3         0x210c
+#define DDRC_FREQ1_DRAMTMG4         0x2110
+#define DDRC_FREQ1_DRAMTMG5         0x2114
+#define DDRC_FREQ1_DRAMTMG6         0x2118
+#define DDRC_FREQ1_DRAMTMG7         0x211c
+#define DDRC_FREQ1_DRAMTMG8         0x2120
+#define DDRC_FREQ1_DRAMTMG9         0x2124
+#define DDRC_FREQ1_DRAMTMG10        0x2128
+#define DDRC_FREQ1_DRAMTMG11        0x212c
+#define DDRC_FREQ1_DRAMTMG12        0x2130
+#define DDRC_FREQ1_DRAMTMG13        0x2134
+#define DDRC_FREQ1_DRAMTMG14        0x2138
+#define DDRC_FREQ1_DRAMTMG15        0x213C
+#define DDRC_FREQ1_DRAMTMG16        0x2140
+#define DDRC_FREQ1_DRAMTMG17        0x2144
+#define DDRC_FREQ1_ZQCTL0           0x2180
+#define DDRC_FREQ1_DFITMG0          0x2190
+#define DDRC_FREQ1_DFITMG1          0x2194
+#define DDRC_FREQ1_DFITMG2          0x21b4
+#define DDRC_FREQ1_DFITMG3          0x21b8
+#define DDRC_FREQ1_ODTCFG           0x2240
+
+#define DDRC_FREQ2_DERATEEN         0x3020
+#define DDRC_FREQ2_DERATEINT        0x3024
+#define DDRC_FREQ2_RFSHCTL0         0x3050
+#define DDRC_FREQ2_RFSHTMG          0x3064
+#define DDRC_FREQ2_INIT3            0x30dc
+#define DDRC_FREQ2_INIT4            0x30e0
+#define DDRC_FREQ2_INIT6            0x30e8
+#define DDRC_FREQ2_INIT7            0x30ec
+#define DDRC_FREQ2_DRAMTMG0         0x3100
+#define DDRC_FREQ2_DRAMTMG1         0x3104
+#define DDRC_FREQ2_DRAMTMG2         0x3108
+#define DDRC_FREQ2_DRAMTMG3         0x310c
+#define DDRC_FREQ2_DRAMTMG4         0x3110
+#define DDRC_FREQ2_DRAMTMG5         0x3114
+#define DDRC_FREQ2_DRAMTMG6         0x3118
+#define DDRC_FREQ2_DRAMTMG7         0x311c
+#define DDRC_FREQ2_DRAMTMG8         0x3120
+#define DDRC_FREQ2_DRAMTMG9         0x3124
+#define DDRC_FREQ2_DRAMTMG10        0x3128
+#define DDRC_FREQ2_DRAMTMG11        0x312c
+#define DDRC_FREQ2_DRAMTMG12        0x3130
+#define DDRC_FREQ2_DRAMTMG13        0x3134
+#define DDRC_FREQ2_DRAMTMG14        0x3138
+#define DDRC_FREQ2_DRAMTMG15        0x313C
+#define DDRC_FREQ2_DRAMTMG16        0x3140
+#define DDRC_FREQ2_DRAMTMG17        0x3144
+#define DDRC_FREQ2_ZQCTL0           0x3180
+#define DDRC_FREQ2_DFITMG0          0x3190
+#define DDRC_FREQ2_DFITMG1          0x3194
+#define DDRC_FREQ2_DFITMG2          0x31b4
+#define DDRC_FREQ2_DFITMG3          0x31b8
+#define DDRC_FREQ2_ODTCFG           0x3240
 
 #define IP2APB_DDRPHY_IPS_BASE_ADDR(X) (0x3c000000 + (X * 0x2000000))
 #define dwc_ddrphy_apb_rd(addr) mmio_read_32(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * (addr))
