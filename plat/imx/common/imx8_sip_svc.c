@@ -38,6 +38,9 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 	case  FSL_SIP_GPC:
 		SMC_RET1(handle, imx_gpc_handler(smc_fid, x1, x2, x3));
 		break;
+	case FSL_SIP_DDR_DVFS:
+		SMC_RET1(handle, lpddr4_dvfs_handler(smc_fid, x1, x2, x3));
+		break;
 #endif
 #if defined(PLAT_IMX8QM) || defined(PLAT_IMX8QX)
 	case  IMX_SIP_CPUFREQ:

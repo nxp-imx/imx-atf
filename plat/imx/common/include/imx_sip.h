@@ -29,6 +29,8 @@
 #define IMX_SIP_BUILDINFO			0xC2000003
 #define IMX_SIP_BUILDINFO_GET_COMMITHASH	0x00
 
+#define FSL_SIP_DDR_DVFS		0xc2000004
+
 #define IMX_SIP_WAKEUP_SRC		0xc2000009
 #define IMX_SIP_WAKEUP_SRC_SCU		0x1
 #define IMX_SIP_WAKEUP_SRC_IRQSTEER	0x2
@@ -54,6 +56,8 @@ int imx_misc_set_temp_handler(uint32_t smc_fid, u_register_t x1,
 
 #if defined(PLAT_IMX8M)
 extern int imx_gpc_handler(uint32_t  smc_fid, u_register_t x1,
+		u_register_t x2, u_register_t x3);
+extern int lpddr4_dvfs_handler(uint32_t  smc_fid, u_register_t x1,
 		u_register_t x2, u_register_t x3);
 #endif
 uint64_t imx_buildinfo_handler(uint32_t smc_fid, u_register_t x1,
