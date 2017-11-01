@@ -11,6 +11,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S		\
 				plat/imx/common/mxcuart_console.S	\
 				plat/imx/common/sip_svc.c		\
 				plat/imx/imx8mq/imx8m_bl31_setup.c	\
+				plat/imx/imx8mq/src.c			\
 				plat/imx/imx8mq/gpc.c			\
 				plat/imx/imx8mq/ddrc.c			\
 				plat/imx/imx8mq/imx8m_psci.c		\
