@@ -21,6 +21,11 @@
 #define SRC_SCR_M4_ENABLE_MASK			(1 << 3)
 #define SRC_SCR_M4C_NON_SCLR_RST_OFFSET		0
 #define SRC_SCR_M4C_NON_SCLR_RST_MASK		(1 << 0)
+
+#define DIGPROG		0x6c
+#define SW_INFO_A0	0x800
+#define SW_INFO_B0	0x83C
+
 int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 		    u_register_t x3)
 {
@@ -42,4 +47,23 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 	};
 
 	return 0;
+}
+
+int imx_soc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
+		    u_register_t x3)
+{
+	uint32_t val;
+	uint32_t rom_version;
+
+	val = mmio_read_32(IMX_ANAMIX_BASE + DIGPROG);
+	rom_version = mmio_read_32(IMX_ROM_BASE + SW_INFO_A0);
+	if (rom_version != 0x10) {
+		rom_version = mmio_read_32(IMX_ROM_BASE + SW_INFO_B0);
+		if (rom_version >= 0x20) {
+			val &= ~0xff;
+			val |= rom_version;
+		}
+	}
+
+	return val;
 }
