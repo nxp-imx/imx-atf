@@ -35,6 +35,8 @@
 #define FSL_SIP_SRC_M4_START		0x00
 #define FSL_SIP_SRC_M4_STARTED		0x01
 
+#define FSL_SIP_GET_SOC_INFO            0xc2000006
+
 #define IMX_SIP_WAKEUP_SRC		0xc2000009
 #define IMX_SIP_WAKEUP_SRC_SCU		0x1
 #define IMX_SIP_WAKEUP_SRC_IRQSTEER	0x2
@@ -65,9 +67,11 @@ extern int lpddr4_dvfs_handler(uint32_t  smc_fid, u_register_t x1,
 		u_register_t x2, u_register_t x3);
 extern int imx_src_handler(uint32_t  smc_fid, u_register_t x1,
 		u_register_t x2, u_register_t x3);
+extern int imx_soc_handler(uint32_t smc_fid, u_register_t x1,
+		u_register_t x2, u_register_t x3);
 #endif
+
 uint64_t imx_buildinfo_handler(uint32_t smc_fid, u_register_t x1,
 				u_register_t x2, u_register_t x3,
 				u_register_t x4);
-
 #endif
