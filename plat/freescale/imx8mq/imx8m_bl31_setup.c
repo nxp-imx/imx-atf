@@ -44,6 +44,7 @@
 #include <soc.h>
 #include <tzc380.h>
 #include <imx_csu.h>
+#include <imx_rdc.h>
 
 /* linker defined symbols */
 extern unsigned long __RO_START__;
@@ -64,6 +65,15 @@ extern unsigned long __COHERENT_RAM_END__;
 
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
+
+/* set RDC settings */
+static void bl31_imx_rdc_setup(void)
+{
+	NOTICE("RDC imx_rdc_set_peripherals default \n");
+	imx_rdc_set_peripherals_default();
+	NOTICE("RDC imx_rdc_set_masters default \n");
+	imx_rdc_set_masters_default();
+}
 
 static void bl31_imx_csu_setup(void)
 {
@@ -205,6 +215,7 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 #endif
 	bl31_tzc380_setup();
 	bl31_imx_csu_setup();
+	bl31_imx_rdc_setup();
 }
 
 void bl31_plat_arch_setup(void)

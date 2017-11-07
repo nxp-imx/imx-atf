@@ -16,6 +16,7 @@ BL31_SOURCES		+=	plat/freescale/common/imx8_helpers.S		\
 				plat/freescale/imx8mq/ddrc.c			\
 				plat/freescale/imx8mq/imx8m_psci.c		\
 				plat/freescale/imx8mq/imx_csu.c			\
+				plat/freescale/imx8mq/imx_rdc.c			\
 				plat/freescale/common/imx8_topology.c		\
 				plat/common/plat_psci_common.c			\
 				lib/xlat_tables/aarch64/xlat_tables.c		\
