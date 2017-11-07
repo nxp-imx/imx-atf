@@ -44,6 +44,7 @@
 #include <xlat_tables.h>
 #include <soc.h>
 #include <tzc380.h>
+#include <imx_csu.h>
 
 /* linker defined symbols */
 #if USE_COHERENT_MEM
@@ -57,6 +58,14 @@
 
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
+
+static void bl31_imx_csu_setup(void)
+{
+	NOTICE("Configuring CSU slaves ... \n");
+	csu_set_default_slaves_modes();
+	NOTICE("Configuring CSU secure access ... \n");
+	csu_set_default_secure_configs();
+}
 
 /* get SPSR for BL33 entry */
 static uint32_t get_spsr_for_bl33_entry(void)
@@ -127,12 +136,6 @@ void bl31_tzc380_setup(void)
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 			u_register_t arg2, u_register_t arg3)
 {
-	int i;
-	/* enable CSU NS access permission */
-	for (i = 0; i < 64; i++) {
-		mmio_write_32(0x303e0000 + i * 4, 0xffffffff);
-	}
-
 	/* config the AIPSTZ1 */
 	mmio_write_32(0x301f0000, 0x77777777);
 	mmio_write_32(0x301f0004, 0x77777777);
@@ -195,6 +198,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.args.arg2 = 0x2000000;
 #endif
 	bl31_tzc380_setup();
+	bl31_imx_csu_setup();
 }
 
 void bl31_plat_arch_setup(void)
