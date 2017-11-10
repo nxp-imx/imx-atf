@@ -16,6 +16,7 @@ void imx_set_cpu_secure_entry(int cpu_id, uintptr_t sec_entrypoint);
 void imx_set_cpu_pwr_off(int cpu_id);
 void imx_set_cpu_pwr_on(int cpu_id);
 void imx_set_cpu_lpm(int cpu_id, bool pdn);
+void imx_set_lpm_wakeup(bool pdn);
 void imx_set_cluster_standby(bool pdn);
 void imx_set_cluster_powerdown(int last_core, bool pdn);
 void imx_set_sys_lpm(bool retention);

@@ -81,10 +81,9 @@
 #define GPC_SLOT0_CFG 		0xb0
 #define SRC_GPR1_OFFSET 	0x74
 
-static uint32_t gpc_saved_imrs[4];
-static uint32_t gpc_wake_irqs[4];
 static bool is_pcie1_power_down = true;
-
+static uint32_t gpc_saved_imrs[16];
+static uint32_t gpc_wake_irqs[4];
 static uint32_t gpc_pu_m_core_offset[11] = {
 	0xc00, 0xc40, 0xc80, 0xcc0,
 	0xdc0, 0xe00, 0xe40, 0xe80,
@@ -205,6 +204,40 @@ void imx_set_cpu_lpm(int core_id, bool pdn)
 	}
 }
 
+/*
+ * On i.MX8MQ, only in system suspend mode, the A53 cluster can
+ * enter LPM mode and shutdown the A53 PLAT power domain. So LPM
+ * wakeup only used for system suspend. when system enter suspend,
+ * any A53 CORE can be the last core to suspend the system, But
+ * the LPM wakeup can only use the C0's IMR to wakeup A53 cluster
+ * from LPM, so save C0's IMRs before suspend, restore back after
+ * resume.
+ */
+void inline imx_set_lpm_wakeup(bool pdn)
+{
+	unsigned int i;
+
+	if (pdn) {
+		for (i = 0; i < 4; i++) {
+			gpc_saved_imrs[i] = mmio_read_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + i * 4);
+			gpc_saved_imrs[i + 4] = mmio_read_32(IMX_GPC_BASE + GPC_IMR1_CORE1_A53 + i * 4);
+			gpc_saved_imrs[i + 8] = mmio_read_32(IMX_GPC_BASE + GPC_IMR1_CORE2_A53 + i * 4);
+			gpc_saved_imrs[i + 12] = mmio_read_32(IMX_GPC_BASE + GPC_IMR1_CORE3_A53 + i * 4);
+			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + i * 4, ~gpc_wake_irqs[i]);
+			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE1_A53 + i * 4, ~gpc_wake_irqs[i]);
+			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE2_A53 + i * 4, ~gpc_wake_irqs[i]);
+			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE3_A53 + i * 4, ~gpc_wake_irqs[i]);
+		}
+	} else {
+		for (i = 0; i < 4; i++) { 
+			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + i * 4, gpc_saved_imrs[i]);
+			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE1_A53 + i * 4, gpc_saved_imrs[i + 4]);
+			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE2_A53 + i * 4, gpc_saved_imrs[i + 8]);
+			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE3_A53 + i * 4, gpc_saved_imrs[i + 12]);
+		}
+	}
+}
+
 /* SLOT 0 is used for A53 PLAT poewr down */
 /* SLOT 1 is used for A53 PLAT power up */
 /* SLOT 2 is used for A53 last core power up */
@@ -304,6 +337,7 @@ void imx_set_cluster_powerdown(int last_core, bool pdn)
 		mmio_write_32(IMX_GPC_BASE + LPCR_A53_AD, val);
 
 		imx_pup_pdn_slot_config(last_core, true);
+		imx_set_lpm_wakeup(true);
 
 		/* enable PLAT PGC */
 		val = mmio_read_32(IMX_GPC_BASE + 0x900);
@@ -317,6 +351,7 @@ void imx_set_cluster_powerdown(int last_core, bool pdn)
 
 		/* clear the slot and ack for cluster power down */
 		imx_pup_pdn_slot_config(last_core, false);
+		imx_set_lpm_wakeup(false);
 
 		/* reverse the cluster level setting */
 		val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
@@ -437,30 +472,6 @@ void imx_anamix_post_resume(void)
 		mmio_read_32(IMX_ANAMIX_BASE + ANAMIX_HW_DRAM_PLL_CFG0) & ~0x140);
 	mmio_write_32(IMX_ANAMIX_BASE + ANAMIX_HW_ANAMIX_MISC_CFG,
 		mmio_read_32(IMX_ANAMIX_BASE + ANAMIX_HW_ANAMIX_MISC_CFG) & ~0xa);
-}
-
-/*
- * On i.MX8MQ, only in system suspend mode, the A53 cluster can
- * enter LPM mode and shutdown the A53 PLAT power domain. So LPM
- * wakeup only used for system suspend. when system enter suspend,
- * any A53 CORE can be the last core to suspend the system, But
- * the LPM wakeup can only use the C0's IMR to wakeup A53 cluster
- * from LPM, so save C0's IMRs before suspend, restore back after
- * resume.
- */
-void imx_set_lpm_wakeup(bool pdn)
-{
-	unsigned int i;
-
-	if (pdn) {
-		for (i = 0; i < 4; i++) {
-			gpc_saved_imrs[i] = mmio_read_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + i * 4);
-			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + i * 4, ~gpc_wake_irqs[i]);
-		}
-	} else {
-		for (i = 0; i < 4; i++) 
-			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + i * 4, gpc_saved_imrs[i]);
-	}
 }
 
 static void imx_gpc_hwirq_mask(unsigned int hwirq)
