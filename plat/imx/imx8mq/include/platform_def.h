@@ -16,8 +16,11 @@
 
 #define PWR_DOMAIN_AT_MAX_LVL		1
 #define PLAT_MAX_PWR_LVL		2
-#define PLAT_MAX_OFF_STATE		2
+#define PLAT_MAX_OFF_STATE		4
 #define PLAT_MAX_RET_STATE		1
+
+#define PLAT_WAIT_OFF_STATE		2
+#define PLAT_STOP_OFF_STATE		3
 
 #define BL31_BASE			0x910000
 #define BL31_LIMIT			0x920000
