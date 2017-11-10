@@ -2599,7 +2599,7 @@ void lpddr4_cfg_phy(void)
 
 void ddrc_enter_retention(void)
 {
-	NOTICE("enter LPDDR4 retention\n");
+	INFO("enter LPDDR4 retention\n");
 
 	/* save the ddr phy trained csr in ocram */
 	if (!trained_csr_saved) {
@@ -2784,7 +2784,7 @@ void lpddr4_dvfs_hwffc(int init_vrcg, int init_fsp, int target_freq,
 {
 	uint32_t tmp, tmp_t;
 
-	NOTICE("hwffc enter\n");
+	INFO("hwffc enter\n");
 
 	/* step 1: hwffc flow enter, set the HWFCCCTL */
 	tmp = ((init_fsp << 4) & 0x10) | ((init_vrcg << 5) & 0x20) | 0x40;
@@ -2914,7 +2914,7 @@ void lpddr4_dvfs_hwffc(int init_vrcg, int init_fsp, int target_freq,
 	while ((mmio_read_32(IMX_DDRC_BASE + DDRC_STAT) & 0x3) != 0x1)
 		;
 
-	NOTICE("hwffc exit\n");
+	INFO("hwffc exit\n");
 }
 
 spinlock_t dfs_lock;
@@ -2958,9 +2958,13 @@ int lpddr4_dvfs_handler(uint32_t smc_fid,
 		/* trigger the IRQ */
 		for (int i = 0; i < 4; i++) {
 			int irq = irqs_used[i] % 32;
-			if (cpu_id != i && (online_cores & (0x1 << (i * 8))))
+			if (cpu_id != i && (online_cores & (0x1 << (i * 8)))) {
 				mmio_write_32(0x38800204 + (irqs_used[i] / 32) * 4, (1 << irq));
+				mmio_write_32(0x303a0040, mmio_read_32(0x303a0040) & ~(0x1));
+			}
 		}
+
+		mmio_write_32(0x30340004, mmio_read_32(0x30340004) | (1 << 12));
 
 		/* make sure all the core in WFE */
 		online_cores &= ~(0x1 << (cpu_id * 8));
@@ -2968,6 +2972,8 @@ int lpddr4_dvfs_handler(uint32_t smc_fid,
 			if (online_cores == wfe_done)
 				break;
 		}
+
+		mmio_write_32(0x30340004, mmio_read_32(0x30340004) & ~(1 << 12));
 
 		lpddr4_dvfs_hwffc(init_vrcg, init_fsp, target_freq, discamdrain);
 		init_fsp = (~init_fsp) & 0x1;
