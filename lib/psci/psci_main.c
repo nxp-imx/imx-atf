@@ -18,7 +18,6 @@
 
 extern void imx8qm_kill_cpu(unsigned int target_idx);
 extern void imx8qxp_kill_cpu(unsigned int target_idx);
-extern void imx8m_kill_cpu(unsigned int target_idx);
 
 /*******************************************************************************
  * PSCI frontend api for servicing SMCs. Described in the PSCI spec.
@@ -234,6 +233,9 @@ int psci_affinity_info(u_register_t target_affinity,
 	if (target_idx == -1)
 		return PSCI_E_INVALID_PARAMS;
 
+#ifdef PLAT_IMX8M
+	return psci_get_aff_info_state_by_idx(target_idx);
+#endif
 	ret = psci_get_aff_info_state_by_idx(target_idx);
 
 	/*
@@ -248,9 +250,6 @@ int psci_affinity_info(u_register_t target_affinity,
 #endif
 #ifdef PLAT_IMX8QXP
 		imx8qxp_kill_cpu(target_idx);
-#endif
-#ifdef PLAT_IMX8M
-		imx8m_kill_cpu(target_idx);
 #endif
 
 	return ret;
