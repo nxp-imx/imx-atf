@@ -63,12 +63,14 @@ static int imx_srtc_set_wdog_action(uint32_t x2)
 }
 
 int imx_srtc_handler(uint32_t smc_fid,
+		    void *handle,
 		    u_register_t x1,
 		    u_register_t x2,
 		    u_register_t x3,
 		    u_register_t x4)
 {
 	int ret;
+	sc_timer_wdog_time_t timeout, max_timeout, remaining;
 
 	switch(x1) {
 	case FSL_SIP_SRTC_SET_TIME:
@@ -89,9 +91,16 @@ int imx_srtc_handler(uint32_t smc_fid,
 	case FSL_SIP_SRTC_SET_TIMEOUT_WDOG:
 		ret = sc_timer_set_wdog_timeout(ipc_handle, x2);
 		break;
+	case FSL_SIP_SRTC_SET_PRETIME_WDOG:
+		ret = sc_timer_set_wdog_pre_timeout(ipc_handle, x2);
+		break;
+	case FSL_SIP_SRTC_GET_WDOG_STAT:
+		ret = sc_timer_get_wdog_status(ipc_handle, &timeout,
+						&max_timeout, &remaining);
+		SMC_RET4(handle, ret, timeout, max_timeout, remaining);
 	default:
-		return SMC_UNK;
+		ret = SMC_UNK;
 	}
 
-	return ret;
+	SMC_RET1(handle, ret);
 }

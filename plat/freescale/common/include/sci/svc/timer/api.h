@@ -101,6 +101,22 @@ typedef uint32_t sc_timer_wdog_time_t;
 sc_err_t sc_timer_set_wdog_timeout(sc_ipc_t ipc, sc_timer_wdog_time_t timeout);
 
 /*!
+ * This function sets the watchdog pre-timeout in milliseconds. If not
+ * set then the pre-timeout defaults to the max. Once locked this value
+ * cannot be changed.
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[in]     pre_timeout pre-timeout period for the watchdog
+ *
+ * When the pre-timout expires an IRQ will be generated. Note this timeout
+ * clears when the IRQ is triggered.
+ *
+ * @return Returns an error code (SC_ERR_NONE = success).
+ */
+sc_err_t sc_timer_set_wdog_pre_timeout(sc_ipc_t ipc,
+				       sc_timer_wdog_time_t pre_timeout);
+
+/*!
  * This function starts the watchdog.
  *
  * @param[in]     ipc         IPC handle
@@ -245,6 +261,21 @@ sc_err_t sc_timer_get_rtc_sec1970(sc_ipc_t ipc, uint32_t *sec);
 sc_err_t sc_timer_set_rtc_alarm(sc_ipc_t ipc, uint16_t year, uint8_t mon,
 				uint8_t day, uint8_t hour, uint8_t min,
 				uint8_t sec);
+
+/*!
+ * This function sets the RTC calibration value. Only the owner of the SC_R_SYSTEM
+ * resource can set the calibration.
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[in]     count       calbration count (-16 to 15)
+ *
+ * The calibration value is a 5-bit value including the sign bit, which is
+ * implemented in 2's complement. It is added or subtracted from the RTC on
+ * a perdiodic basis, once per 32768 cycles of the RTC clock.
+ *
+ * @return Returns an error code (SC_ERR_NONE = success).
+ */
+sc_err_t sc_timer_set_rtc_calb(sc_ipc_t ipc, int8_t count);
 
 /* @} */
 
