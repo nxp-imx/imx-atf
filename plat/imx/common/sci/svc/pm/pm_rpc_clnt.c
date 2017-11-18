@@ -145,6 +145,27 @@ sc_err_t sc_pm_set_cpu_resume_addr(sc_ipc_t ipc, sc_rsrc_t resource,
 	return (sc_err_t)result;
 }
 
+sc_err_t sc_pm_req_sys_if_power_mode(sc_ipc_t ipc, sc_rsrc_t resource,
+    sc_pm_sys_if_t sys_if, sc_pm_power_mode_t hpm, sc_pm_power_mode_t lpm)
+{
+	sc_rpc_msg_t msg;
+	uint8_t result;
+
+	RPC_VER(&msg) = SC_RPC_VERSION;
+	RPC_SVC(&msg) = SC_RPC_SVC_PM;
+	RPC_FUNC(&msg) = PM_FUNC_REQ_SYS_IF_POWER_MODE;
+	RPC_U16(&msg, 0) = resource;
+	RPC_U8(&msg, 2) = sys_if;
+	RPC_U8(&msg, 3) = hpm;
+	RPC_U8(&msg, 4) = lpm;
+	RPC_SIZE(&msg) = 3;
+
+	sc_call_rpc(ipc, &msg, false);
+
+	result = RPC_R8(&msg);
+	return (sc_err_t)result;
+}
+
 sc_err_t sc_pm_set_clock_rate(sc_ipc_t ipc, sc_rsrc_t resource,
     sc_pm_clk_t clk, sc_pm_clock_rate_t *rate)
 {

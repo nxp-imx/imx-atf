@@ -30,44 +30,44 @@
  * @name Defines for type widths
  */
 /*@{*/
-#define SC_RM_PARTITION_W   5	/* Width of sc_rm_pt_t */
-#define SC_RM_MEMREG_W      6	/* Width of sc_rm_mr_t */
-#define SC_RM_DID_W         4	/* Width of sc_rm_did_t */
-#define SC_RM_SID_W         6	/* Width of sc_rm_sid_t */
-#define SC_RM_SPA_W         2	/* Width of sc_rm_spa_t */
-#define SC_RM_PERM_W        3	/* Width of sc_rm_perm_t */
+#define SC_RM_PARTITION_W   5       /*!< Width of sc_rm_pt_t */
+#define SC_RM_MEMREG_W      6       /*!< Width of sc_rm_mr_t */
+#define SC_RM_DID_W         4       /*!< Width of sc_rm_did_t */
+#define SC_RM_SID_W         6       /*!< Width of sc_rm_sid_t */
+#define SC_RM_SPA_W         2       /*!< Width of sc_rm_spa_t */
+#define SC_RM_PERM_W        3       /*!< Width of sc_rm_perm_t */
 /*@}*/
 
 /*!
  * @name Defines for ALL parameters
  */
 /*@{*/
-#define SC_RM_PT_ALL        UINT8_MAX	/* All partitions */
-#define SC_RM_MR_ALL        UINT8_MAX	/* All memory regions */
+#define SC_RM_PT_ALL        UINT8_MAX   /*!< All partitions */
+#define SC_RM_MR_ALL        UINT8_MAX   /*!< All memory regions */
 /*@}*/
 
 /*!
  * @name Defines for sc_rm_spa_t
  */
 /*@{*/
-#define SC_RM_SPA_PASSTHRU  0	/* Pass through (attribute driven by master) */
-#define SC_RM_SPA_PASSSID   1	/* Pass through and output on SID */
-#define SC_RM_SPA_ASSERT    2	/* Assert (force to be secure/privileged) */
-#define SC_RM_SPA_NEGATE    3	/* Negate (force to be non-secure/user) */
+#define SC_RM_SPA_PASSTHRU  0   /*!< Pass through (attribute driven by master) */
+#define SC_RM_SPA_PASSSID   1   /*!< Pass through and output on SID */
+#define SC_RM_SPA_ASSERT    2   /*!< Assert (force to be secure/privileged) */
+#define SC_RM_SPA_NEGATE    3   /*!< Negate (force to be non-secure/user) */
 /*@}*/
 
 /*!
  * @name Defines for sc_rm_perm_t
  */
 /*@{*/
-#define SC_RM_PERM_NONE         0	/* No access */
-#define SC_RM_PERM_SEC_R        1	/* Secure RO */
-#define SC_RM_PERM_SECPRIV_RW   2	/* Secure privilege R/W */
-#define SC_RM_PERM_SEC_RW       3	/* Secure R/W */
-#define SC_RM_PERM_NSPRIV_R     4	/* Secure R/W, non-secure privilege RO */
-#define SC_RM_PERM_NS_R         5	/* Secure R/W, non-secure RO */
-#define SC_RM_PERM_NSPRIV_RW    6	/* Secure R/W, non-secure privilege R/W */
-#define SC_RM_PERM_FULL         7	/* Full access */
+#define SC_RM_PERM_NONE         0   /*!< No access */
+#define SC_RM_PERM_SEC_R        1   /*!< Secure RO */
+#define SC_RM_PERM_SECPRIV_RW   2   /*!< Secure privilege R/W */
+#define SC_RM_PERM_SEC_RW       3   /*!< Secure R/W */
+#define SC_RM_PERM_NSPRIV_R     4   /*!< Secure R/W, non-secure privilege RO */
+#define SC_RM_PERM_NS_R         5   /*!< Secure R/W, non-secure RO */
+#define SC_RM_PERM_NSPRIV_RW    6   /*!< Secure R/W, non-secure privilege R/W */
+#define SC_RM_PERM_FULL         7   /*!< Full access */
 /*@}*/
 
 /* Types */
@@ -123,9 +123,8 @@ typedef uint8_t sc_rm_perm_t;
  *                             via XRDC; set true if new DID is desired
  * @param[in]     restricted   boolean indicating if this partition should be restricted; set
  *                             true if masters in this partition cannot create new partitions
- * @param[in]     confidential boolean indicating if this partition should be confidential;
- *                             set true if only this partition should be able to grant
- *                             resource access permissions to this partition
+ * @param[in]     grant        boolean indicating if this partition should always grant
+ *                             access and control to the parent
  * @param[in]     coherent     boolean indicating if this partition is coherent;
  *                             set true if only this partition will contain both AP clusters
  *                             and they will be coherent via the CCI
@@ -141,10 +140,35 @@ typedef uint8_t sc_rm_perm_t;
  * Marking as non-secure prevents subsequent functions from configuring masters in this
  * partition to assert the secure signal. If restricted then the new partition is limited
  * in what functions it can call, especially those associated with managing partitions.
+ *
+ * The grant option is usually used to isolate a bus master's traffic to specific
+ * memory without isolating the peripheral interface of the master or the API
+ * controls of that master.
  */
 sc_err_t sc_rm_partition_alloc(sc_ipc_t ipc, sc_rm_pt_t *pt, bool secure,
-			       bool isolated, bool restricted,
-			       bool confidential, bool coherent);
+    bool isolated, bool restricted, bool grant, bool coherent);
+
+/*!
+ * This function makes a partition confidential.
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[in]     pt          handle of partition that is granting
+ * @param[in]     retro       retroactive
+ *
+ * @return Returns an error code (SC_ERR_NONE = success).
+ *
+ * Return errors:
+ * - SC_PARM if \a pt out of range,
+ * - SC_ERR_NOACCESS if caller's not allowed to change \a pt
+ * - SC_ERR_LOCKED if partition \a pt is locked
+ *
+ * Call to make a partition confidential. Confidential means only this
+ * partition should be able to grant access permissions to this partition.
+ *
+ * If retroactive, then all resources owned by other partitions will have
+ * access rights for this partition removed, even if locked.
+ */
+sc_err_t sc_rm_set_confidential(sc_ipc_t ipc, sc_rm_pt_t pt, bool retro);
 
 /*!
  * This function frees a partition and assigns all resources to the caller.
@@ -197,7 +221,8 @@ sc_rm_did_t sc_rm_get_did(sc_ipc_t ipc);
  * Assumes no assigned resources or memory regions yet! The number of static
  * DID is fixed by the SC at boot.
  */
-sc_err_t sc_rm_partition_static(sc_ipc_t ipc, sc_rm_pt_t pt, sc_rm_did_t did);
+sc_err_t sc_rm_partition_static(sc_ipc_t ipc, sc_rm_pt_t pt,
+    sc_rm_did_t did);
 
 /*!
  * This function locks a partition.
@@ -242,7 +267,8 @@ sc_err_t sc_rm_get_partition(sc_ipc_t ipc, sc_rm_pt_t *pt);
  * - SC_ERR_NOACCESS if caller's partition is not the parent of \a pt,
  * - SC_ERR_LOCKED if either partition is locked
  */
-sc_err_t sc_rm_set_parent(sc_ipc_t ipc, sc_rm_pt_t pt, sc_rm_pt_t pt_parent);
+sc_err_t sc_rm_set_parent(sc_ipc_t ipc, sc_rm_pt_t pt,
+    sc_rm_pt_t pt_parent);
 
 /*!
  * This function moves all movable resources/pads owned by a source partition
@@ -305,7 +331,8 @@ sc_err_t sc_rm_move_all(sc_ipc_t ipc, sc_rm_pt_t pt_src, sc_rm_pt_t pt_dst,
  *   of the owner,
  * - SC_ERR_LOCKED if the owning partition or \a pt is locked
  */
-sc_err_t sc_rm_assign_resource(sc_ipc_t ipc, sc_rm_pt_t pt, sc_rsrc_t resource);
+sc_err_t sc_rm_assign_resource(sc_ipc_t ipc, sc_rm_pt_t pt,
+    sc_rsrc_t resource);
 
 /*!
  * This function flags resources as movable or not.
@@ -372,8 +399,7 @@ sc_err_t sc_rm_set_subsys_rsrc_movable(sc_ipc_t ipc, sc_rsrc_t resource,
  * changed if the caller's partition is secure.
  */
 sc_err_t sc_rm_set_master_attributes(sc_ipc_t ipc, sc_rsrc_t resource,
-				     sc_rm_spa_t sa, sc_rm_spa_t pa,
-				     bool smmu_bypass);
+    sc_rm_spa_t sa, sc_rm_spa_t pa, bool smmu_bypass);
 
 /*!
  * This function sets the StreamID for a resource which is a bus master (i.e.
@@ -533,8 +559,7 @@ sc_err_t sc_rm_memreg_alloc(sc_ipc_t ipc, sc_rm_mr_t *mr,
  * Note the new region must start or end on the split region.
  */
 sc_err_t sc_rm_memreg_split(sc_ipc_t ipc, sc_rm_mr_t mr,
-			    sc_rm_mr_t *mr_ret, sc_faddr_t addr_start,
-			    sc_faddr_t addr_end);
+    sc_rm_mr_t *mr_ret, sc_faddr_t addr_start, sc_faddr_t addr_end);
 
 /*!
  * This function frees a memory region.
@@ -612,6 +637,7 @@ sc_err_t sc_rm_assign_memreg(sc_ipc_t ipc, sc_rm_pt_t pt, sc_rm_mr_t mr);
  * - SC_ERR_NOACCESS if caller's partition is not the region owner or parent
  *   of the owner,
  * - SC_ERR_LOCKED if the owning partition is locked
+ * - SC_ERR_LOCKED if the \a pt is confidential and the caller isn't \a pt
  *
  * This function configures how the HW isolation will restrict access to a
  * memory region based on the attributes of a transaction from bus master.

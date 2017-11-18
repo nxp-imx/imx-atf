@@ -28,8 +28,8 @@
 /* Local Functions */
 
 sc_err_t sc_rm_partition_alloc(sc_ipc_t ipc, sc_rm_pt_t *pt, bool secure,
-			       bool isolated, bool restricted,
-			       bool confidential, bool coherent)
+			       bool isolated, bool restricted, bool grant,
+			       bool coherent)
 {
 	sc_rpc_msg_t msg;
 	uint8_t result;
@@ -40,7 +40,7 @@ sc_err_t sc_rm_partition_alloc(sc_ipc_t ipc, sc_rm_pt_t *pt, bool secure,
     RPC_U8(&msg, 0) = secure;
     RPC_U8(&msg, 1) = isolated;
     RPC_U8(&msg, 2) = restricted;
-    RPC_U8(&msg, 3) = confidential;
+	RPC_U8(&msg, 3) = grant;
     RPC_U8(&msg, 4) = coherent;
 	RPC_SIZE(&msg) = 3;
 
@@ -49,6 +49,24 @@ sc_err_t sc_rm_partition_alloc(sc_ipc_t ipc, sc_rm_pt_t *pt, bool secure,
 	result = RPC_R8(&msg);
 	if (pt != NULL)
         *pt = RPC_U8(&msg, 0);
+	return (sc_err_t)result;
+}
+
+sc_err_t sc_rm_set_confidential(sc_ipc_t ipc, sc_rm_pt_t pt, bool retro)
+{
+	sc_rpc_msg_t msg;
+	uint8_t result;
+
+	RPC_VER(&msg) = SC_RPC_VERSION;
+	RPC_SVC(&msg) = SC_RPC_SVC_RM;
+	RPC_FUNC(&msg) = RM_FUNC_SET_CONFIDENTIAL;
+	RPC_U8(&msg, 0) = pt;
+	RPC_U8(&msg, 1) = retro;
+	RPC_SIZE(&msg) = 2;
+
+	sc_call_rpc(ipc, &msg, false);
+
+	result = RPC_R8(&msg);
 	return (sc_err_t)result;
 }
 
@@ -85,7 +103,8 @@ sc_rm_did_t sc_rm_get_did(sc_ipc_t ipc)
 	return (sc_rm_did_t) result;
 }
 
-sc_err_t sc_rm_partition_static(sc_ipc_t ipc, sc_rm_pt_t pt, sc_rm_did_t did)
+sc_err_t sc_rm_partition_static(sc_ipc_t ipc, sc_rm_pt_t pt,
+    sc_rm_did_t did)
 {
 	sc_rpc_msg_t msg;
 	uint8_t result;
@@ -138,7 +157,8 @@ sc_err_t sc_rm_get_partition(sc_ipc_t ipc, sc_rm_pt_t *pt)
 	return (sc_err_t)result;
 }
 
-sc_err_t sc_rm_set_parent(sc_ipc_t ipc, sc_rm_pt_t pt, sc_rm_pt_t pt_parent)
+sc_err_t sc_rm_set_parent(sc_ipc_t ipc, sc_rm_pt_t pt,
+    sc_rm_pt_t pt_parent)
 {
 	sc_rpc_msg_t msg;
 	uint8_t result;
@@ -177,7 +197,8 @@ sc_err_t sc_rm_move_all(sc_ipc_t ipc, sc_rm_pt_t pt_src, sc_rm_pt_t pt_dst,
 	return (sc_err_t)result;
 }
 
-sc_err_t sc_rm_assign_resource(sc_ipc_t ipc, sc_rm_pt_t pt, sc_rsrc_t resource)
+sc_err_t sc_rm_assign_resource(sc_ipc_t ipc, sc_rm_pt_t pt,
+    sc_rsrc_t resource)
 {
 	sc_rpc_msg_t msg;
 	uint8_t result;
@@ -235,8 +256,7 @@ sc_err_t sc_rm_set_subsys_rsrc_movable(sc_ipc_t ipc, sc_rsrc_t resource,
 }
 
 sc_err_t sc_rm_set_master_attributes(sc_ipc_t ipc, sc_rsrc_t resource,
-				     sc_rm_spa_t sa, sc_rm_spa_t pa,
-				     bool smmu_bypass)
+    sc_rm_spa_t sa, sc_rm_spa_t pa, bool smmu_bypass)
 {
 	sc_rpc_msg_t msg;
 	uint8_t result;
@@ -256,7 +276,8 @@ sc_err_t sc_rm_set_master_attributes(sc_ipc_t ipc, sc_rsrc_t resource,
 	return (sc_err_t)result;
 }
 
-sc_err_t sc_rm_set_master_sid(sc_ipc_t ipc, sc_rsrc_t resource, sc_rm_sid_t sid)
+sc_err_t sc_rm_set_master_sid(sc_ipc_t ipc, sc_rsrc_t resource,
+    sc_rm_sid_t sid)
 {
 	sc_rpc_msg_t msg;
 	uint8_t result;
@@ -389,8 +410,7 @@ sc_err_t sc_rm_memreg_alloc(sc_ipc_t ipc, sc_rm_mr_t *mr,
 }
 
 sc_err_t sc_rm_memreg_split(sc_ipc_t ipc, sc_rm_mr_t mr,
-			    sc_rm_mr_t *mr_ret, sc_faddr_t addr_start,
-			    sc_faddr_t addr_end)
+    sc_rm_mr_t *mr_ret, sc_faddr_t addr_start, sc_faddr_t addr_end)
 {
 	sc_rpc_msg_t msg;
 	uint8_t result;
@@ -523,11 +543,9 @@ sc_err_t sc_rm_get_memreg_info(sc_ipc_t ipc, sc_rm_mr_t mr,
 	sc_call_rpc(ipc, &msg, false);
 
 	if (addr_start != NULL)
-		*addr_start =
-		    ((uint64_t) RPC_U32(&msg, 0) << 32) | RPC_U32(&msg, 4);
+        *addr_start = ((uint64_t) RPC_U32(&msg, 0) << 32) | RPC_U32(&msg, 4);
 	if (addr_end != NULL)
-		*addr_end =
-		    ((uint64_t) RPC_U32(&msg, 8) << 32) | RPC_U32(&msg, 12);
+        *addr_end = ((uint64_t) RPC_U32(&msg, 8) << 32) | RPC_U32(&msg, 12);
 	result = RPC_R8(&msg);
 	return (sc_err_t)result;
 }
