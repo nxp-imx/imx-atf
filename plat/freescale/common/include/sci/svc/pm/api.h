@@ -31,10 +31,10 @@
  * @name Defines for type widths
  */
 /*@{*/
-#define SC_PM_POWER_MODE_W      2	/* Width of sc_pm_power_mode_t */
-#define SC_PM_CLOCK_MODE_W      3	/* Width of sc_pm_clock_mode_t */
-#define SC_PM_RESET_TYPE_W      2	/* Width of sc_pm_reset_type_t */
-#define SC_PM_RESET_REASON_W    3	/* Width of sc_pm_reset_reason_t */
+#define SC_PM_POWER_MODE_W      2       /*!< Width of sc_pm_power_mode_t */
+#define SC_PM_CLOCK_MODE_W      3       /*!< Width of sc_pm_clock_mode_t */
+#define SC_PM_RESET_TYPE_W      2       /*!< Width of sc_pm_reset_type_t */
+#define SC_PM_RESET_REASON_W    3       /*!< Width of sc_pm_reset_reason_t */
 /*@}*/
 
 /*!
@@ -47,82 +47,92 @@
  * @name Defines for ALL parameters
  */
 /*@{*/
-#define SC_PM_CLK_ALL   UINT8_MAX	/* All clocks */
+#define SC_PM_CLK_ALL   UINT8_MAX       /*!< All clocks */
 /*@}*/
 
 /*!
  * @name Defines for sc_pm_power_mode_t
  */
 /*@{*/
-#define SC_PM_PW_MODE_OFF       0	/* Power off */
-#define SC_PM_PW_MODE_STBY      1	/* Power in standby */
-#define SC_PM_PW_MODE_LP        2	/* Power in low-power */
-#define SC_PM_PW_MODE_ON        3	/* Power on */
+#define SC_PM_PW_MODE_OFF       0       /*!< Power off */
+#define SC_PM_PW_MODE_STBY      1       /*!< Power in standby */
+#define SC_PM_PW_MODE_LP        2       /*!< Power in low-power */
+#define SC_PM_PW_MODE_ON        3       /*!< Power on */
 /*@}*/
 
 /*!
  * @name Defines for sc_pm_clk_t
  */
 /*@{*/
-#define SC_PM_CLK_SLV_BUS       0	/* Slave bus clock */
-#define SC_PM_CLK_MST_BUS       1	/* Master bus clock */
-#define SC_PM_CLK_PER           2	/* Peripheral clock */
-#define SC_PM_CLK_PHY           3	/* Phy clock */
-#define SC_PM_CLK_MISC          4	/* Misc clock */
-#define SC_PM_CLK_MISC0         0	/* Misc 0 clock */
-#define SC_PM_CLK_MISC1         1	/* Misc 1 clock */
-#define SC_PM_CLK_MISC2         2	/* Misc 2 clock */
-#define SC_PM_CLK_MISC3         3	/* Misc 3 clock */
-#define SC_PM_CLK_MISC4         4	/* Misc 4 clock */
-#define SC_PM_CLK_CPU           2	/* CPU clock */
-#define SC_PM_CLK_PLL           4	/* PLL */
-#define SC_PM_CLK_BYPASS        4	/* Bypass clock */
+#define SC_PM_CLK_SLV_BUS       0       /*!< Slave bus clock */
+#define SC_PM_CLK_MST_BUS       1       /*!< Master bus clock */
+#define SC_PM_CLK_PER           2       /*!< Peripheral clock */
+#define SC_PM_CLK_PHY           3       /*!< Phy clock */
+#define SC_PM_CLK_MISC          4       /*!< Misc clock */
+#define SC_PM_CLK_MISC0         0       /*!< Misc 0 clock */
+#define SC_PM_CLK_MISC1         1       /*!< Misc 1 clock */
+#define SC_PM_CLK_MISC2         2       /*!< Misc 2 clock */
+#define SC_PM_CLK_MISC3         3       /*!< Misc 3 clock */
+#define SC_PM_CLK_MISC4         4       /*!< Misc 4 clock */
+#define SC_PM_CLK_CPU           2       /*!< CPU clock */
+#define SC_PM_CLK_PLL           4       /*!< PLL */
+#define SC_PM_CLK_BYPASS        4       /*!< Bypass clock */
 /*@}*/
 
 /*!
  * @name Defines for sc_pm_clk_mode_t
  */
 /*@{*/
-#define SC_PM_CLK_MODE_ROM_INIT        0	/* Clock is initialized by ROM. */
-#define SC_PM_CLK_MODE_OFF             1	/* Clock is disabled */
-#define SC_PM_CLK_MODE_ON              2	/* Clock is enabled. */
-#define SC_PM_CLK_MODE_AUTOGATE_SW     3	/* Clock is in SW autogate mode */
-#define SC_PM_CLK_MODE_AUTOGATE_HW     4	/* Clock is in HW autogate mode */
-#define SC_PM_CLK_MODE_AUTOGATE_SW_HW  5	/* Clock is in SW-HW autogate mode */
+#define SC_PM_CLK_MODE_ROM_INIT        0    /*!< Clock is initialized by ROM. */
+#define SC_PM_CLK_MODE_OFF             1    /*!< Clock is disabled */
+#define SC_PM_CLK_MODE_ON              2    /*!< Clock is enabled. */
+#define SC_PM_CLK_MODE_AUTOGATE_SW     3    /*!< Clock is in SW autogate mode */
+#define SC_PM_CLK_MODE_AUTOGATE_HW     4    /*!< Clock is in HW autogate mode */
+#define SC_PM_CLK_MODE_AUTOGATE_SW_HW  5    /*!< Clock is in SW-HW autogate mode */
 /*@}*/
 
 /*!
  * @name Defines for sc_pm_clk_parent_t
  */
 /*@{*/
-#define SC_PM_PARENT_XTAL              0	/* Parent is XTAL. */
-#define SC_PM_PARENT_PLL0              1	/* Parent is PLL0 */
-#define SC_PM_PARENT_PLL1              2	/* Parent is PLL1 or PLL0/2 */
-#define SC_PM_PARENT_PLL2              3	/* Parent in PLL2 or PLL0/4 */
-#define SC_PM_PARENT_BYPS              4	/* Parent is a bypass clock. */
+#define SC_PM_PARENT_XTAL              0    /*!< Parent is XTAL. */
+#define SC_PM_PARENT_PLL0              1    /*!< Parent is PLL0 */
+#define SC_PM_PARENT_PLL1              2    /*!< Parent is PLL1 or PLL0/2 */
+#define SC_PM_PARENT_PLL2              3    /*!< Parent in PLL2 or PLL0/4 */
+#define SC_PM_PARENT_BYPS              4    /*!< Parent is a bypass clock. */
 /*@}*/
 
 /*!
  * @name Defines for sc_pm_reset_type_t
  */
 /*@{*/
-#define SC_PM_RESET_TYPE_COLD          0	/* Cold reset */
-#define SC_PM_RESET_TYPE_WARM          1	/* Warm reset */
-#define SC_PM_RESET_TYPE_BOARD         2	/* Board reset */
+#define SC_PM_RESET_TYPE_COLD          0    /*!< Cold reset */
+#define SC_PM_RESET_TYPE_WARM          1    /*!< Warm reset */
+#define SC_PM_RESET_TYPE_BOARD         2    /*!< Board reset */
 /*@}*/
 
 /*!
  * @name Defines for sc_pm_reset_reason_t
  */
 /*@{*/
-#define SC_PM_RESET_REASON_POR         0	/* Power on reset */
-#define SC_PM_RESET_REASON_WARM        1	/* Warm reset */
-#define SC_PM_RESET_REASON_SW          2	/* Software reset */
-#define SC_PM_RESET_REASON_WDOG        3	/* Watchdog reset */
-#define SC_PM_RESET_REASON_LOCKUP      4	/* Lockup reset */
-#define SC_PM_RESET_REASON_TAMPER      5	/* Tamper reset */
-#define SC_PM_RESET_REASON_TEMP        6	/* Temp reset */
-#define SC_PM_RESET_REASON_LOW_VOLT    7	/* Low voltage reset */
+#define SC_PM_RESET_REASON_POR         0    /*!< Power on reset */
+#define SC_PM_RESET_REASON_WARM        1    /*!< Warm reset */
+#define SC_PM_RESET_REASON_SW          2    /*!< Software reset */
+#define SC_PM_RESET_REASON_WDOG        3    /*!< Watchdog reset */
+#define SC_PM_RESET_REASON_LOCKUP      4    /*!< Lockup reset */
+#define SC_PM_RESET_REASON_TAMPER      5    /*!< Tamper reset */
+#define SC_PM_RESET_REASON_TEMP        6    /*!< Temp reset */
+#define SC_PM_RESET_REASON_LOW_VOLT    7    /*!< Low voltage reset */
+/*@}*/
+
+/*!
+ * @name Defines for sc_pm_sys_if_t
+ */
+/*@{*/
+#define SC_PM_SYS_IF_INTERCONNECT       0   /*!< System interconnect */
+#define SC_PM_SYS_IF_MU                 1   /*!< AP -> SCU message units */
+#define SC_PM_SYS_IF_OCMEM              2   /*!< On-chip memory (ROM/OCRAM) */
+#define SC_PM_SYS_IF_DDR                3   /*!< DDR memory */
 /*@}*/
 
 /* Types */
@@ -163,6 +173,11 @@ typedef uint8_t sc_pm_reset_type_t;
  * This type is used to declare a reason for a reset.
  */
 typedef uint8_t sc_pm_reset_reason_t;
+
+/*!
+ * This type is used to specify a system-level interface to be power managed.
+ */
+typedef uint8_t sc_pm_sys_if_t;
 
 /* Functions */
 
@@ -287,6 +302,26 @@ sc_err_t sc_pm_req_low_power_mode(sc_ipc_t ipc, sc_rsrc_t resource,
  */
 sc_err_t sc_pm_set_cpu_resume_addr(sc_ipc_t ipc, sc_rsrc_t resource,
 				   sc_faddr_t address);
+
+/*!
+ * This function requests the power mode configuration for system-level
+ * interfaces including messaging units, interconnect, and memories.  This API
+ * is only valid for the following resources : SC_R_A53, SC_R_A72, and
+ * SC_R_M4_x_PID_y.  For all other resources, it will return SC_ERR_PARAM.
+ * The requested power mode will be captured and applied to system-level
+ * resources as system conditions allow.
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[in]     resource    ID of the resource
+ * @param[in]     sys_if      system-level interface to be configured
+ * @param[in]     hpm         high-power mode for the system interface
+ * @param[in]     lpm         low-power mode for the system interface
+ *
+ * @return Returns an error code (SC_ERR_NONE = success).
+ *
+ */
+sc_err_t sc_pm_req_sys_if_power_mode(sc_ipc_t ipc, sc_rsrc_t resource,
+    sc_pm_sys_if_t sys_if, sc_pm_power_mode_t hpm, sc_pm_power_mode_t lpm);
 
 /* @} */
 

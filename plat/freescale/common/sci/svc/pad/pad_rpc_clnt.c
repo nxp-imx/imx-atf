@@ -50,8 +50,7 @@ sc_err_t sc_pad_set_mux(sc_ipc_t ipc, sc_pad_t pad,
 }
 
 sc_err_t sc_pad_get_mux(sc_ipc_t ipc, sc_pad_t pad,
-			uint8_t *mux, sc_pad_config_t *config,
-			sc_pad_iso_t *iso)
+    uint8_t *mux, sc_pad_config_t *config, sc_pad_iso_t *iso)
 {
     sc_rpc_msg_t msg;
     uint8_t result;
@@ -111,7 +110,8 @@ sc_err_t sc_pad_get_gp(sc_ipc_t ipc, sc_pad_t pad, uint32_t *ctrl)
     return (sc_err_t) result;
 }
 
-sc_err_t sc_pad_set_wakeup(sc_ipc_t ipc, sc_pad_t pad, sc_pad_wakeup_t wakeup)
+sc_err_t sc_pad_set_wakeup(sc_ipc_t ipc, sc_pad_t pad,
+    sc_pad_wakeup_t wakeup)
 {
     sc_rpc_msg_t msg;
     uint8_t result;
@@ -129,7 +129,8 @@ sc_err_t sc_pad_set_wakeup(sc_ipc_t ipc, sc_pad_t pad, sc_pad_wakeup_t wakeup)
     return (sc_err_t) result;
 }
 
-sc_err_t sc_pad_get_wakeup(sc_ipc_t ipc, sc_pad_t pad, sc_pad_wakeup_t *wakeup)
+sc_err_t sc_pad_get_wakeup(sc_ipc_t ipc, sc_pad_t pad,
+    sc_pad_wakeup_t *wakeup)
 {
     sc_rpc_msg_t msg;
     uint8_t result;
@@ -173,8 +174,8 @@ sc_err_t sc_pad_set_all(sc_ipc_t ipc, sc_pad_t pad, uint8_t mux,
 }
 
 sc_err_t sc_pad_get_all(sc_ipc_t ipc, sc_pad_t pad, uint8_t *mux,
-			sc_pad_config_t *config, sc_pad_iso_t *iso,
-			uint32_t *ctrl, sc_pad_wakeup_t *wakeup)
+    sc_pad_config_t *config, sc_pad_iso_t *iso, uint32_t *ctrl,
+    sc_pad_wakeup_t *wakeup)
 {
     sc_rpc_msg_t msg;
     uint8_t result;
@@ -259,8 +260,7 @@ sc_err_t sc_pad_set_gp_28fdsoi(sc_ipc_t ipc, sc_pad_t pad,
 }
 
 sc_err_t sc_pad_get_gp_28fdsoi(sc_ipc_t ipc, sc_pad_t pad,
-			       sc_pad_28fdsoi_dse_t *dse,
-			       sc_pad_28fdsoi_ps_t *ps)
+    sc_pad_28fdsoi_dse_t *dse, sc_pad_28fdsoi_ps_t *ps)
 {
     sc_rpc_msg_t msg;
     uint8_t result;
@@ -282,9 +282,8 @@ sc_err_t sc_pad_get_gp_28fdsoi(sc_ipc_t ipc, sc_pad_t pad,
 }
 
 sc_err_t sc_pad_set_gp_28fdsoi_hsic(sc_ipc_t ipc, sc_pad_t pad,
-				    sc_pad_28fdsoi_dse_t dse, bool hys,
-				    sc_pad_28fdsoi_pus_t pus, bool pke,
-				    bool pue)
+    sc_pad_28fdsoi_dse_t dse, bool hys, sc_pad_28fdsoi_pus_t pus,
+    bool pke, bool pue)
 {
     sc_rpc_msg_t msg;
     uint8_t result;
@@ -307,9 +306,8 @@ sc_err_t sc_pad_set_gp_28fdsoi_hsic(sc_ipc_t ipc, sc_pad_t pad,
 }
 
 sc_err_t sc_pad_get_gp_28fdsoi_hsic(sc_ipc_t ipc, sc_pad_t pad,
-				    sc_pad_28fdsoi_dse_t *dse, bool *hys,
-				    sc_pad_28fdsoi_pus_t * pus, bool *pke,
-				    bool *pue)
+    sc_pad_28fdsoi_dse_t *dse, bool *hys, sc_pad_28fdsoi_pus_t *pus,
+    bool *pke, bool *pue)
 {
     sc_rpc_msg_t msg;
     uint8_t result;
@@ -337,8 +335,7 @@ sc_err_t sc_pad_get_gp_28fdsoi_hsic(sc_ipc_t ipc, sc_pad_t pad,
 }
 
 sc_err_t sc_pad_set_gp_28fdsoi_comp(sc_ipc_t ipc, sc_pad_t pad,
-				    uint8_t compen, bool fastfrz,
-				    uint8_t rasrcp, uint8_t rasrcn,
+    uint8_t compen, bool fastfrz, uint8_t rasrcp, uint8_t rasrcn,
 				    bool nasrc_sel, bool psw_ovr)
 {
     sc_rpc_msg_t msg;
@@ -363,10 +360,8 @@ sc_err_t sc_pad_set_gp_28fdsoi_comp(sc_ipc_t ipc, sc_pad_t pad,
 }
 
 sc_err_t sc_pad_get_gp_28fdsoi_comp(sc_ipc_t ipc, sc_pad_t pad,
-				    uint8_t *compen, bool *fastfrz,
-				    uint8_t *rasrcp, uint8_t *rasrcn,
-				    bool *nasrc_sel, bool *compok,
-				    uint8_t *nasrc, bool *psw_ovr)
+    uint8_t *compen, bool *fastfrz, uint8_t *rasrcp, uint8_t *rasrcn,
+    bool *nasrc_sel, bool *compok, uint8_t *nasrc, bool *psw_ovr)
 {
     sc_rpc_msg_t msg;
     uint8_t result;

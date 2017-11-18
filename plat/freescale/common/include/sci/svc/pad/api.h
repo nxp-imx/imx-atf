@@ -65,79 +65,79 @@
  * @name Defines for type widths
  */
 /*@{*/
-#define SC_PAD_MUX_W            3	/* Width of mux parameter */
+#define SC_PAD_MUX_W            3    /*!< Width of mux parameter */
 /*@}*/
 
 /*!
  * @name Defines for sc_pad_config_t
  */
 /*@{*/
-#define SC_PAD_CONFIG_NORMAL    0	/* Normal */
-#define SC_PAD_CONFIG_OD        1	/* Open Drain */
-#define SC_PAD_CONFIG_OD_IN     2	/* Open Drain and input */
-#define SC_PAD_CONFIG_OUT_IN    3	/* Output and input */
+#define SC_PAD_CONFIG_NORMAL    0    /*!< Normal */
+#define SC_PAD_CONFIG_OD        1    /*!< Open Drain */
+#define SC_PAD_CONFIG_OD_IN     2    /*!< Open Drain and input */
+#define SC_PAD_CONFIG_OUT_IN    3    /*!< Output and input */
 /*@}*/
 
 /*!
  * @name Defines for sc_pad_iso_t
  */
 /*@{*/
-#define SC_PAD_ISO_OFF          0	/* ISO latch is transparent */
-#define SC_PAD_ISO_EARLY        1	/* Follow EARLY_ISO */
-#define SC_PAD_ISO_LATE         2	/* Follow LATE_ISO */
-#define SC_PAD_ISO_ON           3	/* ISO latched data is held */
+#define SC_PAD_ISO_OFF          0    /*!< ISO latch is transparent */
+#define SC_PAD_ISO_EARLY        1    /*!< Follow EARLY_ISO */
+#define SC_PAD_ISO_LATE         2    /*!< Follow LATE_ISO */
+#define SC_PAD_ISO_ON           3    /*!< ISO latched data is held */
 /*@}*/
 
 /*!
  * @name Defines for sc_pad_28fdsoi_dse_t
  */
 /*@{*/
-#define SC_PAD_28FDSOI_DSE_18V_1MA   0	/* Drive strength of 1mA for 1.8v */
-#define SC_PAD_28FDSOI_DSE_18V_2MA   1	/* Drive strength of 2mA for 1.8v */
-#define SC_PAD_28FDSOI_DSE_18V_4MA   2	/* Drive strength of 4mA for 1.8v */
-#define SC_PAD_28FDSOI_DSE_18V_6MA   3	/* Drive strength of 6mA for 1.8v */
-#define SC_PAD_28FDSOI_DSE_18V_8MA   4	/* Drive strength of 8mA for 1.8v */
-#define SC_PAD_28FDSOI_DSE_18V_10MA  5	/* Drive strength of 10mA for 1.8v */
-#define SC_PAD_28FDSOI_DSE_18V_12MA  6	/* Drive strength of 12mA for 1.8v */
-#define SC_PAD_28FDSOI_DSE_18V_HS    7	/* High-speed drive strength for 1.8v */
-#define SC_PAD_28FDSOI_DSE_33V_2MA   0	/* Drive strength of 2mA for 3.3v */
-#define SC_PAD_28FDSOI_DSE_33V_4MA   1	/* Drive strength of 4mA for 3.3v */
-#define SC_PAD_28FDSOI_DSE_33V_8MA   2	/* Drive strength of 8mA for 3.3v */
-#define SC_PAD_28FDSOI_DSE_33V_12MA  3	/* Drive strength of 12mA for 3.3v */
-#define SC_PAD_28FDSOI_DSE_DV_HIGH   0	/* High drive strength for dual volt */
-#define SC_PAD_28FDSOI_DSE_DV_LOW    1	/* Low drive strength for dual volt */
+#define SC_PAD_28FDSOI_DSE_18V_1MA   0    /*!< Drive strength of 1mA for 1.8v */
+#define SC_PAD_28FDSOI_DSE_18V_2MA   1    /*!< Drive strength of 2mA for 1.8v */
+#define SC_PAD_28FDSOI_DSE_18V_4MA   2    /*!< Drive strength of 4mA for 1.8v */
+#define SC_PAD_28FDSOI_DSE_18V_6MA   3    /*!< Drive strength of 6mA for 1.8v */
+#define SC_PAD_28FDSOI_DSE_18V_8MA   4    /*!< Drive strength of 8mA for 1.8v */
+#define SC_PAD_28FDSOI_DSE_18V_10MA  5    /*!< Drive strength of 10mA for 1.8v */
+#define SC_PAD_28FDSOI_DSE_18V_12MA  6    /*!< Drive strength of 12mA for 1.8v */
+#define SC_PAD_28FDSOI_DSE_18V_HS    7    /*!< High-speed drive strength for 1.8v */
+#define SC_PAD_28FDSOI_DSE_33V_2MA   0    /*!< Drive strength of 2mA for 3.3v */
+#define SC_PAD_28FDSOI_DSE_33V_4MA   1    /*!< Drive strength of 4mA for 3.3v */
+#define SC_PAD_28FDSOI_DSE_33V_8MA   2    /*!< Drive strength of 8mA for 3.3v */
+#define SC_PAD_28FDSOI_DSE_33V_12MA  3    /*!< Drive strength of 12mA for 3.3v */
+#define SC_PAD_28FDSOI_DSE_DV_HIGH   0    /*!< High drive strength for dual volt */
+#define SC_PAD_28FDSOI_DSE_DV_LOW    1    /*!< Low drive strength for dual volt */
 /*@}*/
 
 /*!
  * @name Defines for sc_pad_28fdsoi_ps_t
  */
 /*@{*/
-#define SC_PAD_28FDSOI_PS_KEEPER 0	/* Bus-keeper (only valid for 1.8v) */
-#define SC_PAD_28FDSOI_PS_PU     1	/* Pull-up */
-#define SC_PAD_28FDSOI_PS_PD     2	/* Pull-down */
-#define SC_PAD_28FDSOI_PS_NONE   3	/* No pull (disabled) */
+#define SC_PAD_28FDSOI_PS_KEEPER 0    /*!< Bus-keeper (only valid for 1.8v) */
+#define SC_PAD_28FDSOI_PS_PU     1    /*!< Pull-up */
+#define SC_PAD_28FDSOI_PS_PD     2    /*!< Pull-down */
+#define SC_PAD_28FDSOI_PS_NONE   3    /*!< No pull (disabled) */
 /*@}*/
 
 /*!
  * @name Defines for sc_pad_28fdsoi_pus_t
  */
 /*@{*/
-#define SC_PAD_28FDSOI_PUS_30K_PD  0	/* 30K pull-down */
-#define SC_PAD_28FDSOI_PUS_100K_PU 1	/* 100K pull-up */
-#define SC_PAD_28FDSOI_PUS_3K_PU   2	/* 3K pull-up */
-#define SC_PAD_28FDSOI_PUS_30K_PU  3	/* 30K pull-up */
+#define SC_PAD_28FDSOI_PUS_30K_PD  0    /*!< 30K pull-down */
+#define SC_PAD_28FDSOI_PUS_100K_PU 1    /*!< 100K pull-up */
+#define SC_PAD_28FDSOI_PUS_3K_PU   2    /*!< 3K pull-up */
+#define SC_PAD_28FDSOI_PUS_30K_PU  3    /*!< 30K pull-up */
 /*@}*/
 
 /*!
  * @name Defines for sc_pad_wakeup_t
  */
 /*@{*/
-#define SC_PAD_WAKEUP_OFF       0	/* Off */
-#define SC_PAD_WAKEUP_CLEAR     1	/* Clears pending flag */
-#define SC_PAD_WAKEUP_LOW_LVL   4	/* Low level */
-#define SC_PAD_WAKEUP_FALL_EDGE 5	/* Falling edge */
-#define SC_PAD_WAKEUP_RISE_EDGE 6	/* Rising edge */
-#define SC_PAD_WAKEUP_HIGH_LVL  7	/* High-level */
+#define SC_PAD_WAKEUP_OFF       0    /*!< Off */
+#define SC_PAD_WAKEUP_CLEAR     1    /*!< Clears pending flag */
+#define SC_PAD_WAKEUP_LOW_LVL   4    /*!< Low level */
+#define SC_PAD_WAKEUP_FALL_EDGE 5    /*!< Falling edge */
+#define SC_PAD_WAKEUP_RISE_EDGE 6    /*!< Rising edge */
+#define SC_PAD_WAKEUP_HIGH_LVL  7    /*!< High-level */
 /*@}*/
 
 /* Types */
@@ -229,8 +229,7 @@ sc_err_t sc_pad_set_mux(sc_ipc_t ipc, sc_pad_t pad,
  * Refer to the SoC [Pad List](@ref PADS) for valid pad values.
  */
 sc_err_t sc_pad_get_mux(sc_ipc_t ipc, sc_pad_t pad,
-			uint8_t *mux, sc_pad_config_t *config,
-			sc_pad_iso_t *iso);
+    uint8_t *mux, sc_pad_config_t *config, sc_pad_iso_t *iso);
 
 /*!
  * This function configures the general purpose pad control. This
@@ -287,7 +286,8 @@ sc_err_t sc_pad_get_gp(sc_ipc_t ipc, sc_pad_t pad, uint32_t *ctrl);
  *
  * Refer to the SoC [Pad List](@ref PADS) for valid pad values.
  */
-sc_err_t sc_pad_set_wakeup(sc_ipc_t ipc, sc_pad_t pad, sc_pad_wakeup_t wakeup);
+sc_err_t sc_pad_set_wakeup(sc_ipc_t ipc, sc_pad_t pad,
+    sc_pad_wakeup_t wakeup);
 
 /*!
  * This function gets the wakeup mode of a pad.
@@ -304,7 +304,8 @@ sc_err_t sc_pad_set_wakeup(sc_ipc_t ipc, sc_pad_t pad, sc_pad_wakeup_t wakeup);
  *
  * Refer to the SoC [Pad List](@ref PADS) for valid pad values.
  */
-sc_err_t sc_pad_get_wakeup(sc_ipc_t ipc, sc_pad_t pad, sc_pad_wakeup_t *wakeup);
+sc_err_t sc_pad_get_wakeup(sc_ipc_t ipc, sc_pad_t pad,
+    sc_pad_wakeup_t *wakeup);
 
 /*!
  * This function configures a pad.
@@ -355,8 +356,8 @@ sc_err_t sc_pad_set_all(sc_ipc_t ipc, sc_pad_t pad, uint8_t mux,
  * Refer to the SoC [Pad List](@ref PADS) for valid pad values.
  */
 sc_err_t sc_pad_get_all(sc_ipc_t ipc, sc_pad_t pad, uint8_t *mux,
-			sc_pad_config_t *config, sc_pad_iso_t *iso,
-			uint32_t *ctrl, sc_pad_wakeup_t *wakeup);
+    sc_pad_config_t *config, sc_pad_iso_t *iso, uint32_t *ctrl,
+    sc_pad_wakeup_t *wakeup);
 
 /* @} */
 
@@ -426,8 +427,7 @@ sc_err_t sc_pad_get(sc_ipc_t ipc, sc_pad_t pad, uint32_t *val);
  * Refer to the SoC [Pad List](@ref PADS) for valid pad values.
  */
 sc_err_t sc_pad_set_gp_28fdsoi(sc_ipc_t ipc, sc_pad_t pad,
-			       sc_pad_28fdsoi_dse_t dse,
-			       sc_pad_28fdsoi_ps_t ps);
+    sc_pad_28fdsoi_dse_t dse, sc_pad_28fdsoi_ps_t ps);
 
 /*!
  * This function gets the pad control specific to 28FDSOI.
@@ -447,8 +447,7 @@ sc_err_t sc_pad_set_gp_28fdsoi(sc_ipc_t ipc, sc_pad_t pad,
  * Refer to the SoC [Pad List](@ref PADS) for valid pad values.
  */
 sc_err_t sc_pad_get_gp_28fdsoi(sc_ipc_t ipc, sc_pad_t pad,
-			       sc_pad_28fdsoi_dse_t *dse,
-			       sc_pad_28fdsoi_ps_t *ps);
+    sc_pad_28fdsoi_dse_t *dse, sc_pad_28fdsoi_ps_t *ps);
 
 /*!
  * This function configures the pad control specific to 28FDSOI.
@@ -471,9 +470,8 @@ sc_err_t sc_pad_get_gp_28fdsoi(sc_ipc_t ipc, sc_pad_t pad,
  * Refer to the SoC [Pad List](@ref PADS) for valid pad values.
  */
 sc_err_t sc_pad_set_gp_28fdsoi_hsic(sc_ipc_t ipc, sc_pad_t pad,
-				    sc_pad_28fdsoi_dse_t dse, bool hys,
-				    sc_pad_28fdsoi_pus_t pus, bool pke,
-				    bool pue);
+    sc_pad_28fdsoi_dse_t dse, bool hys, sc_pad_28fdsoi_pus_t pus,
+    bool pke, bool pue);
 
 /*!
  * This function gets the pad control specific to 28FDSOI.
@@ -496,9 +494,8 @@ sc_err_t sc_pad_set_gp_28fdsoi_hsic(sc_ipc_t ipc, sc_pad_t pad,
  * Refer to the SoC [Pad List](@ref PADS) for valid pad values.
  */
 sc_err_t sc_pad_get_gp_28fdsoi_hsic(sc_ipc_t ipc, sc_pad_t pad,
-				    sc_pad_28fdsoi_dse_t *dse, bool *hys,
-				    sc_pad_28fdsoi_pus_t * pus, bool *pke,
-				    bool *pue);
+    sc_pad_28fdsoi_dse_t *dse, bool *hys, sc_pad_28fdsoi_pus_t *pus,
+    bool *pke, bool *pue);
 
 /*!
  * This function configures the compensation control specific to 28FDSOI.
@@ -525,8 +522,7 @@ sc_err_t sc_pad_get_gp_28fdsoi_hsic(sc_ipc_t ipc, sc_pad_t pad,
  * operation (e.g. some Ethernet pads).
  */
 sc_err_t sc_pad_set_gp_28fdsoi_comp(sc_ipc_t ipc, sc_pad_t pad,
-				    uint8_t compen, bool fastfrz,
-				    uint8_t rasrcp, uint8_t rasrcn,
+    uint8_t compen, bool fastfrz, uint8_t rasrcp, uint8_t rasrcn,
 				    bool nasrc_sel, bool psw_ovr);
 
 /*!
@@ -553,10 +549,8 @@ sc_err_t sc_pad_set_gp_28fdsoi_comp(sc_ipc_t ipc, sc_pad_t pad,
  * Refer to the SoC [Pad List](@ref PADS) for valid pad values.
  */
 sc_err_t sc_pad_get_gp_28fdsoi_comp(sc_ipc_t ipc, sc_pad_t pad,
-				    uint8_t *compen, bool *fastfrz,
-				    uint8_t *rasrcp, uint8_t *rasrcn,
-				    bool *nasrc_sel, bool *compok,
-				    uint8_t *nasrc, bool *psw_ovr);
+    uint8_t *compen, bool *fastfrz, uint8_t *rasrcp, uint8_t *rasrcn,
+    bool *nasrc_sel, bool *compok, uint8_t *nasrc, bool *psw_ovr);
 
 /* @} */
 
