@@ -187,6 +187,23 @@ typedef uint8_t sc_pm_sys_if_t;
  */
 
 /*!
+ * This function sets the system power mode. Only the owner of the
+ * SC_R_SYSTEM resource can do this.
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[in]     mode        power mode to apply
+ *
+ * @return Returns an error code (SC_ERR_NONE = success).
+ *
+ * Return errors:
+ * - SC_ERR_PARM if invalid mode,
+ * - SC_ERR_NOACCESS if caller not the owner of SC_R_SYSTEM
+ *
+ * @see sc_pm_set_sys_power_mode().
+ */
+sc_err_t sc_pm_set_sys_power_mode(sc_ipc_t ipc, sc_pm_power_mode_t mode);
+
+/*!
  * This function sets the power mode of a partition.
  *
  * @param[in]     ipc         IPC handle
@@ -203,9 +220,9 @@ typedef uint8_t sc_pm_sys_if_t;
  * All resources owned by \a pt that are on will have their power
  * mode changed to \a mode.
  *
- * @see sc_pm_set_resource_power_mode().
+ * @see sc_pm_set_partition_power_mode().
  */
-sc_err_t sc_pm_set_sys_power_mode(sc_ipc_t ipc, sc_rm_pt_t pt,
+sc_err_t sc_pm_set_partition_power_mode(sc_ipc_t ipc, sc_rm_pt_t pt,
     sc_pm_power_mode_t mode);
 
 /*!
