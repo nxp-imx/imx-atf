@@ -38,4 +38,11 @@
 
 #define FSL_SIP_GET_SOC_INFO            0xc2000006
 
+#define FSL_SIP_HAB            0xc2000007
+#define FSL_SIP_HAB_AUTHENTICATE	0x00
+#define FSL_SIP_HAB_ENTRY			0x01
+#define FSL_SIP_HAB_EXIT			0x02
+#define FSL_SIP_HAB_REPORT_EVENT	0x03
+#define FSL_SIP_HAB_REPORT_STATUS	0x04
+
 #endif
