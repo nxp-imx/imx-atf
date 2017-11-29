@@ -202,16 +202,23 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 void bl31_plat_arch_setup(void)
 {
 	/* add the mmap */
-	mmap_add_region(BL31_BASE, BL31_BASE, 0x10000,
+	mmap_add_region(0x900000, 0x900000, 0x20000,
 			MT_MEMORY | MT_RW);
+	mmap_add_region(0x100000, 0x100000, 0x10000,
+			MT_MEMORY | MT_RW);
+
+	mmap_add_region(0x40000000, 0x40000000, 0xc0000000,
+			MT_MEMORY | MT_RW | MT_NS);
+
 	mmap_add_region(BL31_BASE, BL31_BASE, BL31_RO_LIMIT - BL31_RO_BASE,
 			MT_MEMORY | MT_RO);
 	mmap_add_region(IMX_BOOT_UART_BASE, IMX_BOOT_UART_BASE,
 			0x1000,	MT_DEVICE | MT_RW);
 	mmap_add_region(IMX_ROM_BASE, IMX_ROM_BASE,
-			0x1000,	MT_DEVICE | MT_RW);
+			0x20000, MT_MEMORY | MT_RO);
 	/* map the AIPS1 */
 	mmap_add_region(IMX_AIPS1_BASE, IMX_AIPS1_BASE, 0x200000, MT_DEVICE | MT_RW);
+	mmap_add_region(IMX_AIPS3_ARB_BASE, IMX_AIPS3_ARB_BASE, 0x400000, MT_DEVICE | MT_RW);
 	mmap_add_region(PLAT_GICD_BASE, PLAT_GICD_BASE, 0x80000,
 			MT_DEVICE | MT_RW);
 	mmap_add_region(PLAT_GICR_BASE, PLAT_GICR_BASE, 0x80000,
