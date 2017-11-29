@@ -28,7 +28,24 @@
 
 /* Local Functions */
 
-sc_err_t sc_pm_set_sys_power_mode(sc_ipc_t ipc, sc_rm_pt_t pt,
+sc_err_t sc_pm_set_sys_power_mode(sc_ipc_t ipc, sc_pm_power_mode_t mode)
+{
+    sc_rpc_msg_t msg;
+    uint8_t result;
+
+    RPC_VER(&msg) = SC_RPC_VERSION;
+    RPC_SVC(&msg) = SC_RPC_SVC_PM;
+    RPC_FUNC(&msg) = PM_FUNC_SET_SYS_POWER_MODE;
+    RPC_U8(&msg, 0) = mode;
+    RPC_SIZE(&msg) = 2;
+
+    sc_call_rpc(ipc, &msg, false);
+
+    result = RPC_R8(&msg);
+    return (sc_err_t) result;
+}
+
+sc_err_t sc_pm_set_partition_power_mode(sc_ipc_t ipc, sc_rm_pt_t pt,
     sc_pm_power_mode_t mode)
 {
     sc_rpc_msg_t msg;

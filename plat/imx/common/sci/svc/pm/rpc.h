@@ -27,7 +27,8 @@
 typedef enum pm_func_e
 {
     PM_FUNC_UNKNOWN = 0, /*!< Unknown function */
-    PM_FUNC_SET_SYS_POWER_MODE = 1, /*!< Index for pm_set_sys_power_mode() RPC call */
+    PM_FUNC_SET_SYS_POWER_MODE = 19, /*!< Index for pm_set_sys_power_mode() RPC call */
+    PM_FUNC_SET_PARTITION_POWER_MODE = 1, /*!< Index for pm_set_partition_power_mode() RPC call */
     PM_FUNC_GET_SYS_POWER_MODE = 2, /*!< Index for pm_get_sys_power_mode() RPC call */
     PM_FUNC_SET_RESOURCE_POWER_MODE = 3, /*!< Index for pm_set_resource_power_mode() RPC call */
     PM_FUNC_GET_RESOURCE_POWER_MODE = 4, /*!< Index for pm_get_resource_power_mode() RPC call */

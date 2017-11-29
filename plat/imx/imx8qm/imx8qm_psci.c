@@ -237,12 +237,10 @@ void  __attribute__((noreturn)) imx_system_reset(void)
 
 void __attribute__((noreturn)) imx_system_off(void)
 {
-	/*
-	 * Never return, no SCFW API is available for
-	 * system poweroff, here just do wfi for now
-	 */
-	while (1)
-		wfi();
+	sc_pm_set_sys_power_mode(ipc_handle, SC_PM_PW_MODE_OFF);
+	wfi();
+	ERROR("Power off failed.\n");
+	panic();
 }
 
 static const plat_psci_ops_t imx_plat_psci_ops = {
