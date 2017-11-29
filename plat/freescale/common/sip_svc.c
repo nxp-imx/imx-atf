@@ -46,6 +46,7 @@ extern int imx_srtc_handler(uint32_t smc_fid, void *handle, u_register_t x1,
 extern int lpddr4_dvfs_handler(uint32_t  smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
 extern int imx_src_handler(uint32_t  smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
 extern int imx_soc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
+extern int imx_hab_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_register_t x3, u_register_t x4);
 
 /* Setup i.MX platform specific services Services */
 static int32_t plat_svc_setup(void)
@@ -123,6 +124,9 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 		break;
 	case FSL_SIP_GET_SOC_INFO:
 		SMC_RET1(handle, imx_soc_handler(smc_fid, x1, x2, x3));
+		break;
+	case FSL_SIP_HAB:
+		SMC_RET1(handle, imx_hab_handler(smc_fid, x1, x2, x3, x4));
 		break;
 #endif
 #if (defined(PLAT_IMX8QM) || defined(PLAT_IMX8QXP))
