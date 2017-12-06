@@ -45,6 +45,9 @@
 #define FSL_SIP_HAB_REPORT_EVENT	0x03
 #define FSL_SIP_HAB_REPORT_STATUS	0x04
 
+#define FSL_SIP_NOC			0xc2000008
+#define FSL_SIP_NOC_LCDIF		0x0
+
 #define IMX_SIP_WAKEUP_SRC		0xc2000009
 #define IMX_SIP_WAKEUP_SRC_SCU		0x1
 #define IMX_SIP_WAKEUP_SRC_IRQSTEER	0x2
@@ -79,6 +82,8 @@ extern int imx_soc_handler(uint32_t smc_fid, u_register_t x1,
 		u_register_t x2, u_register_t x3);
 extern int imx_hab_handler(uint32_t smc_fid, u_register_t x1,
 		u_register_t x2, u_register_t x3, u_register_t x4);
+extern int imx_noc_handler(uint32_t smc_fid, u_register_t x1,
+ 		u_register_t x2, u_register_t x3);
 #endif
 
 uint64_t imx_buildinfo_handler(uint32_t smc_fid, u_register_t x1,
