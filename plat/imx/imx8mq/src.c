@@ -67,3 +67,26 @@ int imx_soc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 
 	return val;
 }
+
+int imx_noc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
+		    u_register_t x3)
+{
+	switch(x1) {
+	case FSL_SIP_NOC_LCDIF:
+		/* config NOC for VPU */
+		mmio_write_32(IMX_NOC_BASE + 0x108, 0x34);
+		mmio_write_32(IMX_NOC_BASE + 0x10c, 0x1);
+		mmio_write_32(IMX_NOC_BASE + 0x110, 0x500);
+		mmio_write_32(IMX_NOC_BASE + 0x114, 0x30);
+		/* config NOC for CPU */
+		mmio_write_32(IMX_NOC_BASE + 0x188, 0x34);
+		mmio_write_32(IMX_NOC_BASE + 0x18c, 0x1);
+		mmio_write_32(IMX_NOC_BASE + 0x190, 0x500);
+		mmio_write_32(IMX_NOC_BASE + 0x194, 0x30);
+		break;
+	default:
+		return SMC_UNK;
+	};
+
+	return 0;
+}

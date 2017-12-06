@@ -216,6 +216,7 @@ void bl31_plat_arch_setup(void)
 			0x1000,	MT_DEVICE | MT_RW);
 	mmap_add_region(IMX_ROM_BASE, IMX_ROM_BASE,
 			0x20000, MT_MEMORY | MT_RO);
+	mmap_add_region(IMX_NOC_BASE, IMX_NOC_BASE, 0x100000, MT_DEVICE | MT_RW);
 	/* map the AIPS1 */
 	mmap_add_region(IMX_AIPS1_BASE, IMX_AIPS1_BASE, 0x200000, MT_DEVICE | MT_RW);
 	mmap_add_region(IMX_AIPS3_ARB_BASE, IMX_AIPS3_ARB_BASE, 0x400000, MT_DEVICE | MT_RW);
