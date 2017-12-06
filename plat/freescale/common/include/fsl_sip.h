@@ -45,4 +45,7 @@
 #define FSL_SIP_HAB_REPORT_EVENT	0x03
 #define FSL_SIP_HAB_REPORT_STATUS	0x04
 
+#define FSL_SIP_NOC			0xc2000008
+#define FSL_SIP_NOC_LCDIF		0x0
+
 #endif
