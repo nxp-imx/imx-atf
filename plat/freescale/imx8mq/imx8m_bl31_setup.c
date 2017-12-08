@@ -141,6 +141,11 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 		mmio_write_32(0x303e0000 + i * 4, 0xffffffff);
 	}
 
+	/* config CAAM JRaMID set MID to Cortex A */
+	mmio_write_32(0x30900010, 0x1);
+	mmio_write_32(0x30900018, 0x1);
+	mmio_write_32(0x30900020, 0x1);
+
 	/* config the AIPSTZ1 */
 	mmio_write_32(0x301f0000, 0x77777777);
 	mmio_write_32(0x301f0004, 0x77777777);
