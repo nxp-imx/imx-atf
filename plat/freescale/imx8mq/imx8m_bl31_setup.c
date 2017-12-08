@@ -63,6 +63,11 @@ extern unsigned long __COHERENT_RAM_END__;
 #define BL31_RO_LIMIT	(unsigned long)(&__RO_END__)
 #define BL31_END	(unsigned long)(&__BL31_END__)
 
+#define CAAM_JR0MID		(0x30900010)
+#define CAAM_JR1MID		(0x30900018)
+#define CAAM_JR2MID		(0x30900020)
+#define CAAM_NS_MID		(0x1)
+
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
 
@@ -140,6 +145,11 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 	for (i = 0; i < 64; i++) {
 		mmio_write_32(0x303e0000 + i * 4, 0xffffffff);
 	}
+
+	/* config CAAM JRaMID set MID to Cortex A */
+	mmio_write_32(CAAM_JR0MID, CAAM_NS_MID);
+	mmio_write_32(CAAM_JR1MID, CAAM_NS_MID);
+	mmio_write_32(CAAM_JR2MID, CAAM_NS_MID);
 
 	/* config the AIPSTZ1 */
 	mmio_write_32(0x301f0000, 0x77777777);
