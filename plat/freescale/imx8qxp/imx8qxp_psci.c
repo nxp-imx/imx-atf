@@ -182,6 +182,9 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 
 	plat_gic_cpuif_disable();
 
+	/* Put GIC in LP mode. */
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_GIC, SC_PM_PW_MODE_LP);
+
 	sc_pm_set_cpu_resume_addr(ipc_handle, ap_core_index[cpu_id], 0x080000000);
 	sc_pm_req_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_OFF);
 }
@@ -193,6 +196,8 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 
 	sc_pm_req_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_ON);
 
+	/* Put GIC back to high power mode. */
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_GIC, SC_PM_PW_MODE_ON);
 	plat_gic_cpuif_enable();
 }
 
@@ -246,10 +251,9 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	sc_pm_req_low_power_mode(ipc_handle, SC_R_A35, SC_PM_PW_MODE_OFF);
 
 	/* Request RUN and LP modes for DDR, system interconnect etc. */
-	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A35, SC_PM_SYS_IF_DDR, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_ON);
+	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A35, SC_PM_SYS_IF_DDR, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
 	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A35, SC_PM_SYS_IF_MU, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_LP);
 	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A35, SC_PM_SYS_IF_INTERCONNECT, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_OFF);
-	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A35, SC_PM_SYS_IF_OCMEM, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_OFF);
 
 	return 0;
 }
