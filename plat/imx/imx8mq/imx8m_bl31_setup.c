@@ -217,26 +217,28 @@ void bl31_plat_arch_setup(void)
 	mmap_add_region(0x100000, 0x100000, 0x10000,
 			MT_MEMORY | MT_RW);
 
+	mmap_add_region(0x180000, 0x180000, 0x8000,
+			MT_MEMORY | MT_RW);
+
 	mmap_add_region(0x40000000, 0x40000000, 0xc0000000,
 			MT_MEMORY | MT_RW | MT_NS);
 
 	mmap_add_region(BL31_BASE, BL31_BASE, BL31_RO_LIMIT - BL31_RO_BASE,
 			MT_MEMORY | MT_RO);
-	mmap_add_region(IMX_BOOT_UART_BASE, IMX_BOOT_UART_BASE,
-			0x1000,	MT_DEVICE | MT_RW);
 	mmap_add_region(IMX_ROM_BASE, IMX_ROM_BASE,
 			0x20000, MT_MEMORY | MT_RO);
-	mmap_add_region(IMX_NOC_BASE, IMX_NOC_BASE, 0x100000, MT_DEVICE | MT_RW);
-	/* map the AIPS1 */
-	mmap_add_region(IMX_AIPS1_BASE, IMX_AIPS1_BASE, 0x200000, MT_DEVICE | MT_RW);
-	mmap_add_region(IMX_AIPS3_ARB_BASE, IMX_AIPS3_ARB_BASE, 0x400000, MT_DEVICE | MT_RW);
-	mmap_add_region(PLAT_GICD_BASE, PLAT_GICD_BASE, 0x80000,
-			MT_DEVICE | MT_RW);
-	mmap_add_region(PLAT_GICR_BASE, PLAT_GICR_BASE, 0x80000,
+	/* Map GPV */
+	mmap_add_region(0x32000000, 0x32000000, 0x800000, MT_DEVICE | MT_RW);
+	/* Map AIPS */
+	mmap_add_region(IMX_AIPS_BASE, IMX_AIPS_BASE, IMX_AIPS_SIZE, MT_DEVICE | MT_RW);
+
+	/* Map GIC */
+	mmap_add_region(0x38800000, 0x38800000, 0x200000,
 			MT_DEVICE | MT_RW);
 
-	mmap_add_region(IMX_DDR_IPS_BASE, IMX_DDR_IPS_BASE, 0x8000000, MT_DEVICE | MT_RW);
-	mmap_add_region(IMX_DDRPHY_BASE, IMX_DDRPHY_BASE, 0x2000000, MT_DEVICE | MT_RW);
+	/* Map DDRC/PHY/PERF */
+	mmap_add_region(0x3c000000, 0x3c000000, 0xC000000, MT_DEVICE | MT_RW);
+
 #if USE_COHERENT_MEM
 	mmap_add_region(BL31_COHERENT_RAM_BASE, BL31_COHERENT_RAM_BASE,
 		BL31_COHERENT_RAM_LIMIT - BL31_COHERENT_RAM_BASE,
