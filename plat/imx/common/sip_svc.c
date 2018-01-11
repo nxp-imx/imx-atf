@@ -138,10 +138,10 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 		break;
 	case  FSL_SIP_SRTC:
 		return imx_srtc_handler(smc_fid, handle, x1, x2, x3, x4);
+#endif
 	case  FSL_SIP_BUILDINFO:
 		SMC_RET1(handle, imx_buildinfo_handler(smc_fid, x1, x2, x3, x4));
 		break;
-#endif
 	default:
 		WARN("Unimplemented SIP Service Call: 0x%x \n", smc_fid);
 		SMC_RET1(handle, SMC_UNK);
