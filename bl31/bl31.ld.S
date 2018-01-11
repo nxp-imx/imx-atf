@@ -160,11 +160,13 @@ SECTIONS
     ASSERT(. <= BL31_PROGBITS_LIMIT, "BL31 progbits has exceeded its limit.")
 #endif
 
+#if !STACK_IN_OCRAM_S
     stacks (NOLOAD) : {
         __STACKS_START__ = .;
         *(tzfw_normal_stacks)
         __STACKS_END__ = .;
     } >RAM
+#endif
 
     /*
      * The .bss section gets initialised to 0 at runtime.
@@ -281,5 +283,16 @@ SECTIONS
     xlat_table (NOLOAD) : {
         *(xlat_table)
     } >RAM_S
+
+#if STACK_IN_OCRAM_S
+    stacks (NOLOAD) : {
+        __STACKS_START__ = .;
+        *(tzfw_normal_stacks)
+        __STACKS_END__ = .;
+    } >RAM_S
+#endif
+
+ASSERT(. <= OCRAM_S_LIMIT, "OCRAM_S limit has been exceeded.")
+
 #endif
 }
