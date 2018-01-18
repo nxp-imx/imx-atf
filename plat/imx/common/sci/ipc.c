@@ -35,11 +35,21 @@
 
 #include "mx8_mu.h"
 
+#include <bakery_lock.h>
+DEFINE_BAKERY_LOCK(sc_ipc_bakery_lock);
+#define sc_ipc_lock_init()	bakery_lock_init(&sc_ipc_bakery_lock)
+#define sc_ipc_lock()		bakery_lock_get(&sc_ipc_bakery_lock)
+#define sc_ipc_unlock()		bakery_lock_release(&sc_ipc_bakery_lock)
+
 void sc_call_rpc(sc_ipc_t ipc, sc_rpc_msg_t *msg, bool no_resp)
 {
+	sc_ipc_lock();
+
 	sc_ipc_write(ipc, msg);
 	if (!no_resp)
 		sc_ipc_read(ipc, msg);
+
+	sc_ipc_unlock();
 }
 
 sc_err_t sc_ipc_open(sc_ipc_t *ipc, sc_ipc_id_t id)
@@ -50,6 +60,8 @@ sc_err_t sc_ipc_open(sc_ipc_t *ipc, sc_ipc_id_t id)
 	/* Get MU base associated with IPC channel */
 	if ((ipc == NULL) || (base == 0))
 		return SC_ERR_IPC;
+
+	sc_ipc_lock_init();
 
 	/* Init MU */
 	MU_Init(base);
