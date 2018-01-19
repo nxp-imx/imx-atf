@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015, ARM Limited and Contributors. All rights reserved.
- * Copyright 2017 NXP
+ * Copyright 2018 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -55,8 +55,11 @@ const static int ap_core_index[PLATFORM_CORE_COUNT] = {
 	SC_R_A53_3, SC_R_A72_0, SC_R_A72_1,
 };
 
-static unsigned int a53_cpu_on_number;
-static unsigned int a72_cpu_on_number;
+/* need to enable USE_COHERENT_MEM to avoid coherence issue */
+#if USE_COHERENT_MEM
+static unsigned int a53_cpu_on_number __section("tzfw_coherent_mem");
+static unsigned int a72_cpu_on_number __section("tzfw_coherent_mem");
+#endif
 
 int imx_pwr_domain_on(u_register_t mpidr)
 {
@@ -142,6 +145,12 @@ void imx_pwr_domain_off(const psci_power_state_t *target_state)
 			cci_disable_snoop_dvm_reqs(1);
 	}
 	tf_printf("turn off cluster:%d core:%d\n", cluster_id, cpu_id);
+}
+
+void __dead2 imx_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state)
+{
+	while (1)
+		wfi();
 }
 
 int imx_validate_ns_entrypoint(uintptr_t ns_entrypoint)
@@ -258,6 +267,7 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 	.cpu_standby = imx_cpu_standby,
 	.pwr_domain_suspend = imx_domain_suspend,
 	.pwr_domain_suspend_finish = imx_domain_suspend_finish,
+	.pwr_domain_pwr_down_wfi = imx_pwr_domain_pwr_down_wfi,
 	.get_sys_suspend_power_state = imx_get_sys_suspend_power_state,
 	.system_reset = imx_system_reset,
 	.system_off = imx_system_off,
