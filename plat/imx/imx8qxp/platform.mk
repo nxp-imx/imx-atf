@@ -56,7 +56,7 @@ include plat/imx/common/sci/sci_api.mk
 
 ENABLE_PLAT_COMPAT	:=	0
 MULTI_CONSOLE_API	:=	1
-USE_COHERENT_MEM	:=	0
+USE_COHERENT_MEM	:=	1
 RESET_TO_BL31		:=	1
 ERROR_DEPRECATED	:=	1
 ARM_GIC_ARCH		:=	3

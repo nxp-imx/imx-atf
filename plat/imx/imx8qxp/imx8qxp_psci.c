@@ -111,6 +111,12 @@ void imx_pwr_domain_off(const psci_power_state_t *target_state)
 	tf_printf("turn off cluster:%d core:%d\n", cluster_id, cpu_id);
 }
 
+void __dead2 imx_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state)
+{
+	while (1)
+		wfi();
+}
+
 int imx_validate_ns_entrypoint(uintptr_t ns_entrypoint)
 {
 	/*
@@ -208,6 +214,7 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 	.pwr_domain_on = imx_pwr_domain_on,
 	.pwr_domain_on_finish = imx_pwr_domain_on_finish,
 	.pwr_domain_off = imx_pwr_domain_off,
+	.pwr_domain_pwr_down_wfi = imx_pwr_domain_pwr_down_wfi,
 	.validate_ns_entrypoint = imx_validate_ns_entrypoint,
 	.validate_power_state = imx_validate_power_state,
 	.cpu_standby = imx_cpu_standby,
