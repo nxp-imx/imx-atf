@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2017, ARM Limited and Contributors. All rights reserved.
- * Copyright 2017 NXP
+ * Copyright 2018 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -16,7 +16,7 @@
 #include <string.h>
 #include "psci_private.h"
 
-extern void imx8qm_kill_cpu(unsigned int target_idx);
+extern int imx8qm_kill_cpu(unsigned int target_idx);
 extern void imx8qxp_kill_cpu(unsigned int target_idx);
 
 /*******************************************************************************
@@ -246,7 +246,7 @@ int psci_affinity_info(u_register_t target_affinity,
 	 */
 	if (ret == 1)
 #ifdef PLAT_IMX8QM
-		imx8qm_kill_cpu(target_idx);
+		ret = imx8qm_kill_cpu(target_idx);
 #endif
 #ifdef PLAT_IMX8QXP
 		imx8qxp_kill_cpu(target_idx);

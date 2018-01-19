@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015, ARM Limited and Contributors. All rights reserved.
- * Copyright 2017 NXP
+ * Copyright 2018 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -55,26 +55,57 @@ const static int ap_core_index[PLATFORM_CORE_COUNT] = {
 	SC_R_A53_3, SC_R_A72_0, SC_R_A72_1,
 };
 
-static unsigned int a53_cpu_on_number;
-static unsigned int a72_cpu_on_number;
+/* need to enable USE_COHERENT_MEM to avoid coherence issue */
+#if USE_COHERENT_MEM
+static unsigned int a53_cpu_on_number __section("tzfw_coherent_mem");
+static unsigned int a72_cpu_on_number __section("tzfw_coherent_mem");
+static unsigned int cluster_killed __section("tzfw_coherent_mem");
+#endif
 
-void imx8qm_kill_cpu(unsigned int target_idx)
+int imx8qm_kill_cpu(unsigned int target_idx)
 {
-	tf_printf("kill cluster %d, cpu %d\n", target_idx / 4, target_idx % 4);
+	tf_printf("kill cluster %d, cpu %d, cluster_killed = %d\n",
+		target_idx / 4, target_idx % 4, cluster_killed);
+	/*
+	 * PSCI v0.2 affinity level state returned by AFFINITY_INFO
+	 * #define PSCI_0_2_AFFINITY_LEVEL_ON			   0
+	 * #define PSCI_0_2_AFFINITY_LEVEL_OFF			   1
+	 * #define PSCI_0_2_AFFINITY_LEVEL_ON_PENDING	   2
+	 * Return similar return values from this function
+	 */
+
+	if (cluster_killed == 0xff)
+		return 0;
 
 	if (sc_pm_cpu_start(ipc_handle, ap_core_index[target_idx],
 		false, 0x80000000) != SC_ERR_NONE) {
 		ERROR("cluster %d core %d power down failed!\n",
 			target_idx / 4, target_idx % 4);
-		return;
+		return 0;
 	}
 
 	if (sc_pm_set_resource_power_mode(ipc_handle, ap_core_index[target_idx],
 		SC_PM_PW_MODE_OFF) != SC_ERR_NONE) {
 		ERROR("cluster %d core %d power down failed!\n",
 			target_idx / 4, target_idx % 4);
-		return;
+		return 0;
 	}
+
+	if (cluster_killed == 0) {
+		if (--a53_cpu_on_number == 0) {
+			cci_disable_snoop_dvm_reqs(0);
+			sc_pm_set_resource_power_mode(ipc_handle, SC_R_A53, SC_PM_PW_MODE_OFF);
+		}
+	} else {
+		if (--a72_cpu_on_number == 0) {
+			cci_disable_snoop_dvm_reqs(1);
+			sc_pm_set_resource_power_mode(ipc_handle, SC_R_A72, SC_PM_PW_MODE_OFF);
+		}
+	}
+
+	cluster_killed = 0xff;
+
+	return 1;
 }
 
 int imx_pwr_domain_on(u_register_t mpidr)
@@ -144,24 +175,16 @@ void imx_pwr_domain_on_finish(const psci_power_state_t *target_state)
 
 void imx_pwr_domain_off(const psci_power_state_t *target_state)
 {
-	u_register_t mpidr = read_mpidr_el1();
-	unsigned int cluster_id = MPIDR_AFFLVL1_VAL(mpidr);
-	unsigned int cpu_id = MPIDR_AFFLVL0_VAL(mpidr);
-
 	plat_gic_cpuif_disable();
+}
 
-	if (cluster_id == 0) {
-		if (--a53_cpu_on_number == 0) {
-			cci_disable_snoop_dvm_reqs(0);
-			sc_pm_set_resource_power_mode(ipc_handle, SC_R_A53, SC_PM_PW_MODE_OFF);
-		}
-	} else {
-		if (--a72_cpu_on_number == 0) {
-			cci_disable_snoop_dvm_reqs(1);
-			sc_pm_set_resource_power_mode(ipc_handle, SC_R_A72, SC_PM_PW_MODE_OFF);
-		}
-	}
-	tf_printf("turn off cluster:%d core:%d\n", cluster_id, cpu_id);
+void __dead2 imx_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state)
+{
+	u_register_t mpidr = read_mpidr_el1();
+	cluster_killed = MPIDR_AFFLVL1_VAL(mpidr);
+
+	while (1)
+		wfi();
 }
 
 int imx_validate_ns_entrypoint(uintptr_t ns_entrypoint)
@@ -281,6 +304,7 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 	.cpu_standby = imx_cpu_standby,
 	.pwr_domain_suspend = imx_domain_suspend,
 	.pwr_domain_suspend_finish = imx_domain_suspend_finish,
+	.pwr_domain_pwr_down_wfi = imx_pwr_domain_pwr_down_wfi,
 	.get_sys_suspend_power_state = imx_get_sys_suspend_power_state,
 	.system_reset = imx_system_reset,
 	.system_off = imx_system_off,
@@ -296,6 +320,8 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	imx_mailbox_init(sec_entrypoint);
 	/* sec_entrypoint is used for warm reset */
 	*psci_ops = &imx_plat_psci_ops;
+
+	cluster_killed = 0xff;
 
 	if (cluster_id == 0)
 		a53_cpu_on_number++;

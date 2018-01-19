@@ -1,6 +1,6 @@
 #
 # Copyright (c) 2015, ARM Limited and Contributors. All rights reserved.
-# Copyright 2017 NXP
+# Copyright 2018 NXP
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -58,7 +58,7 @@ BL31_SOURCES		+=	plat/freescale/common/lpuart_console.S		\
 include plat/freescale/common/sci/sci_api.mk
 
 ENABLE_PLAT_COMPAT	:=	0
-USE_COHERENT_MEM	:=	0
+USE_COHERENT_MEM	:=	1
 RESET_TO_BL31		:=	1
 ERROR_DEPRECATED	:=	1
 A53_DISABLE_NON_TEMPORAL_HINT := 0
