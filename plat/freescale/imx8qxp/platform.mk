@@ -55,7 +55,7 @@ BL31_SOURCES		+=	plat/freescale/common/lpuart_console.S		\
 include plat/freescale/common/sci/sci_api.mk
 
 ENABLE_PLAT_COMPAT	:=	0
-USE_COHERENT_MEM	:=	0
+USE_COHERENT_MEM	:=	1
 RESET_TO_BL31		:=	1
 ERROR_DEPRECATED	:=	1
 ARM_GIC_ARCH		:=	3

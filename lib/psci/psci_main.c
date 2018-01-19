@@ -17,7 +17,7 @@
 #include "psci_private.h"
 
 extern int imx8qm_kill_cpu(unsigned int target_idx);
-extern void imx8qxp_kill_cpu(unsigned int target_idx);
+extern int imx8qxp_kill_cpu(unsigned int target_idx);
 
 /*******************************************************************************
  * PSCI frontend api for servicing SMCs. Described in the PSCI spec.
@@ -249,7 +249,7 @@ int psci_affinity_info(u_register_t target_affinity,
 		ret = imx8qm_kill_cpu(target_idx);
 #endif
 #ifdef PLAT_IMX8QXP
-		imx8qxp_kill_cpu(target_idx);
+		ret = imx8qxp_kill_cpu(target_idx);
 #endif
 
 	return ret;

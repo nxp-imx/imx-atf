@@ -39,6 +39,11 @@
 extern sc_ipc_t ipc_handle;
 extern void mdelay(uint32_t msec);
 
+/* need to enable USE_COHERENT_MEM to avoid coherence issue */
+#if USE_COHERENT_MEM
+static unsigned int cluster_killed __section("tzfw_coherent_mem");
+#endif
+
 const unsigned char imx_power_domain_tree_desc[] =
 {
 	/* number of root nodes */
@@ -60,23 +65,35 @@ plat_local_state_t plat_get_target_pwr_state(unsigned int lvl,
 	return 0;
 }
 
-void imx8qxp_kill_cpu(unsigned int target_idx)
+int imx8qxp_kill_cpu(unsigned int target_idx)
 {
 	tf_printf("kill cluster %d, cpu %d\n", target_idx / 4, target_idx % 4);
+
+	/*
+	 * PSCI v0.2 affinity level state returned by AFFINITY_INFO
+	 * #define PSCI_0_2_AFFINITY_LEVEL_ON			   0
+	 * #define PSCI_0_2_AFFINITY_LEVEL_OFF			   1
+	 * #define PSCI_0_2_AFFINITY_LEVEL_ON_PENDING	   2
+	 * Return similar return values from this function
+	 */
+	if (cluster_killed == 0xff)
+		return 0;
 
 	if (sc_pm_cpu_start(ipc_handle, ap_core_index[target_idx],
 		false, 0x80000000) != SC_ERR_NONE) {
 		ERROR("cluster %d core %d power down failed!\n",
 			target_idx / 4, target_idx % 4);
-		return;
+		return 0;
 	}
 
 	if (sc_pm_set_resource_power_mode(ipc_handle, ap_core_index[target_idx],
 		SC_PM_PW_MODE_OFF) != SC_ERR_NONE) {
 		ERROR("cluster %d core %d power down failed!\n",
 			target_idx / 4, target_idx % 4);
-		return;
+		return 0;
 	}
+
+	return 1;
 }
 
 int imx_pwr_domain_on(u_register_t mpidr)
@@ -127,6 +144,15 @@ void imx_pwr_domain_off(const psci_power_state_t *target_state)
 
 	plat_gic_cpuif_disable();
 	tf_printf("turn off cluster:%d core:%d\n", cluster_id, cpu_id);
+}
+
+void __dead2 imx_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state)
+{
+	u_register_t mpidr = read_mpidr_el1();
+	cluster_killed = MPIDR_AFFLVL1_VAL(mpidr);
+
+	while (1)
+		wfi();
 }
 
 int imx_validate_ns_entrypoint(uintptr_t ns_entrypoint)
@@ -229,6 +255,7 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 	.pwr_domain_on = imx_pwr_domain_on,
 	.pwr_domain_on_finish = imx_pwr_domain_on_finish,
 	.pwr_domain_off = imx_pwr_domain_off,
+	.pwr_domain_pwr_down_wfi = imx_pwr_domain_pwr_down_wfi,
 	.validate_ns_entrypoint = imx_validate_ns_entrypoint,
 	.validate_power_state = imx_validate_power_state,
 	.cpu_standby = imx_cpu_standby,
@@ -246,6 +273,8 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	imx_mailbox_init(sec_entrypoint);
 	/* sec_entrypoint is used for warm reset */
 	*psci_ops = &imx_plat_psci_ops;
+
+	cluster_killed = 0xff;
 
 	/* request low power mode for A35 cluster, only need to do once */
 	sc_pm_req_low_power_mode(ipc_handle, SC_R_A35, SC_PM_PW_MODE_OFF);
