@@ -2964,16 +2964,18 @@ int lpddr4_dvfs_handler(uint32_t smc_fid,
 			}
 		}
 
-		mmio_write_32(0x30340004, mmio_read_32(0x30340004) | (1 << 12));
-
 		/* make sure all the core in WFE */
 		online_cores &= ~(0x1 << (cpu_id * 8));
 		while (1) {
+			mmio_write_32(0x30340004, mmio_read_32(0x30340004) | (1 << 12));
 			if (online_cores == wfe_done)
 				break;
 		}
 
 		mmio_write_32(0x30340004, mmio_read_32(0x30340004) & ~(1 << 12));
+
+		/* flush the L1/L2 cache */
+		dcsw_op_all(DCCSW);
 
 		lpddr4_dvfs_hwffc(init_vrcg, init_fsp, target_freq, discamdrain);
 		init_fsp = (~init_fsp) & 0x1;
