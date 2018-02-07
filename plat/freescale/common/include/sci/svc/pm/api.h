@@ -220,7 +220,7 @@ sc_err_t sc_pm_set_sys_power_mode(sc_ipc_t ipc, sc_pm_power_mode_t mode);
  * All resources owned by \a pt that are on will have their power
  * mode changed to \a mode.
  *
- * @see sc_pm_set_partition_power_mode().
+ * @see sc_pm_set_resource_power_mode().
  */
 sc_err_t sc_pm_set_partition_power_mode(sc_ipc_t ipc, sc_rm_pt_t pt,
     sc_pm_power_mode_t mode);
@@ -262,7 +262,7 @@ sc_err_t sc_pm_get_sys_power_mode(sc_ipc_t ipc, sc_rm_pt_t pt,
  * resources in display and capture subsystems which require the display
  * controller or the imaging subsytem to be powered up first.
  *
- *  @see sc_pm_set_sys_power_mode().
+ *  @see sc_pm_set_partition_power_mode().
  */
 sc_err_t sc_pm_set_resource_power_mode(sc_ipc_t ipc, sc_rsrc_t resource,
     sc_pm_power_mode_t mode);
@@ -473,7 +473,8 @@ sc_err_t sc_pm_get_clock_parent(sc_ipc_t ipc, sc_rsrc_t resource,
  * @return Returns an error code (SC_ERR_NONE = success).
  *
  * Return errors:
- * - SC_ERR_PARM if invalid type
+ * - SC_ERR_PARM if invalid type,
+ * - SC_ERR_NOACCESS if caller not the owner of SC_R_SYSTEM
  *
  * If this function returns, then the reset did not occur due to an
  * invalid parameter.
