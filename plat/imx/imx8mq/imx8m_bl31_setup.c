@@ -300,6 +300,9 @@ void bl31_platform_setup(void)
 
 	/* gpc init */
 	imx_gpc_init();
+
+	/* switch DDR frequency to 3200 mts */
+	lpddr4_switch_to_3200();
 }
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(unsigned int type)
