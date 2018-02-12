@@ -7,6 +7,12 @@ PLAT_GIC_SOURCES	:=	drivers/arm/gic/v3/gicv3_helpers.c	\
 				plat/common/plat_gicv3.c		\
 				plat/imx/common/plat_imx8_gic.c
 
+PLAT_DDR_SOURCES	:=	plat/imx/imx8mq/ddr/lpddr4_ddrc_cfg.c	\
+				plat/imx/imx8mq/ddr/lpddr4_phy_cfg.c	\
+				plat/imx/imx8mq/ddr/lpddr4_dvfs.c	\
+				plat/imx/imx8mq/ddr/lpddr4_swffc.c	\
+				plat/imx/imx8mq/ddr/lpddr4_retention.c
+
 BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S		\
 				plat/imx/common/mxcuart_console.S	\
 				plat/imx/common/sip_svc.c		\
@@ -14,7 +20,6 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S		\
 				plat/imx/imx8mq/src.c			\
 				plat/imx/imx8mq/hab.c			\
 				plat/imx/imx8mq/gpc.c			\
-				plat/imx/imx8mq/ddrc.c			\
 				plat/imx/imx8mq/imx8m_psci.c		\
 				plat/imx/imx8mq/imx_csu.c		\
 				plat/imx/imx8mq/imx_rdc.c		\
@@ -25,6 +30,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S		\
 				lib/cpus/aarch64/cortex_a53.S		\
 				drivers/console/aarch64/console.S	\
 				${PLAT_GIC_SOURCES}			\
+				${PLAT_DDR_SOURCES}			\
 				drivers/arm/tzc/tzc380.c
 
 ENABLE_PLAT_COMPAT	:=	0
