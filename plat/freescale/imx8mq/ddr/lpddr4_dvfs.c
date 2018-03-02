@@ -16,6 +16,9 @@
 
 #include "lpddr4_dvfs.h"
 
+#define DDRC_LPDDR4	(1 << 5)
+#define DDR_TYPE_MASK	0x3f
+
 /* lock used for DDR DVFS */
 spinlock_t dfs_lock;
 /* IRQ used for DDR DVFS */
@@ -25,9 +28,15 @@ static volatile bool wait_ddrc_hwffc_done = true;
 
 static unsigned int init_fsp = 0x1;
 
+static inline int get_ddr_type(void)
+{
+	return mmio_read_32(IMX_DDRC_BASE + DDRC_MSTR(0)) & DDR_TYPE_MASK;
+}
+
 void lpddr4_switch_to_3200(void)
 {
-	lpddr4_dvfs_swffc(init_fsp, 0x0);
+	if (get_ddr_type() == DDRC_LPDDR4)
+		lpddr4_dvfs_swffc(init_fsp, 0x0);
 }
 
 /*
