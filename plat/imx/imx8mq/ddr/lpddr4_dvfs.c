@@ -31,7 +31,7 @@ static unsigned int init_fsp = 0x1;
 
 static inline int get_ddr_type(void)
 {
-	return mmio_read_32(IMX_DDRC_BASE + DDRC_MSTR(0)) & DDR_TYPE_MASK;
+	return mmio_read_32(DDRC_MSTR(0)) & DDR_TYPE_MASK;
 }
 
 void lpddr4_switch_to_3200(void)
