@@ -25,7 +25,12 @@ static struct csu_slave_conf csu_def_csl_conf[] = {
 	{CSU_CSLn_GPIO2, CSU_RW, 0},
 	{CSU_CSLn_GPIO3, CSU_RW, 0},
 	{CSU_CSLn_GPIO4, CSU_RW, 0},
+#if defined (CSU_RDC_TEST)
+	{CSU_CSLn_GPIO5, CSU_SSRW, 0},
+#else
 	{CSU_CSLn_GPIO5, CSU_RW, 0},
+#endif
+	{CSU_CSLn_Reserved1, CSU_RW, 0},
 	{CSU_CSLn_ANA_TSENSOR, CSU_RW, 0},
 	{CSU_CSLn_ANA_OSC, CSU_RW, 0},
 	{CSU_CSLn_WDOG1, CSU_RW, 0},
@@ -275,3 +280,10 @@ void csu_set_default_secure_configs(void)
 {
 	csu_set_sa_configs(sa_def_configs, (uint32_t)ARRAY_SIZE(sa_def_configs));
 }
+
+#if defined (CSU_RDC_TEST)
+void csu_test(void)
+{
+	csu_set_default_slaves_modes();
+}
+#endif

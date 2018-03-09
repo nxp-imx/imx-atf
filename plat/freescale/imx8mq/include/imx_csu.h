@@ -211,4 +211,7 @@ void csu_get_sa_index_config(enum csu_sa_idx index, uint8_t *enable,
 void csu_set_sa_configs(struct csu_sa_conf *sa_configs,  uint32_t count);
 void csu_set_default_secure_configs(void);
 
+#if defined (CSU_RDC_TEST)
+void csu_test(void);
+#endif
 #endif /* __IMX_CSU_H__ */
