@@ -218,4 +218,7 @@ int imx_rdc_set_mda(struct rdc_mda_conf *p);
 int imx_rdc_set_masters(struct rdc_mda_conf *masters_list, uint32_t count);
 void imx_rdc_set_masters_default(void);
 
+#if defined (CSU_RDC_TEST)
+void rdc_test(void);
+#endif
 #endif	/* __IMX_RDC_H__*/

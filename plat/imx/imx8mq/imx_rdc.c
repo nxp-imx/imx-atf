@@ -142,6 +142,18 @@ int imx_rdc_set_masters(struct rdc_mda_conf *masters_list, uint32_t count)
 	return ret;
 }
 
+#if defined (CSU_RDC_TEST)
+/* Default peripherals settings as an example */
+static struct rdc_pdap_conf periph_config[] = {
+	{RDC_PDAP_GPIO4, 0x30, 0},
+};
+
+
+/* Default masters settings as an example */
+static struct rdc_mda_conf masters_config[] = {
+	{RDC_MDA_A53, 0, 0},
+};
+#else
 /* Default peripherals settings as an example */
 static struct rdc_pdap_conf periph_config[] = {
 	{RDC_PDAP_GPIO1, 0x3, 0},
@@ -156,7 +168,7 @@ static struct rdc_mda_conf masters_config[] = {
 	{RDC_MDA_A53, 0, 0},
 	{RDC_MDA_CAAM, 0, 0},
 };
-
+#endif
 void imx_rdc_set_peripherals_default(void)
 {
 	imx_rdc_set_peripherals(periph_config, ARRAY_SIZE(periph_config));
@@ -166,3 +178,10 @@ void imx_rdc_set_masters_default(void)
 {
 	imx_rdc_set_masters(masters_config, ARRAY_SIZE(masters_config));
 }
+#if defined (CSU_RDC_TEST)
+void rdc_test(void)
+{
+	imx_rdc_set_peripherals_default();
+	imx_rdc_set_masters_default();
+}
+#endif
