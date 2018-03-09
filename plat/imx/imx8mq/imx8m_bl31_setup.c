@@ -150,12 +150,14 @@ void bl31_tzc380_setup(void)
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 			u_register_t arg2, u_register_t arg3)
 {
-	int i;
 	uint32_t sm_cmd;
+#if !defined (CSU_RDC_TEST)
+	int i;
 	/* enable CSU NS access permission */
 	for (i = 0; i < 64; i++) {
 		mmio_write_32(0x303e0000 + i * 4, 0xffffffff);
 	}
+#endif
 
 	/* Dealloc part 0 and 2 with current DID */
 	sm_cmd = (0 << SMC_PART_SHIFT | SMC_CMD_DEALLOC_PART);
@@ -247,6 +249,11 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.args.arg2 = 0x2000000;
 #endif
 	bl31_tzc380_setup();
+
+#if defined (CSU_RDC_TEST)
+	csu_test();
+	rdc_test();
+#endif
 }
 
 void bl31_plat_arch_setup(void)
