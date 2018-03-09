@@ -151,18 +151,22 @@ void csu_set_slave_index_mode(enum csu_csln_idx index,
 		NOTICE("CSU CSLn(%d) already locked with mode:0x%x\n", index, read_mode);
 		return;
 	}
-	if (read_mode == mode && lock == 0) {
+	if (read_mode == mode) {
 		NOTICE("CSU CSLn(%d) mode 0x%x already written\n", index, read_mode);
 		return;
 	}
 	reg = (uintptr_t)(IMX_CSU_BASE + (index / 2) * 4);
 	tmp = mmio_read_32(reg);
-	if (index % 2 == 0) {
+
+	if (lock)
+		mode |= 1 << 8;
+
+	if (index % 2) {
 		tmp &= 0x0000ffff;
-		tmp |= mode << 16 | lock << 24;
+		tmp |= mode << 16;
 	} else {
 		tmp &= 0xffff0000;
-		tmp |= mode | lock << 8;
+		tmp |= mode;
 	}
 	mmio_write_32(reg, tmp);
 }
@@ -175,13 +179,13 @@ void csu_get_slave_index_mode(enum csu_csln_idx index,
 
 	reg = (uintptr_t)(IMX_CSU_BASE + (index / 2) * 4);
 	tmp = mmio_read_32(reg);
-	if (index % 2 == 0) {
-		*mode = (uint16_t)(tmp >> 16 & 0xff);
-		*lock = (uint8_t)(tmp >> 24 & 0x01);
-	} else {
-		*mode = (uint16_t)(tmp & 0xff);
-		*lock = (uint8_t)(tmp >> 8 & 0x01);
-	}
+	if (index % 2)
+		tmp = tmp >> 16;
+
+	tmp &= 0x1ff;
+
+	*mode = tmp & 0xff;
+	*lock = tmp >> 8;	
 }
 
 void csu_set_slaves_modes(struct csu_slave_conf *csu_config, uint32_t count)
