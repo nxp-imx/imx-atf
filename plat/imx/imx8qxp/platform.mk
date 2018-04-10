@@ -33,6 +33,8 @@ PLAT_INCLUDES		:=	-Iplat/imx/imx8qxp/include		\
 				-Iplat/imx/common/include		\
 
 PLAT_GIC_SOURCES	:=	drivers/arm/gic/v3/gicv3_helpers.c	\
+				drivers/arm/gic/v3/arm_gicv3_common.c	\
+				drivers/arm/gic/v3/gic500.c		\
 				drivers/arm/gic/v3/gicv3_main.c		\
 				drivers/arm/gic/common/gic_common.c	\
 				plat/common/plat_gicv3.c		\
