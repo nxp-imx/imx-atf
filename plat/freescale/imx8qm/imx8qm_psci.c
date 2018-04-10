@@ -33,12 +33,15 @@
 #include <arch_helpers.h>
 #include <cci.h>
 #include <debug.h>
+#include <gicv3.h>
+#include <mmio.h>
 #include <plat_imx8.h>
 #include <psci.h>
 #include <sci/sci.h>
 
 extern sc_ipc_t ipc_handle;
-extern void mdelay(uint32_t msec);
+/* save gic dist/redist context when GIC is poewr down */
+static struct plat_gic_ctx imx_gicv3_ctx;
 
 const unsigned char imx_power_domain_tree_desc[] =
 {
@@ -61,6 +64,27 @@ static unsigned int a53_cpu_on_number __section("tzfw_coherent_mem");
 static unsigned int a72_cpu_on_number __section("tzfw_coherent_mem");
 static unsigned int cluster_killed __section("tzfw_coherent_mem");
 #endif
+
+static void imx_enable_irqstr_wakeup(void)
+{
+	uint32_t irq_mask;
+	gicv3_dist_ctx_t *dist_ctx = &imx_gicv3_ctx.dist_ctx;
+
+	/* enable the irqsteer to handle wakeup irq */
+	mmio_write_32(IMX_WUP_IRQSTR, 0x1);
+	for (int i = 0; i < 15; i++) {
+		irq_mask = dist_ctx->gicd_isenabler[i];
+		mmio_write_32(IMX_WUP_IRQSTR + 0x3c - 0x4 * i, irq_mask);
+	}
+}
+
+static void imx_disable_irqstr_wakeup(void)
+{
+	/* disable the irqsteer */
+	mmio_write_32(IMX_WUP_IRQSTR, 0x0);
+	for (int i = 0; i < 16; i ++)
+		mmio_write_32(IMX_WUP_IRQSTR + 0x4 + 0x4 * i, 0x0);
+}
 
 void imx8qm_kill_cpu(unsigned int target_idx)
 {
@@ -229,17 +253,24 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 
 	plat_gic_cpuif_disable();
 
+	/* save gic context */
+	plat_gic_save(cpu_id, &imx_gicv3_ctx);
+	/* enable the irqsteer for wakeup */
+	imx_enable_irqstr_wakeup();
+
 	cci_disable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(mpidr));
 
 	/* Put GIC in LP mode. */
-	sc_pm_set_resource_power_mode(ipc_handle, SC_R_GIC, SC_PM_PW_MODE_LP);
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_GIC, SC_PM_PW_MODE_OFF);
+	/* Put IRQSTR in STBY mode */
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_STBY);
 
 	if (cluster_id == 0) {
 		sc_pm_set_cpu_resume_addr(ipc_handle, ap_core_index[cpu_id], 0x080000000);
-		sc_pm_req_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_OFF);
+		sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_IRQSTEER);
 	} else {
 		sc_pm_set_cpu_resume_addr(ipc_handle, ap_core_index[cpu_id + 4], 0x080000000);
-		sc_pm_req_low_power_mode(ipc_handle, ap_core_index[cpu_id + 4], SC_PM_PW_MODE_OFF);
+		sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id + 4], SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_IRQSTEER);
 	}
 }
 
@@ -250,14 +281,20 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 	unsigned int cpu_id = MPIDR_AFFLVL0_VAL(mpidr);
 
 	if (cluster_id == 0)
-		sc_pm_req_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_ON);
+		sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_ON, SC_PM_WAKE_SRC_GIC);
 	else
-		sc_pm_req_low_power_mode(ipc_handle, ap_core_index[cpu_id + 4], SC_PM_PW_MODE_ON);
+		sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id + 4], SC_PM_PW_MODE_ON, SC_PM_WAKE_SRC_GIC);
 
-	/* Put GIC back to high power mode. */
+	/* Put GIC/IRQSTR back to high power mode. */
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_GIC, SC_PM_PW_MODE_ON);
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_ON);
 
 	cci_enable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(mpidr));
+
+	/* restore gic context */
+	plat_gic_restore(cpu_id, &imx_gicv3_ctx);
+	/* disable the irqsteer wakeup */
+	imx_disable_irqstr_wakeup();
 
 	plat_gic_cpuif_enable();
 }
@@ -327,10 +364,10 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	/* Request RUN and LP modes for DDR, system interconnect etc. */
 	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A53, SC_PM_SYS_IF_DDR, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
 	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_DDR, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
-	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A53, SC_PM_SYS_IF_MU, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_LP);
-	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_MU, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_LP);
-	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A53, SC_PM_SYS_IF_INTERCONNECT, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_OFF);
-	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_INTERCONNECT, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_OFF);
+	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A53, SC_PM_SYS_IF_MU, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
+	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_MU, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
+	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A53, SC_PM_SYS_IF_INTERCONNECT, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
+	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_INTERCONNECT, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
 
 	return 0;
 }
