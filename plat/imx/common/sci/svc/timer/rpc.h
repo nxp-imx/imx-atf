@@ -1,31 +1,8 @@
 /*
- * Copyright 2017 NXP
+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
+ * Copyright 2017-2018 NXP
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
- * Neither the name of NXP nor the names of its contributors may be used
- * to endorse or promote products derived from this software without specific
- * prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 /*!
@@ -35,35 +12,36 @@
  * @{
  */
 
-#ifndef _SC_TIMER_RPC_H
-#define _SC_TIMER_RPC_H
+#ifndef SC_TIMER_RPC_H
+#define SC_TIMER_RPC_H
 
 /* Includes */
 
 /* Defines */
 
-/* Types */
-
 /*!
- * This type is used to indicate RPC TIMER function calls.
+ * @name Defines for RPC TIMER function calls
  */
-typedef enum timer_func_e
-{
-    TIMER_FUNC_UNKNOWN = 0, /*!< Unknown function */
-    TIMER_FUNC_SET_WDOG_TIMEOUT = 1, /*!< Index for timer_set_wdog_timeout() RPC call */
-    TIMER_FUNC_SET_WDOG_PRE_TIMEOUT = 12, /*!< Index for timer_set_wdog_pre_timeout() RPC call */
-    TIMER_FUNC_START_WDOG = 2, /*!< Index for timer_start_wdog() RPC call */
-    TIMER_FUNC_STOP_WDOG = 3, /*!< Index for timer_stop_wdog() RPC call */
-    TIMER_FUNC_PING_WDOG = 4, /*!< Index for timer_ping_wdog() RPC call */
-    TIMER_FUNC_GET_WDOG_STATUS = 5, /*!< Index for timer_get_wdog_status() RPC call */
-    TIMER_FUNC_PT_GET_WDOG_STATUS = 13, /*!< Index for timer_pt_get_wdog_status() RPC call */
-    TIMER_FUNC_SET_WDOG_ACTION = 10, /*!< Index for timer_set_wdog_action() RPC call */
-    TIMER_FUNC_SET_RTC_TIME = 6, /*!< Index for timer_set_rtc_time() RPC call */
-    TIMER_FUNC_GET_RTC_TIME = 7, /*!< Index for timer_get_rtc_time() RPC call */
-    TIMER_FUNC_GET_RTC_SEC1970 = 9, /*!< Index for timer_get_rtc_sec1970() RPC call */
-    TIMER_FUNC_SET_RTC_ALARM = 8, /*!< Index for timer_set_rtc_alarm() RPC call */
-    TIMER_FUNC_SET_RTC_CALB = 11, /*!< Index for timer_set_rtc_calb() RPC call */
-} timer_func_t;
+/*@{*/
+#define TIMER_FUNC_UNKNOWN 0	/* Unknown function */
+#define TIMER_FUNC_SET_WDOG_TIMEOUT 1U	/* Index for timer_set_wdog_timeout() RPC call */
+#define TIMER_FUNC_SET_WDOG_PRE_TIMEOUT 12U	/* Index for timer_set_wdog_pre_timeout() RPC call */
+#define TIMER_FUNC_START_WDOG 2U	/* Index for timer_start_wdog() RPC call */
+#define TIMER_FUNC_STOP_WDOG 3U	/* Index for timer_stop_wdog() RPC call */
+#define TIMER_FUNC_PING_WDOG 4U	/* Index for timer_ping_wdog() RPC call */
+#define TIMER_FUNC_GET_WDOG_STATUS 5U	/* Index for timer_get_wdog_status() RPC call */
+#define TIMER_FUNC_PT_GET_WDOG_STATUS 13U	/* Index for timer_pt_get_wdog_status() RPC call */
+#define TIMER_FUNC_SET_WDOG_ACTION 10U	/* Index for timer_set_wdog_action() RPC call */
+#define TIMER_FUNC_SET_RTC_TIME 6U	/* Index for timer_set_rtc_time() RPC call */
+#define TIMER_FUNC_GET_RTC_TIME 7U	/* Index for timer_get_rtc_time() RPC call */
+#define TIMER_FUNC_GET_RTC_SEC1970 9U	/* Index for timer_get_rtc_sec1970() RPC call */
+#define TIMER_FUNC_SET_RTC_ALARM 8U	/* Index for timer_set_rtc_alarm() RPC call */
+#define TIMER_FUNC_SET_RTC_PERIODIC_ALARM 14U	/* Index for timer_set_rtc_periodic_alarm() RPC call */
+#define TIMER_FUNC_CANCEL_RTC_ALARM 15U	/* Index for timer_cancel_rtc_alarm() RPC call */
+#define TIMER_FUNC_SET_RTC_CALB 11U	/* Index for timer_set_rtc_calb() RPC call */
+/*@}*/
+
+/* Types */
 
 /* Functions */
 
@@ -83,6 +61,6 @@ void timer_dispatch(sc_rm_pt_t caller_pt, sc_rpc_msg_t *msg);
  */
 void timer_xlate(sc_ipc_t ipc, sc_rpc_msg_t *msg);
 
-#endif				/* _SC_TIMER_RPC_H */
+#endif				/* SC_TIMER_RPC_H */
 
 /**@}*/
