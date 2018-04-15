@@ -65,35 +65,26 @@ plat_local_state_t plat_get_target_pwr_state(unsigned int lvl,
 	return 0;
 }
 
-int imx8qxp_kill_cpu(unsigned int target_idx)
+void imx8qxp_kill_cpu(unsigned int target_idx)
 {
 	tf_printf("kill cluster %d, cpu %d\n", target_idx / 4, target_idx % 4);
 
-	/*
-	 * PSCI v0.2 affinity level state returned by AFFINITY_INFO
-	 * #define PSCI_0_2_AFFINITY_LEVEL_ON			   0
-	 * #define PSCI_0_2_AFFINITY_LEVEL_OFF			   1
-	 * #define PSCI_0_2_AFFINITY_LEVEL_ON_PENDING	   2
-	 * Return similar return values from this function
-	 */
 	if (cluster_killed == 0xff)
-		return 0;
+		return;
 
 	if (sc_pm_cpu_start(ipc_handle, ap_core_index[target_idx],
 		false, 0x80000000) != SC_ERR_NONE) {
 		ERROR("cluster %d core %d power down failed!\n",
 			target_idx / 4, target_idx % 4);
-		return 0;
+		return;
 	}
 
 	if (sc_pm_set_resource_power_mode(ipc_handle, ap_core_index[target_idx],
 		SC_PM_PW_MODE_OFF) != SC_ERR_NONE) {
 		ERROR("cluster %d core %d power down failed!\n",
 			target_idx / 4, target_idx % 4);
-		return 0;
+		return;
 	}
-
-	return 1;
 }
 
 int imx_pwr_domain_on(u_register_t mpidr)
