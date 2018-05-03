@@ -310,6 +310,11 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		     IMX_CONSOLE_BAUDRATE);
 #endif
 
+	/* Turn on MU1 for non-secure OS/Hypervisor
+	*
+	*/
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_MU_1A, SC_PM_PW_MODE_ON);
+
 	/* create new partition for non-secure OS/Hypervisor
 	 *
 	 * uses global structs defined in sec_rsrc.h
