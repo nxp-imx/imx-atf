@@ -54,6 +54,6 @@
 #define SC_IPC_AP_CH3       	(MU_BASE_ADDR(3))
 #define SC_IPC_AP_CH4       	(MU_BASE_ADDR(4))
 
-#define SC_IPC_CH		SC_IPC_AP_CH1
+#define SC_IPC_CH		SC_IPC_AP_CH0
 
 #endif /* _SC_SCI_H */
