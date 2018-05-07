@@ -3,7 +3,7 @@
 
 /* resources that are going to stay in secure partition */
 sc_rsrc_t secure_rsrcs[] = {
-  SC_R_MU_1A,
+  SC_R_MU_0A,
   SC_R_A53,
   SC_R_A53_0,
   SC_R_A53_1,
