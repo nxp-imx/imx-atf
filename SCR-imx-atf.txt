@@ -1,0 +1,16 @@
+NXP Software Content Register
+
+--------------------------------------------
+
+Package:                   imx-atf-*.bin
+Outgoing License:          LA_OPT_BASE_LICENSE
+License File:              COPYING
+Package Category:          BSP
+Type of content:           Source code
+Description and comments:  BSP
+Release Location:          i.MX Yocto Project mirror
+Origin:                    NXP (proprietary)
+                           arm-trusted-firmware v1.4 - ARM Limited (BSD-3-clause) - http://github.com/ARM-software/arm-trusted-firmware/
+
+--------------------------------------------
+
