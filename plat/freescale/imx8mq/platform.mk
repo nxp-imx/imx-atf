@@ -16,11 +16,11 @@ PLAT_DDR_SOURCES	:=	plat/freescale/imx8mq/ddr/lpddr4_ddrc_cfg.c	\
 BL31_SOURCES		+=	plat/freescale/common/imx8_helpers.S		\
 				plat/freescale/common/mxcuart_console.S		\
 				plat/freescale/common/sip_svc.c			\
-				plat/freescale/imx8mq/imx8m_bl31_setup.c	\
+				plat/freescale/imx8mq/imx8mq_bl31_setup.c	\
 				plat/freescale/imx8mq/src.c			\
 				plat/freescale/imx8mq/hab.c			\
 				plat/freescale/imx8mq/gpc.c			\
-				plat/freescale/imx8mq/imx8m_psci.c		\
+				plat/freescale/imx8mq/imx8mq_psci.c		\
 				plat/freescale/imx8mq/imx_csu.c			\
 				plat/freescale/imx8mq/imx_rdc.c			\
 				plat/freescale/common/imx8_topology.c		\
