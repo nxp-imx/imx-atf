@@ -45,20 +45,32 @@ static void imx_enable_irqstr_wakeup(void)
 	uint32_t irq_mask;
 	gicv3_dist_ctx_t *dist_ctx = &imx_gicv3_ctx.dist_ctx;
 
+	/* put IRQSTR into ON mode */
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_ON);
+
 	/* enable the irqsteer to handle wakeup irq */
 	mmio_write_32(IMX_WUP_IRQSTR, 0x1);
 	for (int i = 0; i < 15; i++) {
 		irq_mask = dist_ctx->gicd_isenabler[i];
 		mmio_write_32(IMX_WUP_IRQSTR + 0x3c - 0x4 * i, irq_mask);
 	}
+
+	/* Put IRQSTR into STBY mode */
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_STBY);
 }
 
 static void imx_disable_irqstr_wakeup(void)
 {
+	/* Put IRQSTR into ON from STBY mode */
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_ON);
+
 	/* disable the irqsteer */
 	mmio_write_32(IMX_WUP_IRQSTR, 0x0);
 	for (int i = 0; i < 16; i ++)
 		mmio_write_32(IMX_WUP_IRQSTR + 0x4 + 0x4 * i, 0x0);
+
+	/* Put IRQSTR into OFF mode */
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_OFF);
 }
 
 int imx_pwr_domain_on(u_register_t mpidr)
@@ -210,8 +222,6 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 
 	/* Put GIC in LP mode. */
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_GIC, SC_PM_PW_MODE_OFF);
-	/* Put IRQSTR in STBY mode */
-	sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_STBY);
 
 	if (cluster_id == 0) {
 		sc_pm_set_cpu_resume_addr(ipc_handle, ap_core_index[cpu_id], 0x080000000);
@@ -235,7 +245,6 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 
 	/* Put GIC/IRQSTR back to high power mode. */
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_GIC, SC_PM_PW_MODE_ON);
-	sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_ON);
 
 	cci_enable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(mpidr));
 
