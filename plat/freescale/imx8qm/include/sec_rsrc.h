@@ -1,4 +1,9 @@
-/* Copyright 2017 NXP */
+/*
+ * Copyright 2017 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 /* Include file detailing the resource partitioning for ATF */
 
 /* resources that are going to stay in secure partition */
