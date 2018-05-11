@@ -55,7 +55,6 @@ typedef enum hab_status hab_rvt_exit_t(void);
 typedef void *hab_rvt_authenticate_image_t(uint8_t, long,
 		void **, size_t *, hab_loader_callback_f_t);
 
-#define HAB_RVT_BASE			0x00000880 /* HAB_RVT for i.MX8MQ */
 
 #define HAB_RVT_ENTRY_ARM64			((unsigned long)*(uint32_t *)(HAB_RVT_BASE + 0x08))
 #define HAB_RVT_EXIT_ARM64			((unsigned long)*(uint32_t *)(HAB_RVT_BASE + 0x10))

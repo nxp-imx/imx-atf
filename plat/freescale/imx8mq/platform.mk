@@ -18,7 +18,7 @@ BL31_SOURCES		+=	plat/freescale/common/imx8_helpers.S		\
 				plat/freescale/common/sip_svc.c			\
 				plat/freescale/imx8mq/imx8mq_bl31_setup.c	\
 				plat/freescale/imx8mq/src.c			\
-				plat/freescale/imx8mq/hab.c			\
+				plat/freescale/common/imx8m/hab.c		\
 				plat/freescale/imx8mq/gpc.c			\
 				plat/freescale/imx8mq/imx8mq_psci.c		\
 				plat/freescale/imx8mq/imx_csu.c			\
