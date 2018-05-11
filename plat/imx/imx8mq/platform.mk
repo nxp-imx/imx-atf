@@ -17,7 +17,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S		\
 				plat/imx/common/mxcuart_console.S	\
 				plat/imx/imx8mq/imx8mq_bl31_setup.c	\
 				plat/imx/imx8mq/src.c			\
-				plat/imx/imx8mq/hab.c			\
+				plat/imx/common/imx8m/hab.c		\
 				plat/imx/imx8mq/gpc.c			\
 				plat/imx/common/imx8_sip_svc.c		\
 				plat/imx/common/misc.c			\
