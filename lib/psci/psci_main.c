@@ -233,7 +233,7 @@ int psci_affinity_info(u_register_t target_affinity,
 	if (target_idx == -1)
 		return PSCI_E_INVALID_PARAMS;
 
-#ifdef PLAT_IMX8M
+#if defined(PLAT_IMX8M) || defined(PLAT_IMX8MM)
 	return psci_get_aff_info_state_by_idx(target_idx);
 #endif
 	ret = psci_get_aff_info_state_by_idx(target_idx);
