@@ -40,6 +40,8 @@
 #define MAX_XLAT_TABLES			4
 #define MAX_MMAP_REGIONS		14
 
+#define HAB_RVT_BASE			0x00000880 /* HAB_RVT for i.MX8MQ */
+
 #define IMX_BOOT_UART_BASE		0x30860000
 #define IMX_BOOT_UART_CLK_IN_HZ		25000000 /* Select 25Mhz oscillator */
 #define PLAT_CRASH_UART_BASE		IMX_BOOT_UART_BASE
