@@ -71,18 +71,18 @@ int imx_misc_set_temp_handler(uint32_t smc_fid, u_register_t x1,
 				u_register_t x4);
 #endif
 
-#if defined(PLAT_IMX8M)
-extern int imx_gpc_handler(uint32_t  smc_fid, u_register_t x1,
-		u_register_t x2, u_register_t x3);
-extern int lpddr4_dvfs_handler(uint32_t  smc_fid, u_register_t x1,
-		u_register_t x2, u_register_t x3);
-extern int imx_src_handler(uint32_t  smc_fid, u_register_t x1,
-		u_register_t x2, u_register_t x3);
-extern int imx_soc_handler(uint32_t smc_fid, u_register_t x1,
-		u_register_t x2, u_register_t x3);
-extern int imx_hab_handler(uint32_t smc_fid, u_register_t x1,
-		u_register_t x2, u_register_t x3, u_register_t x4);
-extern int imx_noc_handler(uint32_t smc_fid, u_register_t x1,
+#if defined(PLAT_IMX8M) || defined(PLAT_IMX8MM)
+int imx_gpc_handler(uint32_t  smc_fid, u_register_t x1,
+	u_register_t x2, u_register_t x3);
+int lpddr4_dvfs_handler(uint32_t  smc_fid, u_register_t x1,
+	u_register_t x2, u_register_t x3);
+int imx_src_handler(uint32_t  smc_fid, u_register_t x1,
+	u_register_t x2, u_register_t x3);
+int imx_soc_handler(uint32_t smc_fid, u_register_t x1,
+	u_register_t x2, u_register_t x3);
+int imx_hab_handler(uint32_t smc_fid, u_register_t x1,
+	u_register_t x2, u_register_t x3, u_register_t x4);
+int imx_noc_handler(uint32_t smc_fid, u_register_t x1,
  		u_register_t x2, u_register_t x3);
 #endif
 

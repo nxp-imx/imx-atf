@@ -34,12 +34,14 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 			      u_register_t flags)
 {
 	switch (smc_fid) {
-#if defined(PLAT_IMX8M)
-	case  FSL_SIP_GPC:
-		SMC_RET1(handle, imx_gpc_handler(smc_fid, x1, x2, x3));
-		break;
+#ifdef PLAT_IMX8M
 	case FSL_SIP_DDR_DVFS:
 		SMC_RET1(handle, lpddr4_dvfs_handler(smc_fid, x1, x2, x3));
+		break;
+#endif
+#if defined(PLAT_IMX8M) || defined(PLAT_IMX8MM)
+	case  FSL_SIP_GPC:
+		SMC_RET1(handle, imx_gpc_handler(smc_fid, x1, x2, x3));
 		break;
 	case FSL_SIP_SRC:
 		SMC_RET1(handle, imx_src_handler(smc_fid, x1, x2, x3));
