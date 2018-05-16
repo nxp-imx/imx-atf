@@ -172,9 +172,18 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 void bl31_plat_arch_setup(void)
 {
 	/* add the mmap */
-	mmap_add_region(BL31_BASE, BL31_BASE, 0x10000, MT_MEMORY | MT_RW);
+	mmap_add_region(0x900000, 0x900000, 0x40000,
+			MT_MEMORY | MT_RW);
+	mmap_add_region(0x100000, 0x100000, 0x10000,
+			MT_MEMORY | MT_RW);
+	mmap_add_region(0x40000000, 0x40000000, 0xc0000000,
+			MT_MEMORY | MT_RW | MT_NS);
+
 	mmap_add_region(BL31_BASE, BL31_BASE, BL31_RO_LIMIT - BL31_RO_BASE,
 			MT_MEMORY | MT_RO);
+
+	mmap_add_region(IMX_ROM_BASE, IMX_ROM_BASE,
+			0x40000, MT_MEMORY | MT_RO);
 	/* Map GPV */
 	mmap_add_region(IMX_GPV_BASE, IMX_GPV_BASE, IMX_GPV_SIZE, MT_DEVICE | MT_RW);
 	/* Map AIPS 1~3 */
