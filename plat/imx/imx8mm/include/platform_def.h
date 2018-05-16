@@ -1,7 +1,7 @@
 #define PLATFORM_LINKER_FORMAT		"elf64-littleaarch64"
 #define PLATFORM_LINKER_ARCH		aarch64
 
-#define PLATFORM_STACK_SIZE		0x800
+#define PLATFORM_STACK_SIZE		0xB00
 #define CACHE_WRITEBACK_GRANULE		64
 
 #define PLAT_PRIMARY_CPU		0x0
@@ -23,7 +23,7 @@
 #define PLAT_STOP_OFF_STATE		3
 
 #define BL31_BASE			0x910000
-#define BL31_LIMIT			0x920000
+#define BL31_LIMIT			0x940000
 #define BL32_BASE			0xfe000000
 
 /* non-secure uboot base */
