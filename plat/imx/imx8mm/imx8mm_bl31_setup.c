@@ -19,6 +19,8 @@
 #include <xlat_tables.h>
 #include <soc.h>
 #include <tzc380.h>
+#include <imx_csu.h>
+#include <imx_rdc.h>
 
 /* linker defined symbols */
 extern unsigned long __RO_START__;
@@ -69,7 +71,6 @@ static uint32_t get_spsr_for_bl33_entry(void)
 #define GPR_TZASC_EN		(1 << 0)
 #define GPR_TZASC_EN_LOCK	(1 << 16)
 
-#if 1
 void bl31_tzc380_setup(void)
 {
 	unsigned int val;
@@ -131,17 +132,17 @@ static void imx8mm_aips_config(void)
 	mmio_write_32(0x32df004c, 0x0);
 	mmio_write_32(0x32df0050, 0x0);
 }
-#endif
 
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		u_register_t arg2, u_register_t arg3)
 {
+#if !defined (CSU_RDC_TEST)
 	int i;
 	/* enable CSU NS access permission */
 	for (i = 0; i < 64; i++) {
 		mmio_write_32(0x303e0000 + i * 4, 0xffffffff);
 	}
-
+#endif
 	/* config the aips access permission */
 	imx8mm_aips_config();
 
@@ -168,6 +169,11 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.args.arg2 = 0x2000000;
 #endif
 	bl31_tzc380_setup();
+
+#if defined (CSU_RDC_TEST)
+	csu_test();
+	rdc_test();
+#endif
 }
 
 void bl31_plat_arch_setup(void)

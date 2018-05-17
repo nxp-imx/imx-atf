@@ -16,6 +16,8 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S		\
 				plat/imx/imx8mm/gpc.c			\
 				plat/imx/imx8mm/misc.c			\
 				plat/imx/common/imx8m/hab.c		\
+				plat/imx/common/imx8m/imx_csu.c		\
+				plat/imx/common/imx8m/imx_rdc.c		\
 				plat/imx/imx8mm/imx8mm_psci.c		\
 				plat/imx/common/imx8_topology.c		\
 				plat/common/plat_psci_common.c		\
