@@ -163,7 +163,7 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 	bl32_image_ep_info.pc = BL32_BASE;
 	bl32_image_ep_info.spsr = 0;
 	/* Pass TEE base and size to uboot */
-	bl33_image_ep_info.args.arg1 = 0xFE000000;
+	bl33_image_ep_info.args.arg1 = 0xBE000000;
 	bl33_image_ep_info.args.arg2 = 0x2000000;
 #endif
 	bl31_tzc380_setup();
