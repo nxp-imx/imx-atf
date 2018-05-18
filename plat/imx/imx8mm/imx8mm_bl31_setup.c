@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 NXP
+ * Copyright 2017-2018 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -38,6 +38,27 @@ extern unsigned long __COHERENT_RAM_END__;
 #define BL31_RO_BASE	(unsigned long)(&__RO_START__)
 #define BL31_RO_LIMIT	(unsigned long)(&__RO_END__)
 #define BL31_END	(unsigned long)(&__BL31_END__)
+
+#define CAAM_BASE       (0x30900000) /* HW address*/
+
+#define JR0_BASE        (CAAM_BASE + 0x1000)
+
+#define CAAM_JR0MID		(0x30900010)
+#define CAAM_JR1MID		(0x30900018)
+#define CAAM_JR2MID		(0x30900020)
+#define CAAM_NS_MID		(0x1)
+
+#define SM_P0_PERM      (JR0_BASE + 0xa04)
+#define SM_P0_SMAG2     (JR0_BASE + 0xa08)
+#define SM_P0_SMAG1     (JR0_BASE + 0xa0c)
+#define SM_CMD          (JR0_BASE + 0xbe4)
+
+/* secure memory command */
+#define SMC_PAGE_SHIFT	16
+#define SMC_PART_SHIFT	8
+
+#define SMC_CMD_ALLOC_PAGE	0x01	/* allocate page to this partition */
+#define SMC_CMD_DEALLOC_PART	0x03	/* deallocate partition */
 
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
@@ -94,6 +115,39 @@ void bl31_tzc380_setup(void)
 	tzc380_dump_state();
 }
 
+static void imx8mm_caam_config(void)
+{
+	uint32_t sm_cmd;
+
+	/* Dealloc part 0 and 2 with current DID */
+	sm_cmd = (0 << SMC_PART_SHIFT | SMC_CMD_DEALLOC_PART);
+	mmio_write_32(SM_CMD, sm_cmd);
+
+	sm_cmd = (2 << SMC_PART_SHIFT | SMC_CMD_DEALLOC_PART);
+	mmio_write_32(SM_CMD, sm_cmd);
+
+	/* config CAAM JRaMID set MID to Cortex A */
+	mmio_write_32(CAAM_JR0MID, CAAM_NS_MID);
+	mmio_write_32(CAAM_JR1MID, CAAM_NS_MID);
+	mmio_write_32(CAAM_JR2MID, CAAM_NS_MID);
+
+	/* Alloc partition 0 writing SMPO and SMAGs */
+	mmio_write_32(SM_P0_PERM, 0xff);
+	mmio_write_32(SM_P0_SMAG2, 0xffffffff);
+	mmio_write_32(SM_P0_SMAG1, 0xffffffff);
+
+	/* Allocate page 0 and 1 to partition 0 with DID set */
+	sm_cmd = (0 << SMC_PAGE_SHIFT
+					| 0 << SMC_PART_SHIFT
+					| SMC_CMD_ALLOC_PAGE);
+	mmio_write_32(SM_CMD, sm_cmd);
+
+	sm_cmd = (1 << SMC_PAGE_SHIFT
+					| 0 << SMC_PART_SHIFT
+					| SMC_CMD_ALLOC_PAGE);
+	mmio_write_32(SM_CMD, sm_cmd);
+
+}
 static void imx8mm_aips_config(void)
 {
 	/* config the AIPSTZ1 */
@@ -146,10 +200,14 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	/* config the aips access permission */
 	imx8mm_aips_config();
 
+	/* config the caam access permission */
+	imx8mm_caam_config();
+
 #if DEBUG_CONSOLE
 	console_init(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
 		     IMX_CONSOLE_BAUDRATE);
 #endif
+
 	/*
 	 * tell BL3-1 where the non-secure software image is located
 	 * and the entry state information.
