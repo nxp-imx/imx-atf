@@ -87,8 +87,7 @@ int imx_validate_power_state(unsigned int power_state,
 
 	if (pwr_type == PSTATE_TYPE_POWERDOWN && state_id == 0x33) {
 		CORE_PWR_STATE(req_state) = PLAT_MAX_OFF_STATE;
-	//	CLUSTER_PWR_STATE(req_state) = PLAT_WAIT_OFF_STATE;
-		CLUSTER_PWR_STATE(req_state) = PLAT_MAX_RET_STATE;
+		CLUSTER_PWR_STATE(req_state) = PLAT_WAIT_OFF_STATE;
 	}
 
 	return PSCI_E_SUCCESS;
