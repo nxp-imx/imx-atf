@@ -207,8 +207,6 @@ void bl31_plat_arch_setup(void)
 
 void bl31_platform_setup(void)
 {
-	/* enable the GIC clock */
-	mmio_write_32(0x303845c0, 0x3);
 	/* init the GICv3 cpu and distributor interface */
 	plat_gic_driver_init();
 	plat_gic_init();
