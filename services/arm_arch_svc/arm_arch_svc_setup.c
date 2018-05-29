@@ -10,7 +10,8 @@
 #include <runtime_svc.h>
 #include <smcc.h>
 #include <smcc_helpers.h>
-#include <workaround_cve_2017_5715.h>
+#include <wa_cve_2017_5715.h>
+#include <wa_cve_2018_3639.h>
 
 static int32_t smccc_version(void)
 {
@@ -19,19 +20,35 @@ static int32_t smccc_version(void)
 
 static int32_t smccc_arch_features(u_register_t arg)
 {
-	int ret;
-
 	switch (arg) {
 	case SMCCC_VERSION:
 	case SMCCC_ARCH_FEATURES:
 		return SMC_OK;
 	case SMCCC_ARCH_WORKAROUND_1:
-		ret = check_workaround_cve_2017_5715();
-		if (ret == ERRATA_APPLIES)
-			return 0;
-		else if (ret == ERRATA_NOT_APPLIES)
+		if (check_wa_cve_2017_5715() == ERRATA_NOT_APPLIES)
 			return 1;
-		return -1; /* ERRATA_MISSING */
+		return 0; /* ERRATA_APPLIES || ERRATA_MISSING */
+#if WORKAROUND_CVE_2018_3639
+	case SMCCC_ARCH_WORKAROUND_2:
+#if DYNAMIC_WORKAROUND_CVE_2018_3639
+		/*
+		 * On a platform where at least one CPU requires
+		 * dynamic mitigation but others are either unaffected
+		 * or permanently mitigated, report the latter as not
+		 * needing dynamic mitigation.
+		 */
+		if (wa_cve_2018_3639_get_disable_ptr() == NULL)
+			return 1;
+		/*
+		 * If we get here, this CPU requires dynamic mitigation
+		 * so report it as such.
+		 */
+		return 0;
+#else
+		/* Either the CPUs are unaffected or permanently mitigated */
+		return SMCCC_ARCH_NOT_REQUIRED;
+#endif
+#endif
 	default:
 		return SMC_UNK;
 	}
@@ -59,6 +76,16 @@ static uintptr_t arm_arch_svc_smc_handler(uint32_t smc_fid,
 		/*
 		 * The workaround has already been applied on affected PEs
 		 * during entry to EL3.  On unaffected PEs, this function
+		 * has no effect.
+		 */
+		SMC_RET0(handle);
+#endif
+#if WORKAROUND_CVE_2018_3639
+	case SMCCC_ARCH_WORKAROUND_2:
+		/*
+		 * The workaround has already been applied on affected PEs
+		 * requiring dynamic mitigation during entry to EL3.
+		 * On unaffected or statically mitigated PEs, this function
 		 * has no effect.
 		 */
 		SMC_RET0(handle);
