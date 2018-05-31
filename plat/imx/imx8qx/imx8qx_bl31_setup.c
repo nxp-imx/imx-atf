@@ -224,10 +224,30 @@ void imx8_partition_resources(void)
 				secure_rsrcs[i], err);
 	}
 
+	owned = sc_rm_is_resource_owned(ipc_handle, SC_R_M4_0_PID0);
+	if (owned) {
+		err = sc_rm_set_resource_movable(ipc_handle, SC_R_M4_0_PID0,
+				SC_R_M4_0_PID0, false);
+		if (err)
+			ERROR("sc_rm_set_resource_movable: rsrc %u, ret %u\n",
+				SC_R_M4_0_PID0, err);
+	}
+
 	/* move all movable resources and pins to non-secure partition */
 	err = sc_rm_move_all(ipc_handle, secure_part, os_part, true, true);
 	if (err)
 		ERROR("sc_rm_move_all: %u\n", err);
+	if (owned) {
+		err = sc_rm_set_resource_movable(ipc_handle, SC_R_M4_0_PID0,
+				SC_R_M4_0_PID0, true);
+		if (err)
+			ERROR("sc_rm_set_resource_movable: rsrc %u, ret %u\n",
+				SC_R_M4_0_PID0, err);
+		err = sc_rm_assign_resource(ipc_handle, os_part, SC_R_M4_0_PID0);
+		if (err)
+			ERROR("sc_rm_assign_resource: rsrc %u, ret %u\n",
+				SC_R_M4_0_PID0, err);
+	}
 
 	/* iterate through peripherals to give NS OS part access */
 	for (i = 0; i < ARRAY_SIZE(ns_access_allowed); i++) {
