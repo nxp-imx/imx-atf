@@ -86,7 +86,7 @@ int imx_validate_power_state(unsigned int power_state,
 
 	if (pwr_type == PSTATE_TYPE_POWERDOWN && state_id == 0x33) {
 		CORE_PWR_STATE(req_state) = PLAT_MAX_OFF_STATE;
-		CLUSTER_PWR_STATE(req_state) = PLAT_WAIT_OFF_STATE;
+		CLUSTER_PWR_STATE(req_state) = PLAT_WAIT_RET_STATE;
 	}
 
 	return PSCI_E_SUCCESS;
@@ -126,10 +126,8 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 		isb();
 	}
 
-	if (is_local_state_off(CLUSTER_PWR_STATE(target_state))) {
+	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state)))
 		imx_set_cluster_powerdown(core_id, CLUSTER_PWR_STATE(target_state));
-	} else
-		imx_set_cluster_standby(true);
 
 	/* do system level power mode setting */
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
@@ -157,10 +155,8 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 	}
 
 	/* check the cluster level power status */
-	if (is_local_state_off(CLUSTER_PWR_STATE(target_state))) {
+	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state)))
 		imx_set_cluster_powerdown(core_id, PSCI_LOCAL_STATE_RUN);
-	} else
-		imx_set_cluster_standby(false);
 
 	/* check the core level power status */
 	if (is_local_state_off(CORE_PWR_STATE(target_state))) {
