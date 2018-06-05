@@ -159,7 +159,7 @@
 #define COREx_PGC_PCR(core_id)	(0x800 + core_id * 0x40)
 #define COREx_WFI_PDN(core_id)	(1 << (core_id < 2 ? core_id * 2 : (core_id - 2) * 2 + 16))
 #define COREx_IRQ_WUP(core_id)	(core_id < 2 ? (1 << (core_id * 2 + 8)) : (1 << (core_id * 2 + 20)));
-#define LPM_MODE(local_state)	(local_state == PLAT_WAIT_OFF_STATE ? A53_LPM_WAIT : A53_LPM_STOP)
+#define LPM_MODE(local_state)	(local_state == PLAT_WAIT_RET_STATE ? A53_LPM_WAIT : A53_LPM_STOP)
 #define A53_CORE_WUP_SRC(core_id) (1 << (core_id < 2 ? 28 + core_id : 22 + core_id - 2))
 
 #define IMR_MASK_ALL		0xffffffff
@@ -380,7 +380,7 @@ void imx_set_cluster_powerdown(int last_core, uint8_t power_state)
 {
 	uint32_t val;
 
-	if (is_local_state_off(power_state)) {
+	if (!is_local_state_run(power_state)) {
 
 		/* config A53 cluster LPM mode */
 		val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
@@ -396,7 +396,13 @@ void imx_set_cluster_powerdown(int last_core, uint8_t power_state)
 		/* enable PLAT/SCU power down */
 		val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_AD);
 		val &= ~EN_L2_WFI_PDN;
-		val |= (L2PGE | EN_PLAT_PDN);
+
+		/* L2 cache memory is on in WAIT mode */
+		if (is_local_state_off(power_state))
+			val |= (L2PGE | EN_PLAT_PDN);
+		else
+			val |= EN_PLAT_PDN;
+
 		mmio_write_32(IMX_GPC_BASE + LPCR_A53_AD, val);
 
 		/* config SLOT for PLAT power up/down */
