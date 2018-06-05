@@ -18,7 +18,6 @@
 #include <fsl_sip.h>
 #include <soc.h>
 
-#define GPC_MST_CPU_MAPPING	0x18
 #define GPC_PGC_ACK_SEL_A53	0x24
 #define GPC_IMR1_CORE0_A53	0x30
 #define GPC_IMR1_CORE1_A53	0x40
@@ -34,6 +33,7 @@
 
 #define PGC_PCR			0
 
+/* BSC */
 #define LPCR_A53_BSC			0x0
 #define LPCR_A53_BSC2			0x108
 #define LPCR_M4				0x8
@@ -49,8 +49,9 @@
 #define A53_LPM_STOP			0xa
 #define A53_CLK_ON_LPM			(1 << 14)
 
-#define SRC_GPR1_OFFSET			0x74
+#define MST_CPU_MAPPING			0x18
 
+#define SRC_GPR1_OFFSET			0x74
 
 /* AD */
 #define LPCR_A53_AD			0x4 
@@ -611,9 +612,12 @@ void imx_gpc_init(void)
 	val |= 0x30c00000;
 	/* clear the MASTER0 LPM handshake */
 	val &= ~(1 << 6);
-	val &= ~(1 << 7);
-	val &= ~(1 << 8);
 	mmio_write_32(IMX_GPC_BASE + LPCR_A53_BSC, val);
+
+	/* clear MASTER1&MASTER2 mapping in CPU0(A53) */
+	val = mmio_read_32(IMX_GPC_BASE + MST_CPU_MAPPING);
+	val &= ~(0x3 << 1);
+	mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
 
 	/* mask M4 DSM trigger if M4 is NOT enabled */
 	val = mmio_read_32(IMX_GPC_BASE + LPCR_M4);
