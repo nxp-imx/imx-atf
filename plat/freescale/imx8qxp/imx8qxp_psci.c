@@ -20,11 +20,6 @@ extern void mdelay(uint32_t msec);
 /* save gic dist/redist context when GIC is power down */
 static struct plat_gic_ctx imx_gicv3_ctx;
 
-/* need to enable USE_COHERENT_MEM to avoid coherence issue */
-#if USE_COHERENT_MEM
-static unsigned int cluster_killed __section("tzfw_coherent_mem");
-#endif
-
 const unsigned char imx_power_domain_tree_desc[] =
 {
 	/* number of root nodes */
@@ -79,28 +74,6 @@ plat_local_state_t plat_get_target_pwr_state(unsigned int lvl,
 	return 0;
 }
 
-void imx8qxp_kill_cpu(unsigned int target_idx)
-{
-	tf_printf("kill cluster %d, cpu %d\n", target_idx / 4, target_idx % 4);
-
-	if (cluster_killed == 0xff)
-		return;
-
-	if (sc_pm_cpu_start(ipc_handle, ap_core_index[target_idx],
-		false, 0x80000000) != SC_ERR_NONE) {
-		ERROR("cluster %d core %d power down failed!\n",
-			target_idx / 4, target_idx % 4);
-		return;
-	}
-
-	if (sc_pm_set_resource_power_mode(ipc_handle, ap_core_index[target_idx],
-		SC_PM_PW_MODE_OFF) != SC_ERR_NONE) {
-		ERROR("cluster %d core %d power down failed!\n",
-			target_idx / 4, target_idx % 4);
-		return;
-	}
-}
-
 int imx_pwr_domain_on(u_register_t mpidr)
 {
 	int ret = PSCI_E_SUCCESS;
@@ -148,14 +121,12 @@ void imx_pwr_domain_off(const psci_power_state_t *target_state)
 	unsigned int cpu_id = MPIDR_AFFLVL0_VAL(mpidr);
 
 	plat_gic_cpuif_disable();
+	sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_NONE);
 	tf_printf("turn off cluster:%d core:%d\n", cluster_id, cpu_id);
 }
 
 void __dead2 imx_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state)
 {
-	u_register_t mpidr = read_mpidr_el1();
-	cluster_killed = MPIDR_AFFLVL1_VAL(mpidr);
-
 	while (1)
 		wfi();
 }
@@ -290,8 +261,6 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	imx_mailbox_init(sec_entrypoint);
 	/* sec_entrypoint is used for warm reset */
 	*psci_ops = &imx_plat_psci_ops;
-
-	cluster_killed = 0xff;
 
 	/* request low power mode for A35 cluster, only need to do once */
 	sc_pm_req_low_power_mode(ipc_handle, SC_R_A35, SC_PM_PW_MODE_OFF);
