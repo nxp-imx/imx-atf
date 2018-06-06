@@ -38,7 +38,6 @@ const static int ap_core_index[PLATFORM_CORE_COUNT] = {
 #if USE_COHERENT_MEM
 static unsigned int a53_cpu_on_number __section("tzfw_coherent_mem");
 static unsigned int a72_cpu_on_number __section("tzfw_coherent_mem");
-static unsigned int cluster_killed __section("tzfw_coherent_mem");
 #endif
 
 static void imx_enable_irqstr_wakeup(void)
@@ -72,43 +71,6 @@ static void imx_disable_irqstr_wakeup(void)
 
 	/* Put IRQSTR into OFF mode */
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_OFF);
-}
-
-void imx8qm_kill_cpu(unsigned int target_idx)
-{
-	tf_printf("kill cluster %d, cpu %d, cluster_killed = %d\n",
-		target_idx / 4, target_idx % 4, cluster_killed);
-
-	if (cluster_killed == 0xff)
-		return;
-
-	if (sc_pm_cpu_start(ipc_handle, ap_core_index[target_idx],
-		false, 0x80000000) != SC_ERR_NONE) {
-		ERROR("cluster %d core %d power down failed!\n",
-			target_idx / 4, target_idx % 4);
-		return;
-	}
-
-	if (sc_pm_set_resource_power_mode(ipc_handle, ap_core_index[target_idx],
-		SC_PM_PW_MODE_OFF) != SC_ERR_NONE) {
-		ERROR("cluster %d core %d power down failed!\n",
-			target_idx / 4, target_idx % 4);
-		return;
-	}
-
-	if (cluster_killed == 0) {
-		if (--a53_cpu_on_number == 0) {
-			cci_disable_snoop_dvm_reqs(0);
-			sc_pm_set_resource_power_mode(ipc_handle, SC_R_A53, SC_PM_PW_MODE_OFF);
-		}
-	} else {
-		if (--a72_cpu_on_number == 0) {
-			cci_disable_snoop_dvm_reqs(1);
-			sc_pm_set_resource_power_mode(ipc_handle, SC_R_A72, SC_PM_PW_MODE_OFF);
-		}
-	}
-
-	cluster_killed = 0xff;
 }
 
 int imx_pwr_domain_on(u_register_t mpidr)
@@ -178,14 +140,26 @@ void imx_pwr_domain_on_finish(const psci_power_state_t *target_state)
 
 void imx_pwr_domain_off(const psci_power_state_t *target_state)
 {
+	uint64_t mpidr = read_mpidr_el1();
+	unsigned int cluster_id = MPIDR_AFFLVL1_VAL(mpidr);
+	unsigned int cpu_id = MPIDR_AFFLVL0_VAL(mpidr);
+
 	plat_gic_cpuif_disable();
+	if (cluster_id == 0) {
+		sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id],
+			SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_NONE);
+		if (--a53_cpu_on_number == 0)
+			cci_disable_snoop_dvm_reqs(0);
+	} else {
+		sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id + 4],
+			SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_NONE);
+		if (--a72_cpu_on_number == 0)
+			cci_disable_snoop_dvm_reqs(1);
+	}
 }
 
 void __dead2 imx_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state)
 {
-	u_register_t mpidr = read_mpidr_el1();
-	cluster_killed = MPIDR_AFFLVL1_VAL(mpidr);
-
 	while (1)
 		wfi();
 }
@@ -333,8 +307,6 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	imx_mailbox_init(sec_entrypoint);
 	/* sec_entrypoint is used for warm reset */
 	*psci_ops = &imx_plat_psci_ops;
-
-	cluster_killed = 0xff;
 
 	if (cluster_id == 0)
 		a53_cpu_on_number++;
