@@ -636,8 +636,17 @@ void imx_gpc_init(void)
 
 	/* TODO release dispmix sft reset */
 	/* enable all the PU for bringup up purpose */
-	mmio_write_32(IMX_GPC_BASE + 0xf8, 0x3fcf);
+	mmio_write_32(0x30384450, 0x3);
+	mmio_write_32(0x303844d0, 0x3);
+	mmio_write_32(0x303844f0, 0x3);
+	mmio_write_32(0x30384560, 0x3);
+	mmio_write_32(0x30384570, 0x3);
+	mmio_write_32(0x30384590, 0x3);
+	mmio_write_32(0x303845a0, 0x3);
 	mmio_write_32(0x303845d0, 0x3);
+	mmio_write_32(0x30384630, 0x3);
+	mmio_write_32(0x30384660, 0x3);
+	mmio_write_32(IMX_GPC_BASE + 0xf8, 0x3fcf);
 	mmio_write_32(0x32e28000, 0x7f);
 	mmio_write_32(0x32e28004, 0x1fff);
 	mmio_write_32(0x32e28008, 0x30000);
