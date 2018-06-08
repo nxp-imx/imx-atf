@@ -272,6 +272,9 @@ void bl31_plat_arch_setup(void)
 
 void bl31_platform_setup(void)
 {
+	/* select the CKIL source to 32K OSC */
+	mmio_write_32(0x30360124, 0x1);
+
 	/* init the GICv3 cpu and distributor interface */
 	plat_gic_driver_init();
 	plat_gic_init();
