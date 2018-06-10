@@ -438,16 +438,13 @@ void imx_set_sys_lpm(bool retention)
 	/* set system DSM mode SLPCR(0x14) */
 	val = mmio_read_32(IMX_GPC_BASE + SLPCR);
 	val &= ~(SLPCR_EN_DSM | SLPCR_VSTBY | SLPCR_SBYOS |
-		 SLPCR_BYPASS_PMIC_READY | SLPCR_RBC_EN);
+		 SLPCR_BYPASS_PMIC_READY | SLPCR_RBC_EN |
+		 SLPCR_A53_FASTWUP_STOP);
 
-	if (retention) {
+	if (retention)
 		val |= (SLPCR_EN_DSM | SLPCR_VSTBY | SLPCR_SBYOS |
-			SLPCR_BYPASS_PMIC_READY |
-			SLPCR_RBC_EN | SLPCR_A53_FASTWUP_STOP);
-		/* TODO DDR retention */
-	} else {
-		/* TODO DDR retention */
-	}
+			SLPCR_BYPASS_PMIC_READY | SLPCR_RBC_EN);
+
 	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
 }
 
@@ -469,18 +466,72 @@ void imx_clear_rbc_count(void)
 	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
 
 }
+
+static int pll_ctrl_offset[] = {0x0, 0x14, 0x28, 0x50, 0x64, 0x74, 0x84, 0x94, 0x104, 0x114, };
+#define PLL_BYPASS	BIT(4)
+
 void imx_anamix_pre_suspend()
 {
-	/* TODO */
+	int i;
+	uint32_t pll_ctrl;
+	/* bypass all the plls before enter DSM mode */
+	for (i = 0; i < 9; i++) {
+		pll_ctrl = mmio_read_32(IMX_ANAMIX_BASE + pll_ctrl_offset[i]);
+		pll_ctrl |= PLL_BYPASS;
+		mmio_write_32(IMX_ANAMIX_BASE + pll_ctrl_offset[i], pll_ctrl);
+	}
+
+	/* enable plls override bit to power down in dsm */
+	mmio_write_32(IMX_ANAMIX_BASE + 0x0, mmio_read_32(IMX_ANAMIX_BASE + 0x0) | ((1 << 12) | (1 << 8)));
+	mmio_write_32(IMX_ANAMIX_BASE + 0x14, mmio_read_32(IMX_ANAMIX_BASE + 0x14) | ((1 << 12) | (1 << 8)));
+	mmio_write_32(IMX_ANAMIX_BASE + 0x28, mmio_read_32(IMX_ANAMIX_BASE + 0x28) | ((1 << 12) | (1 << 8)));
+	mmio_write_32(IMX_ANAMIX_BASE + 0x50, mmio_read_32(IMX_ANAMIX_BASE + 0x50) | ((1 << 12) | (1 << 8)));
+	mmio_write_32(IMX_ANAMIX_BASE + 0x64, mmio_read_32(IMX_ANAMIX_BASE + 0x64) | ((1 << 10) | (1 << 8)));
+	mmio_write_32(IMX_ANAMIX_BASE + 0x74, mmio_read_32(IMX_ANAMIX_BASE + 0x74) | ((1 << 10) | (1 << 8)));
+	mmio_write_32(IMX_ANAMIX_BASE + 0x84, mmio_read_32(IMX_ANAMIX_BASE + 0x84) | ((1 << 10) | (1 << 8)));
+	mmio_write_32(IMX_ANAMIX_BASE + 0x94, mmio_read_32(IMX_ANAMIX_BASE + 0x94) | 0x5555500);
+	mmio_write_32(IMX_ANAMIX_BASE + 0x104, mmio_read_32(IMX_ANAMIX_BASE + 0x104) | 0x5555500);
+	mmio_write_32(IMX_ANAMIX_BASE + 0x114, mmio_read_32(IMX_ANAMIX_BASE + 0x114) | 0x500);
 }
 
 void imx_anamix_post_resume(void)
 {
-	/* TODO */
+	int i;
+	uint32_t pll_ctrl;
+	/* unbypass all the plls after exit from DSM mode */
+	for (i = 0; i < 9; i++) {
+		pll_ctrl = mmio_read_32(IMX_ANAMIX_BASE + pll_ctrl_offset[i]);
+		pll_ctrl &= ~PLL_BYPASS;
+		mmio_write_32(IMX_ANAMIX_BASE + pll_ctrl_offset[i], pll_ctrl);
+	}
+
+	/* clear plls override bit */
+	mmio_write_32(IMX_ANAMIX_BASE + 0x0, mmio_read_32(IMX_ANAMIX_BASE + 0x0) & ~((1 << 12) | (1 << 8)));
+	mmio_write_32(IMX_ANAMIX_BASE + 0x14, mmio_read_32(IMX_ANAMIX_BASE + 0x14) & ~((1 << 12) | (1 << 8)));
+	mmio_write_32(IMX_ANAMIX_BASE + 0x28, mmio_read_32(IMX_ANAMIX_BASE + 0x28) & ~((1 << 12) | (1 << 8)));
+	mmio_write_32(IMX_ANAMIX_BASE + 0x50, mmio_read_32(IMX_ANAMIX_BASE + 0x50) & ~((1 << 12) | (1 << 8)));
+	mmio_write_32(IMX_ANAMIX_BASE + 0x64, mmio_read_32(IMX_ANAMIX_BASE + 0x64) & ~((1 << 10) | (1 << 8)));
+	mmio_write_32(IMX_ANAMIX_BASE + 0x74, mmio_read_32(IMX_ANAMIX_BASE + 0x74) & ~((1 << 10) | (1 << 8)));
+	mmio_write_32(IMX_ANAMIX_BASE + 0x84, mmio_read_32(IMX_ANAMIX_BASE + 0x84) & ~((1 << 10) | (1 << 8)));
+	mmio_write_32(IMX_ANAMIX_BASE + 0x94, mmio_read_32(IMX_ANAMIX_BASE + 0x94) & ~0x5555500);
+	mmio_write_32(IMX_ANAMIX_BASE + 0x104, mmio_read_32(IMX_ANAMIX_BASE + 0x104) & ~0x5555500);
+	mmio_write_32(IMX_ANAMIX_BASE + 0x114, mmio_read_32(IMX_ANAMIX_BASE + 0x114) & ~0x500);
 }
 
 void noc_wrapper_pre_suspend(unsigned int proc_num)
 {
+	uint32_t val;
+
+	/* enable MASTER1 & MASTER2 power down in A53 LPM mode */
+	val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
+	val &= ~(1 << 7);
+	val &= ~(1 << 8);
+	mmio_write_32(IMX_GPC_BASE + LPCR_A53_BSC, val);
+
+	val = mmio_read_32(IMX_GPC_BASE + MST_CPU_MAPPING);
+	val |= (0x3 << 1);
+	mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
+
 	/* FIXME enable NOC power down on real silicon */
 #if 0
 	imx_noc_slot_config(true);
@@ -494,6 +545,18 @@ void noc_wrapper_pre_suspend(unsigned int proc_num)
 
 void noc_wrapper_post_resume(unsigned int proc_num)
 {
+	uint32_t val;
+
+	/* disable MASTER1 & MASTER2 power down in A53 LPM mode */
+	val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
+	val |= (1 << 7);
+	val |= (1 << 8);
+	mmio_write_32(IMX_GPC_BASE + LPCR_A53_BSC, val);
+
+	val = mmio_read_32(IMX_GPC_BASE + MST_CPU_MAPPING);
+	val &= ~(0x3 << 1);
+	mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
+
 	/* FIXME enable NOC power down on real silicon */
 #if 0
 	imx_noc_slot_config(false);
