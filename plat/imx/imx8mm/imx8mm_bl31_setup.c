@@ -12,6 +12,7 @@
 #include <context_mgmt.h>
 #include <debug.h>
 #include <stdbool.h>
+#include <dram.h>
 #include <mmio.h>
 #include <platform.h>
 #include <platform_def.h>
@@ -258,6 +259,9 @@ void bl31_plat_arch_setup(void)
 	/* map GIC */
 	mmap_add_region(PLAT_GIC_BASE, PLAT_GIC_BASE, 0x100000,  MT_DEVICE | MT_RW);
 
+	/* Map DDRC/PHY/PERF */
+	mmap_add_region(0x3c000000, 0x3c000000, 0xC000000, MT_DEVICE | MT_RW);
+
 #if USE_COHERENT_MEM
 	mmap_add_region(BL31_COHERENT_RAM_BASE, BL31_COHERENT_RAM_BASE,
 		BL31_COHERENT_RAM_LIMIT - BL31_COHERENT_RAM_BASE,
@@ -275,12 +279,16 @@ void bl31_platform_setup(void)
 	/* select the CKIL source to 32K OSC */
 	mmio_write_32(0x30360124, 0x1);
 
+	/* init the dram info */
+	dram_info_init();
+
 	/* init the GICv3 cpu and distributor interface */
 	plat_gic_driver_init();
 	plat_gic_init();
 
 	/* gpc init */
 	imx_gpc_init();
+
 }
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(unsigned int type)

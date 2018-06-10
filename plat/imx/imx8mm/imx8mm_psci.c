@@ -8,6 +8,7 @@
 #include <arch_helpers.h>
 #include <debug.h>
 #include <stdbool.h>
+#include <dram.h>
 #include <plat_imx8.h>
 #include <psci.h>
 #include <mmio.h>
@@ -129,6 +130,7 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 
 	/* do system level power mode setting */
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
+		dram_enter_retention();
 		imx_set_sys_lpm(true);
 		imx_anamix_pre_suspend();
 		noc_wrapper_pre_suspend(core_id);
@@ -150,6 +152,7 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 		imx_anamix_post_resume();
 		noc_wrapper_post_resume(core_id);
 		imx_clear_rbc_count();
+		dram_exit_retention();
 	}
 
 	/* check the cluster level power status */
