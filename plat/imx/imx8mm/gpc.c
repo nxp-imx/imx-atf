@@ -475,7 +475,7 @@ void imx_anamix_pre_suspend()
 	int i;
 	uint32_t pll_ctrl;
 	/* bypass all the plls before enter DSM mode */
-	for (i = 0; i < 9; i++) {
+	for (i = 0; i < ARRAY_SIZE(pll_ctrl_offset); i++) {
 		pll_ctrl = mmio_read_32(IMX_ANAMIX_BASE + pll_ctrl_offset[i]);
 		pll_ctrl |= PLL_BYPASS;
 		mmio_write_32(IMX_ANAMIX_BASE + pll_ctrl_offset[i], pll_ctrl);
@@ -499,7 +499,7 @@ void imx_anamix_post_resume(void)
 	int i;
 	uint32_t pll_ctrl;
 	/* unbypass all the plls after exit from DSM mode */
-	for (i = 0; i < 9; i++) {
+	for (i = 0; i < ARRAY_SIZE(pll_ctrl_offset); i++) {
 		pll_ctrl = mmio_read_32(IMX_ANAMIX_BASE + pll_ctrl_offset[i]);
 		pll_ctrl &= ~PLL_BYPASS;
 		mmio_write_32(IMX_ANAMIX_BASE + pll_ctrl_offset[i], pll_ctrl);
