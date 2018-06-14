@@ -55,3 +55,19 @@ void MU_Init(uint32_t base)
 			| MU_CR_GIRn_MASK1 | MU_CR_Fn_MASK1);
 	mmio_write_32(base + MU_ACR_OFFSET1, reg);
 }
+
+void MU_Resume(uint32_t base)
+{
+	uint32_t reg, i;
+
+	reg = mmio_read_32(base + MU_ACR_OFFSET1);
+	/* Clear GIEn, RIEn, TIEn, GIRn and ABFn. */
+	reg &= ~(MU_CR_GIEn_MASK1 | MU_CR_RIEn_MASK1 | MU_CR_TIEn_MASK1
+			| MU_CR_GIRn_MASK1 | MU_CR_Fn_MASK1);
+	mmio_write_32(base + MU_ACR_OFFSET1, reg);
+
+	/* Enable all RX interrupts */
+	for (i = 0; i < MU_RR_COUNT; i++) {
+		MU_EnableRxFullInt(base, i);
+	}
+}
