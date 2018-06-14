@@ -14,6 +14,7 @@
 #include <plat_imx8.h>
 #include <psci.h>
 #include <sci/sci.h>
+#include "../../common/sci/mx8_mu.h"
 
 extern sc_ipc_t ipc_handle;
 /* save gic dist/redist context when GIC is poewr down */
@@ -238,6 +239,8 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 	unsigned int cluster_id = MPIDR_AFFLVL1_VAL(mpidr);
 	unsigned int cpu_id = MPIDR_AFFLVL0_VAL(mpidr);
 
+	MU_Resume(SC_IPC_CH);
+
 	if (cluster_id == 0)
 		sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_ON, SC_PM_WAKE_SRC_GIC);
 	else
@@ -319,8 +322,8 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	/* Request RUN and LP modes for DDR, system interconnect etc. */
 	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A53, SC_PM_SYS_IF_DDR, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
 	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_DDR, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
-	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A53, SC_PM_SYS_IF_MU, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
-	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_MU, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
+	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A53, SC_PM_SYS_IF_MU, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_OFF);
+	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_MU, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_OFF);
 	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A53, SC_PM_SYS_IF_INTERCONNECT, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
 	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_INTERCONNECT, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
 
