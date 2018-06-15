@@ -69,13 +69,15 @@ void plat_gic_pcpu_init(void)
 void plat_gic_save(unsigned int proc_num, struct plat_gic_ctx *ctx)
 {
 	/* save the gic rdist/dist context */
-	gicv3_rdistif_save(proc_num, &ctx->rdist_ctx);
+	for (int i = 0; i < PLATFORM_CORE_COUNT; i++)
+		gicv3_rdistif_save(i, &ctx->rdist_ctx[i]);
 	gicv3_distif_save(&ctx->dist_ctx);
 }
 
 void plat_gic_restore(unsigned int proc_num, struct plat_gic_ctx *ctx)
 {
 	/* restore the gic rdist/dist context */
-	gicv3_rdistif_init_restore(proc_num, &ctx->rdist_ctx);
 	gicv3_distif_init_restore(&ctx->dist_ctx);
+	for (int i = 0; i < PLATFORM_CORE_COUNT; i++)
+		gicv3_rdistif_init_restore(i, &ctx->rdist_ctx[i]);
 }

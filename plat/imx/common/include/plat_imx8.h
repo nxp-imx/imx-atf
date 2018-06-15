@@ -8,10 +8,11 @@
 #define __PLAT_IMX8_H__
 
 #include <gicv3.h>
+#include <platform_def.h>
 
 /* gicv3 context save */
 struct plat_gic_ctx {
-	gicv3_redist_ctx_t rdist_ctx;
+	gicv3_redist_ctx_t rdist_ctx[PLATFORM_CORE_COUNT];
 	gicv3_dist_ctx_t dist_ctx;
 };
 
