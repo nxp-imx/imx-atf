@@ -13,6 +13,7 @@
 #include <debug.h>
 #include <stdbool.h>
 #include <dram.h>
+#include <generic_delay_timer.h>
 #include <mmio.h>
 #include <platform.h>
 #include <platform_def.h>
@@ -269,6 +270,8 @@ void bl31_plat_arch_setup(void)
 
 	mmap_add_region(0x180000, 0x180000, 0x8000, MT_MEMORY | MT_RW);
 
+	mmap_add_region(0x38330000, 0x38330000, 0x100000, MT_DEVICE | MT_RW);
+
 #if USE_COHERENT_MEM
 	mmap_add_region(BL31_COHERENT_RAM_BASE, BL31_COHERENT_RAM_BASE,
 		BL31_COHERENT_RAM_LIMIT - BL31_COHERENT_RAM_BASE,
@@ -283,6 +286,8 @@ void bl31_plat_arch_setup(void)
 
 void bl31_platform_setup(void)
 {
+	generic_delay_timer_init();
+
 	/* select the CKIL source to 32K OSC */
 	mmio_write_32(0x30360124, 0x1);
 

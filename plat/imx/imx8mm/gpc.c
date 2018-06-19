@@ -18,6 +18,7 @@
 #include <psci.h>
 #include <fsl_sip.h>
 #include <soc.h>
+#include <delay_timer.h>
 
 #define GPC_PGC_ACK_SEL_A53	0x24
 #define GPC_IMR1_CORE0_A53	0x30
@@ -88,23 +89,11 @@
 #define PLAT_PGC_PCR		0x900
 #define NOC_PGC_PCR		0xa40
 
-#define MIPI_PGC               0xc00
-#define PCIE_PGC               0xc40
-#define OTG1_PGC               0xc80
-#define OTG2_PGC               0xcc0
-#define GPU2D_PGC              0xd80
-#define GPUMIX_PGC             0xdc0
-#define VPUMIX_PGC             0xe00
-#define GPU3D_PGC              0xe40
-#define DISPMIX_PGC            0xe80
-#define VPU_G1_PGC             0xec0
-#define VPU_G2_PGC             0xf00
-#define VPU_H1_PGC             0xf40
-
 #define MIPI_PWR_REQ		(1 << 0)
 #define PCIE_PWR_REQ		(1 << 1)
 #define OTG1_PWR_REQ		(1 << 2)
 #define OTG2_PWR_REQ		(1 << 3)
+#define HSIOMIX_PWR_REQ		(1 << 4)
 #define GPU2D_PWR_REQ		(1 << 6)
 #define GPUMIX_PWR_REQ		(1 << 7)
 #define VPUMIX_PWR_REQ		(1 << 8)
@@ -114,11 +103,13 @@
 #define VPU_G2_PWR_REQ		(1 << 12)
 #define VPU_H1_PWR_REQ		(1 << 13)
 
+#define HSIOMIX_ADB400_SYNC	(0x3 << 5)
 #define DISPMIX_ADB400_SYNC	(1 << 7)
 #define VPUMIX_ADB400_SYNC	(1 << 8)
 #define GPU3D_ADB400_SYNC	(1 << 9)
 #define GPU2D_ADB400_SYNC	(1 << 10)
 #define GPUMIX_ADB400_SYNC	(1 << 11)
+#define HSIOMIX_ADB400_ACK	(0x3 << 23)
 #define DISPMIX_ADB400_ACK	(1 << 25)
 #define VPUMIX_ADB400_ACK	(1 << 26)
 #define GPU3D_ADB400_ACK	(1 << 27)
@@ -129,6 +120,7 @@
 #define PCIE_PGC		0xc40
 #define OTG1_PGC		0xc80
 #define OTG2_PGC		0xcc0
+#define HSIOMIX_PGC	        0xd00
 #define GPU2D_PGC		0xd80
 #define GPUMIX_PGC		0xdc0
 #define VPUMIX_PGC		0xe00
@@ -174,25 +166,47 @@ struct imx_pwr_domain {
 	bool init_on;
 };
 
+enum pu_domain_id {
+	HSIOMIX,
+	PCIE,
+	OTG1,
+	OTG2,
+	GPUMIX,
+	VPUMIX,
+	VPU_G1,
+	VPU_G2,
+	VPU_H1,
+	DISPMIX,
+	MIPI,
+	/* below two domain only for ATF internal use */
+	GPU2D,
+	GPU3D,
+};
+
 /* PU domain */
 static struct imx_pwr_domain pu_domains[] = {
-	IMX_PD_DOMAIN(MIPI),
+	IMX_MIX_DOMAIN(HSIOMIX),
 	IMX_PD_DOMAIN(PCIE),
 	IMX_PD_DOMAIN(OTG1),
 	IMX_PD_DOMAIN(OTG2),
-	IMX_MIX_DOMAIN(GPU2D),
 	IMX_MIX_DOMAIN(GPUMIX),
 	IMX_MIX_DOMAIN(VPUMIX),
-	IMX_MIX_DOMAIN(GPU3D),
-	IMX_MIX_DOMAIN(DISPMIX),
 	IMX_PD_DOMAIN(VPU_G1),
 	IMX_PD_DOMAIN(VPU_G2),
+	IMX_PD_DOMAIN(VPU_H1),
+	IMX_MIX_DOMAIN(DISPMIX),
+	IMX_PD_DOMAIN(MIPI),
+	/* below two domain only for ATF internal use */
+	IMX_MIX_DOMAIN(GPU2D),
+	IMX_MIX_DOMAIN(GPU3D),
 };
 
 static uint32_t gpc_wake_irqs[4] = { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, };
 static uint32_t gpc_imr_offset[] = { 0x30, 0x40, 0x1c0, 0x1d0, };
 /* save gic dist&redist context when NOC wrapper is power down */
 static struct plat_gic_ctx imx_gicv3_ctx;
+
+static unsigned int pu_domain_status;
 
 void imx_set_cpu_secure_entry(int core_id, uint64_t sec_entrypoint)
 {
@@ -533,10 +547,10 @@ void noc_wrapper_pre_suspend(unsigned int proc_num)
 	val |= (0x3 << 1);
 	mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
 
-	/* FIXME enable NOC power down on real silicon */
-#if 0
-	imx_noc_slot_config(true);
-#endif
+	/* noc can only be power down when all the pu domain is off */
+//	if (!pu_domain_status)
+//		/* enable noc power down */
+//		imx_noc_slot_config(true);
 	/*
 	 * gic redistributor context save must be called when
 	 * the GIC CPU interface is disabled and before distributor save.
@@ -558,10 +572,11 @@ void noc_wrapper_post_resume(unsigned int proc_num)
 	val &= ~(0x3 << 1);
 	mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
 
-	/* FIXME enable NOC power down on real silicon */
-#if 0
-	imx_noc_slot_config(false);
-#endif
+	/* noc can only be power down when all the pu domain is off */
+//	if (!pu_domain_status)
+//		/* disable noc power down */
+//		imx_noc_slot_config(false);
+
 	/* restore gic context */
 	plat_gic_restore(proc_num, &imx_gicv3_ctx);
 }
@@ -606,25 +621,86 @@ static void imx_gpc_set_wake_irq(uint32_t hwirq, uint32_t on)
 				 gpc_wake_irqs[idx] | mask;
 }
 
+
 static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 {
 	uint32_t val;
 
 	struct imx_pwr_domain *pwr_domain = &pu_domains[domain_id];
 
-	/* FIXME, will remove after runtime PM is ok */
-	return;
-
 	if (on) {
-		/* clear the PGC bit */
-		val = mmio_read_32(IMX_GPC_BASE + pwr_domain->pgc_offset);
-		val &= ~(1 << 0);
-		mmio_write_32(IMX_GPC_BASE + pwr_domain->pgc_offset, val);
+		pu_domain_status |= (1 << domain_id);
 
-		/* power up the domain */
-		val = mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG);
-		val |= pwr_domain->pwr_req;
-		mmio_write_32(IMX_GPC_BASE + PU_PGC_UP_TRG, val);
+		/* HSIOMIX has no PU bit, so skip for it */
+		if (domain_id != HSIOMIX) {
+			/* clear the PGC bit */
+			val = mmio_read_32(IMX_GPC_BASE + pwr_domain->pgc_offset);
+			val &= ~(1 << 0);
+			mmio_write_32(IMX_GPC_BASE + pwr_domain->pgc_offset, val);
+
+			/* power up the domain */
+			val = mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG);
+			val |= pwr_domain->pwr_req;
+			mmio_write_32(IMX_GPC_BASE + PU_PGC_UP_TRG, val);
+
+			/* wait for power request done */
+			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG) & pwr_domain->pwr_req);
+		}
+
+		if (domain_id == GPUMIX) {
+			/* power up GPU2D */
+			val = mmio_read_32(IMX_GPC_BASE + GPU2D_PGC);
+			val &= ~(1 << 0);
+			mmio_write_32(IMX_GPC_BASE + GPU2D_PGC, val);
+
+			val = mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG);
+			val |= GPU2D_PWR_REQ;
+			mmio_write_32(IMX_GPC_BASE + PU_PGC_UP_TRG, val);
+
+			/* wait for power request done */
+			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG) & GPU2D_PWR_REQ);
+
+			udelay(1);
+
+			/* power up GPU3D */
+			val = mmio_read_32(IMX_GPC_BASE + GPU3D_PGC);
+			val &= ~(1 << 0);
+			mmio_write_32(IMX_GPC_BASE + GPU3D_PGC, val);
+
+			val = mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG);
+			val |= GPU3D_PWR_REQ;
+			mmio_write_32(IMX_GPC_BASE + PU_PGC_UP_TRG, val);
+
+			/* wait for power request done */
+			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG) & GPU3D_PWR_REQ);
+
+			udelay(1);
+
+			/* assert reset */
+			mmio_write_32(0x30390040, 0x1);
+			udelay(10);
+			mmio_write_32(0x30390040, 0x0);
+			udelay(10);
+		}
+
+		/* vpu sft clock enable */
+		if (domain_id == VPUMIX) {
+			mmio_write_32(0x30390044, 0x1);
+			udelay(5);
+			mmio_write_32(0x30390044, 0x0);
+			udelay(5);
+
+			/* enable all clock */
+			mmio_write_32(0x38330004, 0x7);
+		}
+
+		if (domain_id == DISPMIX) {
+			/* special setting for DISPMIX */
+			mmio_write_32(0x303845d0, 0x3);
+			mmio_write_32(0x32e28004, 0x1fff);
+			mmio_write_32(0x32e28000, 0x7f);
+			mmio_write_32(0x32e28008, 0x30000);
+		}
 
 		/* handle the ADB400 sync */
 		if (!pwr_domain->init_on && pwr_domain->need_sync) {
@@ -636,25 +712,55 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 			/* wait for adb power request ack */
 			while (!(mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK) & pwr_domain->adb400_ack))
 				;
-		}
 
-		/* special fixup for dispmix */
-		if (pwr_domain->pwr_req == DISPMIX_PWR_REQ) {
-			mmio_write_32(0x303845d0, 0x3);
-			mmio_write_32(0x32e28000, 0x7f);
-			mmio_write_32(0x32e28004, 0x1fff);
-			mmio_write_32(0x32e28008, 0x30000);
+			if (domain_id == GPUMIX) {
+				/* power up GPU2D ADB */
+				val = mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK);
+				val |= GPU2D_ADB400_SYNC;
+				mmio_write_32(IMX_GPC_BASE + GPC_PU_PWRHSK, val);
+
+				/* wait for adb power request ack */
+				while (!(mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK) & GPU2D_ADB400_ACK))
+					;
+
+				/* power up GPU3D ADB */
+				val = mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK);
+				val |= GPU3D_ADB400_SYNC;
+				mmio_write_32(IMX_GPC_BASE + GPC_PU_PWRHSK, val);
+
+				/* wait for adb power request ack */
+				while (!(mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK) & GPU3D_ADB400_ACK))
+					;
+			}
 		}
 	} else {
-		/* TODO  for bringup purpose */
-		return;
-		/* set the PGC bit */
-		val = mmio_read_32(IMX_GPC_BASE + pwr_domain->pgc_offset);
-		val |= (1 << 0);
-		mmio_write_32(IMX_GPC_BASE + pwr_domain->pgc_offset, val);
+		pu_domain_status &= ~(1 << domain_id);
+
+		if (domain_id == OTG1 || domain_id == OTG2)
+			return;
 
 		/* handle the ADB400 sync */
 		if (!pwr_domain->init_on && pwr_domain->need_sync) {
+
+			/* GPU2D & GPU3D ADB power down */
+			if (domain_id == GPUMIX) {
+				val = mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK);
+				val &= ~GPU2D_ADB400_SYNC;
+				mmio_write_32(IMX_GPC_BASE + GPC_PU_PWRHSK, val);
+
+				/* wait for adb power request ack */
+				while ((mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK) & GPU2D_ADB400_ACK))
+					;
+
+				val = mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK);
+				val &= ~GPU3D_ADB400_SYNC;
+				mmio_write_32(IMX_GPC_BASE + GPC_PU_PWRHSK, val);
+
+				/* wait for adb power request ack */
+				while ((mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK) & GPU3D_ADB400_ACK))
+					;
+			}
+
 			/* set adb power down request */
 			val = mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK);
 			val &= ~(pwr_domain->adb400_sync);
@@ -665,10 +771,50 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 				;
 		}
 
-		/* power down the domain */
-		val = mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG);
-		val |= pwr_domain->pwr_req;
-		mmio_write_32(IMX_GPC_BASE + PU_PGC_DN_TRG, val);
+		if (domain_id == GPUMIX) {
+			/* power down GPU2D */
+			val = mmio_read_32(IMX_GPC_BASE + GPU2D_PGC);
+			val |= (1 << 0);
+			mmio_write_32(IMX_GPC_BASE + GPU2D_PGC, val);
+
+			val = mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG);
+			val |= GPU2D_PWR_REQ;
+			mmio_write_32(IMX_GPC_BASE + PU_PGC_DN_TRG, val);
+
+			/* wait for power request done */
+			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG) & GPU2D_PWR_REQ);
+
+			/* power down GPU3D */
+			val = mmio_read_32(IMX_GPC_BASE + GPU3D_PGC);
+			val |= (1 << 0);
+			mmio_write_32(IMX_GPC_BASE + GPU3D_PGC, val);
+
+			val = mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG);
+			val |= GPU3D_PWR_REQ;
+			mmio_write_32(IMX_GPC_BASE + PU_PGC_DN_TRG, val);
+
+			/* wait for power request done */
+			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG) & GPU3D_PWR_REQ);
+		}
+
+		/* HSIOMIX has no PU bit, so skip for it */
+		if (domain_id != HSIOMIX) {
+			if (domain_id == GPUMIX || domain_id == VPUMIX)
+				return;
+
+			/* set the PGC bit */
+			val = mmio_read_32(IMX_GPC_BASE + pwr_domain->pgc_offset);
+			val |= (1 << 0);
+			mmio_write_32(IMX_GPC_BASE + pwr_domain->pgc_offset, val);
+
+			/* power down the domain */
+			val = mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG);
+			val |= pwr_domain->pwr_req;
+			mmio_write_32(IMX_GPC_BASE + PU_PGC_DN_TRG, val);
+
+			/* wait for power request done */
+			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG) & pwr_domain->pwr_req);
+		}
 	}
 
 	pwr_domain->init_on = false;
@@ -707,23 +853,6 @@ void imx_gpc_init(void)
 
 	/*set all mix/PU in A53 domain */
 	mmio_write_32(IMX_GPC_BASE + GPC_PGC_CPU_0_1_MAPPING, 0xffff);
-
-	/* TODO release dispmix sft reset */
-	/* enable all the PU for bringup up purpose */
-	mmio_write_32(0x30384450, 0x3);
-	mmio_write_32(0x303844d0, 0x3);
-	mmio_write_32(0x303844f0, 0x3);
-	mmio_write_32(0x30384560, 0x3);
-	mmio_write_32(0x30384570, 0x3);
-	mmio_write_32(0x30384590, 0x3);
-	mmio_write_32(0x303845a0, 0x3);
-	mmio_write_32(0x303845d0, 0x3);
-	mmio_write_32(0x30384630, 0x3);
-	mmio_write_32(0x30384660, 0x3);
-	mmio_write_32(IMX_GPC_BASE + 0xf8, 0x3fcf);
-	mmio_write_32(0x32e28000, 0x7f);
-	mmio_write_32(0x32e28004, 0x1fff);
-	mmio_write_32(0x32e28008, 0x30000);
 
 	/* set SCU timming */
 	mmio_write_32(IMX_GPC_BASE + GPC_PGC_SCU_TIMMING,
