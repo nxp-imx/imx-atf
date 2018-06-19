@@ -11,6 +11,7 @@
 #include <smcc_helpers.h>
 #include <std_svc.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <uuid.h>
 #include <string.h>
 #include <bl_common.h>
@@ -24,6 +25,8 @@ extern int imx_src_handler(uint32_t  smc_fid, u_register_t x1, u_register_t x2, 
 extern int imx_soc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
 extern int imx_hab_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_register_t x3, u_register_t x4);
 extern int imx_noc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
+
+bool wakeup_src_irqsteer = false;
 
 /* Setup i.MX platform specific services Services */
 static int32_t plat_svc_setup(void)
@@ -76,6 +79,27 @@ uint64_t imx_buildinfo_handler(uint32_t smc_fid,
 	return ret;
 }
 
+int imx_wakeup_src_handler(uint32_t smc_fid,
+		    u_register_t x1,
+		    u_register_t x2,
+		    u_register_t x3)
+{
+	uint64_t ret;
+
+	switch(x1) {
+	case FSL_SIP_WAKEUP_SRC_IRQSTEER:
+		wakeup_src_irqsteer = true;
+		break;
+	case FSL_SIP_WAKEUP_SRC_SCU:
+		wakeup_src_irqsteer = false;
+		break;
+	default:
+		return SMC_UNK;
+	}
+
+	return ret;
+}
+
 
 /* i.MX platform specific service SMC handler */
 uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
@@ -116,6 +140,9 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 		break;
 	case  FSL_SIP_SRTC:
 		return imx_srtc_handler(smc_fid, handle, x1, x2, x3, x4);
+	case  FSL_SIP_WAKEUP_SRC:
+		SMC_RET1(handle, imx_wakeup_src_handler(smc_fid, x1, x2, x3));
+		break;
 #endif
 	case  FSL_SIP_BUILDINFO:
 		SMC_RET1(handle, imx_buildinfo_handler(smc_fid, x1, x2, x3, x4));

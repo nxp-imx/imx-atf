@@ -17,6 +17,7 @@
 
 extern sc_ipc_t ipc_handle;
 extern void mdelay(uint32_t msec);
+extern bool wakeup_src_irqsteer;
 
 /* save gic dist/redist context when GIC is power down */
 static struct plat_gic_ctx imx_gicv3_ctx;
@@ -49,8 +50,11 @@ static void imx_enable_irqstr_wakeup(void)
 		mmio_write_32(IMX_WUP_IRQSTR + 0x3c - 0x4 * i, irq_mask);
 	}
 
-	/* put IRQSTR into STBY mode */
-	sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_STBY);
+	/* set IRQSTR low power mode */
+	if (wakeup_src_irqsteer)
+		sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_STBY);
+	else
+		sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_OFF);
 }
 
 static void imx_disable_irqstr_wakeup(void)
@@ -189,9 +193,14 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 
 	/* Put GIC in OFF mode. */
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_GIC, SC_PM_PW_MODE_OFF);
-
 	sc_pm_set_cpu_resume_addr(ipc_handle, ap_core_index[cpu_id], 0x080000000);
-	sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_IRQSTEER);
+	if (wakeup_src_irqsteer)
+		sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id],
+			SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_IRQSTEER);
+	else
+		sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id],
+			SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_SCU);
+
 }
 
 void imx_domain_suspend_finish(const psci_power_state_t *target_state)
