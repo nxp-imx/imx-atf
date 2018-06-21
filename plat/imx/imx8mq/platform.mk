@@ -45,3 +45,8 @@ $(eval $(call add_define,TEE_IMX8))
 endif
 $(eval $(call add_define,XLAT_TABLE_IN_OCRAM_S))
 $(eval $(call add_define,STACK_IN_OCRAM_S))
+
+A53_DISABLE_NON_TEMPORAL_HINT := 0
+ERRATA_A53_835769	:=	1
+ERRATA_A53_843419	:=	1
+ERRATA_A53_855873	:=	1
