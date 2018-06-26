@@ -197,6 +197,57 @@ void mx8_partition_resources(void)
 				secure_rsrcs[i], err);
 	}
 
+	/*
+	 * sc_rm_set_peripheral_permissions
+	 * sc_rm_set_memreg_permissions
+	 * sc_rm_set_pin_movable
+	 */
+
+	for (mr = 0; mr < 64; mr++) {
+		owned = sc_rm_is_memreg_owned(ipc_handle, mr);
+		if (owned) {
+			err = sc_rm_get_memreg_info(ipc_handle, mr, &start, &end);
+			if (err)
+				ERROR("Memreg get info failed, %u\n", mr);
+			NOTICE("Memreg %u 0x%" PRIx64 " -- 0x%" PRIx64 "\n", mr, start, end);
+			if (BL31_BASE >= start && (BL31_LIMIT - 1) <= end) {
+				mr_record = mr; /* Record the mr for ATF running */
+			} else {
+				err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+				if (err)
+					ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 ", \
+						err %d\n", start, end, err);
+			}
+		}
+	}
+
+	if (mr_record != 64) {
+		err = sc_rm_get_memreg_info(ipc_handle, mr_record, &start, &end);
+		if (err)
+			ERROR("Memreg get info failed, %u\n", mr_record);
+		if ((BL31_LIMIT - 1) < end) {
+			err = sc_rm_memreg_alloc(ipc_handle, &mr, BL31_LIMIT, end);
+			if (err)
+				ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
+					(sc_faddr_t)BL31_LIMIT, end);
+			err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+			if (err)
+				ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
+					(sc_faddr_t)BL31_LIMIT, end);
+		}
+
+		if (start < (BL31_BASE - 1)) {
+			err = sc_rm_memreg_alloc(ipc_handle, &mr, start, BL31_BASE - 1);
+			if (err)
+				ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
+					start, (sc_faddr_t)BL31_BASE - 1);
+			err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+				if (err)
+					ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
+						start, (sc_faddr_t)BL31_BASE - 1);
+		}
+	}
+
 	owned = sc_rm_is_resource_owned(ipc_handle, SC_R_M4_0_PID0);
 	if (owned) {
 		err = sc_rm_set_resource_movable(ipc_handle, SC_R_M4_0_PID0,
@@ -249,57 +300,6 @@ void mx8_partition_resources(void)
 		if (err)
 			ERROR("sc_rm_assign_resource: rsrc %u, ret %u\n",
 				SC_R_M4_1_PID0, err);
-	}
-
-	/*
-	 * sc_rm_set_peripheral_permissions
-	 * sc_rm_set_memreg_permissions
-	 * sc_rm_set_pin_movable
-	 */
-
-	for (mr = 0; mr < 64; mr++) {
-		owned = sc_rm_is_memreg_owned(ipc_handle, mr);
-		if (owned) {
-			err = sc_rm_get_memreg_info(ipc_handle, mr, &start, &end);
-			if (err)
-				ERROR("Memreg get info failed, %u\n", mr);
-			NOTICE("Memreg %u 0x%" PRIx64 " -- 0x%" PRIx64 "\n", mr, start, end);
-			if (BL31_BASE >= start && (BL31_LIMIT - 1) <= end) {
-				mr_record = mr; /* Record the mr for ATF running */
-			} else {
-				err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
-				if (err)
-					ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 ", \
-					      err %d\n", start, end, err);
-			}
-		}
-	}
-
-	if (mr_record != 64) {
-		err = sc_rm_get_memreg_info(ipc_handle, mr_record, &start, &end);
-		if (err)
-			ERROR("Memreg get info failed, %u\n", mr_record);
-		if ((BL31_LIMIT - 1) < end) {
-			err = sc_rm_memreg_alloc(ipc_handle, &mr, BL31_LIMIT, end);
-			if (err)
-				ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
-				      (sc_faddr_t)BL31_LIMIT, end);
-			err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
-			if (err)
-				ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
-				      (sc_faddr_t)BL31_LIMIT, end);
-		}
-
-		if (start < (BL31_BASE - 1)) {
-			err = sc_rm_memreg_alloc(ipc_handle, &mr, start, BL31_BASE - 1);
-			if (err)
-				ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
-				      start, (sc_faddr_t)BL31_BASE - 1);
-			err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
-				if (err)
-					ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
-					      start, (sc_faddr_t)BL31_BASE - 1);
-		}
 	}
 
 	if (err)
