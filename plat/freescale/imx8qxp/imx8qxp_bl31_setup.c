@@ -183,24 +183,6 @@ void imx8_partition_resources(void)
 			 secure_rsrcs[i], secure_rsrcs[i], false);
 	}
 
-	owned = sc_rm_is_resource_owned(ipc_handle, SC_R_M4_0_PID0);
-	if (owned)
-		err = sc_rm_set_resource_movable(ipc_handle, SC_R_M4_0_PID0,
-				SC_R_M4_0_PID0, false);
-	/* move all movable resources and pins to non-secure partition */
-	err = sc_rm_move_all(ipc_handle, secure_part, os_part, true, true);
-	if (owned) {
-		err = sc_rm_set_resource_movable(ipc_handle, SC_R_M4_0_PID0,
-				SC_R_M4_0_PID0, true);
-		err = sc_rm_assign_resource(ipc_handle, os_part, SC_R_M4_0_PID0);
-	}
-
-	/* iterate through peripherals to give NS OS part access */
-	for (i = 0; i< (sizeof(ns_access_allowed) / sizeof(sc_rsrc_t)); i++) {
-		err = sc_rm_set_peripheral_permissions(ipc_handle,
-			 ns_access_allowed[i], os_part, SC_RM_PERM_FULL);
-	}
-
 	/*
 	 * sc_rm_set_peripheral_permissions
 	 *
@@ -257,6 +239,24 @@ void imx8_partition_resources(void)
 				}
 			}
 		}
+	}
+
+	owned = sc_rm_is_resource_owned(ipc_handle, SC_R_M4_0_PID0);
+	if (owned)
+		err = sc_rm_set_resource_movable(ipc_handle, SC_R_M4_0_PID0,
+				SC_R_M4_0_PID0, false);
+	/* move all movable resources and pins to non-secure partition */
+	err = sc_rm_move_all(ipc_handle, secure_part, os_part, true, true);
+	if (owned) {
+		err = sc_rm_set_resource_movable(ipc_handle, SC_R_M4_0_PID0,
+				SC_R_M4_0_PID0, true);
+		err = sc_rm_assign_resource(ipc_handle, os_part, SC_R_M4_0_PID0);
+	}
+
+	/* iterate through peripherals to give NS OS part access */
+	for (i = 0; i< (sizeof(ns_access_allowed) / sizeof(sc_rsrc_t)); i++) {
+		err = sc_rm_set_peripheral_permissions(ipc_handle,
+			 ns_access_allowed[i], os_part, SC_RM_PERM_FULL);
 	}
 
 	if (err)
