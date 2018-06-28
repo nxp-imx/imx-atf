@@ -18,6 +18,7 @@
 
 extern int imx_gpc_handler(uint32_t  smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
 extern int imx_cpufreq_handler(uint32_t  smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
+extern int imx_otp_handler(uint32_t smc_fid, void *handle, u_register_t x1, u_register_t x2);
 extern int imx_srtc_handler(uint32_t smc_fid, void *handle, u_register_t x1,
 	u_register_t x2, u_register_t x3, u_register_t x4);
 extern int lpddr4_dvfs_handler(uint32_t  smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
@@ -143,6 +144,9 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 	case  FSL_SIP_WAKEUP_SRC:
 		SMC_RET1(handle, imx_wakeup_src_handler(smc_fid, x1, x2, x3));
 		break;
+        case FSL_SIP_OTP_READ:
+        case FSL_SIP_OTP_WRITE:
+                return imx_otp_handler(smc_fid, handle, x1, x2);
 #endif
 	case  FSL_SIP_BUILDINFO:
 		SMC_RET1(handle, imx_buildinfo_handler(smc_fid, x1, x2, x3, x4));

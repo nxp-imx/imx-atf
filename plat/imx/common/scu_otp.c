@@ -1,0 +1,40 @@
+/*
+ * Copyright 2018 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#include <debug.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <smcc_helpers.h>
+#include <std_svc.h>
+#include <types.h>
+#include <platform_def.h>
+#include <fsl_sip.h>
+#include <sci/sci.h>
+
+extern sc_ipc_t ipc_handle;
+
+int imx_otp_handler(uint32_t smc_fid,
+                    void *handle,
+                    u_register_t x1,
+                    u_register_t x2)
+{
+        int ret;
+        uint32_t fuse;
+
+        switch (smc_fid) {
+            case FSL_SIP_OTP_READ:
+                ret = sc_misc_otp_fuse_read(ipc_handle, x1, &fuse);
+                SMC_RET2(handle, ret, fuse);
+                break;
+            case FSL_SIP_OTP_WRITE:
+                ret = sc_misc_otp_fuse_write(ipc_handle, x1, x2);
+                SMC_RET1(handle, ret);
+            default:
+                ret = SMC_UNK;
+                SMC_RET1(handle, ret);
+        }
+}
+
