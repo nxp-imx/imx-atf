@@ -72,7 +72,7 @@
 #define SC_850MHZ       850000000U	/* 850MHz */
 #define SC_900MHZ       900000000U	/* 900MHz */
 #define SC_1000MHZ     1000000000U	/* 1GHz */
-#define SC_1056MHZ     1056000000U	/* 1.056GHz */
+#define SC_1060MHZ     1060000000U	/* 1.06GHz */
 #define SC_1188MHZ     1188000000U	/* 1.188GHz */
 #define SC_1260MHZ     1260000000U	/* 1.26GHz */
 #define SC_1280MHZ     1280000000U	/* 1.28GHz */
@@ -113,6 +113,7 @@
 #define SC_864MHZ       864000000U	/* 864MHz */
 #define SC_960MHZ       960000000U	/* 960MHz */
 #define SC_1056MHZ     1056000000U	/* 1056MHz */
+#define SC_1104MHZ     1104000000U	/* 1104MHz */
 #define SC_1200MHZ     1200000000U	/* 1.2GHz */
 #define SC_1464MHZ     1464000000U	/* 1.464GHz */
 #define SC_2400MHZ     2400000000U	/* 2.4GHz */
@@ -141,8 +142,8 @@
  * @name Defines for sc_bool_t
  */
 /*@{*/
-#define SC_FALSE        ((sc_bool_t) 0U)	/* True */
-#define SC_TRUE         ((sc_bool_t) 1U)	/* False */
+#define SC_FALSE        ((sc_bool_t) 0U)	/* False */
+#define SC_TRUE         ((sc_bool_t) 1U)	/* True */
 /*@}*/
 
 /*!
@@ -764,7 +765,16 @@
 #define SC_C_RST0                       43U
 #define SC_C_RST1                       44U
 #define SC_C_SEL0                       45U
-#define SC_C_LAST                       46U
+#define SC_C_CALIB0                     46U
+#define SC_C_CALIB1                     47U
+#define SC_C_CALIB2                     48U
+#define SC_C_IPG_DEBUG                  49U
+#define SC_C_IPG_DOZE                   50U
+#define SC_C_IPG_WAIT                   51U
+#define SC_C_IPG_STOP                   52U
+#define SC_C_IPG_STOP_MODE              53U
+#define SC_C_IPG_STOP_ACK               54U
+#define SC_C_LAST                       55U
 
 #define SC_P_ALL        ((sc_pad_t) UINT16_MAX)	/* All pads */
 

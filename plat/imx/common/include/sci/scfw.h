@@ -33,6 +33,7 @@
 
 /* Includes */
 
+#include <stdlib.h>
 #include <types.h>
 
 #ifdef __cplusplus

@@ -18,7 +18,6 @@
 #include <sci/types.h>
 #include <sci/svc/rm/api.h>
 #include <sci/rpc.h>
-#include <stdlib.h>
 #include "rpc.h"
 
 /* Local Defines */

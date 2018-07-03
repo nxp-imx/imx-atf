@@ -23,17 +23,17 @@
 
 #define SC_RPC_MAX_MSG          8U
 
-#define RPC_VER(MSG)            ((MSG)->version)
-#define RPC_SIZE(MSG)           ((MSG)->size)
-#define RPC_SVC(MSG)            ((MSG)->svc)
-#define RPC_FUNC(MSG)           ((MSG)->func)
-#define RPC_R8(MSG)             ((MSG)->func)
-#define RPC_I32(MSG, IDX)       ((MSG)->DATA.i32[(IDX) / 4U])
-#define RPC_I16(MSG, IDX)       ((MSG)->DATA.i16[(IDX) / 2U])
-#define RPC_I8(MSG, IDX)        ((MSG)->DATA.i8[(IDX)])
-#define RPC_U32(MSG, IDX)       ((MSG)->DATA.u32[(IDX) / 4U])
-#define RPC_U16(MSG, IDX)       ((MSG)->DATA.u16[(IDX) / 2U])
-#define RPC_U8(MSG, IDX)        ((MSG)->DATA.u8[(IDX)])
+#define RPC_VER(MESG)           ((MESG)->version)
+#define RPC_SIZE(MESG)          ((MESG)->size)
+#define RPC_SVC(MESG)           ((MESG)->svc)
+#define RPC_FUNC(MESG)          ((MESG)->func)
+#define RPC_R8(MESG)            ((MESG)->func)
+#define RPC_I32(MESG, IDX)      ((MESG)->DATA.i32[(IDX) / 4U])
+#define RPC_I16(MESG, IDX)      ((MESG)->DATA.i16[(IDX) / 2U])
+#define RPC_I8(MESG, IDX)       ((MESG)->DATA.i8[(IDX)])
+#define RPC_U32(MESG, IDX)      ((MESG)->DATA.u32[(IDX) / 4U])
+#define RPC_U16(MESG, IDX)      ((MESG)->DATA.u16[(IDX) / 2U])
+#define RPC_U8(MESG, IDX)       ((MESG)->DATA.u8[(IDX)])
 
 #define SC_RPC_SVC_UNKNOWN      0U
 #define SC_RPC_SVC_RETURN       1U
@@ -96,7 +96,7 @@ typedef struct sc_rpc_async_msg_s {
  * If \a no_resp is SC_FALSE then this function waits for a response
  * and returns the result in \a msg.
  */
-void sc_call_rpc(sc_ipc_t ipc, sc_rpc_msg_t *msg, bool no_resp);
+void sc_call_rpc(sc_ipc_t ipc, sc_rpc_msg_t *msg, sc_bool_t no_resp);
 
 /*!
  * This is an internal function to dispath an RPC call that has

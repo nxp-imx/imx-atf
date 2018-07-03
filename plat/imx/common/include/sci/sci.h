@@ -41,6 +41,8 @@
 #include <sci/svc/pm/api.h>
 #include <sci/svc/rm/api.h>
 #include <sci/svc/timer/api.h>
+#include <sci/svc/irq/api.h>
+#include <sci/svc/misc/api.h>
 
 #ifdef PLAT_IMX8QM
 #define MU_BASE_ADDR(id)	((0x5D1B0000UL + (id*0x10000)))

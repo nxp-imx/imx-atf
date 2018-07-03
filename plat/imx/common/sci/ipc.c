@@ -17,7 +17,7 @@ DEFINE_BAKERY_LOCK(sc_ipc_bakery_lock);
 #define sc_ipc_lock()		bakery_lock_get(&sc_ipc_bakery_lock)
 #define sc_ipc_unlock()		bakery_lock_release(&sc_ipc_bakery_lock)
 
-void sc_call_rpc(sc_ipc_t ipc, sc_rpc_msg_t *msg, bool no_resp)
+void sc_call_rpc(sc_ipc_t ipc, sc_rpc_msg_t *msg, sc_bool_t no_resp)
 {
 	sc_ipc_lock();
 

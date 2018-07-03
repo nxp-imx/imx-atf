@@ -28,6 +28,7 @@
 #define PM_FUNC_SET_PARTITION_POWER_MODE 1U	/* Index for pm_set_partition_power_mode() RPC call */
 #define PM_FUNC_GET_SYS_POWER_MODE 2U	/* Index for pm_get_sys_power_mode() RPC call */
 #define PM_FUNC_SET_RESOURCE_POWER_MODE 3U	/* Index for pm_set_resource_power_mode() RPC call */
+#define PM_FUNC_SET_RESOURCE_POWER_MODE_ALL 22U	/* Index for pm_set_resource_power_mode_all() RPC call */
 #define PM_FUNC_GET_RESOURCE_POWER_MODE 4U	/* Index for pm_get_resource_power_mode() RPC call */
 #define PM_FUNC_REQ_LOW_POWER_MODE 16U	/* Index for pm_req_low_power_mode() RPC call */
 #define PM_FUNC_REQ_CPU_LOW_POWER_MODE 20U	/* Index for pm_req_cpu_low_power_mode() RPC call */

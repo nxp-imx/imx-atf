@@ -32,12 +32,12 @@
  * @name Defines for type widths
  */
 /*@{*/
-#define SC_RM_PARTITION_W   5	/* Width of sc_rm_pt_t */
-#define SC_RM_MEMREG_W      6	/* Width of sc_rm_mr_t */
-#define SC_RM_DID_W         4	/* Width of sc_rm_did_t */
-#define SC_RM_SID_W         6	/* Width of sc_rm_sid_t */
-#define SC_RM_SPA_W         2	/* Width of sc_rm_spa_t */
-#define SC_RM_PERM_W        3	/* Width of sc_rm_perm_t */
+#define SC_RM_PARTITION_W   5U	/* Width of sc_rm_pt_t */
+#define SC_RM_MEMREG_W      6U	/* Width of sc_rm_mr_t */
+#define SC_RM_DID_W         4U	/* Width of sc_rm_did_t */
+#define SC_RM_SID_W         6U	/* Width of sc_rm_sid_t */
+#define SC_RM_SPA_W         2U	/* Width of sc_rm_spa_t */
+#define SC_RM_PERM_W        3U	/* Width of sc_rm_perm_t */
 /*@}*/
 
 /*!

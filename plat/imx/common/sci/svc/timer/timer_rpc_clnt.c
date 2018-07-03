@@ -19,7 +19,6 @@
 #include <sci/svc/rm/api.h>
 #include <sci/svc/timer/api.h>
 #include <sci/rpc.h>
-#include <stdlib.h>
 #include "rpc.h"
 
 /* Local Defines */
@@ -347,6 +346,58 @@ sc_err_t sc_timer_set_rtc_calb(sc_ipc_t ipc, int8_t count)
 	RPC_FUNC(&msg) = (uint8_t)TIMER_FUNC_SET_RTC_CALB;
 	RPC_I8(&msg, 0U) = (int8_t) count;
 	RPC_SIZE(&msg) = 2U;
+
+	sc_call_rpc(ipc, &msg, SC_FALSE);
+
+	result = RPC_R8(&msg);
+	return (sc_err_t)result;
+}
+
+sc_err_t sc_timer_set_sysctr_alarm(sc_ipc_t ipc, uint64_t ticks)
+{
+	sc_rpc_msg_t msg;
+	uint8_t result;
+
+	RPC_VER(&msg) = SC_RPC_VERSION;
+	RPC_SVC(&msg) = (uint8_t)SC_RPC_SVC_TIMER;
+	RPC_FUNC(&msg) = (uint8_t)TIMER_FUNC_SET_SYSCTR_ALARM;
+	RPC_U32(&msg, 0U) = (uint32_t)(ticks >> 32U);
+	RPC_U32(&msg, 4U) = (uint32_t)ticks;
+	RPC_SIZE(&msg) = 3U;
+
+	sc_call_rpc(ipc, &msg, SC_FALSE);
+
+	result = RPC_R8(&msg);
+	return (sc_err_t)result;
+}
+
+sc_err_t sc_timer_set_sysctr_periodic_alarm(sc_ipc_t ipc, uint64_t ticks)
+{
+	sc_rpc_msg_t msg;
+	uint8_t result;
+
+	RPC_VER(&msg) = SC_RPC_VERSION;
+	RPC_SVC(&msg) = (uint8_t)SC_RPC_SVC_TIMER;
+	RPC_FUNC(&msg) = (uint8_t)TIMER_FUNC_SET_SYSCTR_PERIODIC_ALARM;
+	RPC_U32(&msg, 0U) = (uint32_t)(ticks >> 32U);
+	RPC_U32(&msg, 4U) = (uint32_t)ticks;
+	RPC_SIZE(&msg) = 3U;
+
+	sc_call_rpc(ipc, &msg, SC_FALSE);
+
+	result = RPC_R8(&msg);
+	return (sc_err_t)result;
+}
+
+sc_err_t sc_timer_cancel_sysctr_alarm(sc_ipc_t ipc)
+{
+	sc_rpc_msg_t msg;
+	uint8_t result;
+
+	RPC_VER(&msg) = SC_RPC_VERSION;
+	RPC_SVC(&msg) = (uint8_t)SC_RPC_SVC_TIMER;
+	RPC_FUNC(&msg) = (uint8_t)TIMER_FUNC_CANCEL_SYSCTR_ALARM;
+	RPC_SIZE(&msg) = 1U;
 
 	sc_call_rpc(ipc, &msg, SC_FALSE);
 
