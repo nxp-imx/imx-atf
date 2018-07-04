@@ -64,6 +64,9 @@ void dram_info_init(void)
 	if (ddr_type == DDRC_LPDDR4) {
 		dram_info = &imx8m_lpddr4_dram_info;
 		dram_info->dram_type = ddr_type;
+	} else {
+		/* TODO DDR4 support will be added later */
+		return;
 	}
 
 	/* init the boot_fsp & current_fsp */
