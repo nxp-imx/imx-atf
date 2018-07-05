@@ -22,6 +22,7 @@
 #include <tzc380.h>
 #include <imx_csu.h>
 #include <imx_rdc.h>
+#include <uart.h>
 
 /* linker defined symbols */
 extern unsigned long __RO_START__;
@@ -191,6 +192,10 @@ static void imx8mm_aips_config(void)
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		u_register_t arg2, u_register_t arg3)
 {
+#if DEBUG_CONSOLE
+	static console_uart_t console;
+#endif
+
 #if !defined (CSU_RDC_TEST)
 	int i;
 	/* enable CSU NS access permission */
@@ -205,8 +210,8 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	imx8mm_caam_config();
 
 #if DEBUG_CONSOLE
-	console_init(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
-		     IMX_CONSOLE_BAUDRATE);
+	console_uart_register(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
+		IMX_CONSOLE_BAUDRATE, &console);
 #endif
 
 	/*
