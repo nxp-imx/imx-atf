@@ -1,11 +1,13 @@
 /*
- * Copyright 2017 NXP
+ * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #ifndef __IMX_LPUART_H__
 #define __IMX_LPUART_H__
+
+#include <console.h>
 
 #define VERID	0x0
 #define PARAM	0x4
@@ -18,7 +20,10 @@
 #define MATCH	0x20
 #define MODIR	0x24
 #define FIFO	0x28
-#define WATER	0x2C
+#define WATER	0x2c
+
+#define US1_TDRE	(1 << 23)
+#define US1_RDRF	(1 << 21)
 
 #define CTRL_TE		(1 << 19)
 #define CTRL_RE		(1 << 18)
@@ -44,5 +49,18 @@
 #define LPUART_BAUD_SBNS_MASK                    (0x2000U)
 #define LPUART_BAUD_BOTHEDGE_MASK                (0x20000U)
 #define LPUART_BAUD_M10_MASK                     (0x20000000U)
+
+#ifndef __ASSEMBLY__
+
+#include <types.h>
+
+typedef struct {
+	console_t console;
+	uintptr_t base;
+} console_lpuart_t;
+
+int console_lpuart_register(uintptr_t baseaddr, uint32_t clock, uint32_t baud,
+			   console_lpuart_t *console);
+#endif /*__ASSEMBLY__*/
 
 #endif  /* __IMX_LPUART_H__*/

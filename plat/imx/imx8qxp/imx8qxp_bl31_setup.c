@@ -261,6 +261,10 @@ void imx8_partition_resources(void)
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
                u_register_t arg2, u_register_t arg3)
 {
+#if DEBUG_CONSOLE
+	static console_lpuart_t console;
+#endif
+
 	/* open the IPC channel */
 	if (sc_ipc_open(&ipc_handle, SC_IPC_CH) != SC_ERR_NONE) {
 		/* No console available now */
@@ -291,8 +295,8 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 #endif
 
 #if DEBUG_CONSOLE
-	console_init(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
-		     IMX_CONSOLE_BAUDRATE);
+	console_lpuart_register(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
+		IMX_CONSOLE_BAUDRATE, &console);
 #endif
 
 	/* Turn on MU1 for non-secure OS/Hypervisor
