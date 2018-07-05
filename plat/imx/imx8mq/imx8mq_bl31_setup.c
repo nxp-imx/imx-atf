@@ -264,7 +264,7 @@ void bl31_plat_arch_setup(void)
 			MT_DEVICE | MT_RW);
 
 	/* Map DDRC/PHY/PERF */
-	mmap_add_region(0x3c000000, 0x3c000000, 0xC000000, MT_DEVICE | MT_RW);
+	mmap_add_region(0x3c000000, 0x3c000000, 0x4000000, MT_DEVICE | MT_RW);
 
 #if USE_COHERENT_MEM
 	mmap_add_region(BL31_COHERENT_RAM_BASE, BL31_COHERENT_RAM_BASE,
