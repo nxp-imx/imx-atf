@@ -22,7 +22,7 @@
 #define PLAT_WAIT_RET_STATE		1
 #define PLAT_STOP_OFF_STATE		3
 
-#define BL31_BASE			0x910000
+#define BL31_BASE			0x920000
 #define BL31_LIMIT			0x940000
 #define BL32_BASE			0xbe000000
 
