@@ -267,6 +267,8 @@ void bl31_plat_arch_setup(void)
 	/* Map DDRC/PHY/PERF */
 	mmap_add_region(0x3c000000, 0x3c000000, 0x4000000, MT_DEVICE | MT_RW);
 
+	mmap_add_region(0x180000, 0x180000, 0x8000, MT_MEMORY | MT_RW);
+
 #if USE_COHERENT_MEM
 	mmap_add_region(BL31_COHERENT_RAM_BASE, BL31_COHERENT_RAM_BASE,
 		BL31_COHERENT_RAM_LIMIT - BL31_COHERENT_RAM_BASE,
@@ -285,7 +287,7 @@ void bl31_platform_setup(void)
 	mmio_write_32(0x30360124, 0x1);
 
 	/* init the dram info */
-	dram_info_init();
+	dram_info_init(SAVED_DRAM_TIMING_BASE);
 
 	/* init the GICv3 cpu and distributor interface */
 	plat_gic_driver_init();
