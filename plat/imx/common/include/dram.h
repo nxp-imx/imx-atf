@@ -8,6 +8,24 @@
 #define __DRAM_H__
 
 #include <utils_def.h>
+#include <arch_helpers.h>
+#include <assert.h>
+#include <bl_common.h>
+#include <console.h>
+#include <context.h>
+#include <context_mgmt.h>
+#include <debug.h>
+#include <stdbool.h>
+#include <mmio.h>
+#include <platform.h>
+#include <platform_def.h>
+#include <plat_imx8.h>
+#include <xlat_tables.h>
+#include <soc.h>
+#include <tzc380.h>
+#include <imx_csu.h>
+#include <imx_rdc.h>
+#include <uart.h>
 
 #define DDRC_LPDDR4	BIT(5)
 #define DDR_TYPE_MASK	0x3f
@@ -45,13 +63,23 @@ struct dram_info {
 	struct dram_timing_info *timing_info;
 };
 
+void lpddr4_mr_write(uint32_t, uint32_t, uint32_t);
+uint32_t lpddr4_mr_read(uint32_t, uint32_t);
+
 void ddrphy_load_pie_image(void);
 void dram_info_init(unsigned long dram_timing_base);
-void lpddr4_enter_retention(void);
-void lpddr4_exit_retention(void);
 void dram_umctl2_init(void);
 void dram_phy_init(void);
+
+void lpddr4_enter_retention(void);
+void lpddr4_exit_retention(void);
+/* lpddr4 swffc for dvfs */
+void lpddr4_swffc(unsigned int dev_fsp, unsigned int tgt_freq);
+
+/* dram retention */
 void dram_enter_retention(void);
 void dram_exit_retention(void);
+
+void dram_clock_switch(unsigned int target_freq);
 
 #endif /* __DRAM_H__ */
