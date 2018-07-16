@@ -10,7 +10,10 @@ PLAT_GIC_SOURCES	:=	drivers/arm/gic/v3/gicv3_helpers.c	\
 				plat/imx/common/plat_imx8_gic.c
 
 PLAT_DRAM_SOURCES	:=	plat/imx/common/imx8m/dram.c		\
-				plat/imx/common/imx8m/lpddr4_retention.c
+				plat/imx/common/imx8m/clock.c		\
+				plat/imx/common/imx8m/lpddr4_retention.c \
+				plat/imx/common/imx8m/lpddr4_helper.c	\
+				plat/imx/common/imx8m/lpddr4_dvfs.c
 
 BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S		\
 				plat/imx/common/mxcuart_console.S	\
