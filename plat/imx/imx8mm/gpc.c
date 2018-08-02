@@ -548,9 +548,9 @@ void noc_wrapper_pre_suspend(unsigned int proc_num)
 	mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
 
 	/* noc can only be power down when all the pu domain is off */
-//	if (!pu_domain_status)
-//		/* enable noc power down */
-//		imx_noc_slot_config(true);
+	if (!pu_domain_status)
+		/* enable noc power down */
+		imx_noc_slot_config(true);
 	/*
 	 * gic redistributor context save must be called when
 	 * the GIC CPU interface is disabled and before distributor save.
@@ -573,9 +573,9 @@ void noc_wrapper_post_resume(unsigned int proc_num)
 	mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
 
 	/* noc can only be power down when all the pu domain is off */
-//	if (!pu_domain_status)
-//		/* disable noc power down */
-//		imx_noc_slot_config(false);
+	if (!pu_domain_status)
+		/* disable noc power down */
+		imx_noc_slot_config(false);
 
 	/* restore gic context */
 	plat_gic_restore(proc_num, &imx_gicv3_ctx);
