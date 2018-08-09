@@ -63,5 +63,6 @@
 #define FSL_SIP_OTP_READ		0xc200000A
 #define FSL_SIP_OTP_WRITE		0xc200000B
 
+#define FSL_SIP_MISC_SET_TEMP		0xc200000c
 
 #endif

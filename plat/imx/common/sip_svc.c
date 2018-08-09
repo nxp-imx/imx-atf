@@ -27,6 +27,8 @@ extern int imx_soc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u
 extern int imx_hab_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_register_t x3, u_register_t x4);
 extern int imx_noc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
 extern int dram_dvfs_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_register_t x3);
+extern int imx_misc_set_temp_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
+				     u_register_t x3, u_register_t x4);
 
 bool wakeup_src_irqsteer = false;
 
@@ -102,7 +104,6 @@ int imx_wakeup_src_handler(uint32_t smc_fid,
 	return ret;
 }
 
-
 /* i.MX platform specific service SMC handler */
 uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 			      u_register_t x1,
@@ -153,6 +154,9 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
         case FSL_SIP_OTP_READ:
         case FSL_SIP_OTP_WRITE:
                 return imx_otp_handler(smc_fid, handle, x1, x2);
+        case FSL_SIP_MISC_SET_TEMP:
+		SMC_RET1(handle, imx_misc_set_temp_handler(smc_fid, x1, x2, x3, x4));
+		break;
 #endif
 	case  FSL_SIP_BUILDINFO:
 		SMC_RET1(handle, imx_buildinfo_handler(smc_fid, x1, x2, x3, x4));
