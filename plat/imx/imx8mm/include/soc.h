@@ -7,6 +7,8 @@
 #ifndef __IMX_SOC_H
 #define __IMX_SOC_H
 
+#include <stdbool.h>
+
 void imx_gpc_set_m_core_pgc(unsigned int cpu, bool pdn);
 void imx_anamix_pre_suspend(void);
 void imx_anamix_post_resume(void);
@@ -29,5 +31,8 @@ void noc_wrapper_post_resume(unsigned int proc_num);
 
 void ddrc_enter_retention(void);
 void ddrc_exit_retention(void);
+
+bool imx_is_m4_enabled(void);
+bool imx_m4_lpa_active(void);
 
 #endif /* __IMX_SOC_H */
