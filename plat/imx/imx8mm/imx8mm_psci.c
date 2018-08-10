@@ -130,7 +130,8 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 
 	/* do system level power mode setting */
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
-		dram_enter_retention();
+		if (!imx_is_m4_enabled() || !imx_m4_lpa_active())
+			dram_enter_retention();
 		imx_set_sys_lpm(true);
 		imx_anamix_pre_suspend();
 		noc_wrapper_pre_suspend(core_id);
@@ -151,7 +152,8 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 		imx_set_sys_wakeup(core_id, false);
 		imx_anamix_post_resume();
 		imx_clear_rbc_count();
-		dram_exit_retention();
+		if (!imx_is_m4_enabled() || !imx_m4_lpa_active())
+			dram_exit_retention();
 		noc_wrapper_post_resume(core_id);
 	}
 

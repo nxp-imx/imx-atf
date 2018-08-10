@@ -131,6 +131,9 @@
 #define VPU_G2_PGC		0xf00
 #define VPU_H1_PGC		0xf40
 
+#define M4RCR 	0xC
+#define SRC_SCR_M4C_NON_SCLR_RST_MASK		(1 << 0)
+
 #define IMX_PD_DOMAIN(name)				\
 	{						\
 		.pwr_req = name##_PWR_REQ,		\
@@ -208,6 +211,21 @@ static uint32_t gpc_imr_offset[] = { 0x30, 0x40, 0x1c0, 0x1d0, };
 static struct plat_gic_ctx imx_gicv3_ctx;
 
 static unsigned int pu_domain_status;
+
+bool imx_is_m4_enabled(void)
+{
+	return !( mmio_read_32(IMX_SRC_BASE + M4RCR)
+		& SRC_SCR_M4C_NON_SCLR_RST_MASK);
+}
+
+#define M4_LPA_ACTIVE	0x5555
+#define M4_LPA_IDLE	0x0
+#define SRC_GPR9	0x94
+
+bool imx_m4_lpa_active(void)
+{
+	return mmio_read_32(IMX_SRC_BASE + SRC_GPR9) & M4_LPA_ACTIVE;
+}
 
 void imx_set_cpu_secure_entry(int core_id, uint64_t sec_entrypoint)
 {
@@ -462,6 +480,20 @@ void imx_set_sys_lpm(bool retention)
 			SLPCR_BYPASS_PMIC_READY | SLPCR_RBC_EN);
 
 	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
+
+	if (imx_is_m4_enabled() && imx_m4_lpa_active()) {
+		val = mmio_read_32(IMX_GPC_BASE + SLPCR);
+		val |= SLPCR_A53_FASTWUP_STOP;
+		mmio_write_32(IMX_GPC_BASE + 0x14, val);
+			return;
+	}
+
+	if (!imx_is_m4_enabled()) {
+		/* mask M4 DSM trigger if M4 is NOT enabled */
+		val = mmio_read_32(IMX_GPC_BASE + LPCR_M4);
+		val |= 1 << 31;
+		mmio_write_32(IMX_GPC_BASE + LPCR_M4, val);
+	}
 }
 
 void imx_set_rbc_count(void)
@@ -490,6 +522,8 @@ void imx_anamix_pre_suspend()
 {
 	int i;
 	uint32_t pll_ctrl;
+	if (imx_is_m4_enabled() && imx_m4_lpa_active())
+		return;
 	/* bypass all the plls before enter DSM mode */
 	for (i = 0; i < ARRAY_SIZE(pll_ctrl_offset); i++) {
 		pll_ctrl = mmio_read_32(IMX_ANAMIX_BASE + pll_ctrl_offset[i]);
@@ -514,6 +548,8 @@ void imx_anamix_post_resume(void)
 {
 	int i;
 	uint32_t pll_ctrl;
+	if (imx_is_m4_enabled() && imx_m4_lpa_active())
+		return;
 	/* unbypass all the plls after exit from DSM mode */
 	for (i = 0; i < ARRAY_SIZE(pll_ctrl_offset); i++) {
 		pll_ctrl = mmio_read_32(IMX_ANAMIX_BASE + pll_ctrl_offset[i]);
@@ -555,20 +591,22 @@ void noc_wrapper_pre_suspend(unsigned int proc_num)
 {
 	uint32_t val;
 
-	/* enable MASTER1 & MASTER2 power down in A53 LPM mode */
-	val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
-	val &= ~(1 << 7);
-	val &= ~(1 << 8);
-	mmio_write_32(IMX_GPC_BASE + LPCR_A53_BSC, val);
+	if (!imx_is_m4_enabled() || !imx_m4_lpa_active()) {
+		/* enable MASTER1 & MASTER2 power down in A53 LPM mode */
+		val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
+		val &= ~(1 << 7);
+		val &= ~(1 << 8);
+		mmio_write_32(IMX_GPC_BASE + LPCR_A53_BSC, val);
 
-	val = mmio_read_32(IMX_GPC_BASE + MST_CPU_MAPPING);
-	val |= (0x3 << 1);
-	mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
+		val = mmio_read_32(IMX_GPC_BASE + MST_CPU_MAPPING);
+		val |= (0x3 << 1);
+		mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
 
-	/* noc can only be power down when all the pu domain is off */
-	if (!pu_domain_status)
-		/* enable noc power down */
-		imx_noc_slot_config(true);
+		/* noc can only be power down when all the pu domain is off */
+		if (!pu_domain_status)
+			/* enable noc power down */
+			imx_noc_slot_config(true);
+	}
 	/*
 	 * gic redistributor context save must be called when
 	 * the GIC CPU interface is disabled and before distributor save.
@@ -580,24 +618,25 @@ void noc_wrapper_post_resume(unsigned int proc_num)
 {
 	uint32_t val;
 
-	/* disable MASTER1 & MASTER2 power down in A53 LPM mode */
-	val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
-	val |= (1 << 7);
-	val |= (1 << 8);
-	mmio_write_32(IMX_GPC_BASE + LPCR_A53_BSC, val);
+	if (!imx_is_m4_enabled() || !imx_m4_lpa_active()) {
+		/* disable MASTER1 & MASTER2 power down in A53 LPM mode */
+		val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
+		val |= (1 << 7);
+		val |= (1 << 8);
+		mmio_write_32(IMX_GPC_BASE + LPCR_A53_BSC, val);
 
-	val = mmio_read_32(IMX_GPC_BASE + MST_CPU_MAPPING);
-	val &= ~(0x3 << 1);
-	mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
+		val = mmio_read_32(IMX_GPC_BASE + MST_CPU_MAPPING);
+		val &= ~(0x3 << 1);
+		mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
 
-	/* noc can only be power down when all the pu domain is off */
-	if (!pu_domain_status) {
-		/* re-init the tz380 if resume from noc power down */
-		imx8mm_tz380_init();
-		/* disable noc power down */
-		imx_noc_slot_config(false);
+		/* noc can only be power down when all the pu domain is off */
+		if (!pu_domain_status) {
+			/* re-init the tz380 if resume from noc power down */
+			imx8mm_tz380_init();
+			/* disable noc power down */
+			imx_noc_slot_config(false);
+		}
 	}
-
 	/* restore gic context */
 	plat_gic_restore(proc_num, &imx_gicv3_ctx);
 }
@@ -629,6 +668,13 @@ void imx_set_sys_wakeup(int last_core, bool pdn)
 
 		mmio_write_32(IMX_GPC_BASE + gpc_imr_offset[last_core] + i * 4,
 			      irq_mask);
+	}
+
+	/* enable the MU wakeup */
+	if (imx_is_m4_enabled()) {
+		val = mmio_read_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + 0x8);
+		val &= ~(1 << 24);
+		mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + 0x8, val);
 	}
 }
 
@@ -863,11 +909,6 @@ void imx_gpc_init(void)
 	val = mmio_read_32(IMX_GPC_BASE + MST_CPU_MAPPING);
 	val &= ~(0x3 << 1);
 	mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
-
-	/* mask M4 DSM trigger if M4 is NOT enabled */
-	val = mmio_read_32(IMX_GPC_BASE + LPCR_M4);
-	val |= 1 << 31;
-	mmio_write_32(IMX_GPC_BASE + LPCR_M4, val);
 
 	/*set all mix/PU in A53 domain */
 	mmio_write_32(IMX_GPC_BASE + GPC_PGC_CPU_0_1_MAPPING, 0xffff);
