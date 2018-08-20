@@ -8,9 +8,10 @@
 #include <mmio.h>
 #include <platform_def.h>
 
-#define CCM_IP_CLK_ROOT_GEN_TAGET(i)		(IMX_CCM_BASE + 0x80 * (i) + 0x00)
-#define CCM_IP_CLK_ROOT_GEN_TAGET_SET(i)	(IMX_CCM_BASE + 0x80 * (i) + 0x04)
-#define CCM_IP_CLK_ROOT_GEN_TAGET_CLR(i)	(IMX_CCM_BASE + 0x80 * (i) + 0x08)
+#define IMX_CCM_IP_BASE				(IMX_CCM_BASE + 0xa000)
+#define CCM_IP_CLK_ROOT_GEN_TAGET(i)		(IMX_CCM_IP_BASE + 0x80 * (i) + 0x00)
+#define CCM_IP_CLK_ROOT_GEN_TAGET_SET(i)	(IMX_CCM_IP_BASE + 0x80 * (i) + 0x04)
+#define CCM_IP_CLK_ROOT_GEN_TAGET_CLR(i)	(IMX_CCM_IP_BASE + 0x80 * (i) + 0x08)
 
 void ddr_pll_bypass_100mts(void)
 {
