@@ -46,6 +46,12 @@ enum hab_state {
 	HAB_STATE_MAX
 };
 
+enum hab_target {
+	HAB_TGT_MEMORY		= 0x0f,
+	HAB_TGT_PERIPHERAL	= 0xf0,
+	HAB_TGT_ANY		= 0x55,
+};
+
 typedef enum hab_status hab_rvt_report_event_t(enum hab_status, uint32_t,
 		uint8_t* , size_t*);
 typedef enum hab_status hab_rvt_report_status_t(enum hab_config *,
@@ -55,18 +61,26 @@ typedef enum hab_status hab_rvt_entry_t(void);
 typedef enum hab_status hab_rvt_exit_t(void);
 typedef void *hab_rvt_authenticate_image_t(uint8_t, long,
 		void **, size_t *, hab_loader_callback_f_t);
+typedef enum hab_status hab_rvt_check_target_t(enum hab_target, const void *,
+					       size_t);
+typedef void hab_rvt_failsafe_t(void);
 
 #define HAB_RVT_ENTRY_ARM64			((unsigned long)*(uint32_t *)(HAB_RVT_BASE + 0x08))
 #define HAB_RVT_EXIT_ARM64			((unsigned long)*(uint32_t *)(HAB_RVT_BASE + 0x10))
+#define HAB_RVT_CHECK_TARGET_ARM64	((unsigned long)*(uint32_t *)(HAB_RVT_BASE + 0x18))
 #define HAB_RVT_AUTHENTICATE_IMAGE_ARM64	((unsigned long)*(uint32_t *)(HAB_RVT_BASE + 0x20))
 #define HAB_RVT_REPORT_EVENT_ARM64		((unsigned long)*(uint32_t *)(HAB_RVT_BASE + 0x40))
 #define HAB_RVT_REPORT_STATUS_ARM64		((unsigned long)*(uint32_t *)(HAB_RVT_BASE + 0x48))
+#define HAB_RVT_FAILSAFE_ARM64		((unsigned long)*(uint32_t *)(HAB_RVT_BASE + 0x50))
 
 #define hab_rvt_authenticate_image_p ((hab_rvt_authenticate_image_t *)HAB_RVT_AUTHENTICATE_IMAGE_ARM64)
 #define hab_rvt_entry_p ((hab_rvt_entry_t *)HAB_RVT_ENTRY_ARM64)
 #define hab_rvt_exit_p ((hab_rvt_exit_t *)HAB_RVT_EXIT_ARM64)
 #define hab_rvt_report_event_p ((hab_rvt_report_event_t *)HAB_RVT_REPORT_EVENT_ARM64)
 #define hab_rvt_report_status_p ((hab_rvt_report_status_t *)HAB_RVT_REPORT_STATUS_ARM64)
+#define hab_rvt_check_target_p ((hab_rvt_check_target_t *)HAB_RVT_CHECK_TARGET_ARM64)
+#define hab_rvt_failsafe_p ((hab_rvt_failsafe_t *)HAB_RVT_FAILSAFE_ARM64)
+
 
 #define HAB_CID_ATF 2 /**< ATF Caller ID*/
 
@@ -78,6 +92,8 @@ int imx_hab_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 	hab_rvt_exit_t *hab_rvt_exit;
 	hab_rvt_report_event_t *hab_rvt_report_event;
 	hab_rvt_report_status_t *hab_rvt_report_status;
+	hab_rvt_failsafe_t *hab_rvt_failsafe;
+	hab_rvt_check_target_t *hab_rvt_check_target;
 
 	switch(x1) {
 	case FSL_SIP_HAB_AUTHENTICATE:
@@ -95,6 +111,13 @@ int imx_hab_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 	case FSL_SIP_HAB_REPORT_STATUS:
 		hab_rvt_report_status = hab_rvt_report_status_p;
 		return hab_rvt_report_status((enum hab_config *)x2, (enum hab_state *)x3);
+	case FSL_SIP_HAB_FAILSAFE:
+		hab_rvt_failsafe = hab_rvt_failsafe_p;
+		hab_rvt_failsafe();
+		return SMC_OK;
+	case FSL_SIP_HAB_CHECK_TARGET:
+		hab_rvt_check_target = hab_rvt_check_target_p;
+		return hab_rvt_check_target((enum hab_target)x2, (const void *)x3, (size_t)x4);
 	default:
 		return SMC_UNK;
 
