@@ -150,9 +150,9 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 		/* clear the system wakeup setting */
 		imx_set_sys_wakeup(core_id, false);
 		imx_anamix_post_resume();
-		noc_wrapper_post_resume(core_id);
 		imx_clear_rbc_count();
 		dram_exit_retention();
+		noc_wrapper_post_resume(core_id);
 	}
 
 	/* check the cluster level power status */
