@@ -17,6 +17,7 @@
 #include <platform_def.h>
 #include <psci.h>
 #include <fsl_sip.h>
+#include <tzc380.h>
 #include <soc.h>
 #include <delay_timer.h>
 
@@ -533,6 +534,23 @@ void imx_anamix_post_resume(void)
 	mmio_write_32(IMX_ANAMIX_BASE + 0x114, mmio_read_32(IMX_ANAMIX_BASE + 0x114) & ~0x500);
 }
 
+#define GPR_TZASC_EN		(1 << 0)
+#define GPR_TZASC_EN_LOCK	(1 << 16)
+
+static void imx8mm_tz380_init(void)
+{
+	unsigned int val;
+
+	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x28);
+	if ((val & GPR_TZASC_EN) != GPR_TZASC_EN)
+		return;
+
+	tzc380_init(IMX_TZASC_BASE);
+
+	/* Enable 1G-5G S/NS RW */
+	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G) | TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
+}
+
 void noc_wrapper_pre_suspend(unsigned int proc_num)
 {
 	uint32_t val;
@@ -573,9 +591,12 @@ void noc_wrapper_post_resume(unsigned int proc_num)
 	mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
 
 	/* noc can only be power down when all the pu domain is off */
-	if (!pu_domain_status)
+	if (!pu_domain_status) {
+		/* re-init the tz380 if resume from noc power down */
+		imx8mm_tz380_init();
 		/* disable noc power down */
 		imx_noc_slot_config(false);
+	}
 
 	/* restore gic context */
 	plat_gic_restore(proc_num, &imx_gicv3_ctx);
