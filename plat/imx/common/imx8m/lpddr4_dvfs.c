@@ -11,21 +11,6 @@
 
 #include "lpddr4_define.h"
 
-#define P0_INIT3 0x00D4002D
-#define P0_INIT4 ((LPDDR4_MR3 << 16) | 0x0000)
-#define P0_INIT6 0x0066004a
-#define P0_INIT7 0x0006004a
-
-#define P1_INIT3 0x00840000
-#define P1_INIT4 ((LPDDR4_MR3 << 16) | 0x0000)
-#define P1_INIT6 0x0066004a
-#define P1_INIT7 0x0006004a
-
-#define P2_INIT3 0x00840000
-#define P2_INIT4 ((LPDDR4_MR3 << 16) | 0x0000)
-#define P2_INIT6 0x0066004a
-#define P2_INIT7 0x0006004a
-
 extern void dram_clock_switch(unsigned target_freq);
 
 void lpddr4_swffc(unsigned int init_fsp, unsigned int tgt_freq)
@@ -39,32 +24,32 @@ void lpddr4_swffc(unsigned int init_fsp, unsigned int tgt_freq)
 
 	/* 2. MR13.FSP-WR=1, MRW to update MR registers */
 	if (tgt_freq == 0) {
-		mr   = P0_INIT3 >> 16;
-		emr  = P0_INIT3 & 0xFFFF;
-		emr2 = P0_INIT4 >> 16;
-		emr3 = P0_INIT4 & 0xFFFF;
-		mr11 = P0_INIT6 >> 16;
-		mr12 = P0_INIT6 & 0xFFFF;
-		mr22 = P0_INIT7 >> 16;
-		mr14 = P0_INIT7 & 0xFFFF;
+		mr   = mmio_read_32(DDRC_INIT3(0)) >> 16;
+		emr  = mmio_read_32(DDRC_INIT3(0)) & 0xFFFF;
+		emr2 = mmio_read_32(DDRC_INIT4(0)) >> 16;
+		emr3 = mmio_read_32(DDRC_INIT4(0)) & 0xFFFF;
+		mr11 = mmio_read_32(DDRC_INIT6(0)) >> 16;
+		mr12 = mmio_read_32(DDRC_INIT6(0)) & 0xFFFF;
+		mr22 = mmio_read_32(DDRC_INIT7(0)) >> 16;
+		mr14 = mmio_read_32(DDRC_INIT7(0)) & 0xFFFF;
 	} else if (tgt_freq == 1) {
-		mr   = P1_INIT3 >> 16;
-		emr  = P1_INIT3 & 0xFFFF;
-		emr2 = P1_INIT4 >> 16;
-		emr3 = P1_INIT4 & 0xFFFF;
-		mr11 = P1_INIT6 >> 16;
-		mr12 = P1_INIT6 & 0xFFFF;
-		mr22 = P1_INIT7 >> 16;
-		mr14 = P1_INIT7 & 0xFFFF;
+		mr   = mmio_read_32(DDRC_FREQ1_INIT3(0)) >> 16;
+		emr  = mmio_read_32(DDRC_FREQ1_INIT3(0)) & 0xFFFF;
+		emr2 = mmio_read_32(DDRC_FREQ1_INIT4(0)) >> 16;
+		emr3 = mmio_read_32(DDRC_FREQ1_INIT4(0)) & 0xFFFF;
+		mr11 = mmio_read_32(DDRC_FREQ1_INIT6(0)) >> 16;
+		mr12 = mmio_read_32(DDRC_FREQ1_INIT6(0)) & 0xFFFF;
+		mr22 = mmio_read_32(DDRC_FREQ1_INIT7(0)) >> 16;
+		mr14 = mmio_read_32(DDRC_FREQ1_INIT7(0)) & 0xFFFF;
 	} else {
-		mr   = P2_INIT3 >> 16;
-		emr  = P2_INIT3 & 0xFFFF;
-		emr2 = P2_INIT4 >> 16;
-		emr3 = P2_INIT4 & 0xFFFF;
-		mr11 = P2_INIT6 >> 16;
-		mr12 = P2_INIT6 & 0xFFFF;
-		mr22 = P2_INIT7 >> 16;
-		mr14 = P2_INIT7 & 0xFFFF;
+		mr   = mmio_read_32(DDRC_FREQ2_INIT3(0)) >> 16;
+		emr  = mmio_read_32(DDRC_FREQ2_INIT3(0)) & 0xFFFF;
+		emr2 = mmio_read_32(DDRC_FREQ2_INIT4(0)) >> 16;
+		emr3 = mmio_read_32(DDRC_FREQ2_INIT4(0)) & 0xFFFF;
+		mr11 = mmio_read_32(DDRC_FREQ2_INIT6(0)) >> 16;
+		mr12 = mmio_read_32(DDRC_FREQ2_INIT6(0)) & 0xFFFF;
+		mr22 = mmio_read_32(DDRC_FREQ2_INIT7(0)) >> 16;
+		mr14 = mmio_read_32(DDRC_FREQ2_INIT7(0)) & 0xFFFF;
 	}
 
 	tmp = (init_fsp == 1) ? 0x2 << 6 : 0x1 << 6;
