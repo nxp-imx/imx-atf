@@ -25,11 +25,7 @@ static struct csu_slave_conf csu_def_csl_conf[] = {
 	{CSU_CSLn_GPIO2, CSU_RW, 0},
 	{CSU_CSLn_GPIO3, CSU_RW, 0},
 	{CSU_CSLn_GPIO4, CSU_RW, 0},
-#if defined (CSU_RDC_TEST)
-	{CSU_CSLn_GPIO5, CSU_SSRW, 0},
-#else
 	{CSU_CSLn_GPIO5, CSU_RW, 0},
-#endif
 	{CSU_CSLn_Reserved1, CSU_RW, 0},
 	{CSU_CSLn_ANA_TSENSOR, CSU_RW, 0},
 	{CSU_CSLn_ANA_OSC, CSU_RW, 0},
@@ -52,7 +48,11 @@ static struct csu_slave_conf csu_def_csl_conf[] = {
 	{CSU_CSLn_GPC, CSU_RW, 0},
 	{CSU_CSLn_SEMAPHORE1, CSU_RW, 0},
 	{CSU_CSLn_SEMAPHORE2, CSU_RW, 0},
+#if defined(CSU_RDC_TEST)
+	{CSU_CSLn_RDC, CSU_SSRW, 0},
+#else
 	{CSU_CSLn_RDC, CSU_RW, 0},
+#endif
 	{CSU_CSLn_CSU, CSU_RW, 0},
 	{CSU_CSLn_MST0, CSU_RW, 0},
 	{CSU_CSLn_MST1, CSU_RW, 0},
