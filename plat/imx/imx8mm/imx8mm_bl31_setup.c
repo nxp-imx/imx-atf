@@ -197,13 +197,12 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	static console_uart_t console;
 #endif
 
-#if !defined (CSU_RDC_TEST)
 	int i;
 	/* enable CSU NS access permission */
 	for (i = 0; i < 64; i++) {
-		mmio_write_32(0x303e0000 + i * 4, 0xffffffff);
+		mmio_write_32(0x303e0000 + i * 4, 0x00ff00ff);
 	}
-#endif
+
 	/* config the aips access permission */
 	imx8mm_aips_config();
 

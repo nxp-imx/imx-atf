@@ -145,7 +145,7 @@ int imx_rdc_set_masters(struct rdc_mda_conf *masters_list, uint32_t count)
 #if defined (CSU_RDC_TEST)
 /* Default peripherals settings as an example */
 static struct rdc_pdap_conf periph_config[] = {
-	{RDC_PDAP_GPIO4, 0x30, 0},
+	{RDC_PDAP_CSU, 0x30, 0},
 };
 
 
