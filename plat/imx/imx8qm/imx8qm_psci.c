@@ -17,6 +17,7 @@
 #include "../../common/sci/mx8_mu.h"
 
 extern sc_ipc_t ipc_handle;
+extern bool wakeup_src_irqsteer;
 /* save gic dist/redist context when GIC is poewr down */
 static struct plat_gic_ctx imx_gicv3_ctx;
 
@@ -56,8 +57,11 @@ static void imx_enable_irqstr_wakeup(void)
 		mmio_write_32(IMX_WUP_IRQSTR + 0x3c - 0x4 * i, irq_mask);
 	}
 
-	/* Put IRQSTR into STBY mode */
-	sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_STBY);
+	/* set IRQSTR low power mode */
+	if (wakeup_src_irqsteer)
+		sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_STBY);
+	else
+		sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_OFF);
 }
 
 static void imx_disable_irqstr_wakeup(void)
@@ -226,10 +230,20 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 
 	if (cluster_id == 0) {
 		sc_pm_set_cpu_resume_addr(ipc_handle, ap_core_index[cpu_id], 0x080000000);
-		sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_IRQSTEER);
+		if (wakeup_src_irqsteer)
+			sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id],
+				SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_IRQSTEER);
+		else
+			sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id],
+				SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_SCU);
 	} else {
 		sc_pm_set_cpu_resume_addr(ipc_handle, ap_core_index[cpu_id + 4], 0x080000000);
-		sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id + 4], SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_IRQSTEER);
+		if (wakeup_src_irqsteer)
+			sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id + 4],
+				SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_IRQSTEER);
+		else
+			sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id + 4],
+				SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_SCU);
 	}
 }
 
@@ -320,12 +334,12 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	sc_pm_req_low_power_mode(ipc_handle, SC_R_CCI, SC_PM_PW_MODE_OFF);
 
 	/* Request RUN and LP modes for DDR, system interconnect etc. */
-	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A53, SC_PM_SYS_IF_DDR, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
-	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_DDR, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
+	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A53, SC_PM_SYS_IF_DDR, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_OFF);
+	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_DDR, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_OFF);
 	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A53, SC_PM_SYS_IF_MU, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_OFF);
 	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_MU, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_OFF);
-	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A53, SC_PM_SYS_IF_INTERCONNECT, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
-	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_INTERCONNECT, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_STBY);
+	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A53, SC_PM_SYS_IF_INTERCONNECT, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_OFF);
+	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_INTERCONNECT, SC_PM_PW_MODE_ON, SC_PM_PW_MODE_OFF);
 
 	return 0;
 }
