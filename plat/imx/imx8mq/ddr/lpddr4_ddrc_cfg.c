@@ -38,8 +38,8 @@ static inline void umctl2_perf(void)
 	mmio_write_32(DDRC_SCHED(0), 0x29511505);
 	mmio_write_32(DDRC_SCHED1(0), 0x0000002c);
 	mmio_write_32(DDRC_PERFHPR1(0), 0x5900575b);
-	mmio_write_32(DDRC_PERFLPR1(0), 0x00000009);
-	mmio_write_32(DDRC_PERFWR1(0), 0x02005574);
+	mmio_write_32(DDRC_PERFLPR1(0), 0x90000096);
+	mmio_write_32(DDRC_PERFWR1(0), 0x1000012c);
 	mmio_write_32(DDRC_DBG0(0), 0x00000016);
 	mmio_write_32(DDRC_DBG1(0), 0x00000000);
 	mmio_write_32(DDRC_DBGCMD(0), 0x00000000);
@@ -49,10 +49,10 @@ static inline void umctl2_perf(void)
 	mmio_write_32(DDRC_PCFGR_0(0), 0x000010f3);
 	mmio_write_32(DDRC_PCFGW_0(0), 0x000072ff);
 	mmio_write_32(DDRC_PCTRL_0(0), 0x00000001);
-	mmio_write_32(DDRC_PCFGQOS0_0(0), 0x01110d00);
-	mmio_write_32(DDRC_PCFGQOS1_0(0), 0x00620790);
-	mmio_write_32(DDRC_PCFGWQOS0_0(0), 0x00100001);
-	mmio_write_32(DDRC_PCFGWQOS1_0(0), 0x0000041f);
+	mmio_write_32(DDRC_PCFGQOS0_0(0), 0x00000e00);
+	mmio_write_32(DDRC_PCFGQOS1_0(0), 0x0062ffff);
+	mmio_write_32(DDRC_PCFGWQOS0_0(0), 0x00000e00);
+	mmio_write_32(DDRC_PCFGWQOS1_0(0), 0x0000ffff);
 	mmio_write_32(DDRC_FREQ1_DERATEEN(0), 0x00000202);
 	mmio_write_32(DDRC_FREQ1_DERATEINT(0), 0xec78f4b5);
 	mmio_write_32(DDRC_FREQ1_RFSHCTL0(0), 0x00618040);
