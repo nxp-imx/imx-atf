@@ -25,6 +25,7 @@
 #define DIGPROG		0x6c
 #define SW_INFO_A0	0x800
 #define SW_INFO_B0	0x83C
+#define SW_INFO_B1	0x40
 
 int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 		    u_register_t x3)
@@ -59,9 +60,13 @@ int imx_soc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 	rom_version = mmio_read_32(IMX_ROM_BASE + SW_INFO_A0);
 	if (rom_version != 0x10) {
 		rom_version = mmio_read_32(IMX_ROM_BASE + SW_INFO_B0);
-		if (rom_version >= 0x20) {
+		if (rom_version == 0x20) {
 			val &= ~0xff;
 			val |= rom_version;
+		} else if (mmio_read_32(IMX_OCOTP_BASE + SW_INFO_B1)
+			   == 0xff0055aa) {
+			/* 0xff0055aa is magic number for B1 */
+			val = 0x21;
 		}
 	}
 
