@@ -57,9 +57,9 @@ int imx_soc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 	uint32_t rom_version;
 
 	val = mmio_read_32(IMX_ANAMIX_BASE + DIGPROG);
-	rom_version = mmio_read_32(IMX_ROM_BASE + SW_INFO_A0);
+	rom_version = mmio_read_8(IMX_ROM_BASE + SW_INFO_A0);
 	if (rom_version != 0x10) {
-		rom_version = mmio_read_32(IMX_ROM_BASE + SW_INFO_B0);
+		rom_version = mmio_read_8(IMX_ROM_BASE + SW_INFO_B0);
 		if (rom_version == 0x20) {
 			val &= ~0xff;
 			val |= rom_version;
