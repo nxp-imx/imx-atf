@@ -229,7 +229,7 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_GIC, SC_PM_PW_MODE_OFF);
 
 	if (cluster_id == 0) {
-		sc_pm_set_cpu_resume_addr(ipc_handle, ap_core_index[cpu_id], 0x080000000);
+		sc_pm_set_cpu_resume(ipc_handle, ap_core_index[cpu_id], true, 0x080000000);
 		if (wakeup_src_irqsteer)
 			sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id],
 				SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_IRQSTEER);
@@ -237,7 +237,7 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 			sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id],
 				SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_SCU);
 	} else {
-		sc_pm_set_cpu_resume_addr(ipc_handle, ap_core_index[cpu_id + 4], 0x080000000);
+		sc_pm_set_cpu_resume(ipc_handle, ap_core_index[cpu_id + 4], true, 0x080000000);
 		if (wakeup_src_irqsteer)
 			sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id + 4],
 				SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_IRQSTEER);
