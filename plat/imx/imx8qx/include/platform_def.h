@@ -38,11 +38,17 @@
 #define OCRAM_BASE		0x100000
 #define OCRAM_ALIAS_SIZE 0x18000 /* The lower 96KB is in OCRAM alias from 0x0 */
 
+#ifdef SPD_trusty
+#define BL32_BASE			0xfe000000
+#define BL32_SIZE			0x02000000
+#define BL32_LIMIT			0x100000000
+#endif
+
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 32)
 #define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 32)
 
 #define MAX_XLAT_TABLES			8
-#define MAX_MMAP_REGIONS		8
+#define MAX_MMAP_REGIONS		9
 
 #define PLAT_GICD_BASE			0x51a00000
 #define PLAT_GICR_BASE			0x51b00000
@@ -73,6 +79,11 @@
 
 /* non-secure u-boot base */
 #define PLAT_NS_IMAGE_OFFSET		0x80020000
+
+#ifdef SPD_trusty
+#define DEBUG_CONSOLE_A35		1
+#else
 #define DEBUG_CONSOLE_A35		DEBUG_CONSOLE
+#endif
 
 #endif /* PLATFORM_DEF_H */
