@@ -820,9 +820,6 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 
 		/* HSIOMIX has no PU bit, so skip for it */
 		if (domain_id != HSIOMIX) {
-			if (domain_id == GPUMIX || domain_id == VPUMIX)
-				return;
-
 			/* set the PGC bit */
 			val = mmio_read_32(IMX_GPC_BASE + pwr_domain->pgc_offset);
 			val |= (1 << 0);
