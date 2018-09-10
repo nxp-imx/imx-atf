@@ -29,6 +29,9 @@
 #include <sci/sci.h>
 #include <sec_rsrc.h>
 #include <imx_sip_svc.h>
+#include <string.h>
+
+#define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
 
 static const unsigned long BL31_COHERENT_RAM_START	= BL_COHERENT_RAM_BASE;
 static const unsigned long BL31_COHERENT_RAM_END	= BL_COHERENT_RAM_END;
@@ -185,6 +188,11 @@ void mx8_partition_resources(void)
 	bool owned, owned2;
 	sc_err_t err;
 	int i;
+#ifdef SPD_trusty
+	sc_rm_mr_t mr_tee = 64;
+	bool mr_tee_atf_same = false;
+	sc_faddr_t reg_start;
+#endif
 	uint32_t cpu_id, cpu_rev = 0x1; /* Set Rev B as default */
 
 	if (imx_get_cpu_rev(&cpu_id, &cpu_rev) != 0)
@@ -216,48 +224,113 @@ void mx8_partition_resources(void)
 		owned = sc_rm_is_memreg_owned(ipc_handle, mr);
 		if (owned) {
 			err = sc_rm_get_memreg_info(ipc_handle, mr, &start, &end);
-			if (err)
+			if (err) {
 				ERROR("Memreg get info failed, %u\n", mr);
-			NOTICE("Memreg %u 0x%" PRIx64 " -- 0x%" PRIx64 "\n", mr, start, end);
-			if (BL31_BASE >= start && (BL31_LIMIT - 1) <= end) {
-				mr_record = mr; /* Record the mr for ATF running */
-			}
-			else if (cpu_rev >= 1 && 0 >= start && (OCRAM_BASE + OCRAM_ALIAS_SIZE - 1) <= end) {
-				mr_ocram = mr;
-			}
-			else {
-				err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
-				if (err)
-					ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 ", \
-						err %d\n", start, end, err);
+			} else {
+				NOTICE("Memreg %u 0x%" PRIx64 " -- 0x%" PRIx64 "\n", mr, start, end);
+
+				if (BL31_BASE >= start && (BL31_LIMIT - 1) <= end) {
+					mr_record = mr; /* Record the mr for ATF running */
+				}
+#ifdef SPD_trusty
+				else if (BL32_BASE >= start && (BL32_LIMIT -1) <= end) {
+					mr_tee = mr;
+				}
+#endif
+				else if (cpu_rev >= 1 && 0 >= start && (OCRAM_BASE + OCRAM_ALIAS_SIZE - 1) <= end) {
+					mr_ocram = mr;
+				}
+				else {
+					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+					if (err)
+						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 ", err %d\n", start, end, err);
+				}
 			}
 		}
 	}
 
+#ifdef SPD_trusty
+	if (mr_tee != 64) {
+		err = sc_rm_get_memreg_info(ipc_handle, mr_tee, &start, &end);
+		if (err) {
+			ERROR("Memreg get info failed, %u\n", mr_tee);
+		} else {
+			if ((BL32_LIMIT - 1) < end) {
+				err = sc_rm_memreg_alloc(ipc_handle, &mr, BL32_LIMIT , end);
+				if (err) {
+					ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL32_LIMIT, end);
+				} else {
+					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+					if (err)
+						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL32_LIMIT, end);
+				}
+			}
+
+			if (start < (BL32_BASE - 1)) {
+				err = sc_rm_memreg_alloc(ipc_handle, &mr, start, BL32_BASE - 1);
+				if (err) {
+					ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", start, (sc_faddr_t)BL32_BASE - 1);
+				} else {
+					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+					if (err)
+						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", start, (sc_faddr_t)BL32_BASE - 1);
+				}
+			}
+		}
+	}
+#endif
 	if (mr_record != 64) {
 		err = sc_rm_get_memreg_info(ipc_handle, mr_record, &start, &end);
-		if (err)
-			ERROR("Memreg get info failed, %u\n", mr_record);
-		if ((BL31_LIMIT - 1) < end) {
-			err = sc_rm_memreg_alloc(ipc_handle, &mr, BL31_LIMIT, end);
-			if (err)
-				ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
-					(sc_faddr_t)BL31_LIMIT, end);
-			err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
-			if (err)
-				ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
-					(sc_faddr_t)BL31_LIMIT, end);
-		}
 
-		if (start < (BL31_BASE - 1)) {
-			err = sc_rm_memreg_alloc(ipc_handle, &mr, start, BL31_BASE - 1);
-			if (err)
-				ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
-					start, (sc_faddr_t)BL31_BASE - 1);
-			err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+#ifdef SPD_trusty
+		if (BL32_BASE >= start && (BL32_LIMIT - 1) <= end)
+			mr_tee_atf_same = true;
+#endif
+		reg_end = end;
+
+		if (err) {
+			ERROR("Memreg get info failed, %u\n", mr_record);
+		} else {
+			if ((BL31_LIMIT - 1) < end) {
+#ifdef SPD_trusty
+				if ((end > BL32_BASE) && mr_tee_atf_same)
+					reg_end = BL32_BASE - 1;
+#endif
+				err = sc_rm_memreg_alloc(ipc_handle, &mr, BL31_LIMIT, reg_end);
+				if (err) {
+					ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL31_LIMIT, reg_end);
+				} else {
+					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+					if (err)
+						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL31_LIMIT, reg_end);
+				}
+			}
+#ifdef SPD_trusty
+			if (mr_tee_atf_same) {
+				if ((BL32_LIMIT - 1) < end) {
+					reg_start = BL32_LIMIT;
+					err = sc_rm_memreg_alloc(ipc_handle, &mr, reg_start, end);
+					if (err) {
+						ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", reg_start, reg_end);
+					} else {
+						err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+						if (err)
+							ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", reg_start, reg_end);
+					}
+				}
+			}
+#endif
+
+			if (start < (BL31_BASE - 1)) {
+				err = sc_rm_memreg_alloc(ipc_handle, &mr, start, BL31_BASE - 1);
 				if (err)
-					ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
+					ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
 						start, (sc_faddr_t)BL31_BASE - 1);
+				err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+					if (err)
+						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
+							start, (sc_faddr_t)BL31_BASE - 1);
+			}
 		}
 	}
 
@@ -270,11 +343,11 @@ void mx8_partition_resources(void)
 			if ((OCRAM_BASE + OCRAM_ALIAS_SIZE - 1) < end) {
 				err = sc_rm_memreg_alloc(ipc_handle, &mr, OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
 				if (err) {
-					ERROR("sc_rm_memreg_alloc failed, 0x%llx -- 0x%llx\n", (sc_faddr_t)OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
+					ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
 				} else {
 					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
 					if (err)
-						ERROR("Memreg assign failed, 0x%llx -- 0x%llx\n", (sc_faddr_t)OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
+						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
 				}
 			}
 		}
@@ -386,6 +459,14 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 
 	bl33_image_ep_info.pc = PLAT_NS_IMAGE_OFFSET;
 	bl33_image_ep_info.spsr = get_spsr_for_bl33_entry();
+#ifdef SPD_trusty
+	SET_PARAM_HEAD(&bl32_image_ep_info, PARAM_EP, VERSION_1, 0);
+	SET_SECURITY_STATE(bl32_image_ep_info.h.attr, SECURE);
+	bl32_image_ep_info.pc = BL32_BASE;
+	bl32_image_ep_info.spsr = 0;
+	bl32_image_ep_info.args.arg0 = BL32_SIZE;
+	bl32_image_ep_info.args.arg1 = BL32_BASE;
+#endif
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 
 	/* init the first cluster's cci slave interface */
@@ -409,6 +490,10 @@ void bl31_plat_arch_setup(void)
 	mmap_add_region(rw_start, rw_start, rw_size,
 		MT_RW | MT_MEMORY | MT_SECURE);
 	mmap_add(imx_mmap);
+
+#ifdef SPD_trusty
+	mmap_add_region(BL32_BASE, BL32_BASE, BL32_SIZE, MT_MEMORY | MT_RW);
+#endif
 
 #if USE_COHERENT_MEM
 	mmap_add_region(coh_start, coh_start, coh_size,
@@ -446,3 +531,12 @@ void bl31_plat_runtime_setup(void)
 {
 	return;
 }
+
+#ifdef SPD_trusty
+void plat_trusty_set_boot_args(aapcs64_params_t *args)
+{
+	args->arg0 = BL32_SIZE;
+	args->arg1 = BL32_BASE;
+	args->arg2 = TRUSTY_PARAMS_LEN_BYTES;
+}
+#endif
