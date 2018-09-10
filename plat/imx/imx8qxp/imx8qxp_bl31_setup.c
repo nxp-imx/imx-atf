@@ -23,6 +23,9 @@
 #include <sec_rsrc.h>
 #include <imx8-pins.h>
 #include <iomux.h>
+#include <string.h>
+
+#define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
 
 /* linker defined symbols */
 #if USE_COHERENT_MEM
@@ -160,8 +163,13 @@ void imx8_partition_resources(void)
 	sc_rm_pt_t secure_part, os_part;
 	sc_rm_mr_t mr, mr_record = 64;
 	bool owned;
-	sc_faddr_t start, end;
+	sc_faddr_t start, end, reg_end;
 	int i;
+#ifdef SPD_trusty
+	sc_rm_mr_t mr_tee = 64;
+	bool mr_tee_atf_same = false;
+	sc_faddr_t reg_start;
+#endif
 
 	err = sc_rm_get_partition(ipc_handle, &secure_part);
 
@@ -196,7 +204,13 @@ void imx8_partition_resources(void)
 
 				if (BL31_BASE >= start && (BL31_LIMIT - 1) <= end) {
 					mr_record = mr; /* Record the mr for ATF running */
-				} else {
+				}
+#ifdef SPD_trusty
+				else if (BL32_BASE >= start && (BL32_LIMIT -1) <= end) {
+					mr_tee = mr;
+				}
+#endif
+				else {
 					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
 					if (err)
 						ERROR("Memreg assign failed, 0x%lx -- 0x%lx, err %d\n", start, end, err);
@@ -205,21 +219,75 @@ void imx8_partition_resources(void)
 		}
 	}
 
+#ifdef SPD_trusty
+	if (mr_tee != 64) {
+		err = sc_rm_get_memreg_info(ipc_handle, mr_tee, &start, &end);
+		if (err) {
+			ERROR("Memreg get info failed, %u\n", mr_tee);
+		} else {
+			if ((BL32_LIMIT - 1) < end) {
+				err = sc_rm_memreg_alloc(ipc_handle, &mr, BL32_LIMIT , end);
+				if (err) {
+					ERROR("sc_rm_memreg_alloc failed, 0x%lx -- 0x%lx\n", (sc_faddr_t)BL32_LIMIT, end);
+				} else {
+					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+					if (err)
+						ERROR("Memreg assign failed, 0x%lx -- 0x%lx\n", (sc_faddr_t)BL32_LIMIT, end);
+				}
+			}
+
+			if (start < (BL32_BASE - 1)) {
+				err = sc_rm_memreg_alloc(ipc_handle, &mr, start, BL32_BASE - 1);
+				if (err) {
+					ERROR("sc_rm_memreg_alloc failed, 0x%lx -- 0x%lx\n", start, (sc_faddr_t)BL32_BASE - 1);
+				} else {
+					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+					if (err)
+						ERROR("Memreg assign failed, 0x%lx -- 0x%lx\n", start, (sc_faddr_t)BL32_BASE - 1);
+				}
+			}
+		}
+	}
+#endif
 	if (mr_record != 64) {
 		err = sc_rm_get_memreg_info(ipc_handle, mr_record, &start, &end);
+#ifdef SPD_trusty
+		if (BL32_BASE >= start && (BL32_LIMIT - 1) <= end)
+			mr_tee_atf_same = true;
+#endif
+		reg_end = end;
 		if (err) {
 			ERROR("Memreg get info failed, %u\n", mr_record);
 		} else {
 			if ((BL31_LIMIT - 1) < end) {
-				err = sc_rm_memreg_alloc(ipc_handle, &mr, BL31_LIMIT, end);
+#ifdef SPD_trusty
+				if ((end > BL32_BASE) && mr_tee_atf_same)
+					reg_end = BL32_BASE - 1;
+#endif
+				err = sc_rm_memreg_alloc(ipc_handle, &mr, BL31_LIMIT, reg_end);
 				if (err) {
-					ERROR("sc_rm_memreg_alloc failed, 0x%lx -- 0x%lx\n", (sc_faddr_t)BL31_LIMIT, end);
+					ERROR("sc_rm_memreg_alloc failed, 0x%lx -- 0x%lx\n", (sc_faddr_t)BL31_LIMIT, reg_end);
 				} else {
 					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
 					if (err)
-						ERROR("Memreg assign failed, 0x%lx -- 0x%lx\n", (sc_faddr_t)BL31_LIMIT, end);
+						ERROR("Memreg assign failed, 0x%lx -- 0x%lx\n", (sc_faddr_t)BL31_LIMIT, reg_end);
 				}
 			}
+#ifdef SPD_trusty
+			if (mr_tee_atf_same) {
+				if ((BL32_LIMIT - 1) < end) {
+					reg_start = BL32_LIMIT;
+					err = sc_rm_memreg_alloc(ipc_handle, &mr, reg_start, end);
+					if (err) {
+						ERROR("sc_rm_memreg_alloc failed, 0x%lx -- 0x%lx\n", reg_start, reg_end);
+					} else {
+						err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+					if (err)
+						ERROR("Memreg assign failed, 0x%lx -- 0x%lx\n", reg_start, reg_end);
+					}
+				}
+			}
+#endif
 
 			if (start < (BL31_BASE - 1)) {
 				err = sc_rm_memreg_alloc(ipc_handle, &mr, start, BL31_BASE - 1);
@@ -316,6 +384,15 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	 */
 	bl33_image_ep_info.pc = PLAT_NS_IMAGE_OFFSET;
 	bl33_image_ep_info.spsr = get_spsr_for_bl33_entry();
+#ifdef SPD_trusty
+	SET_PARAM_HEAD(&bl32_image_ep_info, PARAM_EP, VERSION_1, 0);
+	SET_SECURITY_STATE(bl32_image_ep_info.h.attr, SECURE);
+	bl32_image_ep_info.pc = BL32_BASE;
+	bl32_image_ep_info.spsr = 0;
+	memcpy((void*)BL32_BASE,(void*) PLAT_TEE_IMAGE_OFFSET, BL32_SIZE);
+	bl32_image_ep_info.args.arg0 = BL32_SIZE;
+	bl32_image_ep_info.args.arg1 = BL32_BASE;
+#endif
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 }
 
@@ -326,7 +403,7 @@ void bl31_plat_arch_setup(void)
 	 * Change to 128KB?
 	 * Fix Me
 	 */
-	mmap_add_region(BL31_BASE, BL31_BASE, 0x10000,
+	mmap_add_region(BL31_BASE, BL31_BASE, 0x20000,
 			MT_MEMORY | MT_RW);
 	mmap_add_region(BL31_BASE, BL31_BASE, BL31_RO_LIMIT - BL31_RO_BASE,
 			MT_MEMORY | MT_RO);
@@ -342,6 +419,9 @@ void bl31_plat_arch_setup(void)
 //			MT_DEVICE | MT_RW);
 	mmap_add_region(IMX_WUP_IRQSTR, IMX_WUP_IRQSTR, 0x10000,
 			MT_DEVICE | MT_RW);
+#ifdef SPD_trusty
+	mmap_add_region(BL32_BASE, BL32_BASE, BL32_SIZE, MT_MEMORY | MT_RW);
+#endif
 
 #if USE_COHERENT_MEM
 	mmap_add_region(BL31_COHERENT_RAM_BASE, BL31_COHERENT_RAM_BASE,
@@ -387,3 +467,11 @@ void bl31_plat_runtime_setup(void)
 {
 	return;
 }
+#ifdef SPD_trusty
+void plat_trusty_set_boot_args(aapcs64_params_t *args)
+{
+	args->arg0 = BL32_SIZE;
+	args->arg1 = BL32_BASE;
+	args->arg2 = TRUSTY_PARAMS_LEN_BYTES;
+}
+#endif

@@ -28,6 +28,13 @@
 #define BL31_BASE			0x80000000
 #define BL31_LIMIT			0x80020000
 
+#ifdef SPD_trusty
+#define BL32_BASE			0xfe000000
+#define BL32_SIZE			0x00200000
+#define BL32_LIMIT			0x100000000
+#define PLAT_TEE_IMAGE_OFFSET		0x84000000
+#endif
+
 /* non-secure uboot base */
 #define PLAT_NS_IMAGE_OFFSET		0x80020000
 
@@ -40,7 +47,7 @@
 #define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 32)
 
 #define MAX_XLAT_TABLES			8
-#define MAX_MMAP_REGIONS		8
+#define MAX_MMAP_REGIONS		9
 
 #define IMX_WUP_IRQSTR			0x51090000
 #define IMX_BOOT_UART_BASE		0x5a060000
@@ -53,5 +60,9 @@
 #define COUNTER_FREQUENCY		8000000 /* 8MHz */
 
 #define DEBUG_CONSOLE			0
+#ifdef SPD_trusty
+#define DEBUG_CONSOLE_A35		1
+#else
 #define DEBUG_CONSOLE_A35		0
+#endif
 #define PLAT_IMX8QXP			1
