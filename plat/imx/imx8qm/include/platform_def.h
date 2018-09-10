@@ -40,6 +40,13 @@
 #define BL31_BASE			0x80000000
 #define BL31_LIMIT			0x80020000
 
+#ifdef SPD_trusty
+#define BL32_BASE			0xfe000000
+#define BL32_SIZE			0x00200000
+#define BL32_LIMIT			0x100000000
+#define PLAT_TEE_IMAGE_OFFSET		0x84000000
+#endif
+
 #define PLAT_GICD_BASE			0x51a00000
 #define PLAT_GICD_SIZE			0x10000
 #define PLAT_GICR_BASE			0x51b00000
@@ -78,7 +85,11 @@
 #define SC_CONSOLE			0
 
 #define DEBUG_CONSOLE			0
+#ifdef SPD_trusty
+#define DEBUG_CONSOLE_A53		1
+#else
 #define DEBUG_CONSOLE_A53		0
+#endif
 #define PLAT_IMX8QM			1
 
 #endif /* PLATFORM_DEF_H */
