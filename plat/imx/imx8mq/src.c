@@ -66,7 +66,8 @@ int imx_soc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 		} else if (mmio_read_32(IMX_OCOTP_BASE + SW_INFO_B1)
 			   == 0xff0055aa) {
 			/* 0xff0055aa is magic number for B1 */
-			val = 0x21;
+			val &= ~0xff;
+			val |= 0x21;
 		}
 	}
 
