@@ -29,6 +29,8 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S		\
 				lib/xlat_tables/xlat_tables_common.c	\
 				lib/cpus/aarch64/cortex_a53.S		\
 				drivers/console/aarch64/console.S	\
+				drivers/delay_timer/delay_timer.c		\
+				drivers/delay_timer/generic_delay_timer.c	\
 				${PLAT_GIC_SOURCES}			\
 				${PLAT_DDR_SOURCES}			\
 				drivers/arm/tzc/tzc380.c

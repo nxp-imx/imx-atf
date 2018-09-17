@@ -5,6 +5,7 @@
  */
 
 #include <debug.h>
+#include <delay_timer.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -644,6 +645,15 @@ void imx_gpc_init(void)
 	val = mmio_read_32(0x30390024);
 	val &= ~0x1;
 	mmio_write_32(0x30390024, val);
+
+	/* for USB OTG, the limitation are:
+	 * 1. before system clock config, the IPG clock run at 12.5MHz, delay time
+	 *    should be longer than 82us.
+	 * 2. after system clock config, ipg clock run at 66.5MHz, delay time
+	 *    be longer that 15.3 us.
+	 *    Add 100us to make sure the USB OTG SRC is clear safely.
+	 */
+	udelay(100);
 }
 
 int imx_gpc_handler(uint32_t smc_fid,
