@@ -54,3 +54,19 @@ A53_DISABLE_NON_TEMPORAL_HINT := 0
 ERRATA_A53_835769	:=	1
 ERRATA_A53_843419	:=	1
 ERRATA_A53_855873	:=	1
+
+ifneq (${DECRYPTED_BUFFER_START},)
+$(eval $(call add_define,DECRYPTED_BUFFER_START))
+
+ifneq (${DECRYPTED_BUFFER_LEN},)
+$(eval $(call add_define,DECRYPTED_BUFFER_LEN))
+endif
+endif
+
+ifneq (${DECODED_BUFFER_START},)
+$(eval $(call add_define,DECODED_BUFFER_START))
+
+ifneq (${DECODED_BUFFER_LEN},)
+$(eval $(call add_define,DECODED_BUFFER_LEN))
+endif
+endif
