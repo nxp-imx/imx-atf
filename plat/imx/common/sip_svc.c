@@ -112,7 +112,6 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 			      void *handle,
 			      uint64_t flags)
 {
-	NOTICE("smc_fid is %x\n", smc_fid);
 	switch (smc_fid) {
 #if defined(PLAT_IMX8M) || defined(PLAT_IMX8MM)
 	case FSL_SIP_DDR_DVFS:

@@ -61,6 +61,69 @@
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
 
+#define IMX_DDR_BASE 0x40000000
+
+#if defined(DECRYPTED_BUFFER_START) && defined(DECRYPTED_BUFFER_LEN)
+#define DECRYPTED_BUFFER_END   	DECRYPTED_BUFFER_START + DECRYPTED_BUFFER_LEN
+#endif
+
+#if defined(DECODED_BUFFER_START) && defined(DECODED_BUFFER_LEN)
+#define DECODED_BUFFER_END		DECODED_BUFFER_START + DECODED_BUFFER_LEN
+#endif
+
+#if !defined(DECRYPTED_BUFFER_END) && !defined(DECODED_BUFFER_END)
+#define RDC_DISABLED
+#endif
+
+/* set RDC settings */
+static void bl31_imx_rdc_setup(void)
+{
+#ifdef RDC_DISABLED
+	NOTICE("RDC off \n");
+#else
+	struct imx_rdc_regs *imx_rdc = (struct imx_rdc_regs *)IMX_RDC_BASE;
+
+	NOTICE("RDC imx_rdc_set_masters default \n");
+	imx_rdc_set_masters_default();
+
+	/*
+	 * Need to substact offset 0x40000000 from CPU address when
+	 * programming rdc region for i.mx8mq.
+	 */
+
+#ifdef DECRYPTED_BUFFER_START
+	/* Domain 2 no write access to memory region below decrypted video */
+	/* Prevent VPU to decode outside secure decoded buffer */
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[2].mrsa), 0);
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[2].mrea), DECRYPTED_BUFFER_START - IMX_DDR_BASE);
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[2].mrc), 0xC00000EF);
+#endif // DECRYPTED_BUFFER_START
+
+#ifdef DECRYPTED_BUFFER_END
+	NOTICE("RDC setup memory_region[0] decrypted buffer DID0 W DID2 R/W\n");
+	/* Domain 0 memory region W decrypted video */
+	/* Domain 2 memory region R decrypted video */
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[0].mrsa), DECRYPTED_BUFFER_START - IMX_DDR_BASE);
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[0].mrea), DECRYPTED_BUFFER_END - IMX_DDR_BASE);
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[0].mrc), 0xC0000021);
+#endif // DECRYPTED_BUFFER_END
+
+#ifdef DECODED_BUFFER_END
+	NOTICE("RDC setup memory_region[1] decoded buffer DID2 R/W DID3 R/W\n");
+	/* Domain 2+3 memory region R/W decoded video */
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[1].mrsa), DECODED_BUFFER_START - IMX_DDR_BASE);
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[1].mrea), DECODED_BUFFER_END - IMX_DDR_BASE); 
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[1].mrc), 0xC00000F0);
+
+	/* Domain 1+2+3 no access to memory region above decoded video */
+	/* Only CPU in secure mode can access TEE memory region (cf TZASC configuration) */
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[3].mrsa), DECODED_BUFFER_END - IMX_DDR_BASE);
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[3].mrea), 0x100000000 - IMX_DDR_BASE);
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[3].mrc), 0xC0000003);
+#endif // DECODED_BUFFER_END
+
+#endif // RDC_DISABLED
+}
 
 /* get SPSR for BL33 entry */
 static uint32_t get_spsr_for_bl33_entry(void)
@@ -113,7 +176,7 @@ void bl31_tzc380_setup(void)
 	if ((val & GPR_TZASC_EN) != GPR_TZASC_EN)
 		return;
 
-	NOTICE("Configureing TZASC380\n");
+	NOTICE("Configuring TZASC380\n");
 
 	tzc380_init(IMX_TZASC_BASE);
 
@@ -230,14 +293,23 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl32_image_ep_info.spsr = 0;
 	/* Pass TEE base and size to uboot */
 	bl33_image_ep_info.args.arg1 = 0xFE000000;
+	/* TEE size + RDC reserved memory = 0x2000000 + 0x2000000 + 0x30000000 */
+#ifdef DECRYPTED_BUFFER_START
+	bl33_image_ep_info.args.arg2 = 0x100000000 - DECRYPTED_BUFFER_START;
+#else
 	bl33_image_ep_info.args.arg2 = 0x2000000;
 #endif
+#endif
+
 	bl31_tzc380_setup();
 
 #if defined (CSU_RDC_TEST)
 	csu_test();
 	rdc_test();
 #endif
+
+	bl31_imx_rdc_setup();
+
 }
 
 void bl31_plat_arch_setup(void)
