@@ -28,6 +28,7 @@
 #include <uart.h>
 
 #define DDRC_LPDDR4	BIT(5)
+#define DDRC_DDR4	BIT(4)
 #define DDR_TYPE_MASK	0x3f
 
 #define DDRPHY_REG(x)	(0x3c000000 + 4*x)
@@ -73,6 +74,8 @@ void dram_phy_init(void);
 
 void lpddr4_enter_retention(void);
 void lpddr4_exit_retention(void);
+void ddr4_enter_retention(void);
+void ddr4_exit_retention(void);
 /* lpddr4 swffc for dvfs */
 void lpddr4_swffc(unsigned int dev_fsp, unsigned int tgt_freq);
 

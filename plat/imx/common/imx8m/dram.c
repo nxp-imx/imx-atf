@@ -67,20 +67,13 @@ void dram_phy_init(void)
 	}
 }
 
-
 void dram_info_init(unsigned long dram_timing_base)
 {
 	uint32_t current_fsp, ddr_type;
 
 	/* get the dram type */
 	ddr_type = mmio_read_32(DDRC_MSTR(0)) & DDR_TYPE_MASK;
-
-	if (ddr_type == DDRC_LPDDR4) {
-		dram_info.dram_type = ddr_type;
-	} else {
-		/* TODO DDR4 support will be added later */
-		return;
-	}
+	dram_info.dram_type = ddr_type;
 
 	/* init the boot_fsp & current_fsp */
 	current_fsp = mmio_read_32(DDRC_DFIMISC(0));
@@ -95,7 +88,7 @@ void dram_info_init(unsigned long dram_timing_base)
 	dram_info.timing_info = (struct dram_timing_info *)dram_timing_base;
 
 	/* switch to the highest frequency point */
-	if(current_fsp != 0x0) {
+	if(ddr_type == DDRC_LPDDR4 && current_fsp != 0x0) {
 		/* flush the L1/L2 cache */
 		dcsw_op_all(DCCSW);
 		lpddr4_swffc(dev_fsp, 0x0);
@@ -105,16 +98,18 @@ void dram_info_init(unsigned long dram_timing_base)
 
 void dram_enter_retention(void)
 {
-	/* TODO add the ddr4 support in the furture */
 	if (dram_info.dram_type == DDRC_LPDDR4)
 		lpddr4_enter_retention();
+	else if (dram_info.dram_type == DDRC_DDR4)
+		ddr4_enter_retention();
 }
 
 void dram_exit_retention(void)
 {
-	/* TODO add the ddr4 support in the furture */
 	if (dram_info.dram_type == DDRC_LPDDR4)
 		lpddr4_exit_retention();
+	else if (dram_info.dram_type == DDRC_DDR4)
+		ddr4_exit_retention();
 }
 
 int dram_dvfs_handler(uint32_t smc_fid,
