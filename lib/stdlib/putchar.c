@@ -12,6 +12,8 @@
  * character. Write all other printing functions in terms of putchar(), if
  * possible, so they all benefit when this is improved.
  */
+#pragma weak putchar
+
 int putchar(int c)
 {
 	int res;

@@ -67,6 +67,9 @@
 
 #define COUNTER_FREQUENCY		8000000 /* 8MHz */
 
+/* enable it to make debug message to SC console */
+#define SC_CONSOLE			0
+
 #define DEBUG_CONSOLE			0
 #ifdef SPD_trusty
 #define DEBUG_CONSOLE_A53		1

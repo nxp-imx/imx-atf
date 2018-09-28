@@ -24,3 +24,13 @@ int imx_misc_set_temp_handler(uint32_t smc_fid,
 {
 	return sc_misc_set_temp(ipc_handle, x1, x2, x3, x4);
 }
+
+#if SC_CONSOLE
+int putchar(int c)
+{
+	if (ipc_handle)
+		sc_misc_debug_out(ipc_handle, (unsigned char)c);
+
+	return c;
+}
+#endif
