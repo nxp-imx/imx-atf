@@ -30,6 +30,7 @@
 #define DDRC_LPDDR4	BIT(5)
 #define DDRC_DDR4	BIT(4)
 #define DDR_TYPE_MASK	0x3f
+#define DDRC_ACTIVE_RANK_MASK	0x3
 
 #define DDRPHY_REG(x)	(0x3c000000 + 4*x)
 
@@ -59,6 +60,7 @@ struct dram_timing_info {
 
 struct dram_info {
 	int dram_type;
+	unsigned int num_rank;
 	int current_fsp;
 	int boot_fsp;
 	struct dram_timing_info *timing_info;
@@ -78,6 +80,8 @@ void ddr4_enter_retention(void);
 void ddr4_exit_retention(void);
 /* lpddr4 swffc for dvfs */
 void lpddr4_swffc(unsigned int dev_fsp, unsigned int tgt_freq);
+/* ddr4 swffw for dvfs */
+void ddr4_swffc(struct dram_info *dram_info, unsigned int target_fsp);
 
 /* dram retention */
 void dram_enter_retention(void);
