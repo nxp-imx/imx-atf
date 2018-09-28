@@ -67,13 +67,17 @@ void dram_phy_init(void)
 	}
 }
 
+
 void dram_info_init(unsigned long dram_timing_base)
 {
-	uint32_t current_fsp, ddr_type;
+	uint32_t current_fsp, ddr_type, ddrc_mstr;
 
 	/* get the dram type */
-	ddr_type = mmio_read_32(DDRC_MSTR(0)) & DDR_TYPE_MASK;
+	ddrc_mstr = mmio_read_32(DDRC_MSTR(0));
+	ddr_type = ddrc_mstr & DDR_TYPE_MASK;
+
 	dram_info.dram_type = ddr_type;
+	dram_info.num_rank = (ddrc_mstr >> 24) & DDRC_ACTIVE_RANK_MASK;
 
 	/* init the boot_fsp & current_fsp */
 	current_fsp = mmio_read_32(DDRC_DFIMISC(0));
@@ -93,6 +97,10 @@ void dram_info_init(unsigned long dram_timing_base)
 		dcsw_op_all(DCCSW);
 		lpddr4_swffc(dev_fsp, 0x0);
 		dev_fsp = (~dev_fsp) & 0x1;
+	} else if (ddr_type == DDRC_DDR4 && current_fsp != 0x0) {
+		/* flush the L1/L2 cache */
+		dcsw_op_all(DCCSW);
+		ddr4_swffc(&dram_info, 0x0);
 	}
 }
 
@@ -121,10 +129,6 @@ int dram_dvfs_handler(uint32_t smc_fid,
 	unsigned int cpu_id = MPIDR_AFFLVL0_VAL(mpidr);
 	unsigned int target_freq = x1;
 	uint32_t online_cores = x2;
-
-	/* TODO add ddr4 dvfs support later */
-	if (dram_info.dram_type != DDRC_LPDDR4)
-		return 0;
 
 	if (target_freq == 0xf) {
 		/* set the WFE done status */
@@ -159,8 +163,12 @@ int dram_dvfs_handler(uint32_t smc_fid,
 		/* flush the L1/L2 cache */
 		dcsw_op_all(DCCSW);
 
-		lpddr4_swffc(dev_fsp, target_freq);
-		dev_fsp = (~dev_fsp) & 0x1;
+		if (dram_info.dram_type == DDRC_LPDDR4) {
+			lpddr4_swffc(dev_fsp, target_freq);
+			dev_fsp = (~dev_fsp) & 0x1;
+		} else if (dram_info.dram_type == DDRC_DDR4) {
+			ddr4_swffc(&dram_info, target_freq);
+		}
 
 		wait_ddrc_hwffc_done = false;
 		wfe_done = 0;
