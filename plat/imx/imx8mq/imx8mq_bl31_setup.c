@@ -73,7 +73,16 @@ static entry_point_info_t bl33_image_ep_info;
 
 #if !defined(DECRYPTED_BUFFER_END) && !defined(DECODED_BUFFER_END)
 #define RDC_DISABLED
+#else
+static struct rdc_mda_conf masters_config[] = {
+	{RDC_MDA_A53, 0, 1},
+	{RDC_MDA_CAAM, 0, 1},
+	{RDC_MDA_GPU, 1, 1},
+	{RDC_MDA_VPU_DEC, 2, 1},
+	{RDC_MDA_DCSS, 3, 1},
+};
 #endif
+
 
 /* set RDC settings */
 static void bl31_imx_rdc_setup(void)
@@ -84,7 +93,7 @@ static void bl31_imx_rdc_setup(void)
 	struct imx_rdc_regs *imx_rdc = (struct imx_rdc_regs *)IMX_RDC_BASE;
 
 	NOTICE("RDC imx_rdc_set_masters default \n");
-	imx_rdc_set_masters_default();
+	imx_rdc_set_masters(masters_config, ARRAY_SIZE(masters_config));
 
 	/*
 	 * Need to substact offset 0x40000000 from CPU address when

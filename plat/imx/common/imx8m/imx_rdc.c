@@ -160,17 +160,17 @@ static struct rdc_mda_conf masters_config[] = {
 #else
 /* Default peripherals settings as an example */
 static struct rdc_pdap_conf periph_config[] = {
-	{RDC_PDAP_GPU_EXSC, 0x0C, 0},
-	{RDC_PDAP_VPU_SEC, 0x33, 0},
+	{RDC_PDAP_GPIO1, 0x3, 0},
+	{RDC_PDAP_GPIO2, 0x3, 0},
+	{RDC_PDAP_GPIO3, 0x3, 0},
+	{RDC_PDAP_GPIO4, 0x3, 0},
+	{RDC_PDAP_GPIO5, 0x3, 0},
 };
 
 /* Default masters settings as an example */
 static struct rdc_mda_conf masters_config[] = {
-	{RDC_MDA_A53, 0, 1},
-	{RDC_MDA_CAAM, 0, 1},
-	{RDC_MDA_GPU, 1, 1},
-	{RDC_MDA_VPU_DEC, 2, 1},
-	{RDC_MDA_DCSS, 3, 1},
+	{RDC_MDA_A53, 0, 0},
+	{RDC_MDA_CAAM, 0, 0},
 };
 #endif
 void imx_rdc_set_peripherals_default(void)
