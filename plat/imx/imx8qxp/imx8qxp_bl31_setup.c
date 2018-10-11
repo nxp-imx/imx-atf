@@ -372,6 +372,11 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	*/
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_MU_1A, SC_PM_PW_MODE_ON);
 
+	/* Turn on GPT_0's power & clock for non-secure OS/Hypervisor */
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_GPT_0, SC_PM_PW_MODE_ON);
+	sc_pm_clock_enable(ipc_handle, SC_R_GPT_0, SC_PM_CLK_PER, true, 0);
+	mmio_write_32(IMX_GPT0_LPCG_BASE, mmio_read_32(IMX_GPT0_LPCG_BASE) | (1 << 25));
+
 	/* create new partition for non-secure OS/Hypervisor
 	 *
 	 * uses global structs defined in sec_rsrc.h
@@ -407,18 +412,9 @@ void bl31_plat_arch_setup(void)
 			MT_MEMORY | MT_RW);
 	mmap_add_region(BL31_BASE, BL31_BASE, BL31_RO_LIMIT - BL31_RO_BASE,
 			MT_MEMORY | MT_RO);
-	mmap_add_region(IMX_BOOT_UART_BASE, IMX_BOOT_UART_BASE,
-			0x1000,	MT_DEVICE | MT_RW);
-	mmap_add_region(SC_IPC_CH, SC_IPC_CH, 0x10000,
+	mmap_add_region(IMX_REG_BASE, IMX_REG_BASE, IMX_REG_SIZE,
 			MT_DEVICE | MT_RW);
-	mmap_add_region(PLAT_GICD_BASE, PLAT_GICD_BASE, 0x10000,
-			MT_DEVICE | MT_RW);
-	mmap_add_region(PLAT_GICR_BASE, PLAT_GICR_BASE, 0xc0000,
-			MT_DEVICE | MT_RW);
-//	mmap_add_region(IMX_GPT0_BASE, IMX_GPT0_BASE, 0x10000,
-//			MT_DEVICE | MT_RW);
-	mmap_add_region(IMX_WUP_IRQSTR, IMX_WUP_IRQSTR, 0x10000,
-			MT_DEVICE | MT_RW);
+
 #ifdef SPD_trusty
 	mmap_add_region(BL32_BASE, BL32_BASE, BL32_SIZE, MT_MEMORY | MT_RW);
 #endif
