@@ -245,6 +245,8 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 			sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id + 4],
 				SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_SCU);
 	}
+
+	sc_pm_req_low_power_mode(ipc_handle, SC_R_A53, SC_PM_PW_MODE_OFF);
 }
 
 void imx_domain_suspend_finish(const psci_power_state_t *target_state)
@@ -259,6 +261,8 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 		sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id], SC_PM_PW_MODE_ON, SC_PM_WAKE_SRC_GIC);
 	else
 		sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id + 4], SC_PM_PW_MODE_ON, SC_PM_WAKE_SRC_GIC);
+
+	sc_pm_req_low_power_mode(ipc_handle, SC_R_A53, SC_PM_PW_MODE_ON);
 
 	/* Put GIC/IRQSTR back to high power mode. */
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_GIC, SC_PM_PW_MODE_ON);
@@ -328,9 +332,8 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	else
 		a72_cpu_on_number++;
 
-	/* request low power mode for cluster/cci, only need to do once */
+	/* due to cache coherency issue, A53 can ONLY be off when suspend */
 	sc_pm_req_low_power_mode(ipc_handle, SC_R_A72, SC_PM_PW_MODE_OFF);
-	sc_pm_req_low_power_mode(ipc_handle, SC_R_A53, SC_PM_PW_MODE_OFF);
 	sc_pm_req_low_power_mode(ipc_handle, SC_R_CCI, SC_PM_PW_MODE_OFF);
 
 	/* Request RUN and LP modes for DDR, system interconnect etc. */
