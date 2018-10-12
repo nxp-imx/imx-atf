@@ -162,7 +162,7 @@ void ddr4_dll_change(unsigned int num_rank, unsigned int pstate, unsigned int cu
 	mmio_setbits_32(DDRC_ZQCTL0(0), (1 << 31));
 
 	/* 3. Set RFSHCTL3.dis_auto_refresh=1, to disable automatic refreshes */
-	/* mmio_setbits_32(DDRC_RFSHCTL3(0), 0x1); */
+	mmio_setbits_32(DDRC_RFSHCTL3(0), 0x1);
 	/* 4. Ensure all commands have been flushed from the uMCTL2 by polling */
 	do {
 		tmp = 0x36000000 & mmio_read_32(DDRC_DBGCAM(0));
@@ -214,9 +214,6 @@ void ddr4_dll_change(unsigned int num_rank, unsigned int pstate, unsigned int cu
 	do {
 		tmp  = 0x3f & (mmio_read_32((DDRC_STAT(0))));
 	} while (tmp != 0x23);
-
-	/* FIXME Set RFSHCTL3.dis_auto_refresh=1, to disable automatic refreshes ??? */
-	mmio_setbits_32(DDRC_RFSHCTL3(0), 0x1);
 
 	/* 11. Set the MSTR.dll_off_mode = 1 or 0. */
 	if (dll_sw == ON2OFF)
