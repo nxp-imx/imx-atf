@@ -35,7 +35,6 @@
 #define BL32_BASE			0xfe000000
 #define BL32_SIZE			0x00200000
 #define BL32_LIMIT			0x100000000
-#define PLAT_TEE_IMAGE_OFFSET		0x84000000
 #endif
 
 /* non-secure uboot base */
