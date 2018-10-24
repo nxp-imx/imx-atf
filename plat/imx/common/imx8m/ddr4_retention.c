@@ -171,7 +171,7 @@ void ddr4_exit_retention(void)
 
 	mmio_write_32(DDRC_PCTRL_0(0), 0x00000001);
 	/* dis_auto-refresh is set to 0 */
-	mmio_write_32(DDRC_RFSHCTL3(0), 0x00000010);
+	mmio_write_32(DDRC_RFSHCTL3(0), 0x00000000);
 
 	/* should check PhyInLP3 pub reg */
 	mmio_write_32(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4*0xd0000, 0x0);
