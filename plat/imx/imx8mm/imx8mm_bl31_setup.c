@@ -107,7 +107,7 @@ static void bl31_imx_rdc_setup(void)
 	/* Domain 2 no write access to memory region below decrypted video */
 	/* Prevent VPU to decode outside secure decoded buffer */
 	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[2].mrsa), 0);
-	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[2].mrea), DECRYPTED_BUFFER_START - IMX_DDR_BASE);
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[2].mrea), (DECRYPTED_BUFFER_START - IMX_DDR_BASE) >> 1);
 	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[2].mrc), 0xC00000AF);
 #endif // DECRYPTED_BUFFER_START
 
@@ -115,23 +115,23 @@ static void bl31_imx_rdc_setup(void)
 	NOTICE("RDC setup memory_region[0] decrypted buffer DID0 W DID2 R/W\n");
 	/* Domain 0 memory region W decrypted video */
 	/* Domain 2 memory region R decrypted video */
-	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[0].mrsa), DECRYPTED_BUFFER_START - IMX_DDR_BASE);
-	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[0].mrea), DECRYPTED_BUFFER_END - IMX_DDR_BASE);
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[0].mrsa), (DECRYPTED_BUFFER_START - IMX_DDR_BASE) >> 1);
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[0].mrea), (DECRYPTED_BUFFER_END - IMX_DDR_BASE) >> 1);
 	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[0].mrc), 0xC0000061);
 #endif // DECRYPTED_BUFFER_END
 
 #ifdef DECODED_BUFFER_END
 	NOTICE("RDC setup memory_region[1] decoded buffer DID2 R/W DID3 R/W\n");
 	/* Domain 1+2 memory region R/W decoded video */
-	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[1].mrsa), DECODED_BUFFER_START - IMX_DDR_BASE);
-	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[1].mrea), DECODED_BUFFER_END - IMX_DDR_BASE); 
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[1].mrsa), (DECODED_BUFFER_START - IMX_DDR_BASE) >> 1);
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[1].mrea), (DECODED_BUFFER_END - IMX_DDR_BASE) >> 1);
 	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[1].mrc), 0xC000003D);
 
 	/* Domain 1+2+3 no access to memory region above decoded video */
 	/* Only CPU in secure mode can access TEE memory region (cf TZASC configuration) */
-	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[3].mrsa), DECODED_BUFFER_END - IMX_DDR_BASE);
-	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[3].mrea), 0xC0000000 - IMX_DDR_BASE);
-	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[3].mrc), 0xC0000003);
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[3].mrsa), (DECODED_BUFFER_END - IMX_DDR_BASE) >> 1);
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[3].mrea), (0xC0000000 - IMX_DDR_BASE) >> 1);
+	mmio_write_32((uintptr_t)&(imx_rdc->mem_region[3].mrc), 0xC00000C3);
 #endif // DECODED_BUFFER_END
 
 #endif // RDC_DISABLED
