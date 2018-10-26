@@ -395,6 +395,12 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
          * uses global structs defined in sec_rsrc.h */
 
         mx8_partition_resources();
+#ifdef SPD_trusty
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_CAAM_JR2, SC_PM_PW_MODE_ON);
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_CAAM_JR2_OUT, SC_PM_PW_MODE_ON);
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_CAAM_JR3, SC_PM_PW_MODE_ON);
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_CAAM_JR3_OUT, SC_PM_PW_MODE_ON);
+#endif
 
 	/*
 	 * tell BL3-1 where the non-secure software image is located
