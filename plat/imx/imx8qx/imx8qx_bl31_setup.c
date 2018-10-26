@@ -460,6 +460,13 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	 */
 	imx8_partition_resources();
 
+#ifdef SPD_trusty
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_CAAM_JR2, SC_PM_PW_MODE_ON);
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_CAAM_JR2_OUT, SC_PM_PW_MODE_ON);
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_CAAM_JR3, SC_PM_PW_MODE_ON);
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_CAAM_JR3_OUT, SC_PM_PW_MODE_ON);
+#endif
+
 	bl33_image_ep_info.pc = PLAT_NS_IMAGE_OFFSET;
 	bl33_image_ep_info.spsr = get_spsr_for_bl33_entry();
 #ifdef SPD_trusty
