@@ -15,7 +15,13 @@ sc_rsrc_t secure_rsrcs[] = {
 	SC_R_GIC,
 	SC_R_SYSTEM,
 	SC_R_IRQSTR_SCU2,
-	SC_R_GPT_0
+	SC_R_GPT_0,
+#ifdef SPD_trusty
+	SC_R_CAAM_JR2,
+	SC_R_CAAM_JR2_OUT,
+	SC_R_CAAM_JR3,
+	SC_R_CAAM_JR3_OUT
+#endif
 };
 
 /* resources that have register access for non-secure domain */
