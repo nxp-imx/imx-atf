@@ -12,6 +12,7 @@
 #include <context.h>
 #include <context_mgmt.h>
 #include <debug.h>
+#include <dram.h>
 #include <generic_delay_timer.h>
 #include <stdbool.h>
 #include <mmio.h>
@@ -20,6 +21,7 @@
 #include <plat_imx8.h>
 #include <xlat_tables.h>
 #include <soc.h>
+#include <string.h>
 #include <tzc380.h>
 #include <imx_csu.h>
 #include <imx_rdc.h>
@@ -58,6 +60,7 @@
 
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
+
 
 /* get SPSR for BL33 entry */
 static uint32_t get_spsr_for_bl33_entry(void)
@@ -291,8 +294,7 @@ void bl31_platform_setup(void)
 	/* gpc init */
 	imx_gpc_init();
 
-	/* switch DDR frequency to 3200 mts */
-	lpddr4_switch_to_3200();
+	dram_info_init(SAVED_DRAM_TIMING_BASE);
 }
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(unsigned int type)

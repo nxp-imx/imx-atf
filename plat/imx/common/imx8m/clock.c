@@ -61,3 +61,30 @@ void dram_clock_switch(unsigned int target_freq)
 		ddr_pll_bypass_dis();
 	}
 }
+
+#if defined(PLAT_IMX8M)
+void dram_pll_init(unsigned int drate)
+{
+	/* bypass the PLL */
+	mmio_setbits_32(HW_DRAM_PLL_CFG0, 0x30);
+
+	switch (drate) {
+	case 3200:
+		mmio_write_32(HW_DRAM_PLL_CFG2, 0x00ece580);
+		break;
+	case 1600:
+		mmio_write_32(HW_DRAM_PLL_CFG2, 0x00ec6984);
+		break;
+	case 667:
+		mmio_write_32(HW_DRAM_PLL_CFG2, 0x00f5a406);
+		break;
+	default:
+		break;
+	}
+
+	/* bypass the PLL */
+	mmio_clrbits_32(HW_DRAM_PLL_CFG0, 0x30);
+	while(!(mmio_read_32(HW_DRAM_PLL_CFG0) &(1 << 31)))
+		;
+}
+#endif

@@ -13,7 +13,8 @@
 
 extern void dram_clock_switch(unsigned target_freq);
 
-void lpddr4_swffc(unsigned int init_fsp, unsigned int tgt_freq)
+void lpddr4_swffc(struct dram_info *info, unsigned int init_fsp,
+	 unsigned int tgt_freq, bool bypass_mode)
 
 {
 	unsigned int mr, emr, emr2, emr3;
@@ -60,6 +61,9 @@ void lpddr4_swffc(unsigned int init_fsp, unsigned int tgt_freq)
 	tmp &= ~0xf; 
 	mmio_write_32(DDRC_PWRCTL(0), tmp);
 
+	/* more safe */
+	mmio_write_32(DDRC_DFIPHYMSTR(0), 0x00000000);
+
 	lpddr4_mr_write(3, 13, emr3);
 	lpddr4_mr_write(3, 1, mr);
 	lpddr4_mr_write(3, 2, emr);
@@ -84,7 +88,6 @@ void lpddr4_swffc(unsigned int init_fsp, unsigned int tgt_freq)
 	/* 6.disable SBRCTL.scrub_en, skip if never enable it */
 	/* 7.poll SBRSTAT.scrub_busy  Q2: should skip phy master if never enable it */
 	/* Disable phy master */
-	mmio_write_32(DDRC_DFIPHYMSTR(0),0x00000000);
 
 #ifdef DFILP_SPT 
 	/* 8. disable DFI LP */
@@ -214,7 +217,14 @@ void lpddr4_swffc(unsigned int init_fsp, unsigned int tgt_freq)
 	} while ((tmp & 0x1) == 0x1);
 
 	/* change the clock frequency */
+#if defined(PLAT_IMX8M)
+	if (bypass_mode)
+		dram_clock_switch(tgt_freq);
+	else
+		dram_pll_init(info->timing_info->fsp_table[tgt_freq]);
+#else
 	dram_clock_switch(tgt_freq);
+#endif
 
 	/* dfi_init_start de-assert */
 	tmp= mmio_read_32(DDRC_DFIMISC(0));
@@ -269,7 +279,6 @@ void lpddr4_swffc(unsigned int init_fsp, unsigned int tgt_freq)
 		tmp= mmio_read_32(DDRC_DBGSTAT(0));
 	} while ((tmp & 0x10 ) != 0x0);
 
-#if 1
 	/* 33. Reset ZQCTL0.dis_srx_zqcl=0 */
 	if (tgt_freq == 1) {
 		tmp = mmio_read_32(DDRC_FREQ1_ZQCTL0(0));
@@ -346,5 +355,4 @@ void lpddr4_swffc(unsigned int init_fsp, unsigned int tgt_freq)
 	mmio_write_32(DDRC_PCTRL_0(0), 0x1);
 
 	/* 42. enable SBRCTL.scrub_en, skip if never enable it */
-#endif
 }

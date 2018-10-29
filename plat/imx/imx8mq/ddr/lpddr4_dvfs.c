@@ -109,6 +109,3 @@ int lpddr4_dvfs_handler(uint32_t smc_fid,
 
 	return 0;
 }
-
-
-

@@ -15,11 +15,81 @@ static struct dram_info dram_info;
 /* lock used for DDR DVFS */
 spinlock_t dfs_lock;
 /* IRQ used for DDR DVFS */
+#if defined(PLAT_IMX8M)
+static uint32_t irqs_used [] = {102, 109, 110, 111};
+/* ocram used to dram timing */
+static uint8_t dram_timing_saved[13 * 1024] __aligned(8);
+#else
 static uint32_t irqs_used[] = {74, 75, 76, 77};
+#endif
 static volatile uint32_t wfe_done;
 static volatile bool wait_ddrc_hwffc_done = true;
 
 static unsigned int dev_fsp = 0x1;
+bool bypass_mode_supported = true;
+
+#if defined (PLAT_IMX8M)
+/* copy the dram timing info from DRAM to OCRAM */
+void imx8mq_dram_timing_copy(struct dram_timing_info *from,
+	 struct dram_timing_info *to)
+{
+	struct dram_cfg_param *cfg1, *cfg2;
+	unsigned int num;
+
+	/* copy the dram_timing info header */
+	cfg1 = (struct dram_cfg_param *) ((unsigned long) to + sizeof(struct dram_timing_info));
+	cfg2 = from->ddrc_cfg;
+
+	/* copy the ddrc init config */
+	to->ddrc_cfg_num = from->ddrc_cfg_num;
+	to->ddrphy_cfg_num = from->ddrphy_cfg_num;
+	to->ddrphy_trained_csr_num = from->ddrphy_trained_csr_num;
+	to->ddrphy_pie_num = from->ddrphy_pie_num;
+
+	/* copy the fsp table */
+	for (int i = 0; i < 4; i++)
+		to->fsp_table[i] = from->fsp_table[i];
+
+	/* copy the ddrc config */
+	to->ddrc_cfg = cfg1;
+	num = from->ddrc_cfg_num;
+	for (int i = 0; i < num; i++) {
+		cfg1->reg = cfg2->reg;
+		cfg1->val = cfg2->val;
+		cfg1++;
+		cfg2++;
+	}
+
+	/* copy the ddrphy init config */
+	to->ddrphy_cfg = cfg1;
+	num = from->ddrphy_cfg_num;
+	for (int i = 0; i < num; i++) {
+		cfg1->reg = cfg2->reg;
+		cfg1->val = cfg2->val;
+		cfg1++;
+		cfg2++;
+	}
+
+	/* copy the ddrphy csr */
+	to->ddrphy_trained_csr = cfg1;
+	num = from->ddrphy_trained_csr_num;
+	for (int i = 0; i < num; i++) {
+		cfg1->reg = cfg2->reg;
+		cfg1->val = cfg2->val;
+		cfg1++;
+		cfg2++;
+	}
+	/* copy the PIE image */
+	to->ddrphy_pie = cfg1;
+	num = from->ddrphy_pie_num;
+	for (int i = 0; i < num; i++) {
+		cfg1->reg = cfg2->reg;
+		cfg1->val = cfg2->val;
+		cfg1++;
+		cfg2++;
+	}
+}
+#endif
 
 /* restore the ddrc config */
 void dram_umctl2_init(void)
@@ -67,6 +137,19 @@ void dram_phy_init(void)
 	}
 }
 
+#define BYPASS_MODE_DRATE		666
+static bool is_bypass_mode_enabled(struct dram_timing_info *info)
+{
+	/*
+	 * if there is a fsp drate is lower than 666, we assume
+	 * that the bypass mode is enanbled.
+	 */
+	if(info->fsp_table[1] > BYPASS_MODE_DRATE ||
+		 info->fsp_table[2] > BYPASS_MODE_DRATE)
+		return false;
+	else
+		return true;
+}
 
 void dram_info_init(unsigned long dram_timing_base)
 {
@@ -85,6 +168,13 @@ void dram_info_init(unsigned long dram_timing_base)
 	dram_info.boot_fsp = current_fsp;
 	dram_info.current_fsp = current_fsp;
 
+#if defined(PLAT_IMX8M)
+	imx8mq_dram_timing_copy((struct dram_timing_info *)dram_timing_base,
+		(struct dram_timing_info *)dram_timing_saved);
+
+	dram_timing_base = (unsigned long) dram_timing_saved;
+#endif
+	bypass_mode_supported = is_bypass_mode_enabled((struct dram_timing_info *)dram_timing_base);
 	/*
 	 * No need to do save for ddrc and phy config register,
 	 * we have done it in SPL stage and save in memory
@@ -95,7 +185,7 @@ void dram_info_init(unsigned long dram_timing_base)
 	if(ddr_type == DDRC_LPDDR4 && current_fsp != 0x0) {
 		/* flush the L1/L2 cache */
 		dcsw_op_all(DCCSW);
-		lpddr4_swffc(dev_fsp, 0x0);
+		lpddr4_swffc(&dram_info, dev_fsp, 0x0, bypass_mode_supported);
 		dev_fsp = (~dev_fsp) & 0x1;
 	} else if (ddr_type == DDRC_DDR4 && current_fsp != 0x0) {
 		/* flush the L1/L2 cache */
@@ -156,15 +246,21 @@ int dram_dvfs_handler(uint32_t smc_fid,
 		/* make sure all the core in WFE */
 		online_cores &= ~(0x1 << (cpu_id * 8));
 		while (1) {
+#if defined(PLAT_IMX8M)
+			mmio_write_32(0x30340004, mmio_read_32(0x30340004) | (1 << 12));
+#endif
 			if (online_cores == wfe_done)
 				break;
 		}
+#if defined(PLAT_IMX8M)
+		mmio_write_32(0x30340004, mmio_read_32(0x30340004) & ~(1 << 12));
+#endif
 
 		/* flush the L1/L2 cache */
 		dcsw_op_all(DCCSW);
 
 		if (dram_info.dram_type == DDRC_LPDDR4) {
-			lpddr4_swffc(dev_fsp, target_freq);
+			lpddr4_swffc(&dram_info, dev_fsp, target_freq, bypass_mode_supported);
 			dev_fsp = (~dev_fsp) & 0x1;
 		} else if (dram_info.dram_type == DDRC_DDR4) {
 			ddr4_swffc(&dram_info, target_freq);
