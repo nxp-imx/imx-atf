@@ -346,7 +346,6 @@ void imx_a53_plat_slot_config(bool pdn)
 		pgc_pcr |= 0x1;
 		mmio_write_32(IMX_GPC_BASE + PLAT_PGC_PCR, pgc_pcr);
 
-
 	if (pdn) {
 		/* config a53 plat pdn/pup slot */
 		pdn_slot_cfg |= PLAT_PDN_SLT_CTRL;
@@ -355,7 +354,6 @@ void imx_a53_plat_slot_config(bool pdn)
 		slot_ack = PLAT_PGC_PDN_ACK | PLAT_PGC_PUP_ACK;
 		/* enable PLAT PGC PCR */
 		pgc_pcr |= 0x1;
-
 	} else {
 		/* clear slot/ack config */
 		pdn_slot_cfg &= ~PLAT_PDN_SLT_CTRL;
@@ -688,6 +686,62 @@ static void imx_gpc_set_wake_irq(uint32_t hwirq, uint32_t on)
 				 gpc_wake_irqs[idx] | mask;
 }
 
+#define GPU_RCR		0x40
+#define VPU_RCR		0x44
+
+#define VPU_CTL_BASE	0x38330000
+#define BLK_SFT_RSTN_CSR 0x0
+#define H1_SFT_RSTN	(1 << 2)
+#define G1_SFT_RSTN	(1 << 1)
+#define G2_SFT_RSTN	(1 << 0)
+
+void vpu_sft_reset_assert(uint32_t domain_id)
+{
+	uint32_t val;
+
+	val = mmio_read_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR);
+
+	switch(domain_id) {
+	case VPU_G1:
+		val &= ~G1_SFT_RSTN;
+		mmio_write_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR, val);
+		break;
+	case VPU_G2:
+		val &= ~G2_SFT_RSTN;
+		mmio_write_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR, val);
+		break;
+	case VPU_H1:
+		val &= ~H1_SFT_RSTN;
+		mmio_write_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR, val);
+		break;
+	default:
+		break;
+	}
+}
+
+void vpu_sft_reset_deassert(uint32_t domain_id)
+{
+	uint32_t val;
+
+	val = mmio_read_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR);
+
+	switch(domain_id) {
+	case VPU_G1:
+		val |= G1_SFT_RSTN;
+		mmio_write_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR, val);
+		break;
+	case VPU_G2:
+		val |= G2_SFT_RSTN;
+		mmio_write_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR, val);
+		break;
+	case VPU_H1:
+		val |= H1_SFT_RSTN;
+		mmio_write_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR, val);
+		break;
+	default:
+		break;
+	}
+}
 
 static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 {
@@ -705,6 +759,9 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 			val &= ~(1 << 0);
 			mmio_write_32(IMX_GPC_BASE + pwr_domain->pgc_offset, val);
 
+			if (domain_id == VPU_G1 || domain_id == VPU_G2 || domain_id == VPU_H1)
+				vpu_sft_reset_assert(domain_id);
+
 			/* power up the domain */
 			val = mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG);
 			val |= pwr_domain->pwr_req;
@@ -712,9 +769,16 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 
 			/* wait for power request done */
 			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG) & pwr_domain->pwr_req);
+
+			if (domain_id == VPU_G1 || domain_id == VPU_G2 || domain_id == VPU_H1)
+				vpu_sft_reset_deassert(domain_id);
 		}
 
 		if (domain_id == GPUMIX) {
+
+			/* assert reset */
+			mmio_write_32(IMX_SRC_BASE + GPU_RCR, 0x1);
+
 			/* power up GPU2D */
 			val = mmio_read_32(IMX_GPC_BASE + GPU2D_PGC);
 			val &= ~(1 << 0);
@@ -741,20 +805,17 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 			/* wait for power request done */
 			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG) & GPU3D_PWR_REQ);
 
-			udelay(1);
-
-			/* assert reset */
-			mmio_write_32(0x30390040, 0x1);
 			udelay(10);
-			mmio_write_32(0x30390040, 0x0);
+			/* release the gpumix reset */
+			mmio_write_32(IMX_SRC_BASE + GPU_RCR, 0x0);
 			udelay(10);
 		}
 
 		/* vpu sft clock enable */
 		if (domain_id == VPUMIX) {
-			mmio_write_32(0x30390044, 0x1);
+			mmio_write_32(IMX_SRC_BASE + VPU_RCR, 0x1);
 			udelay(5);
-			mmio_write_32(0x30390044, 0x0);
+			mmio_write_32(IMX_SRC_BASE + VPU_RCR, 0x0);
 			udelay(5);
 
 			/* enable all clock */
