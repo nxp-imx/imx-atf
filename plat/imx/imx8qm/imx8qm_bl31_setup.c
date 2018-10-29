@@ -326,10 +326,9 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	sc_pm_clock_enable(ipc_handle, IMX_RES_UART, 2, true, false);
 
 	/* configure UART pads */
-	sc_pad_set(ipc_handle, IMX_PAD_UART_RX, UART_PAD_CTRL);
-	sc_pad_set(ipc_handle, IMX_PAD_UART_TX, UART_PAD_CTRL);
-	sc_pad_set(ipc_handle, IMX_PAD_UART_RTS_B, UART_PAD_CTRL);
-	sc_pad_set(ipc_handle, IMX_PAD_UART_CTS_B, UART_PAD_CTRL);
+	sc_pad_set(ipc_handle, SC_P_UART0_RX, UART_PAD_CTRL);
+	sc_pad_set(ipc_handle, SC_P_UART0_TX, UART_PAD_CTRL);
+
 	lpuart32_serial_init(IMX_BOOT_UART_BASE);
 #endif
 
