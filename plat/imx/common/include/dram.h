@@ -56,6 +56,8 @@ struct dram_timing_info {
 	/* ddr phy PIE */
 	struct dram_cfg_param *ddrphy_pie;
 	unsigned int ddrphy_pie_num;
+	/* initialized fsp table */
+	unsigned int fsp_table[4];
 };
 
 struct dram_info {
@@ -79,7 +81,8 @@ void lpddr4_exit_retention(void);
 void ddr4_enter_retention(void);
 void ddr4_exit_retention(void);
 /* lpddr4 swffc for dvfs */
-void lpddr4_swffc(unsigned int dev_fsp, unsigned int tgt_freq);
+void lpddr4_swffc(struct dram_info *dram_info, unsigned int dev_fsp,
+	 unsigned int tgt_freq, bool bypass_mode_supported);
 /* ddr4 swffw for dvfs */
 void ddr4_swffc(struct dram_info *dram_info, unsigned int target_fsp);
 
@@ -88,5 +91,6 @@ void dram_enter_retention(void);
 void dram_exit_retention(void);
 
 void dram_clock_switch(unsigned int target_freq);
+void dram_pll_init(unsigned int drate);
 
 #endif /* __DRAM_H__ */

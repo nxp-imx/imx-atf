@@ -14,6 +14,7 @@
 
 #include <debug.h>
 #include <delay_timer.h>
+#include <dram.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -398,10 +399,10 @@ void imx_set_sys_lpm(bool retention)
 			 SLPCR_BYPASS_PMIC_READY | SLPCR_RBC_EN);
 
 		/* DDR enter retention */
-		ddrc_enter_retention();
+		dram_enter_retention();
 	} else {
 		/* DDR exit retention */
-		ddrc_exit_retention();
+		dram_exit_retention();
 	}
 
 	mmio_write_32(IMX_GPC_BASE + 0x14, val);

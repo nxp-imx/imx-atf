@@ -92,7 +92,7 @@ void lpddr4_enter_retention(void)
 	for (i=0; i<20; i++){
  	}
 
-#ifdef M850D
+#if defined(PLAT_IMX8M)
 	/* pwrdnreqn_async adbm/adbs of ddr */
 	mmio_clrbits_32(GPC_PU_PWRHSK, (1 << 1));
 	do {
@@ -140,7 +140,7 @@ void lpddr4_exit_retention(void)
 	}
 
 	/*assert all reset */
-#ifdef M850D
+#if defined(PLAT_IMX8M)
 	mmio_write_32(SRC_DDRC_RCR_ADDR+0x4, 0x8F000003); // assert [0]src_system_rst_b!
 	mmio_write_32(SRC_DDRC_RCR_ADDR, 0x8F00000F); // assert [0]ddr1_preset_n, [1]ddr1_core_reset_n, [2]ddr1_phy_reset, [3]ddr1_phy_pwrokin_n,
 	mmio_write_32(SRC_DDRC_RCR_ADDR+0x4, 0x8F000000); // deassert  [4]src_system_rst_b!
