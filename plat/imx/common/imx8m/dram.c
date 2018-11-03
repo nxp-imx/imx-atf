@@ -40,6 +40,10 @@ void imx8mq_dram_timing_copy(struct dram_timing_info *from,
 	cfg1 = (struct dram_cfg_param *) ((unsigned long) to + sizeof(struct dram_timing_info));
 	cfg2 = from->ddrc_cfg;
 
+	/* if no valid dram timing info, return */
+	if (((unsigned long)from + sizeof(struct dram_timing_info)) != (unsigned long)cfg2)
+			return;
+
 	/* copy the ddrc init config */
 	to->ddrc_cfg_num = from->ddrc_cfg_num;
 	to->ddrphy_cfg_num = from->ddrphy_cfg_num;
