@@ -88,8 +88,6 @@ int imx_wakeup_src_handler(uint32_t smc_fid,
 		    u_register_t x2,
 		    u_register_t x3)
 {
-	uint64_t ret;
-
 	switch(x1) {
 	case FSL_SIP_WAKEUP_SRC_IRQSTEER:
 		wakeup_src_irqsteer = true;
@@ -101,7 +99,7 @@ int imx_wakeup_src_handler(uint32_t smc_fid,
 		return SMC_UNK;
 	}
 
-	return ret;
+	return SMC_OK;
 }
 
 /* i.MX platform specific service SMC handler */
