@@ -180,7 +180,7 @@ void ddr4_dll_change(unsigned int num_rank, unsigned int pstate, unsigned int cu
 
 	/* 6. For DDR4 only: Perform an MRS command (using MRCTRL0 and MRCTRL1 registers) to write 0 to */
 	/* MR5[8:6] to disable RTT_PARK */
-	for (int i = i; i < num_rank; i++) {
+	for (int i = 1; i < num_rank; i++) {
 		if (mr_value[5] & 0x1C0)
 			ddr4_mr_write(5, mr_value[5] & 0xFE3F, 0, i);
 	}
