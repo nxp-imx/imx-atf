@@ -66,3 +66,7 @@ RESET_TO_BL31		:=	1
 ERROR_DEPRECATED	:=	1
 ARM_GIC_ARCH		:=	3
 A53_DISABLE_NON_TEMPORAL_HINT := 0
+
+ifneq (${SPD},none)
+$(eval $(call add_define,TEE_IMX8))
+endif
