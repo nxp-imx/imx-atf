@@ -233,8 +233,14 @@ void mx8_partition_resources(void)
 		if (err) {
 			ERROR("Memreg get info failed, %u\n", mr_tee);
 		} else {
-			if ((BL32_LIMIT - 1) < end) {
-				err = sc_rm_memreg_alloc(ipc_handle, &mr, BL32_LIMIT , end);
+#ifdef SPD_trusty
+			reg_start = BL32_LIMIT;
+#else
+			/* Allow share memory to be accessible by OS */
+			reg_start = BL32_LIMIT - BL32_SHM_SIZE;
+#endif
+			if ((reg_start -1) < end) {
+				err = sc_rm_memreg_alloc(ipc_handle, &mr, reg_start , end);
 				if (err) {
 					ERROR("sc_rm_memreg_alloc failed, 0x%lx -- 0x%lx\n", (sc_faddr_t)BL32_LIMIT, end);
 				} else {
@@ -283,8 +289,13 @@ void mx8_partition_resources(void)
 			}
 #ifdef TEE_IMX8
 			if (mr_tee_atf_same) {
-				if ((BL32_LIMIT - 1) < end) {
-					reg_start = BL32_LIMIT;
+#ifdef SPD_trusty
+				reg_start = BL32_LIMIT;
+#else
+				/* Allow share memory to be accessible by OS */
+				reg_start = BL32_LIMIT - BL32_SHM_SIZE;
+#endif
+				if ((reg_start -1) < end) {
 					err = sc_rm_memreg_alloc(ipc_handle, &mr, reg_start, end);
 					if (err) {
 						ERROR("sc_rm_memreg_alloc failed, 0x%lx -- 0x%lx\n", reg_start, end);
