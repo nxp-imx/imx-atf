@@ -73,3 +73,7 @@ ERRATA_A72_859971	:=	1
 ERRATA_A53_835769	:=	1
 ERRATA_A53_843419	:=	1
 ERRATA_A53_855873	:=	1
+
+ifneq (${SPD},none)
+$(eval $(call add_define,TEE_IMX8))
+endif

@@ -31,7 +31,7 @@
 #define BL31_BASE			0x80000000
 #define BL31_LIMIT			0x80020000
 
-#ifdef SPD_trusty
+#ifdef TEE_IMX8
 #define BL32_BASE			0xfe000000
 #define BL32_SIZE			0x00200000
 #define BL32_LIMIT			0x100000000
@@ -70,7 +70,7 @@
 #define SC_CONSOLE			0
 
 #define DEBUG_CONSOLE			0
-#ifdef SPD_trusty
+#ifdef TEE_IMX8
 #define DEBUG_CONSOLE_A53		1
 #else
 #define DEBUG_CONSOLE_A53		0
