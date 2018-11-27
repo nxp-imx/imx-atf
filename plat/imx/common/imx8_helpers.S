@@ -91,6 +91,25 @@ endfunc plat_calc_core_pos
 	 * ---------------------------------------------
 	 */
 func plat_get_my_entrypoint
+
+#if defined(PLAT_IMX8QX) || defined(PLAT_IMX8QM)
+	/* ---------------------------------------------
+	 * SCU will signal through a GIR bit when a
+	 * partition boot has taken place which requires
+	 * cold boot setup to take place once again
+	 * ---------------------------------------------
+	 */
+
+	mov x0, #PLAT_BOOT_MU_BASE
+	add x0, x0, #PLAT_MU_SR_OFF
+	ldr w1, [x0]
+	and w1, w1, #PLAT_MU_COLD_BOOT_FLG_MSK
+	cbz w1, warm_boot
+	str w1, [x0]
+	mov x0, #0
+	ret
+warm_boot:
+#endif
 	adrp	x1, mailbox_base
 	ldr	x0, [x1, :lo12:mailbox_base]
 	ret
