@@ -50,6 +50,7 @@
 #define A53_LPM_WAIT			0x5
 #define A53_LPM_STOP			0xa
 #define A53_CLK_ON_LPM			(1 << 14)
+#define SLPCR_RBC_SHIFT			24
 
 #define MST_CPU_MAPPING			0x18
 
@@ -498,7 +499,8 @@ void imx_set_rbc_count(void)
 	uint32_t val;
 
 	val = mmio_read_32(IMX_GPC_BASE + SLPCR);
-	val |= (0x3f << 24);
+	val |= SLPCR_RBC_EN;
+	val |= (0x8 << SLPCR_RBC_SHIFT);
 	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
 }
 
@@ -507,7 +509,8 @@ void imx_clear_rbc_count(void)
 	uint32_t val;
 
 	val = mmio_read_32(IMX_GPC_BASE + SLPCR);
-	val &= ~(0x3f << 24);
+	val &= ~(SLPCR_RBC_EN);
+	val &= ~(0x3f << SLPCR_RBC_SHIFT);
 	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
 
 }
@@ -985,6 +988,8 @@ void imx_gpc_init(void)
 	val &= ~SLPCR_EN_DSM;
 	/* enable the fast wakeup wait mode */
 	val |= SLPCR_A53_FASTWUP_WAIT;
+	/* clear the RBC */
+	val &= ~(0x3f << SLPCR_RBC_SHIFT);
 	/* TODO if M4 is not enabled, clear more SLPCR bits */
 	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
 
