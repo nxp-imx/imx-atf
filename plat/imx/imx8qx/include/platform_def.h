@@ -35,6 +35,9 @@
 #define BL31_BASE			0x80000000
 #define BL31_LIMIT			0x80020000
 
+#define OCRAM_BASE		0x100000
+#define OCRAM_ALIAS_SIZE 0x18000 /* The lower 96KB is in OCRAM alias from 0x0 */
+
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 32)
 #define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 32)
 
