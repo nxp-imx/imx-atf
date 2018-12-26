@@ -40,6 +40,9 @@
 #define BL31_BASE			0x80000000
 #define BL31_LIMIT			0x80020000
 
+#define OCRAM_BASE		0x100000
+#define OCRAM_ALIAS_SIZE 0x18000 /* The lower 96KB is in OCRAM alias from 0x0 */
+
 #define PLAT_GICD_BASE			0x51a00000
 #define PLAT_GICR_BASE			0x51b00000
 #define PLAT_CCI_BASE			0x52090000
