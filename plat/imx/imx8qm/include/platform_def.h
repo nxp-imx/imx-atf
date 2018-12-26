@@ -47,6 +47,9 @@
 #define BL32_LIMIT			0x100000000
 #endif
 
+#define OCRAM_BASE		0x100000
+#define OCRAM_ALIAS_SIZE 0x18000 /* The lower 96KB is in OCRAM alias from 0x0 */
+
 #define PLAT_GICD_BASE			0x51a00000
 #define PLAT_GICD_SIZE			0x10000
 #define PLAT_GICR_BASE			0x51b00000
