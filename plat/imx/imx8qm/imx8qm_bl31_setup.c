@@ -179,8 +179,8 @@ static int lpuart32_serial_init(unsigned int base)
 void mx8_partition_resources(void)
 {
 	sc_rm_pt_t secure_part, os_part;
-	sc_rm_mr_t mr, mr_record = 64;
-	sc_faddr_t start, end;
+	sc_rm_mr_t mr, mr_record = 64, mr_ocram = 64;
+	sc_faddr_t start, end, reg_end;
 	bool owned, owned2;
 	sc_err_t err;
 	int i;
@@ -216,7 +216,11 @@ void mx8_partition_resources(void)
 			NOTICE("Memreg %u 0x%" PRIx64 " -- 0x%" PRIx64 "\n", mr, start, end);
 			if (BL31_BASE >= start && (BL31_LIMIT - 1) <= end) {
 				mr_record = mr; /* Record the mr for ATF running */
-			} else {
+			}
+			else if (0 >= start && (OCRAM_BASE + OCRAM_ALIAS_SIZE - 1) <= end) {
+				mr_ocram = mr;
+			}
+			else {
 				err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
 				if (err)
 					ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 ", \
@@ -249,6 +253,25 @@ void mx8_partition_resources(void)
 				if (err)
 					ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
 						start, (sc_faddr_t)BL31_BASE - 1);
+		}
+	}
+
+	if (mr_ocram != 64) {
+		err = sc_rm_get_memreg_info(ipc_handle, mr_ocram, &start, &end);
+		reg_end = end;
+		if (err) {
+			ERROR("Memreg get info failed, %u\n", mr_ocram);
+		} else {
+			if ((OCRAM_BASE + OCRAM_ALIAS_SIZE - 1) < end) {
+				err = sc_rm_memreg_alloc(ipc_handle, &mr, OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
+				if (err) {
+					ERROR("sc_rm_memreg_alloc failed, 0x%llx -- 0x%llx\n", (sc_faddr_t)OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
+				} else {
+					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+					if (err)
+						ERROR("Memreg assign failed, 0x%llx -- 0x%llx\n", (sc_faddr_t)OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
+				}
+			}
 		}
 	}
 
