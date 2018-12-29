@@ -21,6 +21,7 @@ BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
 				plat/imx/imx8qx/imx8qx_psci.c		\
 				plat/imx/common/imx8_topology.c		\
 				plat/imx/common/imx8_psci.c		\
+				plat/imx/common/cpufreq.c		\
 				plat/imx/common/srtc.c			\
 				plat/imx/common/imx8_sip_svc.c		\
 				plat/common/plat_psci_common.c		\

@@ -7,6 +7,9 @@
 #ifndef __SOC_IMX_SIP_H
 #define __SOC_IMX_SIP_H
 
+#define IMX_SIP_CPUFREQ			0xC2000001
+#define IMX_SIP_SET_CPUFREQ		0x00
+
 #define IMX_SIP_SRTC			0xC2000002
 #define IMX_SIP_SRTC_SET_TIME		0x00
 #define IMX_SIP_SRTC_START_WDOG		0x01
@@ -18,6 +21,8 @@
 #define IMX_SIP_SRTC_SET_PRETIME_WDOG	0x07
 
 #if defined(PLAT_IMX8QM) || defined(PLAT_IMX8QX)
+int imx_cpufreq_handler(uint32_t smc_fid, u_register_t x1,
+			u_register_t x2, u_register_t x3);
 int imx_srtc_handler(uint32_t smc_fid, void *handle, u_register_t x1,
 	u_register_t x2, u_register_t x3, u_register_t x4);
 #endif
