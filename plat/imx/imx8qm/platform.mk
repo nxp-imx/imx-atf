@@ -24,6 +24,7 @@ BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
 				plat/imx/common/imx8_psci.c		\
 				plat/imx/common/cpufreq.c		\
 				plat/imx/common/srtc.c			\
+				plat/imx/common/misc.c			\
 				plat/imx/common/imx8_sip_svc.c		\
 				lib/xlat_tables/aarch64/xlat_tables.c		\
 				lib/xlat_tables/xlat_tables_common.c		\
