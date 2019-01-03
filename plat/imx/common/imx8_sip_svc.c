@@ -40,6 +40,9 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 		break;
 	case  IMX_SIP_SRTC:
 		return imx_srtc_handler(smc_fid, handle, x1, x2, x3, x4);
+        case IMX_SIP_OTP_READ:
+        case IMX_SIP_OTP_WRITE:
+                return imx_otp_handler(smc_fid, handle, x1, x2);
 #endif
 	case  IMX_SIP_BUILDINFO:
 		SMC_RET1(handle, imx_buildinfo_handler(smc_fid, x1, x2, x3, x4));
