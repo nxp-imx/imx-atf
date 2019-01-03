@@ -65,6 +65,15 @@ int imx_otp_handler(uint32_t smc_fid,
                 SMC_RET1(handle, ret);
         }
 }
+
+int imx_misc_set_temp_handler(uint32_t smc_fid,
+		    u_register_t x1,
+		    u_register_t x2,
+		    u_register_t x3,
+		    u_register_t x4)
+{
+	return sc_misc_set_temp(ipc_handle, x1, x2, x3, x4);
+}
 #endif
 
 static uint64_t imx_get_commit_hash(u_register_t x2,
