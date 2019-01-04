@@ -25,6 +25,16 @@ bool imx_is_wakeup_src_irqsteer(void)
 	return wakeup_src_irqsteer;
 }
 
+#if SC_CONSOLE
+int putchar(int c)
+{
+	if (ipc_handle)
+		sc_misc_debug_out(ipc_handle, (unsigned char)c);
+
+	return c;
+}
+#endif
+
 int imx_wakeup_src_handler(uint32_t smc_fid,
 		    u_register_t x1,
 		    u_register_t x2,

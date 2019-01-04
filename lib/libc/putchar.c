@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <console.h>
 
+#pragma weak putchar
+
 int putchar(int c)
 {
 	int res;
