@@ -163,6 +163,10 @@ void lpddr4_exit_retention(void)
 
 	mmio_write_32(SRC_DDRC_RCR_ADDR, 0x8F000006); // release [0]ddr1_preset_n,  [3]ddr1_phy_pwrokin_n
 
+	/* wait dram pll locked */
+	while(!(mmio_read_32(DRAM_PLL_CTRL) & (1 << 31)))
+		;
+
 	/* ddrc re-init */
 	dram_umctl2_init();
 

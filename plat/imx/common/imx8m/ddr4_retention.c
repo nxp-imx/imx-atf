@@ -107,6 +107,8 @@ void ddr4_exit_retention(void)
 	/* assert all reset */
 	mmio_write_32(SRC_DDRC_RCR_ADDR, 0x8F00003F);
 
+	mmio_write_32(SRC_DDRC_RCR_ADDR, 0x8F00000F); /* release [4]src_system_rst_b! */
+
 	mmio_write_32(CCM_CCGR(5), 2);
 	mmio_write_32(CCM_SRC_CTRL(15), 2);
 	printf("C: enable all DRAM clocks \n");
@@ -114,12 +116,15 @@ void ddr4_exit_retention(void)
 	mmio_write_32(0x303A00EC, 0x0000ffff); /* PGC_CPU_MAPPING */
 	mmio_setbits_32(0x303A00F8, (1 << 5));
 
-	mmio_write_32(SRC_DDRC_RCR_ADDR, 0x8F00000F); /* release [4]src_system_rst_b! */
 	mmio_write_32(SRC_DDRC_RCR_ADDR, 0x8F000006); /* release [0]ddr1_preset_n, [3]ddr1_phy_pwrokin_n */
 	/* RESET: <core_ddrc_rstn> ASSERTED (ACTIVE LOW) */
 	/* RESET: <presetn> ASSERTED (ACTIVE LOW) */
 	/* RESET: <aresetn> for Port 0  ASSERTED (ACTIVE LOW) */
 	/* RESET: <presetn> DEASSERTED */
+
+	/* wait dram pll locked */
+	while(!(mmio_read_32(DRAM_PLL_CTRL) & (1 << 31)))
+		;
 
 	mmio_write_32(DDRC_DBG1(0), 0x00000001);
 	mmio_write_32(DDRC_PWRCTL(0), 0x00000001);
