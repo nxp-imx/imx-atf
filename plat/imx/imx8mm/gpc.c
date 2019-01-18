@@ -51,6 +51,7 @@
 #define A53_LPM_STOP			0xa
 #define A53_CLK_ON_LPM			(1 << 14)
 #define SLPCR_RBC_SHIFT			24
+#define SLPCR_STBY_COUNT_SHFT		3
 
 #define MST_CPU_MAPPING			0x18
 
@@ -1001,7 +1002,9 @@ void imx_gpc_init(void)
 	val |= SLPCR_A53_FASTWUP_WAIT;
 	/* clear the RBC */
 	val &= ~(0x3f << SLPCR_RBC_SHIFT);
-	/* TODO if M4 is not enabled, clear more SLPCR bits */
+	/* set the STBY_COUNT to 0x5, (128 * 30)us*/
+	val &= ~(0x7 << SLPCR_STBY_COUNT_SHFT);
+	val |= (0x5 << SLPCR_STBY_COUNT_SHFT);
 	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
 
 	/*
