@@ -342,9 +342,9 @@ void imx_a53_plat_slot_config(bool pdn)
 	pup_slot_cfg = mmio_read_32(IMX_GPC_BASE + SLT3_CFG);
 	pgc_pcr = mmio_read_32(IMX_GPC_BASE + PLAT_PGC_PCR);
 
-		/* enable PLAT PGC PCR */
-		pgc_pcr |= 0x1;
-		mmio_write_32(IMX_GPC_BASE + PLAT_PGC_PCR, pgc_pcr);
+	/* enable PLAT PGC PCR */
+	pgc_pcr |= 0x1;
+	mmio_write_32(IMX_GPC_BASE + PLAT_PGC_PCR, pgc_pcr);
 
 	if (pdn) {
 		/* config a53 plat pdn/pup slot */
@@ -976,7 +976,18 @@ void imx_gpc_init(void)
 	/*set all mix/PU in A53 domain */
 	mmio_write_32(IMX_GPC_BASE + GPC_PGC_CPU_0_1_MAPPING, 0xffff);
 
-	/* set SCU timming */
+	/*
+	 * Set the CORE & SCU power up timing:
+	 * SW = 0x1, SW2ISO = 0x1;
+	 * the CPU CORE and SCU power up timming counter
+	 * is drived  by 32K OSC, each domain's power up
+	 * latency is (SW + SW2ISO) / 32768
+	 */
+	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(0) + 0x4, 0x81);
+	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(1) + 0x4, 0x81);
+	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(2) + 0x4, 0x81);
+	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(3) + 0x4, 0x81);
+	mmio_write_32(IMX_GPC_BASE + PLAT_PGC_PCR + 0x4, 0x81);
 	mmio_write_32(IMX_GPC_BASE + GPC_PGC_SCU_TIMMING,
 		      (0x59 << 10) | 0x5B | (0x2 << 20));
 
