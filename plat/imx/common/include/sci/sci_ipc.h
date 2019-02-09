@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
+ * Copyright 2017-2019 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -60,8 +61,9 @@ void sc_ipc_read(sc_ipc_t ipc, void *data);
  *
  * This function will block if the outgoing buffer is full.
  */
-void sc_ipc_write(sc_ipc_t ipc, void *data);
+void sc_ipc_write(sc_ipc_t ipc, const void *data);
 
 sc_ipc_t ipc_handle;
 
-#endif				/* SC_IPC_H */
+#endif /* SC_IPC_H */
+

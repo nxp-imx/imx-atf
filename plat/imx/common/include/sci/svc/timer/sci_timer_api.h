@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2016 Freescale Semiconductor, Inc.
- * Copyright 2017-2018 NXP
+ * Copyright 2017-2019 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -24,6 +24,7 @@
 /* Includes */
 
 #include <sci/sci_types.h>
+#include <sci/svc/rm/sci_rm_api.h>
 
 /* Defines */
 
@@ -31,18 +32,18 @@
  * @name Defines for type widths
  */
 /*@{*/
-#define SC_TIMER_ACTION_W   3U	/* Width of sc_timer_wdog_action_t */
+#define SC_TIMER_ACTION_W   3U      /* Width of sc_timer_wdog_action_t */
 /*@}*/
 
 /*!
  * @name Defines for sc_timer_wdog_action_t
  */
 /*@{*/
-#define SC_TIMER_WDOG_ACTION_PARTITION      0U	/* Reset partition */
-#define SC_TIMER_WDOG_ACTION_WARM           1U	/* Warm reset system */
-#define SC_TIMER_WDOG_ACTION_COLD           2U	/* Cold reset system */
-#define SC_TIMER_WDOG_ACTION_BOARD          3U	/* Reset board */
-#define SC_TIMER_WDOG_ACTION_IRQ            4U	/* Only generate IRQs */
+#define SC_TIMER_WDOG_ACTION_PARTITION      0U   /* Reset partition */
+#define SC_TIMER_WDOG_ACTION_WARM           1U   /* Warm reset system */
+#define SC_TIMER_WDOG_ACTION_COLD           2U   /* Cold reset system */
+#define SC_TIMER_WDOG_ACTION_BOARD          3U   /* Reset board */
+#define SC_TIMER_WDOG_ACTION_IRQ            4U   /* Only generate IRQs */
 /*@}*/
 
 /* Types */
@@ -75,7 +76,8 @@ typedef uint32_t sc_timer_wdog_time_t;
  * @return Returns an error code (SC_ERR_NONE = success, SC_ERR_LOCKED
  *         = locked).
  */
-sc_err_t sc_timer_set_wdog_timeout(sc_ipc_t ipc, sc_timer_wdog_time_t timeout);
+sc_err_t sc_timer_set_wdog_timeout(sc_ipc_t ipc,
+	sc_timer_wdog_time_t timeout);
 
 /*!
  * This function sets the watchdog pre-timeout in milliseconds. If not
@@ -92,7 +94,7 @@ sc_err_t sc_timer_set_wdog_timeout(sc_ipc_t ipc, sc_timer_wdog_time_t timeout);
  * @return Returns an error code (SC_ERR_NONE = success).
  */
 sc_err_t sc_timer_set_wdog_pre_timeout(sc_ipc_t ipc,
-				       sc_timer_wdog_time_t pre_timeout);
+	sc_timer_wdog_time_t pre_timeout);
 
 /*!
  * This function starts the watchdog.
@@ -140,9 +142,8 @@ sc_err_t sc_timer_ping_wdog(sc_ipc_t ipc);
  * @return Returns an error code (SC_ERR_NONE = success).
  */
 sc_err_t sc_timer_get_wdog_status(sc_ipc_t ipc,
-				  sc_timer_wdog_time_t *timeout,
-				  sc_timer_wdog_time_t *max_timeout,
-				  sc_timer_wdog_time_t *remaining_time);
+	sc_timer_wdog_time_t *timeout, sc_timer_wdog_time_t *max_timeout,
+	sc_timer_wdog_time_t *remaining_time);
 
 /*!
  * This function gets the status of the watchdog of a partition. All
@@ -157,10 +158,8 @@ sc_err_t sc_timer_get_wdog_status(sc_ipc_t ipc,
  *
  * @return Returns an error code (SC_ERR_NONE = success).
  */
-sc_err_t sc_timer_pt_get_wdog_status(sc_ipc_t ipc, sc_rm_pt_t pt,
-				     sc_bool_t *enb,
-				     sc_timer_wdog_time_t *timeout,
-				     sc_timer_wdog_time_t *remaining_time);
+sc_err_t sc_timer_pt_get_wdog_status(sc_ipc_t ipc, sc_rm_pt_t pt, sc_bool_t *enb,
+	sc_timer_wdog_time_t *timeout, sc_timer_wdog_time_t *remaining_time);
 
 /*!
  * This function configures the action to be taken when a watchdog
@@ -180,7 +179,7 @@ sc_err_t sc_timer_pt_get_wdog_status(sc_ipc_t ipc, sc_rm_pt_t pt,
  * - SC_ERR_LOCKED if the watchdog is locked
  */
 sc_err_t sc_timer_set_wdog_action(sc_ipc_t ipc,
-				  sc_rm_pt_t pt, sc_timer_wdog_action_t action);
+	sc_rm_pt_t pt, sc_timer_wdog_action_t action);
 
 /* @} */
 
@@ -191,7 +190,8 @@ sc_err_t sc_timer_set_wdog_action(sc_ipc_t ipc,
 
 /*!
  * This function sets the RTC time. Only the owner of the SC_R_SYSTEM
- * resource can set the time.
+ * resource or a partition with access permissions to SC_R_SYSTEM can
+ * set the time.
  *
  * @param[in]     ipc         IPC handle
  * @param[in]     year        year (min 1970)
@@ -205,11 +205,10 @@ sc_err_t sc_timer_set_wdog_action(sc_ipc_t ipc,
  *
  * Return errors:
  * - SC_ERR_PARM if invalid time/date parameters,
- * - SC_ERR_NOACCESS if caller's partition is not the SYSTEM owner
+ * - SC_ERR_NOACCESS if caller's partition cannot access SC_R_SYSTEM
  */
 sc_err_t sc_timer_set_rtc_time(sc_ipc_t ipc, uint16_t year, uint8_t mon,
-			       uint8_t day, uint8_t hour, uint8_t min,
-			       uint8_t sec);
+	uint8_t day, uint8_t hour, uint8_t min, uint8_t sec);
 
 /*!
  * This function gets the RTC time.
@@ -225,8 +224,7 @@ sc_err_t sc_timer_set_rtc_time(sc_ipc_t ipc, uint16_t year, uint8_t mon,
  * @return Returns an error code (SC_ERR_NONE = success).
  */
 sc_err_t sc_timer_get_rtc_time(sc_ipc_t ipc, uint16_t *year, uint8_t *mon,
-			       uint8_t *day, uint8_t *hour, uint8_t *min,
-			       uint8_t *sec);
+	uint8_t *day, uint8_t *hour, uint8_t *min, uint8_t *sec);
 
 /*!
  * This function gets the RTC time in seconds since 1/1/1970.
@@ -249,7 +247,8 @@ sc_err_t sc_timer_get_rtc_sec1970(sc_ipc_t ipc, uint32_t *sec);
  * @param[in]     min         minute (0-59)
  * @param[in]     sec         second (0-59)
  *
- * Note this alarm setting clears when the alarm is triggered.
+ * Note this alarm setting clears when the alarm is triggered. This is an
+ * absolute time.
  *
  * @return Returns an error code (SC_ERR_NONE = success).
  *
@@ -257,8 +256,7 @@ sc_err_t sc_timer_get_rtc_sec1970(sc_ipc_t ipc, uint32_t *sec);
  * - SC_ERR_PARM if invalid time/date parameters
  */
 sc_err_t sc_timer_set_rtc_alarm(sc_ipc_t ipc, uint16_t year, uint8_t mon,
-				uint8_t day, uint8_t hour, uint8_t min,
-				uint8_t sec);
+	uint8_t day, uint8_t hour, uint8_t min, uint8_t sec);
 
 /*!
  * This function sets the RTC alarm (periodic mode).
@@ -267,6 +265,8 @@ sc_err_t sc_timer_set_rtc_alarm(sc_ipc_t ipc, uint16_t year, uint8_t mon,
  * @param[in]     sec         period in seconds
  *
  * @return Returns an error code (SC_ERR_NONE = success).
+ *
+ * Note this is a relative time.
  *
  * Return errors:
  * - SC_ERR_PARM if invalid time/date parameters
@@ -289,7 +289,8 @@ sc_err_t sc_timer_cancel_rtc_alarm(sc_ipc_t ipc);
 
 /*!
  * This function sets the RTC calibration value. Only the owner of the SC_R_SYSTEM
- * resource can set the calibration.
+ * resource or a partition with access permissions to SC_R_SYSTEM can set the
+ * calibration.
  *
  * @param[in]     ipc         IPC handle
  * @param[in]     count       calbration count (-16 to 15)
@@ -315,7 +316,8 @@ sc_err_t sc_timer_set_rtc_calb(sc_ipc_t ipc, int8_t count);
  * @param[in]     ipc         IPC handle
  * @param[in]     ticks       number of 8MHz cycles
  *
- * Note this alarm setting clears when the alarm is triggered.
+ * Note the \a ticks parameter is an absolute time. This alarm
+ * setting clears when the alarm is triggered.
  *
  * @return Returns an error code (SC_ERR_NONE = success).
  *
@@ -330,12 +332,15 @@ sc_err_t sc_timer_set_sysctr_alarm(sc_ipc_t ipc, uint64_t ticks);
  * @param[in]     ipc          IPC handle
  * @param[in]     ticks        number of 8MHz cycles
  *
+ * Note the \a ticks parameter is a relative time.
+ *
  * @return Returns an error code (SC_ERR_NONE = success).
  *
  * Return errors:
  * - SC_ERR_PARM if invalid time/date parameters
  */
-sc_err_t sc_timer_set_sysctr_periodic_alarm(sc_ipc_t ipc, uint64_t ticks);
+sc_err_t sc_timer_set_sysctr_periodic_alarm(sc_ipc_t ipc,
+	uint64_t ticks);
 
 /*!
  * This function cancels the SYSCTR alarm.
@@ -353,6 +358,7 @@ sc_err_t sc_timer_cancel_sysctr_alarm(sc_ipc_t ipc);
 
 /* @} */
 
-#endif				/* SC_TIMER_API_H */
+#endif /* SC_TIMER_API_H */
 
 /**@}*/
+

@@ -1,22 +1,23 @@
 /*
- * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright 2017-2019 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <bakery_lock.h>
 #include <sci/sci_scfw.h>
 #include <sci/sci_ipc.h>
 #include <sci/sci_rpc.h>
 #include <stdlib.h>
+
 #include "imx8_mu.h"
 
+#include <bakery_lock.h>
 DEFINE_BAKERY_LOCK(sc_ipc_bakery_lock);
 #define sc_ipc_lock_init()	bakery_lock_init(&sc_ipc_bakery_lock)
 #define sc_ipc_lock()		bakery_lock_get(&sc_ipc_bakery_lock)
 #define sc_ipc_unlock()		bakery_lock_release(&sc_ipc_bakery_lock)
 
-void sc_call_rpc(sc_ipc_t ipc, sc_rpc_msg_t *msg, bool no_resp)
+void sc_call_rpc(sc_ipc_t ipc, sc_rpc_msg_t *msg, sc_bool_t no_resp)
 {
 	sc_ipc_lock();
 
@@ -88,7 +89,7 @@ void sc_ipc_read(sc_ipc_t ipc, void *data)
 	}
 }
 
-void sc_ipc_write(sc_ipc_t ipc, void *data)
+void sc_ipc_write(sc_ipc_t ipc, const void *data)
 {
 	sc_rpc_msg_t *msg = (sc_rpc_msg_t *) data;
 	uint32_t base = ipc;
