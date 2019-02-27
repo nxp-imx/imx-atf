@@ -37,6 +37,10 @@ static const unsigned long BL31_RW_END			= BL_END;
 
 IMPORT_SYM(unsigned long, __RW_START__, BL31_RW_START);
 
+#if DEBUG_CONSOLE
+extern unsigned long console_list;
+#endif
+
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
 
@@ -320,6 +324,8 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 {
 #if DEBUG_CONSOLE
 	static console_t console;
+
+	console_list = 0;
 #endif
 	if (sc_ipc_open(&ipc_handle, SC_IPC_BASE) != SC_ERR_NONE)
 		panic();
