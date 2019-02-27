@@ -244,5 +244,11 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A35, SC_PM_SYS_IF_INTERCONNECT,
 		SC_PM_PW_MODE_ON, SC_PM_PW_MODE_ON);
 
+	/*
+	 * set partition reboot address for primary CPU, boot device is NOT owned
+	 * by ATF, so pass 0 here
+	 */
+	sc_pm_set_boot_parm(ipc_handle, SC_R_A35_0, BL31_BASE, SC_R_MU_0A, 0);
+
 	return 0;
 }
