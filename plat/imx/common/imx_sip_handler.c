@@ -181,6 +181,23 @@ int imx_misc_set_temp_handler(uint32_t smc_fid,
 	return sc_misc_set_temp(ipc_handle, x1, x2, x3, x4);
 }
 
+int imx_get_cpu_rev(uint32_t *cpu_id, uint32_t *cpu_rev)
+{
+	uint32_t id;
+	sc_err_t err;
+
+	if (!cpu_id || !cpu_rev)
+		return -1;
+
+	err = sc_misc_get_control(ipc_handle, SC_R_SYSTEM, SC_C_ID, &id);
+	if (err != SC_ERR_NONE)
+		return err;
+
+	*cpu_rev = (id >> 5)  & 0xf;
+	*cpu_id = id & 0x1f;
+
+	return 0;
+}
 #endif /* defined(PLAT_imx8qm) || defined(PLAT_imx8qx) */
 
 #if defined(PLAT_imx8mm) || defined(PLAT_imx8mq)
