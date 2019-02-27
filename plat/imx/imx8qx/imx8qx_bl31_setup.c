@@ -28,6 +28,7 @@
 #include <plat_imx8.h>
 #include <sci/sci.h>
 #include <sec_rsrc.h>
+#include <imx_sip_svc.h>
 
 static const unsigned long BL31_COHERENT_RAM_START	= BL_COHERENT_RAM_BASE;
 static const unsigned long BL31_COHERENT_RAM_END	= BL_COHERENT_RAM_END;
@@ -205,6 +206,10 @@ void imx8_partition_resources(void)
 	sc_err_t err;
 	bool owned;
 	int i;
+	uint32_t cpu_id, cpu_rev = 0x1; /* Set Rev B as default */
+
+	if (imx_get_cpu_rev(&cpu_id, &cpu_rev) != 0)
+		ERROR("Get CPU id and rev failed\n");
 
 	err = sc_rm_get_partition(ipc_handle, &secure_part);
 	if (err)
@@ -244,7 +249,7 @@ void imx8_partition_resources(void)
 			if (BL31_BASE >= start && (BL31_LIMIT - 1) <= end) {
 				mr_record = mr; /* Record the mr for ATF running */
 			}
-			else if (0 >= start && (OCRAM_BASE + OCRAM_ALIAS_SIZE - 1) <= end) {
+			else if (cpu_rev >= 1 && 0 >= start && (OCRAM_BASE + OCRAM_ALIAS_SIZE - 1) <= end) {
 				mr_ocram = mr;
 			}
 			else {
