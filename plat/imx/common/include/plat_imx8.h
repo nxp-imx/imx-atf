@@ -32,4 +32,5 @@ int imx_validate_power_state(unsigned int power_state,
 void imx_get_sys_suspend_power_state(psci_power_state_t *req_state);
 bool imx_is_wakeup_src_irqsteer(void);
 void __dead2 imx_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state);
+int imx_get_cpu_rev(uint32_t *cpu_id, uint32_t *cpu_rev);
 #endif /*__PLAT_IMX8_H__ */
