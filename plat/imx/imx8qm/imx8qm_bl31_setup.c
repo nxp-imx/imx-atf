@@ -170,6 +170,10 @@ void mx8_partition_resources(void)
 	bool mr_tee_atf_same = false;
 	sc_faddr_t reg_start;
 #endif
+	uint32_t cpu_id, cpu_rev = 0x1; /* Set Rev B as default */
+
+	if (imx_get_cpu_rev(&cpu_id, &cpu_rev) != 0)
+		ERROR("Get CPU id and rev failed\n");
 
 	err = sc_rm_get_partition(ipc_handle, &secure_part);
 
@@ -210,7 +214,7 @@ void mx8_partition_resources(void)
 					mr_tee = mr;
 				}
 #endif
-				else if (0 >= start && (OCRAM_BASE + OCRAM_ALIAS_SIZE - 1) <= end) {
+				else if (cpu_rev >= 1 && 0 >= start && (OCRAM_BASE + OCRAM_ALIAS_SIZE - 1) <= end) {
 					mr_ocram = mr;
 				}
 				else {
