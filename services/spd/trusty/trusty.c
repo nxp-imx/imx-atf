@@ -23,7 +23,12 @@
 #define HYP_ENABLE_FLAG		0x286001
 
 struct trusty_stack {
+/* imx8mq has very limited ocram space, assign smaller space for imx8mq. */
+#if defined(PLAT_IMX8M)
+	uint8_t space[IMX8M_TRUSTY_STACK_SIZE] __aligned(16);
+#else
 	uint8_t space[PLATFORM_STACK_SIZE] __aligned(16);
+#endif
 	uint32_t end;
 };
 
