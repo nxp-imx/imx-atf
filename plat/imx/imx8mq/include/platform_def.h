@@ -26,6 +26,10 @@
 #define BL31_BASE			0x910000
 #define BL31_LIMIT			0x920000
 #define BL32_BASE			0xfe000000
+#ifdef SPD_trusty
+#define BL32_SIZE			0x02000000
+#define BL32_LIMIT			0x100000000
+#endif
 
 /* non-secure uboot base */
 #define PLAT_NS_IMAGE_OFFSET		0x40200000
@@ -38,8 +42,13 @@
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 32)
 #define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 32)
 
+#ifdef SPD_trusty
+#define MAX_XLAT_TABLES			5
+#define MAX_MMAP_REGIONS		15
+#else
 #define MAX_XLAT_TABLES			4
 #define MAX_MMAP_REGIONS		14
+#endif
 
 #define HAB_RVT_BASE			0x00000880 /* HAB_RVT for i.MX8MQ */
 
