@@ -1,6 +1,10 @@
 #define PLATFORM_LINKER_FORMAT		"elf64-littleaarch64"
 #define PLATFORM_LINKER_ARCH		aarch64
 
+#ifdef SPD_trusty
+#define IMX8M_TRUSTY_STACK_SIZE		0x100
+#endif
+
 #define PLATFORM_STACK_SIZE		0xB00
 #define CACHE_WRITEBACK_GRANULE		64
 
