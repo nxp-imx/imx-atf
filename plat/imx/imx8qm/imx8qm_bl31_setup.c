@@ -34,6 +34,10 @@ IMPORT_SYM(unsigned long, __RO_END__, BL31_RO_END);
 IMPORT_SYM(unsigned long, __RW_START__, BL31_RW_START);
 IMPORT_SYM(unsigned long, __RW_END__, BL31_RW_END);
 
+#if DEBUG_CONSOLE
+extern unsigned long console_list;
+#endif
+
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
 
@@ -166,6 +170,10 @@ void mx8_partition_resources(void)
 	bool mr_tee_atf_same = false;
 	sc_faddr_t reg_start;
 #endif
+	uint32_t cpu_id, cpu_rev = 0x1; /* Set Rev B as default */
+
+	if (imx_get_cpu_rev(&cpu_id, &cpu_rev) != 0)
+		ERROR("Get CPU id and rev failed\n");
 
 	err = sc_rm_get_partition(ipc_handle, &secure_part);
 
@@ -206,7 +214,7 @@ void mx8_partition_resources(void)
 					mr_tee = mr;
 				}
 #endif
-				else if (0 >= start && (OCRAM_BASE + OCRAM_ALIAS_SIZE - 1) <= end) {
+				else if (cpu_rev >= 1 && 0 >= start && (OCRAM_BASE + OCRAM_ALIAS_SIZE - 1) <= end) {
 					mr_ocram = mr;
 				}
 				else {
@@ -397,11 +405,21 @@ void mx8_partition_resources(void)
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 				u_register_t arg2, u_register_t arg3)
 {
+	u_register_t mpidr = read_mpidr_el1();
+	unsigned int cluster_id = MPIDR_AFFLVL1_VAL(mpidr);
+	sc_rsrc_t boot_dev;
 #if DEBUG_CONSOLE
 	static console_lpuart_t console;
+
+	console_list = 0;
 #endif
 	if (sc_ipc_open(&ipc_handle, SC_IPC_BASE) != SC_ERR_NONE)
 		panic();
+
+	/* set primary CPU boot entry to BL31_BASE for partition reboot */
+	sc_misc_get_boot_dev(ipc_handle, &boot_dev);
+	sc_pm_set_boot_parm(ipc_handle, cluster_id == 0 ? SC_R_A53_0 : SC_R_A72_0,
+		BL31_BASE, SC_R_MU_0A, boot_dev);
 
 #if DEBUG_CONSOLE_A53
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_UART_0, SC_PM_PW_MODE_ON);
