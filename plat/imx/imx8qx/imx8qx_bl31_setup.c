@@ -206,7 +206,11 @@ void imx8_partition_resources(void)
 			} else {
 				NOTICE("Memreg %u 0x%llx -- 0x%llx\n", mr, start, end);
 
+#ifdef SPL_IN_DRAM
+				if (SPL_LOAD_BASE >= start && (BL31_LIMIT - 1) <= end) {
+#else
 				if (BL31_BASE >= start && (BL31_LIMIT - 1) <= end) {
+#endif
 					mr_record = mr; /* Record the mr for ATF running */
 				}
 #ifdef TEE_IMX8
@@ -308,6 +312,18 @@ void imx8_partition_resources(void)
 			}
 #endif
 
+#ifdef SPL_IN_DRAM
+			if (start < (SPL_LOAD_BASE - 1)) {
+				err = sc_rm_memreg_alloc(ipc_handle, &mr, start, SPL_LOAD_BASE - 1);
+				if (err)
+					ERROR("sc_rm_memreg_alloc failed, 0x%llx -- 0x%llx\n",
+						start, (sc_faddr_t)SPL_LOAD_BASE - 1);
+				err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+				if (err)
+					ERROR("Memreg assign failed, 0x%llx -- 0x%llx\n",
+						start, (sc_faddr_t)SPL_LOAD_BASE - 1);
+			}
+#else
 			if (start < (BL31_BASE - 1)) {
 				err = sc_rm_memreg_alloc(ipc_handle, &mr, start, BL31_BASE - 1);
 				if (err)
@@ -318,6 +334,7 @@ void imx8_partition_resources(void)
 					ERROR("Memreg assign failed, 0x%llx -- 0x%llx\n",
 						start, (sc_faddr_t)BL31_BASE - 1);
 			}
+#endif
 		}
 	}
 
@@ -394,7 +411,11 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 
 	/* set primary CPU boot entry to BL31_BASE for partition reboot */
 	sc_misc_get_boot_dev(ipc_handle, &boot_dev);
+#ifdef SPL_IN_DRAM
+	sc_pm_set_boot_parm(ipc_handle, SC_R_A35_0, SPL_LOAD_BASE, SC_R_MU_0A, boot_dev);
+#else
 	sc_pm_set_boot_parm(ipc_handle, SC_R_A35_0, BL31_BASE, SC_R_MU_0A, boot_dev);
+#endif
 
 #if DEBUG_CONSOLE_A35
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_UART_0, SC_PM_PW_MODE_ON);
