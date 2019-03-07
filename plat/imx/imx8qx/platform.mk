@@ -41,3 +41,7 @@ MULTI_CONSOLE_API	:=	1
 ifneq (${SPD},none)
 $(eval $(call add_define,TEE_IMX8))
 endif
+
+ifeq (${SPL_IN_DRAM},1)
+$(eval $(call add_define,SPL_IN_DRAM))
+endif
