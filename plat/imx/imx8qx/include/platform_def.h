@@ -33,14 +33,8 @@
 #define PLAT_MU_COLD_BOOT_FLG_MSK	0x40000000
 #define PLAT_BOOT_MU_BASE		0x5D1B0000
 
-#ifdef SPL_IN_DRAM
-#define BL31_BASE			0x80040000
-#define BL31_LIMIT			0x80060000
-#define SPL_LOAD_BASE			0x80000000
-#else
 #define BL31_BASE			0x80000000
 #define BL31_LIMIT			0x80020000
-#endif
 
 #ifdef TEE_IMX8
 #define BL32_BASE			0xfe000000
@@ -84,11 +78,7 @@
 #define COUNTER_FREQUENCY		8000000
 
 /* non-secure u-boot base */
-#ifdef SPL_IN_DRAM
-#define PLAT_NS_IMAGE_OFFSET		0x80060000
-#else
 #define PLAT_NS_IMAGE_OFFSET		0x80020000
-#endif
 
 /* enable it to make debug message to SC console */
 #define SC_CONSOLE			0
