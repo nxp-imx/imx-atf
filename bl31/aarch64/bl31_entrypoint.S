@@ -23,6 +23,7 @@
 func bl31_entrypoint
 #ifdef PLAT_imx8qm
 	ldr    x1, stm
+	ldr    w0, =0x80000000
 	str    w0, [x1]
 	str    w0, [x1]
 	str    w0, [x1]
