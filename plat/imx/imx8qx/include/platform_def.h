@@ -36,10 +36,6 @@
 #define BL31_BASE			0x80000000
 #define BL31_LIMIT			0x80020000
 
-#ifdef IMX_CAR
-#define SPL_BASE			0x0
-#endif
-
 #ifdef TEE_IMX8
 #define BL32_BASE			0xfe000000
 #define BL32_SIZE			0x02000000
