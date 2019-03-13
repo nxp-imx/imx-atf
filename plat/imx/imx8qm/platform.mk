@@ -49,7 +49,3 @@ ERRATA_A53_855873	:=	1
 ifneq (${SPD},none)
 $(eval $(call add_define,TEE_IMX8))
 endif
-
-ifeq (${IMX_CAR},1)
-$(eval $(call add_define,IMX_CAR))
-endif
