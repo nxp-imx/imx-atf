@@ -405,9 +405,6 @@ void mx8_partition_resources(void)
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 				u_register_t arg2, u_register_t arg3)
 {
-	u_register_t mpidr = read_mpidr_el1();
-	unsigned int cluster_id = MPIDR_AFFLVL1_VAL(mpidr);
-	sc_rsrc_t boot_dev;
 #if DEBUG_CONSOLE
 	static console_lpuart_t console;
 
@@ -415,11 +412,6 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 #endif
 	if (sc_ipc_open(&ipc_handle, SC_IPC_BASE) != SC_ERR_NONE)
 		panic();
-
-	/* set primary CPU boot entry to BL31_BASE for partition reboot */
-	sc_misc_get_boot_dev(ipc_handle, &boot_dev);
-	sc_pm_set_boot_parm(ipc_handle, cluster_id == 0 ? SC_R_A53_0 : SC_R_A72_0,
-		BL31_BASE, SC_R_MU_0A, boot_dev);
 
 #if DEBUG_CONSOLE_A53
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_UART_0, SC_PM_PW_MODE_ON);
