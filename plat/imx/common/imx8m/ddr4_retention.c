@@ -1,7 +1,7 @@
 /*
- * copyright 2018 nxp
+ * Copyright 2017-2019 NXP
  *
- * spdx-license-identifier: bsd-3-clause
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <arch.h>
