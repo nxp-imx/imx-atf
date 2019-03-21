@@ -144,6 +144,7 @@ void ddr4_exit_retention(void)
 	mmio_clrbits_32(DDRC_DFIMISC(0), 1);
 	mmio_write_32(SRC_DDRC_RCR_ADDR, 0x8F000004);
 	mmio_write_32(SRC_DDRC_RCR_ADDR, 0x8F000000); /* release all reset */
+	mmio_write_32(DDRC_DBG1(0), 0x00000000);
 
 	/* restore the ddr phy config */
 	dram_phy_init();
