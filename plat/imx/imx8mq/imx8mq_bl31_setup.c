@@ -85,6 +85,14 @@ static struct rdc_mda_conf masters_config[] = {
 };
 #endif
 
+#ifdef SPD_trusty
+#define AIY_MICRON_3G          0x1
+#define AIY_MICRON_1G          0x5
+#define AIY_HYNIX_1G           0x3
+
+int get_imx8m_baseboard_id(void);
+unsigned long tee_base_address;
+#endif
 
 /* set RDC settings */
 static void bl31_imx_rdc_setup(void)
@@ -209,6 +217,20 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	static console_uart_t console;
 #endif
 	uint32_t sm_cmd;
+
+
+#ifdef SPD_trusty
+	int board_id;
+
+	board_id = get_imx8m_baseboard_id();
+	if (board_id == AIY_MICRON_1G ||
+			board_id == AIY_HYNIX_1G) {
+		tee_base_address = (unsigned long)0x7e000000;
+	} else {
+		tee_base_address = (unsigned long)0xfe000000;
+	}
+#endif
+
 #if !defined (CSU_RDC_TEST)
 	int i;
 	/* enable CSU NS access permission */
@@ -305,6 +327,8 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 #ifdef SPD_trusty
 	bl32_image_ep_info.args.arg0 = BL32_SIZE;
 	bl32_image_ep_info.args.arg1 = BL32_BASE;
+	/* Pass TEE base and size to uboot */
+	bl33_image_ep_info.args.arg1 = BL32_BASE;
 #else
 	/* Pass TEE base and size to uboot */
 	bl33_image_ep_info.args.arg1 = 0xFE000000;
