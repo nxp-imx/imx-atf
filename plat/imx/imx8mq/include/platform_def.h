@@ -31,10 +31,13 @@
 
 #define BL31_BASE			0x910000
 #define BL31_LIMIT			0x920000
-#define BL32_BASE			0xfe000000
+
 #ifdef SPD_trusty
 #define BL32_SIZE			0x02000000
 #define BL32_LIMIT			0x100000000
+#define BL32_BASE			tee_base_address
+#else
+#define BL32_BASE			0xfe000000
 #endif
 
 /* non-secure uboot base */
