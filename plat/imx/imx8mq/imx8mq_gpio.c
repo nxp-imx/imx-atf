@@ -1,6 +1,7 @@
 /*
  * Copyright 2019 NXP
  *
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <mmio.h>
@@ -49,7 +50,7 @@ static int gpio_direction_input_legacy(unsigned int gpio)
 	return 0;
 }
 
-static int gpio_get_value_legacy(unsigned gpio)
+static unsigned int gpio_get_value_legacy(unsigned gpio)
 {
 	unsigned int port;
 	struct gpio_regs *regs;
@@ -65,8 +66,8 @@ static int gpio_get_value_legacy(unsigned gpio)
 
 int get_imx8m_baseboard_id(void)
 {
-	int  i = 0, value = 0;
-	int baseboard_id;
+	unsigned int value = 0;
+	int  i = 0, baseboard_id = 0;
 	int pin[3];
 
 	/* initialize the pin array */
@@ -78,10 +79,8 @@ int get_imx8m_baseboard_id(void)
 	baseboard_id = 0;
 	for (i = 0; i < 3; i++) {
 		gpio_direction_input_legacy(pin[i]);
-		if ((value = gpio_get_value_legacy(pin[i])) < 0) {
-			return -1;
-		} else
-			baseboard_id |= ((value & 0x01) << i);
+		value = gpio_get_value_legacy(pin[i]);
+		baseboard_id |= ((value & 0x01) << i);
 	}
 
 	return baseboard_id;
