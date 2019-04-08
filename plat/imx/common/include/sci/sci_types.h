@@ -27,6 +27,7 @@
 /*@{*/
 #define SC_32KHZ            32768U   /* 32KHz */
 #define SC_10MHZ         10000000U   /* 10MHz */
+#define SC_16MHZ         16000000U   /* 16MHz */
 #define SC_20MHZ         20000000U   /* 20MHz */
 #define SC_25MHZ         25000000U   /* 25MHz */
 #define SC_27MHZ         27000000U   /* 27MHz */
@@ -206,7 +207,7 @@
 #define SC_R_DC_0_BLIT2           21U
 #define SC_R_DC_0_BLIT_OUT        22U
 #define SC_R_PERF                 23U
-#define SC_R_UNUSED5              24U
+#define SC_R_USB_1_PHY            24U
 #define SC_R_DC_0_WARP            25U
 #define SC_R_UNUSED7              26U
 #define SC_R_UNUSED8              27U
@@ -732,10 +733,16 @@
 #define SC_R_ALL                  ((sc_rsrc_t) UINT16_MAX)  /* All resources */
 /*@}*/
 
+/*!
+ * Define for ATF/Linux. Not used by SCFW. Not a valid parameter
+ * for any SCFW API calls!
+ */
+#define SC_R_NONE                 0xFFF0U
+
 /* NOTE - please add by replacing some of the UNUSED from above! */
 
 /*!
- * Defnes for sc_ctrl_t.
+ * Defines for sc_ctrl_t.
  */
 #define SC_C_TEMP                       0U
 #define SC_C_TEMP_HI                    1U
