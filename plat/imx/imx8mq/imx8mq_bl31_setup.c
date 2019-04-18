@@ -173,6 +173,9 @@ static uint32_t get_spsr_for_bl33_entry(void)
 
 #define GPR_TZASC_EN		(1 << 0)
 #define GPR_TZASC_EN_LOCK	(1 << 16)
+
+#define SNVS_HPCOMR             0x04
+#define SNVS_NPSWA_EN           (1 << 31)
 unsigned int freq;
 
 void system_counter_init(void)
@@ -191,6 +194,9 @@ void system_counter_init(void)
 void bl31_tzc380_setup(void)
 {
 	unsigned int val;
+
+	val = mmio_read_32(IMX_SNVS_BASE + SNVS_HPCOMR);
+	mmio_write_32(IMX_SNVS_BASE + SNVS_HPCOMR, val | SNVS_NPSWA_EN);
 
 	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x28);
 	if ((val & GPR_TZASC_EN) != GPR_TZASC_EN)
