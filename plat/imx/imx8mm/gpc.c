@@ -206,7 +206,6 @@ static struct imx_pwr_domain pu_domains[] = {
 	IMX_MIX_DOMAIN(GPU3D),
 };
 
-static uint32_t gpc_wake_irqs[4] = { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, };
 static uint32_t gpc_imr_offset[] = { 0x30, 0x40, 0x1c0, 0x1d0, };
 /* save gic dist&redist context when NOC wrapper is power down */
 static struct plat_gic_ctx imx_gicv3_ctx;
@@ -663,7 +662,7 @@ void imx_set_sys_wakeup(int last_core, bool pdn)
 	/* clear last core's IMR based on GIC's mask setting */
 	for (int i = 0; i < 4; i++) {
 		if (pdn)
-			irq_mask = ~dist_ctx->gicd_isenabler[i] | gpc_wake_irqs[i];
+			irq_mask = ~dist_ctx->gicd_isenabler[i];
 		else
 			irq_mask = IMR_MASK_ALL;
 
@@ -677,16 +676,6 @@ void imx_set_sys_wakeup(int last_core, bool pdn)
 		val &= ~(1 << 24);
 		mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + 0x8, val);
 	}
-}
-
-static void imx_gpc_set_wake_irq(uint32_t hwirq, uint32_t on)
-{
-	uint32_t mask, idx;
-
-	mask = 1 << hwirq % 32;
-	idx = hwirq / 32;
-	gpc_wake_irqs[idx] = on ? gpc_wake_irqs[idx] & ~mask :
-				 gpc_wake_irqs[idx] | mask;
 }
 
 #define GPU_RCR		0x40
@@ -1028,9 +1017,6 @@ int imx_gpc_handler(uint32_t smc_fid,
 	switch(x1) {
 	case FSL_SIP_CONFIG_GPC_PM_DOMAIN:
 		imx_gpc_pm_domain_enable(x2, x3);
-		break;
-	case FSL_SIP_CONFIG_GPC_SET_WAKE:
-		imx_gpc_set_wake_irq(x2, x3);
 		break;
 	default:
 		return SMC_UNK;
