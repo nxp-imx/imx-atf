@@ -762,8 +762,11 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 			/* wait for power request done */
 			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG) & pwr_domain->pwr_req);
 
-			if (domain_id == VPU_G1 || domain_id == VPU_G2 || domain_id == VPU_H1)
+			if (domain_id == VPU_G1 || domain_id == VPU_G2 || domain_id == VPU_H1) {
 				vpu_sft_reset_deassert(domain_id);
+				/* dealy for a while to make sure reset done */
+				udelay(100);
+			}
 		}
 
 		if (domain_id == GPUMIX) {
