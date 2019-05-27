@@ -86,6 +86,14 @@
 static bool is_pcie1_power_down = true;
 static uint32_t gpc_saved_imrs[16];
 static uint32_t gpc_wake_irqs[4];
+static uint32_t gpc_imr_offset[] = {
+	IMX_GPC_BASE + GPC_IMR1_CORE0_A53,
+	IMX_GPC_BASE + GPC_IMR1_CORE1_A53,
+	IMX_GPC_BASE + GPC_IMR1_CORE2_A53,
+	IMX_GPC_BASE + GPC_IMR1_CORE3_A53,
+	IMX_GPC_BASE + GPC_IMR1_CORE0_M4,
+};
+
 static uint32_t gpc_pu_m_core_offset[11] = {
 	0xc00, 0xc40, 0xc80, 0xcc0,
 	0xdc0, 0xe00, 0xe40, 0xe80,
@@ -217,26 +225,19 @@ void imx_set_cpu_lpm(int core_id, bool pdn)
  */
 void inline imx_set_lpm_wakeup(bool pdn)
 {
-	unsigned int i;
+	unsigned int i, j;
 
 	if (pdn) {
 		for (i = 0; i < 4; i++) {
-			gpc_saved_imrs[i] = mmio_read_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + i * 4);
-			gpc_saved_imrs[i + 4] = mmio_read_32(IMX_GPC_BASE + GPC_IMR1_CORE1_A53 + i * 4);
-			gpc_saved_imrs[i + 8] = mmio_read_32(IMX_GPC_BASE + GPC_IMR1_CORE2_A53 + i * 4);
-			gpc_saved_imrs[i + 12] = mmio_read_32(IMX_GPC_BASE + GPC_IMR1_CORE3_A53 + i * 4);
-			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + i * 4, ~gpc_wake_irqs[i]);
-			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE1_A53 + i * 4, ~gpc_wake_irqs[i]);
-			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE2_A53 + i * 4, ~gpc_wake_irqs[i]);
-			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE3_A53 + i * 4, ~gpc_wake_irqs[i]);
+			for (j = 0; j < 4; j++) {
+				gpc_saved_imrs[i + j * 4] = mmio_read_32(gpc_imr_offset[j] + i * 4);
+				mmio_write_32(gpc_imr_offset[j] + i * 4, ~gpc_wake_irqs[i]);
+			}
 		}
 	} else {
-		for (i = 0; i < 4; i++) { 
-			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + i * 4, gpc_saved_imrs[i]);
-			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE1_A53 + i * 4, gpc_saved_imrs[i + 4]);
-			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE2_A53 + i * 4, gpc_saved_imrs[i + 8]);
-			mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE3_A53 + i * 4, gpc_saved_imrs[i + 12]);
-		}
+		for (i = 0; i < 4; i++)
+			for (j = 0; j < 4; j++)
+				mmio_write_32(gpc_imr_offset[j] + i * 4, gpc_saved_imrs[i +j * 4]);
 	}
 }
 
@@ -481,7 +482,7 @@ static void imx_gpc_hwirq_mask(unsigned int hwirq)
 	uintptr_t reg;
 	unsigned int val;
 
-	reg = IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + (hwirq / 32) * 4;
+	reg = gpc_imr_offset[0] + (hwirq / 32) * 4;
 	val = mmio_read_32(reg);
 	val |= 1 << hwirq % 32;
 	mmio_write_32(reg, val);
@@ -492,7 +493,7 @@ static void imx_gpc_hwirq_unmask(unsigned int hwirq)
 	uintptr_t reg;
 	unsigned int val;
 
-	reg = IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + (hwirq / 32) * 4;
+	reg = gpc_imr_offset[0] + (hwirq / 32) * 4;
 	val = mmio_read_32(reg);
 	val &= ~(1 << hwirq % 32);
 	mmio_write_32(reg, val);
@@ -508,11 +509,8 @@ static void imx_gpc_set_wake(uint32_t hwirq, unsigned int on)
 				 gpc_wake_irqs[idx] & ~mask;
 }
 
-static uint32_t mask_offset[] = {0x30, 0x40, 0x1c0, 0x1d0,};
 static void imx_gpc_set_affinity(uint32_t hwirq, unsigned cpu_idx)
 {
-	uint32_t offset = mask_offset[cpu_idx];
-
 	uintptr_t reg;
 	unsigned int val;
 
@@ -520,7 +518,7 @@ static void imx_gpc_set_affinity(uint32_t hwirq, unsigned cpu_idx)
 	 * using the mask/unmask bit as affinity function.unmask the
 	 * IMR bit to enable IRQ wakeup for this core.
 	 */
-	reg = IMX_GPC_BASE + offset + (hwirq / 32) * 4;
+	reg = gpc_imr_offset[cpu_idx] + (hwirq / 32) * 4;
 	val = mmio_read_32(reg);
 	val &= ~(1 << hwirq % 32);
 	mmio_write_32(reg, val);
@@ -528,9 +526,10 @@ static void imx_gpc_set_affinity(uint32_t hwirq, unsigned cpu_idx)
 	/* clear affinity of other core */
 	for (int i = 0; i < 4; i++) {
 		if (cpu_idx != i) {
-			val = mmio_read_32(IMX_GPC_BASE + mask_offset[i] + (hwirq / 32) * 4);
+			reg = gpc_imr_offset[i] + (hwirq / 32) * 4;
+			val = mmio_read_32(reg);
 			val |= (1 << hwirq % 32);
-			mmio_write_32(IMX_GPC_BASE + mask_offset[i] + (hwirq / 32) * 4, val);
+			mmio_write_32(reg, val);
 		}
 	}
 }
@@ -588,24 +587,19 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 void imx_gpc_init(void)
 {
 	unsigned int val;
-	int i;
+	int i, j;
+
 	/* mask all the interrupt by default */
-	for (i = 0; i < 4; i ++) {
-		mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + i * 4, ~0x0);
-		mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE1_A53 + i * 4, ~0x0);
-		mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE2_A53 + i * 4, ~0x0);
-		mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE3_A53 + i * 4, ~0x0);
-		mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_M4 + i * 4, ~0x0);
-	}
+	for (i = 0; i < 4; i++)
+		for (j = 0; j < 5; j++)
+			mmio_write_32(gpc_imr_offset[j] + i * 4, ~0x0);
 
 	/* Due to the hardware design requirement, need to make
 	 * sure GPR interrupt(#32) is unmasked during RUN mode to
 	 * avoid entering DSM mode by mistake.
 	 */
-	mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53, ~0x1);
-	mmio_write_32(IMX_GPC_BASE + 0x40,  ~0x1);
-	mmio_write_32(IMX_GPC_BASE + 0x1c0, ~0x1);
-	mmio_write_32(IMX_GPC_BASE + 0x1d0, ~0x1);
+	for (i = 0; i < 4; i ++)
+		mmio_write_32(gpc_imr_offset[i], ~0x1);
 
 	/* use external IRQs to wakeup C0~C3 from LPM */
 	val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
