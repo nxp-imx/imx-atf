@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <spinlock.h>
 #include <runtime_svc.h>
 #include <std_svc.h>
 #include <mmio.h>
@@ -99,6 +100,18 @@ static uint32_t gpc_pu_m_core_offset[11] = {
 	0xdc0, 0xe00, 0xe40, 0xe80,
 	0xec0, 0xf00, 0xf40,
 };
+
+spinlock_t gpc_imr_lock[4];
+
+static void gpc_imr_core_spin_lock(unsigned int core_id)
+{
+	spin_lock(&gpc_imr_lock[core_id]);
+}
+
+static void gpc_imr_core_spin_unlock(unsigned int core_id)
+{
+	spin_unlock(&gpc_imr_lock[core_id]);
+}
 
 void imx_gpc_set_m_core_pgc(unsigned int offset, bool pdn)
 {
@@ -214,6 +227,30 @@ void imx_set_cpu_lpm(int core_id, bool pdn)
 	}
 }
 
+static void gpc_save_imr_lpm(unsigned int core_id, unsigned int imr_idx)
+{
+	uint32_t reg = gpc_imr_offset[core_id] + imr_idx * 4;
+
+	gpc_imr_core_spin_lock(core_id);
+
+	gpc_saved_imrs[core_id + imr_idx] = mmio_read_32(reg);
+	mmio_write_32(reg, ~gpc_wake_irqs[imr_idx]);
+
+	gpc_imr_core_spin_unlock(core_id);
+}
+
+static void gpc_restore_imr_lpm(unsigned int core_id, unsigned int imr_idx)
+{
+	uint32_t reg = gpc_imr_offset[core_id] + imr_idx * 4;
+	uint32_t val = gpc_saved_imrs[imr_idx + (core_id * 4)];
+
+	gpc_imr_core_spin_lock(core_id);
+
+	mmio_write_32(reg, val);
+
+	gpc_imr_core_spin_unlock(core_id);
+}
+
 /*
  * On i.MX8MQ, only in system suspend mode, the A53 cluster can
  * enter LPM mode and shutdown the A53 PLAT power domain. So LPM
@@ -225,20 +262,16 @@ void imx_set_cpu_lpm(int core_id, bool pdn)
  */
 void inline imx_set_lpm_wakeup(bool pdn)
 {
-	unsigned int i, j;
+	unsigned int imr, core;
 
-	if (pdn) {
-		for (i = 0; i < 4; i++) {
-			for (j = 0; j < 4; j++) {
-				gpc_saved_imrs[i + j * 4] = mmio_read_32(gpc_imr_offset[j] + i * 4);
-				mmio_write_32(gpc_imr_offset[j] + i * 4, ~gpc_wake_irqs[i]);
-			}
-		}
-	} else {
-		for (i = 0; i < 4; i++)
-			for (j = 0; j < 4; j++)
-				mmio_write_32(gpc_imr_offset[j] + i * 4, gpc_saved_imrs[i +j * 4]);
-	}
+	if (pdn)
+		for (imr = 0; imr < 4; imr++)
+			for (core = 0; core < 4; core++)
+				gpc_save_imr_lpm(core, imr);
+	else
+		for (imr = 0; imr < 4; imr++)
+			for (core = 0; core < 4; core++)
+				gpc_restore_imr_lpm(core, imr);
 }
 
 /* SLOT 0 is used for A53 PLAT poewr down */
@@ -482,10 +515,12 @@ static void imx_gpc_hwirq_mask(unsigned int hwirq)
 	uintptr_t reg;
 	unsigned int val;
 
+	gpc_imr_core_spin_lock(0);
 	reg = gpc_imr_offset[0] + (hwirq / 32) * 4;
 	val = mmio_read_32(reg);
 	val |= 1 << hwirq % 32;
 	mmio_write_32(reg, val);
+	gpc_imr_core_spin_unlock(0);
 }
 
 static void imx_gpc_hwirq_unmask(unsigned int hwirq)
@@ -493,10 +528,12 @@ static void imx_gpc_hwirq_unmask(unsigned int hwirq)
 	uintptr_t reg;
 	unsigned int val;
 
+	gpc_imr_core_spin_lock(0);
 	reg = gpc_imr_offset[0] + (hwirq / 32) * 4;
 	val = mmio_read_32(reg);
 	val &= ~(1 << hwirq % 32);
 	mmio_write_32(reg, val);
+	gpc_imr_core_spin_unlock(0);
 }
 
 static void imx_gpc_set_wake(uint32_t hwirq, unsigned int on)
@@ -518,18 +555,22 @@ static void imx_gpc_set_affinity(uint32_t hwirq, unsigned cpu_idx)
 	 * using the mask/unmask bit as affinity function.unmask the
 	 * IMR bit to enable IRQ wakeup for this core.
 	 */
+	gpc_imr_core_spin_lock(cpu_idx);
 	reg = gpc_imr_offset[cpu_idx] + (hwirq / 32) * 4;
 	val = mmio_read_32(reg);
 	val &= ~(1 << hwirq % 32);
 	mmio_write_32(reg, val);
+	gpc_imr_core_spin_unlock(cpu_idx);
 
 	/* clear affinity of other core */
 	for (int i = 0; i < 4; i++) {
 		if (cpu_idx != i) {
+			gpc_imr_core_spin_lock(i);
 			reg = gpc_imr_offset[i] + (hwirq / 32) * 4;
 			val = mmio_read_32(reg);
 			val |= (1 << hwirq % 32);
 			mmio_write_32(reg, val);
+			gpc_imr_core_spin_unlock(i);
 		}
 	}
 }
@@ -598,7 +639,7 @@ void imx_gpc_init(void)
 	 * sure GPR interrupt(#32) is unmasked during RUN mode to
 	 * avoid entering DSM mode by mistake.
 	 */
-	for (i = 0; i < 4; i ++)
+	for (i = 0; i < 4; i++)
 		mmio_write_32(gpc_imr_offset[i], ~0x1);
 
 	/* use external IRQs to wakeup C0~C3 from LPM */
