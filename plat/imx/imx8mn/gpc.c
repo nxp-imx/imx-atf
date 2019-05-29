@@ -174,8 +174,7 @@ static unsigned int pu_domain_status;
 
 bool imx_is_m4_enabled(void)
 {
-	return !( mmio_read_32(IMX_SRC_BASE + M4RCR)
-		& SRC_SCR_M4C_NON_SCLR_RST_MASK);
+	return !( mmio_read_32(IMX_IOMUX_GPR_BASE + 0x58) & 0x1);
 }
 
 #define M4_LPA_ACTIVE	0x5555
