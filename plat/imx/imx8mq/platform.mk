@@ -46,6 +46,7 @@ RESET_TO_BL31		:=	1
 ERROR_DEPRECATED	:=	1
 XLAT_TABLE_IN_OCRAM_S	:=	1
 STACK_IN_OCRAM_S       :=      1
+WARMBOOT_ENABLE_DCACHE_EARLY:=	1
 ifneq (${SPD},none)
 $(eval $(call add_define,TEE_IMX8))
 endif
