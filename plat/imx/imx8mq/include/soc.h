@@ -8,6 +8,10 @@
 #define __IMX_SOC_H
 
 void imx_gpc_set_m_core_pgc(unsigned int cpu, bool pdn);
+#if defined(PLAT_IMX8M)
+void imx_gpc_set_a53_core_awake(uint32_t core_id);
+void imx_gpc_core_wake(uint32_t cpumask);
+#endif
 void imx_anamix_pre_suspend(void);
 void imx_anamix_post_resume(void);
 void imx_gpc_init(void);

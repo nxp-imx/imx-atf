@@ -233,7 +233,7 @@ static void gpc_save_imr_lpm(unsigned int core_id, unsigned int imr_idx)
 
 	gpc_imr_core_spin_lock(core_id);
 
-	gpc_saved_imrs[core_id + imr_idx] = mmio_read_32(reg);
+	gpc_saved_imrs[core_id + imr_idx * 4] = mmio_read_32(reg);
 	mmio_write_32(reg, ~gpc_wake_irqs[imr_idx]);
 
 	gpc_imr_core_spin_unlock(core_id);
@@ -242,7 +242,7 @@ static void gpc_save_imr_lpm(unsigned int core_id, unsigned int imr_idx)
 static void gpc_restore_imr_lpm(unsigned int core_id, unsigned int imr_idx)
 {
 	uint32_t reg = gpc_imr_offset[core_id] + imr_idx * 4;
-	uint32_t val = gpc_saved_imrs[imr_idx + (core_id * 4)];
+	uint32_t val = gpc_saved_imrs[core_id + imr_idx * 4];
 
 	gpc_imr_core_spin_lock(core_id);
 
@@ -546,6 +546,29 @@ static void imx_gpc_set_wake(uint32_t hwirq, unsigned int on)
 				 gpc_wake_irqs[idx] & ~mask;
 }
 
+static void imx_gpc_mask_irq0(uint32_t core_id, uint32_t mask)
+{
+	gpc_imr_core_spin_lock(core_id);
+	if (mask)
+		mmio_setbits_32(gpc_imr_offset[core_id], 1);
+	else
+		mmio_clrbits_32(gpc_imr_offset[core_id], 1);
+	dsb();
+	gpc_imr_core_spin_unlock(core_id);
+}
+
+void imx_gpc_core_wake(uint32_t cpumask)
+{
+	for (int i = 0; i < 4; i++)
+		if (cpumask & (1 << i))
+			imx_gpc_mask_irq0(i, false);
+}
+
+void imx_gpc_set_a53_core_awake(uint32_t core_id)
+{
+	imx_gpc_mask_irq0(core_id, true);
+}
+
 static void imx_gpc_set_affinity(uint32_t hwirq, unsigned cpu_idx)
 {
 	uintptr_t reg;
@@ -642,6 +665,9 @@ void imx_gpc_init(void)
 	for (i = 0; i < 4; i++)
 		mmio_write_32(gpc_imr_offset[i], ~0x1);
 
+	/* leave the IOMUX_GPC bit 12 on for core wakeup */
+	mmio_setbits_32(IMX_IOMUX_GPR_BASE + 0x4, 1 << 12);
+
 	/* use external IRQs to wakeup C0~C3 from LPM */
 	val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
 	val |= 0x40000000;
@@ -697,6 +723,9 @@ int imx_gpc_handler(uint32_t smc_fid,
 		    u_register_t x3)
 {
 	switch(x1) {
+	case FSL_SIP_CONFIG_GPC_CORE_WAKE:
+		imx_gpc_core_wake(x2);
+		break;
 	case FSL_SIP_CONFIG_GPC_SET_WAKE:
 		imx_gpc_set_wake(x2, x3);
 		break;
