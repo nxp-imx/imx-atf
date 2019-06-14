@@ -255,17 +255,16 @@ int dram_dvfs_handler(uint32_t smc_fid,
 
 		/* make sure all the core in WFE */
 		online_cores &= ~(0x1 << (cpu_id * 8));
-#if defined(PLAT_IMX8M)
-		for (int i = 0; i < 4; i++) {
-			if (i != cpu_id && online_cores & (1 << (i * 8))) {
-				imx_gpc_core_wake(1 << i);
-			}
-		}
-#endif
 		while (1) {
+#if defined(PLAT_IMX8M)
+			mmio_write_32(0x30340004, mmio_read_32(0x30340004) | (1 << 12));
+#endif
 			if (online_cores == wfe_done)
 				break;
 		}
+#if defined(PLAT_IMX8M)
+		mmio_write_32(0x30340004, mmio_read_32(0x30340004) & ~(1 << 12));
+#endif
 
 		/* flush the L1/L2 cache */
 		dcsw_op_all(DCCSW);
