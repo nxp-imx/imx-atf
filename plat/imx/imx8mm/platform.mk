@@ -70,3 +70,7 @@ ifneq (${DECODED_BUFFER_LEN},)
 $(eval $(call add_define,DECODED_BUFFER_LEN))
 endif
 endif
+
+ifeq (${USE_4G_DRAM},1)
+$(eval $(call add_define,USE_4G_DRAM))
+endif

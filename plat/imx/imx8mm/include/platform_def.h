@@ -36,7 +36,11 @@
 #define BL32_SIZE			0x02000000
 #define BL32_LIMIT			0xC0000000
 #endif
+#ifdef USE_4G_DRAM
+#define BL32_BASE			0xfe000000
+#else
 #define BL32_BASE			0xbe000000
+#endif
 
 /* non-secure uboot base */
 #define PLAT_NS_IMAGE_OFFSET		0x40200000
