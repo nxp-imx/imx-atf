@@ -233,7 +233,7 @@ static void gpc_save_imr_lpm(unsigned int core_id, unsigned int imr_idx)
 
 	gpc_imr_core_spin_lock(core_id);
 
-	gpc_saved_imrs[core_id + imr_idx * 4] = mmio_read_32(reg);
+	gpc_saved_imrs[core_id + imr_idx] = mmio_read_32(reg);
 	mmio_write_32(reg, ~gpc_wake_irqs[imr_idx]);
 
 	gpc_imr_core_spin_unlock(core_id);
@@ -242,7 +242,7 @@ static void gpc_save_imr_lpm(unsigned int core_id, unsigned int imr_idx)
 static void gpc_restore_imr_lpm(unsigned int core_id, unsigned int imr_idx)
 {
 	uint32_t reg = gpc_imr_offset[core_id] + imr_idx * 4;
-	uint32_t val = gpc_saved_imrs[core_id + imr_idx * 4];
+	uint32_t val = gpc_saved_imrs[imr_idx + (core_id * 4)];
 
 	gpc_imr_core_spin_lock(core_id);
 
