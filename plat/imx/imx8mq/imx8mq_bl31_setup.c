@@ -89,6 +89,7 @@ static struct rdc_mda_conf masters_config[] = {
 #define AIY_MICRON_3G          0x1
 #define AIY_MICRON_1G          0x5
 #define AIY_HYNIX_1G           0x3
+#define AIY_KINGSTON_2G        0x6
 
 int get_imx8m_baseboard_id(void);
 unsigned long tee_base_address;
@@ -195,7 +196,10 @@ void bl31_tzc380_setup(void)
 	if ((val & GPR_TZASC_EN) != GPR_TZASC_EN)
 		return;
 
+#ifndef SPD_trusty
+	/* Remove below log for trusty to save some memory. */
 	NOTICE("Configuring TZASC380\n");
+#endif
 
 	tzc380_init(IMX_TZASC_BASE);
 
@@ -226,6 +230,8 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	if (board_id == AIY_MICRON_1G ||
 			board_id == AIY_HYNIX_1G) {
 		tee_base_address = (unsigned long)0x7e000000;
+	} else if (board_id == AIY_KINGSTON_2G){
+		tee_base_address = (unsigned long)0xbe000000;
 	} else {
 		tee_base_address = (unsigned long)0xfe000000;
 	}
