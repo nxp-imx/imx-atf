@@ -818,11 +818,11 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 		}
 
 		if (domain_id == DISPMIX) {
-			/* special setting for DISPMIX */
-			mmio_write_32(0x303845d0, 0x3);
-			mmio_write_32(0x32e28004, 0x1fff);
-			mmio_write_32(0x32e28000, 0x7f);
-			mmio_write_32(0x32e28008, 0x30000);
+			/* de-reset bus_blk rstn and
+			 * enable bus_blk clk
+			 */
+			mmio_write_32(0x32e28000, 0x40);
+			mmio_write_32(0x32e28004, 0x1000);
 		}
 
 		/* handle the ADB400 sync */
@@ -918,6 +918,11 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 
 			/* wait for power request done */
 			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG) & GPU3D_PWR_REQ);
+		}
+
+		if (domain_id == DISPMIX) {
+			mmio_write_32(0x32e28000, 0x0);
+			mmio_write_32(0x32e28004, 0x0);
 		}
 
 		/* HSIOMIX has no PU bit, so skip for it */
