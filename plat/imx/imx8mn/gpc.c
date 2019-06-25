@@ -667,9 +667,11 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 		}
 
 		if (domain_id == DISPMIX) {
-			/* special setting for DISPMIX */
-			/* mmio_write_32(0x32e28000, 0x7f); */
-			mmio_write_32(0x32e28004, 0x1fff);
+			/* de-reset bus_blk clk and
+			 * enable bus_blk clk
+			 */
+			mmio_write_32(0x32e28000, 0x100);
+			mmio_write_32(0x32e28004, 0x100);
 		}
 
 		/* handle the ADB400 sync */
@@ -702,6 +704,11 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 			/* wait for adb power request ack */
 			while ((mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK) & pwr_domain->adb400_ack))
 				;
+		}
+
+		if (domain_id == DISPMIX) {
+			mmio_write_32(0x32e28000, 0x0);
+			mmio_write_32(0x32e28004, 0x0);
 		}
 
 		/* HSIOMIX has no PU bit, so skip for it */
