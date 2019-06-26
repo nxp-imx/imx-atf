@@ -462,7 +462,7 @@ void imx_set_rbc_count(void)
 
 	val = mmio_read_32(IMX_GPC_BASE + SLPCR);
 	val |= SLPCR_RBC_EN;
-	val |= (0x8 << SLPCR_RBC_SHIFT);
+	val |= (0xa << SLPCR_RBC_SHIFT);
 	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
 }
 
