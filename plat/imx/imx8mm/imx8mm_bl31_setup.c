@@ -79,6 +79,24 @@ static struct rdc_mda_conf masters_config[] = {
 };
 #endif
 
+static struct csu_sa_conf sa_configs[] = {
+	{CSU_SA_VPU, 0, 1},
+	{CSU_SA_GPU, 0, 1},
+	{CSU_SA_DCSS, 0, 1},
+	{CSU_SA_M4, 0, 1},
+	{CSU_SA_SDMA1, 0, 1},
+	{CSU_SA_CSI, 0, 1},
+	{CSU_SA_USB, 0, 1},
+	{CSU_SA_PCIE, 0, 1},
+	{CSU_SA_ENET, 0, 1},
+	{CSU_SA_USDHC1, 0, 1},
+	{CSU_SA_USDHC2, 0, 1},
+	{CSU_SA_DAP, 0, 1},
+};
+static struct csu_slave_conf csu_csl_conf[] = {
+	{CSU_CSLn_CAAM, CSU_SURW|CSU_SSRW, 1},
+};
+
 /* set RDC settings */
 static void bl31_imx_rdc_setup(void)
 {
@@ -263,6 +281,11 @@ static void imx8mm_aips_config(void)
 	mmio_write_32(0x32df0050, 0x0);
 }
 
+void bl31_setup_secure_policy() {
+	csu_set_slaves_modes(csu_csl_conf, (uint32_t)ARRAY_SIZE(csu_csl_conf));
+	csu_set_sa_configs(sa_configs, (uint32_t)ARRAY_SIZE(sa_configs));
+}
+
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		u_register_t arg2, u_register_t arg3)
 {
@@ -329,6 +352,8 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 #endif
 
 	bl31_imx_rdc_setup();
+
+	bl31_setup_secure_policy();
 
 }
 
