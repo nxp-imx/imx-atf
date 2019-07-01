@@ -459,7 +459,7 @@ void imx_set_rbc_count(void)
 
 	val = mmio_read_32(IMX_GPC_BASE + SLPCR);
 	val |= SLPCR_RBC_EN;
-	val |= (0x8 << SLPCR_RBC_SHIFT);
+	val |= (0xa << SLPCR_RBC_SHIFT);
 	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
 }
 
@@ -532,7 +532,6 @@ void imx_anamix_post_resume(void)
 #define GPR_TZASC_EN		(1 << 0)
 #define GPR_TZASC_EN_LOCK	(1 << 16)
 
-#if 0
 static void imx8mm_tz380_init(void)
 {
 	unsigned int val;
@@ -547,7 +546,6 @@ static void imx8mm_tz380_init(void)
 	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G)
 		| TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
 }
-#endif
 
 void noc_wrapper_pre_suspend(unsigned int proc_num)
 {
@@ -565,9 +563,9 @@ void noc_wrapper_pre_suspend(unsigned int proc_num)
 		mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
 
 		/* noc can only be power down when all the pu domain is off */
-	//	if (!pu_domain_status)
+		if (!pu_domain_status)
 			/* enable noc power down */
-	//		imx_noc_slot_config(true);
+			imx_noc_slot_config(true);
 	}
 	/*
 	 * gic redistributor context save must be called when
@@ -594,9 +592,9 @@ void noc_wrapper_post_resume(unsigned int proc_num)
 		/* noc can only be power down when all the pu domain is off */
 		if (!pu_domain_status) {
 			/* re-init the tz380 if resume from noc power down */
-		//	imx8mm_tz380_init();
+			imx8mm_tz380_init();
 			/* disable noc power down */
-		//	imx_noc_slot_config(false);
+			imx_noc_slot_config(false);
 		}
 	}
 	/* restore gic context */
@@ -666,9 +664,11 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 		}
 
 		if (domain_id == DISPMIX) {
-			/* special setting for DISPMIX */
-			/* mmio_write_32(0x32e28000, 0x7f); */
-			mmio_write_32(0x32e28004, 0x1fff);
+			/* de-reset bus_blk clk and
+			 * enable bus_blk clk
+			 */
+			mmio_write_32(0x32e28000, 0x100);
+			mmio_write_32(0x32e28004, 0x100);
 		}
 
 		/* handle the ADB400 sync */
@@ -701,6 +701,11 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 			/* wait for adb power request ack */
 			while ((mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK) & pwr_domain->adb400_ack))
 				;
+		}
+
+		if (domain_id == DISPMIX) {
+			mmio_write_32(0x32e28000, 0x0);
+			mmio_write_32(0x32e28004, 0x0);
 		}
 
 		/* HSIOMIX has no PU bit, so skip for it */
@@ -789,10 +794,12 @@ void imx_gpc_init(void)
 	 */
 	mmio_clrbits_32(IMX_SRC_BASE + 0x20, 0x1);
 
+#if 0
 	/* enable all power domain by default for bringup purpose */
 	mmio_write_32(0x303844f0, 0x3);
 	mmio_write_32(0x30384570, 0x3);
 	mmio_write_32(IMX_GPC_BASE + 0xf8, (1 << 10) | (1 << 7) | (1 << 2) | (1 << 0));
+#endif
 }
 
 int imx_gpc_handler(uint32_t smc_fid,
