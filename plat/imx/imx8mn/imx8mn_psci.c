@@ -13,6 +13,7 @@
 #include <psci.h>
 #include <mmio.h>
 #include <soc.h>
+#include <delay_timer.h>
 
 #define SNVS_LPCR	0x38
 
@@ -143,15 +144,16 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 		/* clear the system wakeup setting */
 		imx_set_sys_wakeup(core_id, false);
 		imx_anamix_post_resume();
-		imx_clear_rbc_count();
 		if (!imx_is_m4_enabled() || !imx_m4_lpa_active())
 			dram_exit_retention();
 		noc_wrapper_post_resume(core_id);
 	}
 
 	/* check the cluster level power status */
-	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state)))
+	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state))) {
+		imx_clear_rbc_count();
 		imx_set_cluster_powerdown(core_id, PSCI_LOCAL_STATE_RUN);
+	}
 
 	/* check the core level power status */
 	if (is_local_state_off(CORE_PWR_STATE(target_state))) {
@@ -207,8 +209,17 @@ void __dead2 imx_system_off(void)
 
 void __dead2 imx_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state)
 {
-	if (is_local_state_off(CLUSTER_PWR_STATE(target_state))) {
+	/*
+	 * before enter WAIT or STOP mode with PLAT(SCU) power down,
+	 * rbc count need to be enabled to make sure PLAT is
+	 * power down successfully even if the the wakeup IRQ is pending
+	 * early before the power down sequence. the RBC counter is
+	 * drived by the 32K OSC, so delay 30us to make sure the counter
+	 * is really running.
+	 */
+	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state))) {
 		imx_set_rbc_count();
+		udelay(30);
 	}
 
 	while (1)
