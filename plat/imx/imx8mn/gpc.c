@@ -683,8 +683,6 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 				;
 		}
 	} else {
-		return;
-
 		pu_domain_status &= ~(1 << domain_id);
 
 		if (domain_id == OTG1)
