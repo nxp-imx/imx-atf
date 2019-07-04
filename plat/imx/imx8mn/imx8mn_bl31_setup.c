@@ -203,6 +203,14 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	/* config the caam access permission */
 	imx8mn_caam_config();
 
+	/*
+	 * ROM enabled the RDC config for OCRAM space, just disable
+	 * it. it can be reconfigured based on the system requirement.
+	 */
+	mmio_write_32(IMX_RDC_BASE + 0x908, 0xff);
+	mmio_write_32(IMX_RDC_BASE + 0x918, 0xff);
+	mmio_write_32(IMX_RDC_BASE + 0x928, 0xff);
+
 #if DEBUG_CONSOLE
 	console_uart_register(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
 		IMX_CONSOLE_BAUDRATE, &console);
