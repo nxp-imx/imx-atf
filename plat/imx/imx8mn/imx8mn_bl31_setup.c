@@ -54,6 +54,8 @@ IMPORT_SYM(unsigned long, __RW_END__, BL31_RW_END);
 #define SMC_CMD_ALLOC_PAGE	0x01	/* allocate page to this partition */
 #define SMC_CMD_DEALLOC_PART	0x03	/* deallocate partition */
 
+#define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
+
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
 
@@ -230,6 +232,10 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	SET_SECURITY_STATE(bl32_image_ep_info.h.attr, SECURE);
 	bl32_image_ep_info.pc = BL32_BASE;
 	bl32_image_ep_info.spsr = 0;
+#ifdef SPD_trusty
+	bl32_image_ep_info.args.arg0 = BL32_SIZE;
+	bl32_image_ep_info.args.arg1 = BL32_BASE;
+#endif
 	/* Pass TEE base and size to uboot */
 	bl33_image_ep_info.args.arg1 = 0xBE000000;
 	bl33_image_ep_info.args.arg2 = 0x2000000;
@@ -260,6 +266,11 @@ void bl31_plat_arch_setup(void)
 	mmap_add_region(0x3c000000, 0x3c000000, 0x4000000, MT_DEVICE | MT_RW);
 
 	mmap_add_region(OCRAM_S_BASE, OCRAM_S_BASE, OCRAM_S_SIZE, MT_MEMORY | MT_RW);
+
+#ifdef SPD_trusty
+	mmap_add_region(BL32_BASE, BL32_BASE, BL32_SIZE, MT_MEMORY | MT_RW);
+#endif
+
 #if USE_COHERENT_MEM
 	mmap_add_region(BL31_COHERENT_RAM_BASE, BL31_COHERENT_RAM_BASE,
 		BL31_COHERENT_RAM_LIMIT - BL31_COHERENT_RAM_BASE,
@@ -313,3 +324,12 @@ void bl31_plat_runtime_setup(void)
 {
 	return;
 }
+
+#ifdef SPD_trusty
+void plat_trusty_set_boot_args(aapcs64_params_t *args)
+{
+	args->arg0 = BL32_SIZE;
+	args->arg1 = BL32_BASE;
+	args->arg2 = TRUSTY_PARAMS_LEN_BYTES;
+}
+#endif
