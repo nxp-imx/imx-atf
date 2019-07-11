@@ -194,7 +194,7 @@ void dram_info_init(unsigned long dram_timing_base)
 	} else if (ddr_type == DDRC_DDR4 && current_fsp != 0x0) {
 		/* flush the L1/L2 cache */
 		dcsw_op_all(DCCSW);
-#if defined(PLAT_IMX8MM)
+#if !defined(PLAT_IMX8M)
 		ddr4_swffc(&dram_info, 0x0);
 #endif
 	}
@@ -204,7 +204,7 @@ void dram_enter_retention(void)
 {
 	if (dram_info.dram_type == DDRC_LPDDR4)
 		lpddr4_enter_retention();
-#if defined(PLAT_IMX8MM)
+#if !defined(PLAT_IMX8M)
 	else if (dram_info.dram_type == DDRC_DDR4)
 		ddr4_enter_retention();
 #endif
@@ -214,7 +214,7 @@ void dram_exit_retention(void)
 {
 	if (dram_info.dram_type == DDRC_LPDDR4)
 		lpddr4_exit_retention();
-#if defined(PLAT_IMX8MM)
+#if !defined(PLAT_IMX8M)
 	else if (dram_info.dram_type == DDRC_DDR4)
 		ddr4_exit_retention();
 #endif
@@ -273,7 +273,7 @@ int dram_dvfs_handler(uint32_t smc_fid,
 			lpddr4_swffc(&dram_info, dev_fsp, target_freq, bypass_mode_supported);
 			dev_fsp = (~dev_fsp) & 0x1;
 		} else if (dram_info.dram_type == DDRC_DDR4) {
-#if defined(PLAT_IMX8MM)
+#if !defined(PLAT_IMX8M)
 			ddr4_swffc(&dram_info, target_freq);
 #endif
 		}
