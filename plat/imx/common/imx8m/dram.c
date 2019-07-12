@@ -228,6 +228,7 @@ int dram_dvfs_handler(uint32_t smc_fid,
 		/* set the WFE done status */
 		spin_lock(&dfs_lock);
 		wfe_done |= (1 << cpu_id * 8);
+		dsb();
 		spin_unlock(&dfs_lock);
 
 		while (1) {
@@ -239,6 +240,7 @@ int dram_dvfs_handler(uint32_t smc_fid,
 		}
 	} else {
 		wait_ddrc_hwffc_done = true;
+		dsb();
 		/* trigger the IRQ */
 		for (int i = 0; i < 4; i++) {
 			int irq = irqs_used[i] % 32;
