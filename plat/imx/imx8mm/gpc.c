@@ -587,6 +587,8 @@ static void imx8mm_tz380_init(void)
 	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G) | TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
 }
 
+#define CCGR(x)		(0x4000 + (x) * 16)
+
 void noc_wrapper_pre_suspend(unsigned int proc_num)
 {
 	uint32_t val;
@@ -603,9 +605,19 @@ void noc_wrapper_pre_suspend(unsigned int proc_num)
 		mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
 
 		/* noc can only be power down when all the pu domain is off */
-		if (!pu_domain_status)
+		if (!pu_domain_status) {
 			/* enable noc power down */
 			imx_noc_slot_config(true);
+
+			/*
+			 * below clocks must be enabled to make sure RDC MRCs
+			 * can be successfully reloaded.
+			 */
+			mmio_setbits_32(IMX_CCM_BASE + 0xa300, (0x1 << 28));
+			mmio_write_32(IMX_CCM_BASE + CCGR(5), 0x3);
+			mmio_write_32(IMX_CCM_BASE + CCGR(37), 0x3);
+			mmio_write_32(IMX_CCM_BASE + CCGR(87), 0x3);
+		}
 	}
 	/*
 	 * gic redistributor context save must be called when
