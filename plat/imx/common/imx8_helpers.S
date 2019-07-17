@@ -7,6 +7,7 @@
 #include <asm_macros.S>
 #include <platform_def.h>
 #include <cortex_a35.h>
+#include <cortex_a72.h>
 
 	.globl	plat_is_my_cpu_primary
 	.globl	plat_my_core_pos
@@ -84,6 +85,34 @@ func plat_calc_core_pos
 	add	x0, x1, x0, LSR #6
 	ret
 endfunc plat_calc_core_pos
+
+	/* ----------------------------------------------
+	 * function to handle platform specific reset.
+	 * ----------------------------------------------
+	 */
+func plat_reset_handler
+	/* enable EL2 cpuectlr RW access */
+	mov	x0, #0x73
+	msr	actlr_el3, x0
+	msr	actlr_el2, x0
+	isb
+	/* --------------------------------------------------------------------
+	 * Nothing to do on Cortex-A53.
+	 * --------------------------------------------------------------------
+	 */
+	jump_if_cpu_midr CORTEX_A72_MIDR, A72
+	ret
+
+A72:
+	/* --------------------------------------------------------------------
+	 * Cortex-A72 specific settings
+	 * --------------------------------------------------------------------
+	 */
+	mov	x0, #(CORTEX_A72_L2_DATA_RAM_LATENCY_3_CYCLES << CORTEX_A72_L2CTLR_DATA_RAM_LATENCY_SHIFT)
+	msr	CORTEX_A72_L2CTLR_EL1, x0
+	isb
+	ret
+endfunc plat_reset_handler
 
 	/* ---------------------------------------------
 	 * function to get the entrypoint.
