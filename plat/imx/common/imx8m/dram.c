@@ -9,6 +9,7 @@
 #include <dram.h>
 #include <mmio.h>
 #include <spinlock.h>
+#include <smccc.h>
 
 static struct dram_info dram_info;
 
@@ -224,7 +225,7 @@ int dram_dvfs_handler(uint32_t smc_fid,
 	unsigned int target_freq = x1;
 	uint32_t online_cores = x2;
 
-	if (target_freq == 0xf) {
+	if (x1 == 0xf) {
 		/* set the WFE done status */
 		spin_lock(&dfs_lock);
 		wfe_done |= (1 << cpu_id * 8);
@@ -238,7 +239,7 @@ int dram_dvfs_handler(uint32_t smc_fid,
 				break;
 			}
 		}
-	} else {
+	} else if (x1 < 4) {
 		wait_ddrc_hwffc_done = true;
 		dsb();
 		/* trigger the IRQ */
@@ -278,7 +279,9 @@ int dram_dvfs_handler(uint32_t smc_fid,
 		dsb();
 		sev();
 		isb();
+
+		return 0;
 	}
 
-	return 0;
+	return SMC_UNK;
 }
