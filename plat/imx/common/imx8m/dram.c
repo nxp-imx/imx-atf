@@ -10,6 +10,7 @@
 #include <mmio.h>
 #include <spinlock.h>
 #include <smccc.h>
+#include <imx_sip.h>
 
 static struct dram_info dram_info;
 
@@ -225,7 +226,7 @@ int dram_dvfs_handler(uint32_t smc_fid,
 	unsigned int target_freq = x1;
 	uint32_t online_cores = x2;
 
-	if (x1 == 0xf) {
+	if (x1 == IMX_SIP_DDR_DVFS_WAIT_CHANGE) {
 		/* set the WFE done status */
 		spin_lock(&dfs_lock);
 		wfe_done |= (1 << cpu_id * 8);
@@ -239,6 +240,17 @@ int dram_dvfs_handler(uint32_t smc_fid,
 				break;
 			}
 		}
+	} else if (x1 == IMX_SIP_DDR_DVFS_GET_FREQ_COUNT) {
+		int i;
+		for (i = 0; i < 4; ++i)
+			if (!dram_info.timing_info->fsp_table[i])
+				break;
+		return i;
+	} else if (x1 == IMX_SIP_DDR_DVFS_GET_FREQ_INFO) {
+		if (x2 < 4)
+			return dram_info.timing_info->fsp_table[x2];
+		else
+			return -3;
 	} else if (x1 < 4) {
 		wait_ddrc_hwffc_done = true;
 		dsb();
