@@ -587,6 +587,8 @@ static void imx8mm_tz380_init(void)
 	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G) | TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
 }
 
+#define CCGR(x)		(0x4000 + (x) * 16)
+
 void noc_wrapper_pre_suspend(unsigned int proc_num)
 {
 	uint32_t val;
@@ -603,9 +605,19 @@ void noc_wrapper_pre_suspend(unsigned int proc_num)
 		mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
 
 		/* noc can only be power down when all the pu domain is off */
-		if (!pu_domain_status)
+		if (!pu_domain_status) {
 			/* enable noc power down */
 			imx_noc_slot_config(true);
+
+			/*
+			 * below clocks must be enabled to make sure RDC MRCs
+			 * can be successfully reloaded.
+			 */
+			mmio_setbits_32(IMX_CCM_BASE + 0xa300, (0x1 << 28));
+			mmio_write_32(IMX_CCM_BASE + CCGR(5), 0x3);
+			mmio_write_32(IMX_CCM_BASE + CCGR(37), 0x3);
+			mmio_write_32(IMX_CCM_BASE + CCGR(87), 0x3);
+		}
 	}
 	/*
 	 * gic redistributor context save must be called when
@@ -971,16 +983,16 @@ void imx_gpc_init(void)
 
 	/*
 	 * Set the CORE & SCU power up timing:
-	 * SW = 0x1, SW2ISO = 0x1;
+	 * SW = 0x1, SW2ISO = 0x8;
 	 * the CPU CORE and SCU power up timming counter
 	 * is drived  by 32K OSC, each domain's power up
 	 * latency is (SW + SW2ISO) / 32768
 	 */
-	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(0) + 0x4, 0x81);
-	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(1) + 0x4, 0x81);
-	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(2) + 0x4, 0x81);
-	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(3) + 0x4, 0x81);
-	mmio_write_32(IMX_GPC_BASE + PLAT_PGC_PCR + 0x4, 0x81);
+	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(0) + 0x4, 0x401);
+	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(1) + 0x4, 0x401);
+	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(2) + 0x4, 0x401);
+	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(3) + 0x4, 0x401);
+	mmio_write_32(IMX_GPC_BASE + PLAT_PGC_PCR + 0x4, 0x401);
 	mmio_write_32(IMX_GPC_BASE + GPC_PGC_SCU_TIMMING,
 		      (0x59 << 10) | 0x5B | (0x2 << 20));
 
