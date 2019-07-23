@@ -99,7 +99,10 @@ unsigned long tee_base_address;
 static void bl31_imx_rdc_setup(void)
 {
 #ifdef RDC_DISABLED
+#ifndef SPD_trusty
+	/* Remove below log to save some memory for AIY. */
 	NOTICE("RDC off \n");
+#endif
 #else
 	struct imx_rdc_regs *imx_rdc = (struct imx_rdc_regs *)IMX_RDC_BASE;
 
