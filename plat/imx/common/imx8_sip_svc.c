@@ -35,7 +35,7 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 {
 	switch (smc_fid) {
 #if defined(PLAT_IMX8M) || defined(PLAT_IMX8MM) || defined(PLAT_IMX8MN)
-	case FSL_SIP_DDR_DVFS:
+	case IMX_SIP_DDR_DVFS:
 		SMC_RET1(handle, dram_dvfs_handler(smc_fid, x1, x2, x3));
 		break;
 	case  FSL_SIP_GPC:
