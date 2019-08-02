@@ -241,6 +241,11 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.args.arg2 = 0x2000000;
 #endif
 	bl31_tzc380_setup();
+
+	/* Assign M7 to domain 1 */
+	mmio_write_32(IMX_RDC_BASE + 0x204, 0x1);
+	mmio_write_32(IMX_RDC_BASE + 0x518, 0xfc);
+	mmio_write_32(IMX_RDC_BASE + 0x5A4, 0xf3);
 }
 
 void bl31_plat_arch_setup(void)
