@@ -10,8 +10,10 @@
 #include <mmio.h>
 #include <spinlock.h>
 #include <smccc.h>
+#include <smccc_helpers.h>
 #include <imx_sip.h>
 #include <interrupt_mgmt.h>
+#include <std_svc.h>
 
 static struct dram_info dram_info;
 
@@ -255,6 +257,7 @@ void dram_exit_retention(void)
 }
 
 int dram_dvfs_handler(uint32_t smc_fid,
+			void *handle,
 			u_register_t x1,
 			u_register_t x2,
 			u_register_t x3)
@@ -282,12 +285,13 @@ int dram_dvfs_handler(uint32_t smc_fid,
 		for (i = 0; i < 4; ++i)
 			if (!dram_info.timing_info->fsp_table[i])
 				break;
-		return i;
+		SMC_RET1(handle, i);
 	} else if (x1 == IMX_SIP_DDR_DVFS_GET_FREQ_INFO) {
-		if (x2 < 4)
-			return dram_info.timing_info->fsp_table[x2];
-		else
-			return -3;
+		if (x2 < 4) {
+			SMC_RET1(handle, dram_info.timing_info->fsp_table[x2]);
+		} else {
+			SMC_RET1(handle, -3);
+		}
 	} else if (x1 < 4) {
 		wait_ddrc_hwffc_done = true;
 		dsb();
@@ -326,8 +330,8 @@ int dram_dvfs_handler(uint32_t smc_fid,
 		sev();
 		isb();
 
-		return 0;
+		SMC_RET1(handle, 0);
 	}
 
-	return SMC_UNK;
+	SMC_RET1(handle, SMC_UNK);
 }
