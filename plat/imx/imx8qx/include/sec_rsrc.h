@@ -20,7 +20,8 @@ sc_rsrc_t secure_rsrcs[] = {
 	SC_R_CAAM_JR2,
 	SC_R_CAAM_JR2_OUT,
 	SC_R_CAAM_JR3,
-	SC_R_CAAM_JR3_OUT
+	SC_R_CAAM_JR3_OUT,
+	SC_R_MU_4A
 #endif
 };
 
