@@ -256,6 +256,39 @@ void dram_exit_retention(void)
 		ddr4_exit_retention();
 }
 
+/*
+ * For each freq return the following info:
+ *
+ * r1: data rate
+ * r2: 1 + dram_core parent
+ * r3: 1 + dram_alt parent index
+ * r4: 1 + dram_apb parent index
+ *
+ * The parent indices can be used by an OS who manages source clocks to enabled
+ * them ahead of the switch.
+ *
+ * A parent value of "0" means "don't care".
+ *
+ * Current implementation of freq switch is hardcoded in
+ * plat/imx/common/imx8m/clock.c but in theory this can be enhanced to support
+ * a wide variety of rates.
+ */
+int dram_dvfs_get_freq_info(void *handle, u_register_t index)
+{
+	switch (index) {
+	case 0: SMC_RET4(handle, dram_info.timing_info->fsp_table[0],
+				1, 0, 5);
+	case 1: SMC_RET4(handle, dram_info.timing_info->fsp_table[1],
+				2, 2, 4);
+	case 2: SMC_RET4(handle, dram_info.timing_info->fsp_table[2],
+				2, 3, 3);
+	case 3: SMC_RET4(handle, dram_info.timing_info->fsp_table[3],
+				1, 0, 0);
+	default:
+		SMC_RET1(handle, -3);
+	}
+}
+
 int dram_dvfs_handler(uint32_t smc_fid,
 			void *handle,
 			u_register_t x1,
@@ -287,11 +320,7 @@ int dram_dvfs_handler(uint32_t smc_fid,
 				break;
 		SMC_RET1(handle, i);
 	} else if (x1 == IMX_SIP_DDR_DVFS_GET_FREQ_INFO) {
-		if (x2 < 4) {
-			SMC_RET1(handle, dram_info.timing_info->fsp_table[x2]);
-		} else {
-			SMC_RET1(handle, -3);
-		}
+		return dram_dvfs_get_freq_info(handle, x2);
 	} else if (x1 < 4) {
 		wait_ddrc_hwffc_done = true;
 		dsb();
