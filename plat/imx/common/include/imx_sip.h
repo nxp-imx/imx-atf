@@ -96,8 +96,8 @@ int imx_hab_handler(uint32_t smc_fid, u_register_t x1,
 	u_register_t x2, u_register_t x3, u_register_t x4);
 int imx_noc_handler(uint32_t smc_fid, u_register_t x1,
  		u_register_t x2, u_register_t x3);
-int dram_dvfs_handler(uint32_t smc_fid, u_register_t x1,
-	 u_register_t x2, u_register_t x3);
+int dram_dvfs_handler(uint32_t smc_fid, void *handle,
+	u_register_t x1, u_register_t x2, u_register_t x3);
 #endif
 
 uint64_t imx_buildinfo_handler(uint32_t smc_fid, u_register_t x1,
