@@ -19,6 +19,7 @@
 #include <tzc380.h>
 #include <soc.h>
 #include <delay_timer.h>
+#include <bakery_lock.h>
 
 #define GPC_PGC_ACK_SEL_A53	0x24
 #define GPC_IMR1_CORE0_A53	0x30
@@ -212,6 +213,8 @@ static struct plat_gic_ctx imx_gicv3_ctx;
 
 static unsigned int pu_domain_status;
 
+DEFINE_BAKERY_LOCK(gpc_lock);
+
 bool imx_is_m4_enabled(void)
 {
 	return !( mmio_read_32(IMX_SRC_BASE + M4RCR)
@@ -245,10 +248,14 @@ void imx_set_cpu_pwr_off(int core_id)
 {
 	uint32_t val;
 
+	bakery_lock_get(&gpc_lock);
+
 	/* enable the wfi power down of the core */
 	val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_AD);
 	val |= COREx_WFI_PDN(core_id);
 	mmio_write_32(IMX_GPC_BASE + LPCR_A53_AD, val);
+
+	bakery_lock_release(&gpc_lock);
 
 	/* assert the pcg pcr bit of the core */
 	val = mmio_read_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id));
@@ -261,10 +268,14 @@ void imx_set_cpu_pwr_on(int core_id)
 {
 	uint32_t val;
 
+	bakery_lock_get(&gpc_lock);
+
 	/* clear the wfi power down bit of the core */
 	val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_AD);
 	val &= ~COREx_WFI_PDN(core_id);
 	mmio_write_32(IMX_GPC_BASE + LPCR_A53_AD, val);
+
+	bakery_lock_release(&gpc_lock);
 
 	/* assert the ncpuporeset */
 	val = mmio_read_32(IMX_SRC_BASE + 0x8);
@@ -300,6 +311,8 @@ void imx_set_cpu_lpm(int core_id, bool pdn)
 {
 	uint32_t val;
 
+	bakery_lock_get(&gpc_lock);
+
 	if (pdn) {
 		val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_AD);
 		/* enable the core WFI power down */
@@ -324,6 +337,8 @@ void imx_set_cpu_lpm(int core_id, bool pdn)
 		val &= ~(1 << 0);
 		mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id), val);
 	}
+
+	bakery_lock_release(&gpc_lock);
 }
 
 /*
