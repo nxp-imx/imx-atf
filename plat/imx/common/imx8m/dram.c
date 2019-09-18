@@ -235,7 +235,6 @@ void dram_info_init(unsigned long dram_timing_base)
 	uint64_t rc;
 
 	set_interrupt_rm_flag(flags, NON_SECURE);
-	set_interrupt_rm_flag(flags, SECURE);
 	rc = register_interrupt_type_handler(INTR_TYPE_EL3, waiting_dvfs, flags);
 
 	if(rc)
