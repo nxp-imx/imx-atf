@@ -187,7 +187,7 @@ void __dead2 imx_system_reset(void)
 #ifdef IMX_WDOG_B_RESET
 	val = (val & 0x00FF) | (7 << 2) | (1 << 0);
 #else
-	val = (val & 0x00FF) | (4 << 2) | (1 << 0);
+	val = (val & 0x00FF) | (9 << 2) | (1 << 0);
 #endif
 	mmio_write_16(wdog_base, val);
 
