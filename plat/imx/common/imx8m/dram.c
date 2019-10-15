@@ -277,9 +277,17 @@ int dram_dvfs_get_freq_info(void *handle, u_register_t index)
 	switch (index) {
 	case 0: SMC_RET4(handle, dram_info.timing_info->fsp_table[0],
 				1, 0, 5);
-	case 1: SMC_RET4(handle, dram_info.timing_info->fsp_table[1],
+	case 1:
+		if (!bypass_mode_supported)
+			SMC_RET4(handle, dram_info.timing_info->fsp_table[1],
+					1, 0, 0);
+		SMC_RET4(handle, dram_info.timing_info->fsp_table[1],
 				2, 2, 4);
-	case 2: SMC_RET4(handle, dram_info.timing_info->fsp_table[2],
+	case 2:
+		if (!bypass_mode_supported)
+			SMC_RET4(handle, dram_info.timing_info->fsp_table[2],
+					1, 0, 0);
+		SMC_RET4(handle, dram_info.timing_info->fsp_table[2],
 				2, 3, 3);
 	case 3: SMC_RET4(handle, dram_info.timing_info->fsp_table[3],
 				1, 0, 0);
