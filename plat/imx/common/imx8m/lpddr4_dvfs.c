@@ -11,8 +11,6 @@
 
 #include "lpddr4_define.h"
 
-extern void dram_clock_switch(unsigned target_freq);
-
 void lpddr4_swffc(struct dram_info *info, unsigned int init_fsp,
 	 unsigned int tgt_freq, bool bypass_mode)
 
@@ -222,12 +220,9 @@ void lpddr4_swffc(struct dram_info *info, unsigned int init_fsp,
 
 	/* change the clock frequency */
 #if defined(PLAT_IMX8M)
-	if (bypass_mode)
-		dram_clock_switch(tgt_freq);
-	else
-		dram_pll_init(info->timing_info->fsp_table[tgt_freq]);
+	dram_clock_switch(info->timing_info->fsp_table[tgt_freq], bypass_mode);
 #else
-	dram_clock_switch(tgt_freq);
+	dram_clock_switch(info->timing_info->fsp_table[tgt_freq], true);
 #endif
 
 	/* dfi_init_start de-assert */
