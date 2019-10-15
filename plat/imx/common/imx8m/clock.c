@@ -49,19 +49,6 @@ void ddr_pll_bypass_dis(void)
 	mmio_write_32(CCM_IP_CLK_ROOT_GEN_TAGET_SET(1), (0x4 << 24) | (0x4 << 16));
 }
 
-/* change the dram clock frequency */
-void dram_clock_switch(unsigned int target_freq)
-{
-	if(target_freq == 2) {  //25M
-		ddr_pll_bypass_100mts();
-	} else if (target_freq == 0x1) {
-		ddr_pll_bypass_400mts();
-	} else {
-		/* to reduce the dvfs latency. skip re-init pll */
-		ddr_pll_bypass_dis();
-	}
-}
-
 #if defined(PLAT_IMX8M)
 void dram_pll_init(unsigned int drate)
 {
@@ -87,4 +74,55 @@ void dram_pll_init(unsigned int drate)
 	while(!(mmio_read_32(HW_DRAM_PLL_CFG0) &(1 << 31)))
 		;
 }
+#else
+void dram_pll_init(unsigned int drate)
+{
+	/* bypass the PLL */
+	mmio_setbits_32(DRAM_PLL_CTRL, (1 << 16));
+	mmio_clrbits_32(DRAM_PLL_CTRL, (1 << 9));
+
+	switch (drate) {
+	case 2400:
+		mmio_write_32(DRAM_PLL_CTRL + 0x4, (300 << 12) | (3 << 4) | 2);
+		break;
+	case 1600:
+		mmio_write_32(DRAM_PLL_CTRL + 0x4, (400 << 12) | (3 << 4) | 3);
+		break;
+	case 1066:
+		mmio_write_32(DRAM_PLL_CTRL + 0x4, (266 << 12) | (3 << 4) | 3);
+		break;
+	case 667:
+		mmio_write_32(DRAM_PLL_CTRL + 0x4, (334 << 12) | (3 << 4) | 4);
+		break;
+	default:
+		break;
+	}
+
+	mmio_setbits_32(DRAM_PLL_CTRL, (1 << 9));
+	/* wait for PLL locked */
+	while (!(mmio_read_32(DRAM_PLL_CTRL) & (1 << 31)))
+		;
+	/* unbypass the PLL */
+	mmio_clrbits_32(DRAM_PLL_CTRL, (1 << 16));
+}
 #endif
+
+/* change the dram clock frequency */
+void dram_clock_switch(unsigned int target_drate,bool bypass_support)
+{
+	if (bypass_support) {
+		switch (target_drate) {
+		case 400:
+			ddr_pll_bypass_400mts();
+			break;
+		case 100:
+			ddr_pll_bypass_100mts();
+			break;
+		default:
+			ddr_pll_bypass_dis();
+			break;
+		}
+	} else {
+		dram_pll_init(target_drate);
+	}
+}
