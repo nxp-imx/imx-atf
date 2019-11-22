@@ -74,6 +74,9 @@
 #define MAX_XLAT_TABLES			8
 #define MAX_MMAP_REGIONS		12
 
+/* enable it to make debug message to SC console */
+#define SC_CONSOLE			0
+#define DEBUG_CONSOLE			0
 #define DEBUG_CONSOLE_A53		DEBUG_CONSOLE
 
 #endif /* PLATFORM_DEF_H */

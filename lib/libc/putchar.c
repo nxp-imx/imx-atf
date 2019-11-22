@@ -8,6 +8,8 @@
 
 #include <drivers/console.h>
 
+#pragma weak putchar
+
 int putchar(int c)
 {
 	int res;
