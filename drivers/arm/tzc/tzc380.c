@@ -102,3 +102,49 @@ void tzc380_set_action(unsigned int action)
 	 */
 	tzc380_write_action(tzc380.base, action);
 }
+
+#if LOG_LEVEL >= LOG_LEVEL_INFO
+
+static unsigned int tzc380_read_region_attributes(uintptr_t base, unsigned int region)
+{
+	return mmio_read_32(base + REGION_ATTRIBUTES_OFF(region));
+}
+
+static unsigned int tzc380_read_region_base_low(uintptr_t base, unsigned int region)
+{
+	return mmio_read_32(base + REGION_SETUP_LOW_OFF(region));
+}
+
+static unsigned int tzc380_read_region_base_high(uintptr_t base, unsigned int region)
+{
+	return mmio_read_32(base + REGION_SETUP_HIGH_OFF(region));
+}
+
+#define	REGION_MAX	16
+void tzc380_dump_state(void)
+{
+	unsigned int n;
+	unsigned int temp_32reg, temp_32reg_h;
+
+	INFO("enter\n");
+	INFO("security_inversion_en %x\n",
+	     mmio_read_32(tzc380.base + SECURITY_INV_EN_OFF));
+	for (n = 0; n <= REGION_MAX; n++) {
+		temp_32reg = tzc380_read_region_attributes(tzc380.base, n);
+		if (!(temp_32reg & TZC_ATTR_REGION_EN_MASK))
+			continue;
+
+		INFO("\n");
+		INFO("region %d\n", n);
+		temp_32reg = tzc380_read_region_base_low(tzc380.base, n);
+		temp_32reg_h = tzc380_read_region_base_high(tzc380.base, n);
+		INFO("region_base: 0x%08x%08x\n", temp_32reg_h, temp_32reg);
+		temp_32reg = tzc380_read_region_attributes(tzc380.base, n);
+		INFO("region sp: %x\n", temp_32reg >> TZC_ATTR_SP_SHIFT);
+		INFO("region size: %x\n", (temp_32reg & TZC_REGION_SIZE_MASK) >>
+				TZC_REGION_SIZE_SHIFT);
+	}
+	INFO("exit\n");
+}
+
+#endif
