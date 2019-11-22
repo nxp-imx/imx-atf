@@ -12,6 +12,7 @@
 #include <common/debug.h>
 #include <common/interrupt_props.h>
 #include <drivers/arm/gic600_multichip.h>
+#include <drivers/arm/arm_gicv3_common.h>
 #include <drivers/arm/gic_common.h>
 
 #include <platform_def.h>
@@ -50,6 +51,19 @@ void gicv3_rdistif_mark_core_awake(uintptr_t gicr_base)
 		WARN("GICR_WAKER.ChildrenAsleep unexpectedly set, waiting...\n");
 		while ((gicr_read_waker(gicr_base) & WAKER_CA_BIT) == 0U) {
 		}
+	}
+
+	/*
+	 * ProcessorSleep bit can ONLY be set to zero when
+	 * Quiescent bit and Sleep bit are both zero, so
+	 * need to make sure Quiescent bit and Sleep bit
+	 * are zero before clearing ProcessorSleep bit.
+	 */
+	if (gicr_read_waker(gicr_base) & WAKER_QSC_BIT) {
+		gicr_write_waker(gicr_base, gicr_read_waker(gicr_base) & ~WAKER_SL_BIT);
+		/* Wait till the WAKER_QSC_BIT changes to 0 */
+		while ((gicr_read_waker(gicr_base) & WAKER_QSC_BIT) != 0U)
+			;
 	}
 
 	/* Mark the connected core as awake */
