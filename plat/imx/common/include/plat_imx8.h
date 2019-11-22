@@ -30,6 +30,7 @@ int imx_validate_power_state(unsigned int power_state,
 			psci_power_state_t *req_state);
 void imx_get_sys_suspend_power_state(psci_power_state_t *req_state);
 bool imx_is_wakeup_src_irqsteer(void);
+void __dead2 imx_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state);
 void plat_gic_save(unsigned int proc_num, struct plat_gic_ctx *ctx);
 void plat_gic_restore(unsigned int proc_num, struct plat_gic_ctx *ctx);
 
