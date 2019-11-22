@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
+ * Copyright 2017-2019 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,7 +9,7 @@
  * Header file containing the public API for the System Controller (SC)
  * Pad Control (PAD) function.
  *
- * @addtogroup PAD_SVC (SVC) Pad Service
+ * @addtogroup PAD_SVC PAD: Pad Service
  *
  * Module for the Pad Control (PAD) service.
  *
@@ -49,11 +50,14 @@
  *
  * Note muxing two input pads to the same IP functional signal will
  * result in undefined behavior.
+ *
+ * @includedoc pad/details.dox
+ *
  * @{
  */
 
-#ifndef SCI_PAD_API_H
-#define SCI_PAD_API_H
+#ifndef SC_PAD_API_H
+#define SC_PAD_API_H
 
 /* Includes */
 
@@ -66,7 +70,7 @@
  * @name Defines for type widths
  */
 /*@{*/
-#define SC_PAD_MUX_W            3	/* Width of mux parameter */
+#define SC_PAD_MUX_W            3U	/* Width of mux parameter */
 /*@}*/
 
 /*!
@@ -504,7 +508,7 @@ sc_err_t sc_pad_set_gp_28fdsoi_hsic(sc_ipc_t ipc, sc_pad_t pad,
  */
 sc_err_t sc_pad_get_gp_28fdsoi_hsic(sc_ipc_t ipc, sc_pad_t pad,
 				    sc_pad_28fdsoi_dse_t *dse, sc_bool_t *hys,
-				    sc_pad_28fdsoi_pus_t *pus, sc_bool_t *pke,
+				    sc_pad_28fdsoi_pus_t * pus, sc_bool_t *pke,
 				    sc_bool_t *pue);
 
 /*!
@@ -567,6 +571,6 @@ sc_err_t sc_pad_get_gp_28fdsoi_comp(sc_ipc_t ipc, sc_pad_t pad,
 
 /* @} */
 
-#endif /* SCI_PAD_API_H */
+#endif				/* SC_PAD_API_H */
 
 /**@}*/
