@@ -80,8 +80,8 @@ int imx_pwr_domain_on(u_register_t mpidr)
 	sc_pm_set_resource_power_mode(ipc_handle, cluster_id == 0 ?
 		SC_R_A53 : SC_R_A72, SC_PM_PW_MODE_ON);
 
-	if (cluster_id == 1)
-		sc_pm_req_low_power_mode(ipc_handle, SC_R_A72, SC_PM_PW_MODE_ON);
+	sc_pm_req_low_power_mode(ipc_handle, cluster_id == 0 ?
+		SC_R_A53 : SC_R_A72, SC_PM_PW_MODE_ON);
 
 	if (sc_pm_set_resource_power_mode(ipc_handle,
 		ap_core_index[cpu_id + PLATFORM_CLUSTER0_CORE_COUNT * cluster_id],
@@ -124,8 +124,8 @@ void imx_pwr_domain_off(const psci_power_state_t *target_state)
 
 	if (is_local_state_off(CLUSTER_PWR_STATE(target_state))) {
 		cci_disable_snoop_dvm_reqs(cluster_id);
-		if (cluster_id == 1)
-			sc_pm_req_low_power_mode(ipc_handle, SC_R_A72, SC_PM_PW_MODE_OFF);
+		sc_pm_req_low_power_mode(ipc_handle, cluster_id == 0 ?
+			SC_R_A53 : SC_R_A72, SC_PM_PW_MODE_OFF);
 	}
 	printf("turn off cluster:%d core:%d\n", cluster_id, cpu_id);
 }
