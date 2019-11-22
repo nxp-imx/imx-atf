@@ -290,3 +290,13 @@ int imx_kernel_entry_handler(uint32_t smc_fid,
 
 	return 0;
 }
+
+#if SC_CONSOLE
+int putchar(int c)
+{
+	if (ipc_handle)
+		sc_misc_debug_out(ipc_handle, (unsigned char)c);
+
+	return c;
+}
+#endif
