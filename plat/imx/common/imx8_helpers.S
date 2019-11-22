@@ -110,6 +110,7 @@ A72:
 	 * --------------------------------------------------------------------
 	 */
 	mov	x0, #(CORTEX_A72_L2_DATA_RAM_LATENCY_3_CYCLES << CORTEX_A72_L2CTLR_DATA_RAM_LATENCY_SHIFT)
+	orr	x0, x0, #(1 << CORTEX_A72_L2CTLR_ECC_PARITY_ENABLE_SHIFT)
 	msr	CORTEX_A72_L2CTLR_EL1, x0
 	isb
 	ret
