@@ -23,6 +23,41 @@
 	 */
 
 func bl31_entrypoint
+#ifdef PLAT_imx8qm
+	ldr    x21, stm
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21] /* 16 */
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21]
+	str    w20, [x21] /* 32 */
+#endif
 	/* ---------------------------------------------------------------
 	 * Stash the previous bootloader arguments x0 - x3 for later use.
 	 * ---------------------------------------------------------------
@@ -128,6 +163,10 @@ func bl31_entrypoint
 
 	b	el3_exit
 endfunc bl31_entrypoint
+
+.ltorg
+stm:
+	.quad 0x5D1B0020
 
 	/* --------------------------------------------------------------------
 	 * This CPU has been physically powered up. It is either resuming from
