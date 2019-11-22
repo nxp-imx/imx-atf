@@ -291,5 +291,4 @@
 #define SC_P_COMP_CTL_GPIO_1V8_3V3_ENET_ENETA    268	/*  */
 /*@}*/
 
-#endif /* SC_PADS_H */
-
+#endif				/* SC_PADS_H */
