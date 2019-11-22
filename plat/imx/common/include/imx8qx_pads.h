@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
+ * Copyright 2017-2019 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,8 +9,8 @@
  * Header file used to configure SoC pad list.
  */
 
-#ifndef IMX8QX_PADS_H
-#define IMX8QX_PADS_H
+#ifndef SC_PADS_H
+#define SC_PADS_H
 
 /* Includes */
 
@@ -195,4 +196,4 @@
 #define SC_P_COMP_CTL_GPIO_1V8_3V3_QSPI0B        173	/*  */
 /*@}*/
 
-#endif /* IMX8QX_PADS_H */
+#endif				/* SC_PADS_H */
