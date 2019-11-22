@@ -22,6 +22,7 @@
 #define PLATFORM_CLUSTER0_CORE_COUNT	U(4)
 #define PLATFORM_CLUSTER1_CORE_COUNT	U(0)
 
+#define IMX_PWR_LVL0			MPIDR_AFFLVL0
 #define PWR_DOMAIN_AT_MAX_LVL           U(1)
 #define PLAT_MAX_PWR_LVL                U(2)
 #define PLAT_MAX_OFF_STATE              U(2)
