@@ -222,3 +222,13 @@ uint64_t imx_buildinfo_handler(uint32_t smc_fid,
 
 	return ret;
 }
+
+#if SC_CONSOLE
+int putchar(int c)
+{
+	if (ipc_handle)
+		sc_misc_debug_out(ipc_handle, (unsigned char)c);
+
+	return c;
+}
+#endif
