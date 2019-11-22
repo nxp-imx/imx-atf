@@ -296,6 +296,7 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 	.validate_ns_entrypoint = imx_validate_ns_entrypoint,
 	.system_off = imx_system_off,
 	.system_reset = imx_system_reset,
+	.system_reset2 = imx_system_reset2,
 };
 
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
