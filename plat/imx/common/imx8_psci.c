@@ -29,6 +29,32 @@ void __dead2 imx_system_reset(void)
 	panic();
 }
 
+int imx_system_reset2(int is_vendor, int reset_type, u_register_t cookie)
+{
+	const char *reset_type_name = "";
+
+	switch(reset_type) {
+	case PSCI_RESET2_SYSTEM_WARM_RESET:
+		sc_pm_reboot(ipc_handle, SC_PM_RESET_TYPE_WARM);
+		reset_type_name = "warm";
+		break;
+	case PSCI_RESET2_SYSTEM_COLD_RESET:
+		sc_pm_reboot(ipc_handle, SC_PM_RESET_TYPE_COLD);
+		reset_type_name = "cold";
+		break;
+	case PSCI_RESET2_SYSTEM_BOARD_RESET:
+		sc_pm_reset(ipc_handle, SC_PM_RESET_TYPE_BOARD);
+		reset_type_name = "board";
+		break;
+	default:
+		return PSCI_E_INVALID_PARAMS;
+	}
+
+	wfi();
+	ERROR("system %s reset failed.\n", reset_type_name);
+	panic();
+}
+
 int imx_validate_power_state(unsigned int power_state,
 			 psci_power_state_t *req_state)
 {

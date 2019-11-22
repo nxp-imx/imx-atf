@@ -219,6 +219,7 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 	.validate_ns_entrypoint = imx_validate_ns_entrypoint,
 	.system_off = imx_system_off,
 	.system_reset = imx_system_reset,
+	.system_reset2 = imx_system_reset2,
 	.pwr_domain_off = imx_pwr_domain_off,
 	.pwr_domain_suspend = imx_domain_suspend,
 	.pwr_domain_suspend_finish = imx_domain_suspend_finish,
