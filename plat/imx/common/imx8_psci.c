@@ -80,9 +80,13 @@ void imx_get_sys_suspend_power_state(psci_power_state_t *req_state)
 {
 	unsigned int i;
 
-	/* CPU & cluster off, system in retention */
-	for (i = MPIDR_AFFLVL0; i < PLAT_MAX_PWR_LVL; i++)
-		req_state->pwr_domain_state[i] = PLAT_MAX_OFF_STATE;
-	req_state->pwr_domain_state[PLAT_MAX_PWR_LVL] = PLAT_MAX_RET_STATE;
+	for (i = IMX_PWR_LVL0; i <= PLAT_MAX_PWR_LVL; i++)
+		req_state->pwr_domain_state[i] = PLAT_MAX_RET_STATE;
+}
+
+void __dead2 imx_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state)
+{
+	while (1)
+		wfi();
 }
 
