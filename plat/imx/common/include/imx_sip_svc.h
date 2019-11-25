@@ -35,9 +35,14 @@
 
 #define IMX_SIP_MISC_SET_TEMP		0xC200000C
 
+#define IMX_SIP_DDR_DVFS		0xc2000004
 #if defined(PLAT_imx8mq)
 int imx_soc_info_handler(uint32_t smc_fid, u_register_t x1,
 			 u_register_t x2, u_register_t x3);
+#endif
+#if defined(PLAT_imx8mm) || defined(PLAT_imx8mn)
+int dram_dvfs_handler(uint32_t smc_fid, void *handle,
+	u_register_t x1, u_register_t x2, u_register_t x3);
 #endif
 
 #if (defined(PLAT_imx8qm) || defined(PLAT_imx8qx))

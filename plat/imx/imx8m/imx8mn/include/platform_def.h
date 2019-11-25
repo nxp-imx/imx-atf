@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <lib/utils_def.h>
+
 #define PLATFORM_LINKER_FORMAT		"elf64-littleaarch64"
 #define PLATFORM_LINKER_ARCH		aarch64
 

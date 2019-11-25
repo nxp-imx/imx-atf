@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <lib/utils_def.h>
+
 #define PLATFORM_LINKER_FORMAT		"elf64-littleaarch64"
 #define PLATFORM_LINKER_ARCH		aarch64
 
@@ -114,6 +116,7 @@
 #define GPR_TZASC_EN_LOCK		BIT(16)
 
 #define ANAMIX_MISC_CTL			U(0x124)
+#define DRAM_PLL_CTRL			(IMX_ANAMIX_BASE + 0x50)
 
 #define MAX_CSU_NUM			U(64)
 
