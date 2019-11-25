@@ -90,7 +90,7 @@ void ddr4_swffc(struct dram_info *dram_info, unsigned int target_fsp);
 void dram_enter_retention(void);
 void dram_exit_retention(void);
 
-void dram_clock_switch(unsigned int target_freq);
+void dram_clock_switch(unsigned int target_freq, bool bypass_support);
 void dram_pll_init(unsigned int drate);
 
 #endif /* __DRAM_H__ */

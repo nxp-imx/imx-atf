@@ -185,9 +185,9 @@ void __dead2 imx_system_reset(void)
 	/* WDOG_B reset */
 	val = mmio_read_16(wdog_base);
 #ifdef IMX_WDOG_B_RESET
-	val = (val & 0x00FF) | (7 << 2) | (1 << 0);
+	val = (val & 0x001F) | (7 << 2) | (1 << 0) | (1 << 8);
 #else
-	val = (val & 0x00FF) | (4 << 2) | (1 << 0);
+	val = (val & 0x00FF) | (9 << 2) | (1 << 0);
 #endif
 	mmio_write_16(wdog_base, val);
 
@@ -217,7 +217,7 @@ void __dead2 imx_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state)
 	 * drived by the 32K OSC, so delay 30us to make sure the counter
 	 * is really running.
 	 */
-	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state))) {
+	if (is_local_state_off(CLUSTER_PWR_STATE(target_state))) {
 		imx_set_rbc_count();
 		udelay(30);
 	}

@@ -404,16 +404,14 @@ void imx_set_cluster_powerdown(int last_core, uint8_t power_state)
 		val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_AD);
 		val &= ~EN_L2_WFI_PDN;
 
-		/* L2 cache memory is on in WAIT mode */
-		if (is_local_state_off(power_state))
+		/* power off PLAT dmain only in OFF state */
+		if (is_local_state_off(power_state)) {
 			val |= (L2PGE | EN_PLAT_PDN);
-		else
-			val |= EN_PLAT_PDN;
 
+			/* config SLOT for PLAT power up/down */
+			imx_a53_plat_slot_config(true);
+		}
 		mmio_write_32(IMX_GPC_BASE + LPCR_A53_AD, val);
-
-		/* config SLOT for PLAT power up/down */
-		imx_a53_plat_slot_config(true);
 	} else {
 		/* clear the slot and ack for cluster power down */
 		imx_a53_plat_slot_config(false);
