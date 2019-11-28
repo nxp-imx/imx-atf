@@ -122,7 +122,7 @@ endfunc plat_reset_handler
 	 */
 func plat_get_my_entrypoint
 
-#if defined(PLAT_IMX8QX) || defined(PLAT_IMX8QM)
+#if defined(PLAT_imx8qx) || defined(PLAT_imx8qm)
 	/* ---------------------------------------------
 	 * SCU will signal through a GIR bit when a
 	 * partition boot has taken place which requires
