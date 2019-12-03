@@ -8,6 +8,9 @@ PLAT_INCLUDES		:=	-Iplat/imx/common/include		\
 				-Iplat/imx/imx8m/include		\
 				-Iplat/imx/imx8m/imx8mn/include
 
+IMX_DRAM_SOURCES	:=	plat/imx/imx8m/ddr/dram.c		\
+				plat/imx/imx8m/ddr/dram_retention.c
+
 IMX_GIC_SOURCES		:=	drivers/arm/gic/v3/gicv3_helpers.c	\
 				drivers/arm/gic/v3/arm_gicv3_common.c   \
 				drivers/arm/gic/v3/gic500.c             \
@@ -36,6 +39,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
 				drivers/arm/tzc/tzc380.c			\
 				drivers/delay_timer/delay_timer.c		\
 				drivers/delay_timer/generic_delay_timer.c	\
+				${IMX_DRAM_SOURCES}				\
 				${IMX_GIC_SOURCES}
 
 USE_COHERENT_MEM	:=	1
