@@ -63,6 +63,6 @@ void sc_ipc_read(sc_ipc_t ipc, void *data);
  */
 void sc_ipc_write(sc_ipc_t ipc, const void *data);
 
-sc_ipc_t ipc_handle;
+extern sc_ipc_t ipc_handle;
 
 #endif /* SCI_IPC_H */
