@@ -154,7 +154,7 @@ static int lpuart32_serial_init(unsigned int base)
 	mmio_write_32(IMX_BOOT_UART_BASE + CTRL, tmp);
 
 	mmio_write_32(IMX_BOOT_UART_BASE + MODIR, 0);
-	mmio_write_32(IMX_BOOT_UART_BASE + FIFO, ~(FIFO_TXFE | FIFO_RXFE));
+	mmio_write_32(IMX_BOOT_UART_BASE + FIFO, mmio_read_32(IMX_BOOT_UART_BASE + FIFO) | (FIFO_TXFE | FIFO_RXFE));
 
 	mmio_write_32(IMX_BOOT_UART_BASE + MATCH, 0);
 
