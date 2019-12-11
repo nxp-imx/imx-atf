@@ -90,6 +90,33 @@
 #define IRQ_IMR_NUM	4
 #define IMR_MASK_ALL	0xffffffff
 
+#define IMX_PD_DOMAIN(name)				\
+	{						\
+		.pwr_req = name##_PWR_REQ,		\
+		.pgc_offset = name##_PGC,		\
+		.need_sync = false,			\
+		.init_on = true,			\
+	}
+
+#define IMX_MIX_DOMAIN(name)				\
+	{						\
+		.pwr_req = name##_PWR_REQ,		\
+		.pgc_offset = name##_PGC,		\
+		.adb400_sync = name##_ADB400_SYNC,	\
+		.adb400_ack = name##_ADB400_ACK,	\
+		.need_sync = true,			\
+		.init_on = true,			\
+	}
+
+struct imx_pwr_domain {
+	uint32_t pwr_req;
+	uint32_t adb400_sync;
+	uint32_t adb400_ack;
+	uint32_t pgc_offset;
+	bool need_sync;
+	bool init_on;
+};
+
 /* function declare */
 void imx_gpc_init(void);
 void imx_set_cpu_secure_entry(unsigned int core_index, uintptr_t sec_entrypoint);
@@ -104,5 +131,6 @@ void imx_set_sys_lpm(unsigned last_core, bool retention);
 void imx_set_rbc_count(void);
 void imx_clear_rbc_count(void);
 void imx_anamix_override(bool enter);
+void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on);
 
 #endif /*IMX8M_GPC_H */
