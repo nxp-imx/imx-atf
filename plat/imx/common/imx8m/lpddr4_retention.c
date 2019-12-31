@@ -17,7 +17,6 @@
 #define SRC_IPS_BASE_ADDR       IMX_SRC_BASE
 #define SRC_DDRC_RCR_ADDR	(SRC_IPS_BASE_ADDR + 0x1000)
 
-#define GPC_PU_PWRHSK		(IMX_GPC_BASE + 0x01FC)
 #define CCM_SRC_CTRL_OFFSET     (IMX_CCM_BASE + 0x800)
 #define CCM_CCGR_OFFSET         (IMX_CCM_BASE + 0x4000)
 #define CCM_SRC_CTRL(n)		(CCM_SRC_CTRL_OFFSET + 0x10 * n)
@@ -92,23 +91,13 @@ void lpddr4_enter_retention(void)
 	for (i=0; i<20; i++){
  	}
 
-#if defined(PLAT_IMX8M)
 	/* pwrdnreqn_async adbm/adbs of ddr */
-	mmio_clrbits_32(GPC_PU_PWRHSK, (1 << 1));
+	mmio_clrbits_32(GPC_PU_PWRHSK, DDRMIX_ADB400_SYNC);
 	do {
 		tmp = mmio_read_32(GPC_PU_PWRHSK);
-	//        printf("C: wait pwrdnackn_async clr\n");
-	} while(tmp&(0x1<<18));//wait untill pwrdnackn_async=0
-	mmio_setbits_32(GPC_PU_PWRHSK, (1 << 1));
-#else
-	/* pwrdnreqn_async adbm/adbs of ddr */
-	mmio_clrbits_32(GPC_PU_PWRHSK, (1 << 2));
-	do {
-		tmp = mmio_read_32(GPC_PU_PWRHSK);
-		INFO("C: wait pwrdnackn_async clr\n");
-	} while(tmp&(0x1<<20));//wait untill pwrdnackn_async=0
-	mmio_setbits_32(GPC_PU_PWRHSK, (1 << 2));
-#endif
+	} while (tmp & DDRMIX_ADB400_ACK); //wait untill pwrdnackn_async=0
+	mmio_setbits_32(GPC_PU_PWRHSK, DDRMIX_ADB400_SYNC);
+
 	/* remove PowerOk */
 	mmio_write_32(SRC_DDRC_RCR_ADDR, 0x8F000008); 
 	INFO("vt_event1\n");
@@ -123,8 +112,9 @@ void lpddr4_enter_retention(void)
 	for (i=0; i<20; i++) {
 	}
 	/* enable the phy iso */
-	mmio_setbits_32(0x303a0d40, 1);
-	mmio_setbits_32(0x303a0104, (1 << 5));
+
+	mmio_setbits_32(GPC_DDRMIX_PGC, 1);
+	mmio_setbits_32(GPC_PU_PGC_DN_TRG, DDRMIX_PWR_REQ);
 }
 
 void lpddr4_exit_retention(void)
@@ -158,8 +148,7 @@ void lpddr4_exit_retention(void)
 	mmio_write_32(0x3038a084, (0x4<<24)|(0x3<<16));
 
 	/* disable iso */
-	mmio_write_32(0x303A00EC,0x0000ffff); //PGC_CPU_MAPPING
-	mmio_setbits_32(0x303a00f8, (1 << 5));
+	mmio_setbits_32(GPC_PU_PGC_UP_TRG, DDRMIX_PWR_REQ);
 
 	mmio_write_32(SRC_DDRC_RCR_ADDR, 0x8F000006); // release [0]ddr1_preset_n,  [3]ddr1_phy_pwrokin_n
 
@@ -184,6 +173,7 @@ void lpddr4_exit_retention(void)
 
 	/* before write Dynamic reg, sw_done should be 0 */
 	mmio_write_32(DDRC_SWCTL(0), 0x00000000);
+
 #if !defined(PLAT_imx8mn)
 	mmio_write_32(DDRC_DDR_SS_GPR0, 0x01); /*LPDDR4 mode */
 #endif
@@ -252,6 +242,8 @@ void lpddr4_exit_retention(void)
 		INFO("wait STAT to normal state\n");
 	}
  
+	mmio_write_32(DDRC_DERATEEN(0), 0x00000302);
+
 	mmio_write_32(DDRC_PCTRL_0(0), 0x00000001); 
 	 /* dis_auto-refresh is set to 0 */
 	mmio_write_32(DDRC_RFSHCTL3(0), 0x00000000);

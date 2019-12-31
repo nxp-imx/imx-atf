@@ -66,7 +66,6 @@
 
 #define PU_PGC_UP_TRG			0xf8
 #define PU_PGC_DN_TRG			0x104
-#define GPC_PU_PWRHSK			0x1fc
 
 /* SLOT */
 #define PGC_ACK_SEL_A53			0x24
@@ -698,12 +697,12 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 		/* handle the ADB400 sync */
 		if (!pwr_domain->init_on && pwr_domain->need_sync) {
 			/* clear adb power down request */
-			val = mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK);
+			val = mmio_read_32(GPC_PU_PWRHSK);
 			val |= pwr_domain->adb400_sync;
-			mmio_write_32(IMX_GPC_BASE + GPC_PU_PWRHSK, val);
+			mmio_write_32(GPC_PU_PWRHSK, val);
 
 			/* wait for adb power request ack */
-			while (!(mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK) & pwr_domain->adb400_ack))
+			while (!(mmio_read_32(GPC_PU_PWRHSK) & pwr_domain->adb400_ack))
 				;
 		}
 	} else {
@@ -716,12 +715,12 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 		if (!pwr_domain->init_on && pwr_domain->need_sync) {
 
 			/* set adb power down request */
-			val = mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK);
+			val = mmio_read_32(GPC_PU_PWRHSK);
 			val &= ~(pwr_domain->adb400_sync);
-			mmio_write_32(IMX_GPC_BASE + GPC_PU_PWRHSK, val);
+			mmio_write_32(GPC_PU_PWRHSK, val);
 
 			/* wait for adb power request ack */
-			while ((mmio_read_32(IMX_GPC_BASE + GPC_PU_PWRHSK) & pwr_domain->adb400_ack))
+			while ((mmio_read_32(GPC_PU_PWRHSK) & pwr_domain->adb400_ack))
 				;
 		}
 
