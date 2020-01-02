@@ -17,7 +17,6 @@
 #define SRC_IPS_BASE_ADDR       IMX_SRC_BASE
 #define SRC_DDRC_RCR_ADDR	(SRC_IPS_BASE_ADDR + 0x1000)
 
-#define GPC_PU_PWRHSK		(IMX_GPC_BASE + 0x01FC)
 #define CCM_SRC_CTRL_OFFSET     (IMX_CCM_BASE + 0x800)
 #define CCM_CCGR_OFFSET         (IMX_CCM_BASE + 0x4000)
 #define CCM_SRC_CTRL(n)		(CCM_SRC_CTRL_OFFSET + 0x10 * n)
@@ -81,11 +80,11 @@ void ddr4_enter_retention(void)
 	dwc_ddrphy_apb_wr(0xd0000,0x1);
 
 	/* pwrdnreqn_async adbm/adbs of ddr */
-	mmio_clrbits_32(GPC_PU_PWRHSK, (1 << 2));
+	mmio_clrbits_32(GPC_PU_PWRHSK, DDRMIX_ADB400_SYNC);
 	do {
 		tmp = mmio_read_32(GPC_PU_PWRHSK);
-	} while (tmp & (0x1 << 20)); /* wait untill pwrdnackn_async=0 */
-	mmio_setbits_32(GPC_PU_PWRHSK, (1 << 2));
+	} while (tmp & DDRMIX_ADB400_ACK); /* wait untill pwrdnackn_async=0 */
+	mmio_setbits_32(GPC_PU_PWRHSK, DDRMIX_ADB400_SYNC);
 
 	/* remove PowerOk: assert [3]ddr1_phy_pwrokin_n */
 	mmio_write_32(SRC_DDRC_RCR_ADDR, 0x8F000008);
@@ -93,8 +92,8 @@ void ddr4_enter_retention(void)
 	mmio_write_32(CCM_CCGR(5), 0);
 	mmio_write_32(CCM_SRC_CTRL(15), 2);
 
-	mmio_setbits_32(0x303A0D40, 1);
-	mmio_setbits_32(0x303A0104, (1 << 5));
+	mmio_setbits_32(GPC_DDRMIX_PGC, 1);
+	mmio_setbits_32(GPC_PU_PGC_DN_TRG, DDRMIX_PWR_REQ);
 }
 
 void ddr4_exit_retention(void)
@@ -113,8 +112,7 @@ void ddr4_exit_retention(void)
 	mmio_write_32(CCM_SRC_CTRL(15), 2);
 	printf("C: enable all DRAM clocks \n");
 
-	mmio_write_32(0x303A00EC, 0x0000ffff); /* PGC_CPU_MAPPING */
-	mmio_setbits_32(0x303A00F8, (1 << 5));
+	mmio_setbits_32(GPC_PU_PGC_UP_TRG, DDRMIX_PWR_REQ);
 
 	mmio_write_32(SRC_DDRC_RCR_ADDR, 0x8F000006); /* release [0]ddr1_preset_n, [3]ddr1_phy_pwrokin_n */
 	/* RESET: <core_ddrc_rstn> ASSERTED (ACTIVE LOW) */

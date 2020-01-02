@@ -27,11 +27,6 @@
 #define BL31_LIMIT			0x980000
 #define BL32_BASE			0xbe000000
 
-#ifdef SPD_trusty
-#define BL32_SIZE			0x02000000
-#define BL32_LIMIT			0xC0000000
-#endif
-
 /* non-secure uboot base */
 #define PLAT_NS_IMAGE_OFFSET		0x40200000
 
@@ -44,13 +39,8 @@
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 32)
 #define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 32)
 
-#ifdef SPD_trusty
-#define MAX_XLAT_TABLES			5
-#define MAX_MMAP_REGIONS		13
-#else
 #define MAX_XLAT_TABLES			4
-#define MAX_MMAP_REGIONS		12
-#endif
+#define MAX_MMAP_REGIONS		13
 
 #define HAB_RVT_BASE			0x00000900 /* HAB_RVT for i.MX8MM */
 
@@ -67,7 +57,7 @@
 #define IMX_AIPSTZ4			0x32df0000
 
 #define IMX_AIPS_BASE			0x30000000
-#define IMX_AIPS_SIZE			0xC00000
+#define IMX_AIPS_SIZE			0xc00000
 #define IMX_GPV_BASE			0x32000000
 #define IMX_GPV_SIZE			0x800000
 #define IMX_AIPS1_BASE			0x30200000
@@ -90,13 +80,13 @@
 
 #define DRAM_PLL_CTRL			(IMX_ANAMIX_BASE + 0x50)
 
-#define GPC_PU_PWRHSK			(IMX_GPC_BASE + 0x1fc)
-#define GPC_PU_PGC_UP_TRG		(IMX_GPC_BASE + 0xf8)
-#define GPC_PU_PGC_DN_TRG		(IMX_GPC_BASE + 0x104)
-#define GPC_DDRMIX_PGC			(IMX_GPC_BASE + 0xd40)
-#define DDRMIX_PWR_REQ			BIT(5)
-#define DDRMIX_ADB400_SYNC		BIT(2)
-#define DDRMIX_ADB400_ACK		BIT(20)
+#define GPC_PU_PWRHSK			(IMX_GPC_BASE + 0x0190)
+#define GPC_PU_PGC_UP_TRG		(IMX_GPC_BASE + 0xd8)
+#define GPC_PU_PGC_DN_TRG		(IMX_GPC_BASE + 0xe4)
+#define GPC_DDRMIX_PGC			(IMX_GPC_BASE + 0xfc0)
+#define DDRMIX_PWR_REQ			BIT(18)
+#define DDRMIX_ADB400_SYNC		BIT(11)
+#define DDRMIX_ADB400_ACK		BIT(27)
 
 #define OCRAM_S_BASE			0x00180000
 #define OCRAM_S_SIZE			0x8000
@@ -108,4 +98,4 @@
 
 #define DEBUG_CONSOLE			0
 #define IMX_WDOG_B_RESET
-#define PLAT_IMX8MN			1
+#define PLAT_IMX8MP			1

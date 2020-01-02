@@ -7,13 +7,13 @@
 #include <arch.h>
 #include <arch_helpers.h>
 #include <debug.h>
+#include <delay_timer.h>
 #include <stdbool.h>
 #include <dram.h>
 #include <plat_imx8.h>
 #include <psci.h>
 #include <mmio.h>
 #include <soc.h>
-#include <delay_timer.h>
 
 #define SNVS_LPCR	0x38
 
@@ -144,16 +144,15 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 		/* clear the system wakeup setting */
 		imx_set_sys_wakeup(core_id, false);
 		imx_anamix_post_resume();
+		imx_clear_rbc_count();
 		if (!imx_is_m4_enabled() || !imx_m4_lpa_active())
 			dram_exit_retention();
 		noc_wrapper_post_resume(core_id);
 	}
 
 	/* check the cluster level power status */
-	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state))) {
-		imx_clear_rbc_count();
+	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state)))
 		imx_set_cluster_powerdown(core_id, PSCI_LOCAL_STATE_RUN);
-	}
 
 	/* check the core level power status */
 	if (is_local_state_off(CORE_PWR_STATE(target_state))) {
@@ -185,9 +184,9 @@ void __dead2 imx_system_reset(void)
 	/* WDOG_B reset */
 	val = mmio_read_16(wdog_base);
 #ifdef IMX_WDOG_B_RESET
-	val = (val & 0x001F) | (7 << 2) | (1 << 0) | (1 << 8);
+	val = (val & 0x00FF) | (7 << 2) | (1 << 0);
 #else
-	val = (val & 0x00FF) | (9 << 2) | (1 << 0);
+	val = (val & 0x00FF) | (4 << 2) | (1 << 0);
 #endif
 	mmio_write_16(wdog_base, val);
 
@@ -219,7 +218,7 @@ void __dead2 imx_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state)
 	 */
 	if (is_local_state_off(CLUSTER_PWR_STATE(target_state))) {
 		imx_set_rbc_count();
-		udelay(30);
+		udelay(1);
 	}
 
 	while (1)

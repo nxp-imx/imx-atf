@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 NXP
+ * Copyright 2019 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -23,22 +23,22 @@
 
 #define GPC_PGC_ACK_SEL_A53	0x24
 #define GPC_IMR1_CORE0_A53	0x30
-#define GPC_IMR1_CORE1_A53	0x40
-#define GPC_IMR1_CORE0_M4	0x50
-#define GPC_IMR1_CORE2_A53	0x1c0
-#define GPC_IMR1_CORE3_A53	0x1d0
-#define GPC_PGC_CPU_0_1_MAPPING	0xec
+#define GPC_IMR1_CORE1_A53	0x44
+#define GPC_IMR1_CORE0_M4	0x58
+#define GPC_IMR1_CORE2_A53	0x194
+#define GPC_IMR1_CORE3_A53	0x1a8
+#define GPC_PGC_CPU_0_1_MAPPING	0x1cc
 #define GPC_PGC_SCU_TIMMING	0x910
 
-#define CPU_PGC_SW_PUP_TRG		0xf0
-#define CPU_PGC_SW_PDN_TRG		0xfc
+#define CPU_PGC_SW_PUP_TRG		0xd0
+#define CPU_PGC_SW_PDN_TRG		0xdc
 #define BM_CPU_PGC_SW_PDN_PUP_REQ 	0x1
 
 #define PGC_PCR			0
 
 /* BSC */
 #define LPCR_A53_BSC			0x0
-#define LPCR_A53_BSC2			0x108
+#define LPCR_A53_BSC2			0x180
 #define LPCR_M4				0x8
 #define SLPCR				0x14
 #define SLPCR_EN_DSM			(1 << 31)
@@ -64,73 +64,91 @@
 #define EN_L2_WFI_PDN			(1 << 5)
 #define EN_PLAT_PDN			(1 << 4)
 
-#define PU_PGC_UP_TRG			0xf8
-#define PU_PGC_DN_TRG			0x104
+#define PU_PGC_UP_TRG			0xd8
+#define PU_PGC_DN_TRG			0xe4
 
 /* SLOT */
 #define PGC_ACK_SEL_A53			0x24
-#define SLT0_CFG			0xb0
-#define SLT1_CFG			0xb4
-#define SLT2_CFG			0xb8
-#define SLT3_CFG			0xbc
+#define SLT0_CFG			0x200
+#define SLT1_CFG			0x204
+#define SLT2_CFG			0x208
+#define SLT3_CFG			0x20c
 
 /* ack for slot pup/pdn */
 #define A53_DUMMY_PGC_PUP_ACK	(1 << 31)
-#define NOC_PGC_PUP_ACK		(1 << 19)
-#define PLAT_PGC_PUP_ACK	(1 << 18)
-#define A53_DUMMY_PGC_PDN_ACK	(1 << 15)
-#define NOC_PGC_PDN_ACK		(1 << 3)
-#define PLAT_PGC_PDN_ACK	(1 << 2)
+#define NOC_PGC_PUP_ACK		(1 << 13)
+#define PLAT_PGC_PUP_ACK	(1 << 9)
+#define A53_DUMMY_PGC_PDN_ACK	(1 << 30)
+#define NOC_PGC_PDN_ACK		(1 << 12)
+#define PLAT_PGC_PDN_ACK	(1 << 8)
 
 /* pdn/pup bit define for slot control */
-#define NOC_PUP_SLT_CTRL	(1 << 11)
-#define NOC_PDN_SLT_CTRL	(1 << 10)
+#define NOC_PUP_SLT_CTRL	(1 << 13)
+#define NOC_PDN_SLT_CTRL	(1 << 12)
 #define PLAT_PUP_SLT_CTRL	(1 << 9)
 #define PLAT_PDN_SLT_CTRL	(1 << 8)
 
 #define PLAT_PGC_PCR		0x900
 #define NOC_PGC_PCR		0xa40
 
-#define MIPI_PWR_REQ		(1 << 0)
-#define PCIE_PWR_REQ		(1 << 1)
-#define OTG1_PWR_REQ		(1 << 2)
-#define OTG2_PWR_REQ		(1 << 3)
-#define HSIOMIX_PWR_REQ		(1 << 4)
-#define GPU2D_PWR_REQ		(1 << 6)
-#define GPUMIX_PWR_REQ		(1 << 7)
-#define VPUMIX_PWR_REQ		(1 << 8)
-#define GPU3D_PWR_REQ		(1 << 9)
-#define DISPMIX_PWR_REQ		(1 << 10)
-#define VPU_G1_PWR_REQ		(1 << 11)
-#define VPU_G2_PWR_REQ		(1 << 12)
-#define VPU_H1_PWR_REQ		(1 << 13)
+#define MIPI_PHY1_PWR_REQ	BIT(0)
+#define PCIE_PHY_PWR_REQ	BIT(1)
+#define USB1_PHY_PWR_REQ	BIT(2)
+#define USB2_PHY_PWR_REQ	BIT(3)
+#define MLMIX_PWR_REQ		BIT(4)
+#define AUDIOMIX_PWR_REQ	BIT(5)
+#define GPU2D_PWR_REQ		BIT(6)
+#define GPUMIX_PWR_REQ		BIT(7)
+#define VPUMIX_PWR_REQ		BIT(8)
+#define GPU3D_PWR_REQ		BIT(9)
+#define MEDIAMIX_PWR_REQ	BIT(10)
+#define VPU_G1_PWR_REQ		BIT(11)
+#define VPU_G2_PWR_REQ		BIT(12)
+#define VPU_H1_PWR_REQ		BIT(13)
+#define HDMIMIX_PWR_REQ		BIT(14)
+#define HDMI_PHY_PWR_REQ	BIT(15)
+#define MIPI_PHY2_PWR_REQ	BIT(16)
+#define HSIOMIX_PWR_REQ		BIT(17)
+#define DDRMIX_PWR_REQ		BIT(18)
+#define MEDIAMIX_ISPDWP_PWR_REQ	BIT(19)
 
-#define HSIOMIX_ADB400_SYNC	(0x3 << 5)
-#define DISPMIX_ADB400_SYNC	(1 << 7)
-#define VPUMIX_ADB400_SYNC	(1 << 8)
-#define GPU3D_ADB400_SYNC	(1 << 9)
-#define GPU2D_ADB400_SYNC	(1 << 10)
-#define GPUMIX_ADB400_SYNC	(1 << 11)
-#define HSIOMIX_ADB400_ACK	(0x3 << 23)
-#define DISPMIX_ADB400_ACK	(1 << 25)
-#define VPUMIX_ADB400_ACK	(1 << 26)
-#define GPU3D_ADB400_ACK	(1 << 27)
-#define GPU2D_ADB400_ACK	(1 << 28)
-#define GPUMIX_ADB400_ACK	(1 << 29)
+#define AUDIOMIX_ADB400_SYNC	(1 << 4 | 1 << 15)
+#define MLMIX_ADB400_SYNC	(1 << 7 | 1 << 8)
+#define GPUMIX_ADB400_SYNC	BIT(9)
+#define VPUMIX_ADB400_SYNC	BIT(10)
+#define HSIOMIX_ADB400_SYNC	BIT(12)
+#define HDMIMIX_ADB400_SYNC	BIT(13)
+#define MEDIAMIX_ADB400_SYNC	BIT(14)
 
-#define MIPI_PGC		0xc00
-#define PCIE_PGC		0xc40
-#define OTG1_PGC		0xc80
-#define OTG2_PGC		0xcc0
-#define HSIOMIX_PGC	        0xd00
-#define GPU2D_PGC		0xd80
-#define GPUMIX_PGC		0xdc0
-#define VPUMIX_PGC		0xe00
-#define GPU3D_PGC		0xe40
-#define DISPMIX_PGC		0xe80
-#define VPU_G1_PGC		0xec0
-#define VPU_G2_PGC		0xf00
-#define VPU_H1_PGC		0xf40
+#define AUDIOMIX_ADB400_ACK	(1 << 20 | 1 << 31)
+#define MLMIX_ADB400_ACK	(1 << 23 | 1 << 30)
+#define GPUMIX_ADB400_ACK	BIT(25)
+#define VPUMIX_ADB400_ACK	BIT(26)
+#define HSIOMIX_ADB400_ACK	BIT(28)
+#define HDMIMIX_ADB400_ACK	BIT(29)
+#define MEDIAMIX_ADB400_ACK	BIT(30)
+
+#define MIPI_PHY1_PGC		0xb00
+#define PCIE_PHY_PGC		0xb40
+#define USB1_PHY_PGC		0xb80
+#define USB2_PHY_PGC		0xbc0
+#define MLMIX_PGC		0xc00
+#define AUDIOMIX_PGC		0xc40
+#define GPU2D_PGC		0xc80
+#define GPUMIX_PGC		0xcc0
+#define VPUMIX_PGC		0xd00
+#define GPU3D_PGC		0xd40
+#define MEDIAMIX_PGC		0xd80
+#define VPU_G1_PGC		0xdc0
+#define VPU_G2_PGC		0xe00
+#define VPU_H1_PGC		0xe40
+#define HDMIMIX_PGC		0xe80
+#define HDMI_PHY_PGC		0xec0
+#define MIPI_PHY2_PGC		0xf00
+#define HSIOMIX_PGC		0xf40
+#define DDRMIX_PGC		0xf80
+#define MEDIAMIX_ISPDWP_PGC	0xfc0
+
 
 #define M4RCR 	0xC
 #define SRC_SCR_M4C_NON_SCLR_RST_MASK		(1 << 0)
@@ -155,13 +173,18 @@
 
 #define COREx_PGC_PCR(core_id)	(0x800 + core_id * 0x40)
 #define COREx_WFI_PDN(core_id)	(1 << (core_id < 2 ? core_id * 2 : (core_id - 2) * 2 + 16))
-#define COREx_IRQ_WUP(core_id)	(core_id < 2 ? (1 << (core_id * 2 + 8)) : (1 << (core_id * 2 + 20)));
+#define COREx_IRQ_WUP(core_id)	(core_id < 2 ? (1 << (core_id * 2 + 8)) : (1 << (core_id * 2 + 20)))
 #define LPM_MODE(local_state)	(local_state == PLAT_WAIT_RET_STATE ? A53_LPM_WAIT : A53_LPM_STOP)
 #define A53_CORE_WUP_SRC(core_id) (1 << (core_id < 2 ? 28 + core_id : 22 + core_id - 2))
 
 #define IMR_MASK_ALL		0xffffffff
 #define IRQ_SRC_A53_WUP		30
 
+/*
+ * 0:mipi_phy1; 1: pcie_phy; 2: usb1_phy; 3: usb2_phy; 4: mlmix; 5: audiomix; 6: gpu2d;
+ * 7: gpu_share; 8: vpu_share; 9: gpu3d; 10: mediamix; 11:vpu_g1; 12:vpu_g2;
+ * 13: vpu_h1; 14: hdmimix; 15: hdmi_phy; 16: mipi_phy2; 17: hsiomix; 18: ddrmix; 19: mediamix_ispdwp
+ */
 struct imx_pwr_domain {
 	uint32_t pwr_req;
 	uint32_t adb400_sync;
@@ -172,38 +195,54 @@ struct imx_pwr_domain {
 };
 
 enum pu_domain_id {
+	/* hsio ss */
 	HSIOMIX,
-	PCIE,
-	OTG1,
-	OTG2,
+	PCIE_PHY,
+	USB1_PHY,
+	USB2_PHY,
+	MLMIX,
+	AUDIOMIX,
+	/* gpu ss */
 	GPUMIX,
+	GPU2D,
+	GPU3D,
+	/* vpu ss */
 	VPUMIX,
 	VPU_G1,
 	VPU_G2,
 	VPU_H1,
-	DISPMIX,
-	MIPI,
-	/* below two domain only for ATF internal use */
-	GPU2D,
-	GPU3D,
+	/* media ss */
+	MEDIAMIX,
+	MEDIAMIX_ISPDWP,
+	MIPI_PHY1,
+	MIPI_PHY2,
+	/* HDMI ss */
+	HDMIMIX,
+	HDMI_PHY,
+	DDRMIX,
 };
 
-/* PU domain */
-static struct imx_pwr_domain pu_domains[] = {
-	IMX_MIX_DOMAIN(HSIOMIX),
-	IMX_PD_DOMAIN(PCIE),
-	IMX_PD_DOMAIN(OTG1),
-	IMX_PD_DOMAIN(OTG2),
-	IMX_MIX_DOMAIN(GPUMIX),
-	IMX_MIX_DOMAIN(VPUMIX),
-	IMX_PD_DOMAIN(VPU_G1),
-	IMX_PD_DOMAIN(VPU_G2),
-	IMX_PD_DOMAIN(VPU_H1),
-	IMX_MIX_DOMAIN(DISPMIX),
-	IMX_PD_DOMAIN(MIPI),
-	/* below two domain only for ATF internal use */
-	IMX_MIX_DOMAIN(GPU2D),
-	IMX_MIX_DOMAIN(GPU3D),
+/* PU domain, add some hole to minimize the uboot change */
+static struct imx_pwr_domain pu_domains[20] = {
+	[MIPI_PHY1] = IMX_PD_DOMAIN(MIPI_PHY1),
+	[PCIE_PHY] = IMX_PD_DOMAIN(PCIE_PHY),
+	[USB1_PHY] = IMX_PD_DOMAIN(USB1_PHY),
+	[USB2_PHY] = IMX_PD_DOMAIN(USB2_PHY),
+	[MLMIX] = IMX_MIX_DOMAIN(MLMIX),
+	[AUDIOMIX] = IMX_MIX_DOMAIN(AUDIOMIX),
+	[GPU2D] = IMX_PD_DOMAIN(GPU2D),
+	[GPUMIX] = IMX_MIX_DOMAIN(GPUMIX),
+	[VPUMIX] = IMX_MIX_DOMAIN(VPUMIX),
+	[GPU3D] = IMX_PD_DOMAIN(GPU3D),
+	[MEDIAMIX] = IMX_MIX_DOMAIN(MEDIAMIX),
+	[VPU_G1] = IMX_PD_DOMAIN(VPU_G1),
+	[VPU_G2] = IMX_PD_DOMAIN(VPU_G2),
+	[VPU_H1] = IMX_PD_DOMAIN(VPU_H1),
+	[HDMIMIX] = IMX_MIX_DOMAIN(HDMIMIX),
+	[HDMI_PHY] = IMX_PD_DOMAIN(HDMI_PHY),
+	[MIPI_PHY2] = IMX_PD_DOMAIN(MIPI_PHY2),
+	[HSIOMIX] = IMX_MIX_DOMAIN(HSIOMIX),
+	[MEDIAMIX_ISPDWP] = IMX_PD_DOMAIN(MEDIAMIX_ISPDWP),
 };
 
 static uint32_t gpc_imr_offset[] = { 0x30, 0x40, 0x1c0, 0x1d0, };
@@ -216,17 +255,16 @@ DEFINE_BAKERY_LOCK(gpc_lock);
 
 bool imx_is_m4_enabled(void)
 {
-	return !( mmio_read_32(IMX_SRC_BASE + M4RCR)
-		& SRC_SCR_M4C_NON_SCLR_RST_MASK);
+	return !( mmio_read_32(IMX_IOMUX_GPR_BASE + 0x58) & 0x1);
 }
 
 #define M4_LPA_ACTIVE	0x5555
 #define M4_LPA_IDLE	0x0
-#define SRC_GPR9	0x94
+#define SRC_GPR10	0x98
 
 bool imx_m4_lpa_active(void)
 {
-	return mmio_read_32(IMX_SRC_BASE + SRC_GPR9) & M4_LPA_ACTIVE;
+	return mmio_read_32(IMX_SRC_BASE + SRC_GPR10) & M4_LPA_ACTIVE;
 }
 
 void imx_set_cpu_secure_entry(int core_id, uintptr_t sec_entrypoint)
@@ -245,96 +283,68 @@ void imx_set_cpu_secure_entry(int core_id, uintptr_t sec_entrypoint)
 /* use wfi power down the core */
 void imx_set_cpu_pwr_off(int core_id)
 {
-	uint32_t val;
 
 	bakery_lock_get(&gpc_lock);
 
 	/* enable the wfi power down of the core */
-	val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_AD);
-	val |= COREx_WFI_PDN(core_id);
-	mmio_write_32(IMX_GPC_BASE + LPCR_A53_AD, val);
+	mmio_setbits_32(IMX_GPC_BASE + LPCR_A53_AD, COREx_WFI_PDN(core_id));
 
 	bakery_lock_release(&gpc_lock);
 
 	/* assert the pcg pcr bit of the core */
-	val = mmio_read_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id));
-	val |= (1 << 0);
-	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id), val);
+	mmio_setbits_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id), 0x1);
 };
 
 /* use the sw method to power up the core */
 void imx_set_cpu_pwr_on(int core_id)
 {
-	uint32_t val;
 
 	bakery_lock_get(&gpc_lock);
 
 	/* clear the wfi power down bit of the core */
-	val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_AD);
-	val &= ~COREx_WFI_PDN(core_id);
-	mmio_write_32(IMX_GPC_BASE + LPCR_A53_AD, val);
+	mmio_clrbits_32(IMX_GPC_BASE + LPCR_A53_AD, COREx_WFI_PDN(core_id));
 
 	bakery_lock_release(&gpc_lock);
 
 	/* assert the ncpuporeset */
-	val = mmio_read_32(IMX_SRC_BASE + 0x8);
-	val &= ~(1 << core_id);
-	mmio_write_32(IMX_SRC_BASE + 0x8, val);
+	mmio_clrbits_32(IMX_SRC_BASE + 0x8, 0x1 << core_id);
 
 	/* assert the pcg pcr bit of the core */
-	val = mmio_read_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id));
-	val |= (1 << 0);
-	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id), val);
+	mmio_setbits_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id), 0x1);
 
 	/* sw power up the core */
-	val = mmio_read_32(IMX_GPC_BASE + CPU_PGC_SW_PUP_TRG);
-	val |= (1 << core_id);
-	mmio_write_32(IMX_GPC_BASE + CPU_PGC_SW_PUP_TRG, val);
+	mmio_setbits_32(IMX_GPC_BASE + CPU_PGC_SW_PUP_TRG, 0x1 << core_id);
 
 	/* wait for the power up finished */
-	while ((mmio_read_32(IMX_GPC_BASE + CPU_PGC_SW_PUP_TRG) & (1 << core_id)) != 0)
+	while ((mmio_read_32(IMX_GPC_BASE + CPU_PGC_SW_PUP_TRG) & (0x1 << core_id)) != 0)
 		;
 	/* deassert the pcg pcr bit of the core */
-	val = mmio_read_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id));
-	val &= ~(1 << 0);
-	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id), val);
+	mmio_clrbits_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id), 0x1);
 
 	/* deassert the ncpuporeset */
-	val = mmio_read_32(IMX_SRC_BASE + 0x8);
-	val |= (1 << core_id);
-	mmio_write_32(IMX_SRC_BASE + 0x8, val);
+	mmio_setbits_32(IMX_SRC_BASE + 0x8, 0x1 << core_id);
 }
 
 /* if out of lpm, we need to do reverse steps */
 void imx_set_cpu_lpm(int core_id, bool pdn)
 {
-	uint32_t val;
 
 	bakery_lock_get(&gpc_lock);
 
 	if (pdn) {
-		val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_AD);
-		/* enable the core WFI power down */
-		val |= COREx_WFI_PDN(core_id);
-		/* enable the core IRQ wakeup */
-		val |= COREx_IRQ_WUP(core_id);
-		mmio_write_32(IMX_GPC_BASE + LPCR_A53_AD, val);
+		/* enable the core WFI PDN & IRQ WUP */
+		mmio_setbits_32(IMX_GPC_BASE + LPCR_A53_AD, COREx_WFI_PDN(core_id) |
+				COREx_IRQ_WUP(core_id));
 
 		/* assert the pcg pcr bit of the core */
-		val = mmio_read_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id));
-		val |= (1 << 0);
-		mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id), val);
+		mmio_setbits_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id), 0x1);
 	} else {
-		val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_AD);
-		/* disable the core WFI power down */
-		val &= ~COREx_WFI_PDN(core_id);
-		/* disable the core IRQ wakeup */
-		val &= ~COREx_IRQ_WUP(core_id);
-		mmio_write_32(IMX_GPC_BASE + LPCR_A53_AD, val);
+		/* disable the core WFI PDN & IRQ WUP */
+		mmio_clrbits_32(IMX_GPC_BASE + LPCR_A53_AD, COREx_WFI_PDN(core_id) |
+				COREx_IRQ_WUP(core_id));
+
 		/* deassert the pcg pcr bit of the core */
-		val = mmio_read_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id));
-		val &= ~(1 << 0);
-		mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id), val);
+		mmio_clrbits_32(IMX_GPC_BASE + COREx_PGC_PCR(core_id), 0x1);
 	}
 
 	bakery_lock_release(&gpc_lock);
@@ -443,9 +453,10 @@ void imx_set_cluster_powerdown(int last_core, uint8_t power_state)
 		val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_AD);
 		val &= ~EN_L2_WFI_PDN;
 
-		/* power off PLAT dmain only in OFF state */
+		/* L2 cache memory is on in WAIT mode */
 		if (is_local_state_off(power_state)) {
 			val |= (L2PGE | EN_PLAT_PDN);
+
 			/* config SLOT for PLAT power up/down */
 			imx_a53_plat_slot_config(true);
 		}
@@ -491,18 +502,18 @@ void imx_set_sys_lpm(bool retention)
 
 	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
 
+#if 0
 	if (imx_is_m4_enabled() && imx_m4_lpa_active()) {
 		val = mmio_read_32(IMX_GPC_BASE + SLPCR);
 		val |= SLPCR_A53_FASTWUP_STOP;
 		mmio_write_32(IMX_GPC_BASE + 0x14, val);
 			return;
 	}
+#endif
 
 	if (!imx_is_m4_enabled()) {
 		/* mask M4 DSM trigger if M4 is NOT enabled */
-		val = mmio_read_32(IMX_GPC_BASE + LPCR_M4);
-		val |= 1 << 31;
-		mmio_write_32(IMX_GPC_BASE + LPCR_M4, val);
+		mmio_setbits_32(IMX_GPC_BASE + LPCR_M4, (0x1 << 31));
 	}
 }
 
@@ -512,7 +523,7 @@ void imx_set_rbc_count(void)
 
 	val = mmio_read_32(IMX_GPC_BASE + SLPCR);
 	val |= SLPCR_RBC_EN;
-	val |= (0x8 << SLPCR_RBC_SHIFT);
+	val |= (0xa << SLPCR_RBC_SHIFT);
 	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
 }
 
@@ -585,6 +596,7 @@ void imx_anamix_post_resume(void)
 #define GPR_TZASC_EN		(1 << 0)
 #define GPR_TZASC_EN_LOCK	(1 << 16)
 
+#if 0
 static void imx8mm_tz380_init(void)
 {
 	unsigned int val;
@@ -596,41 +608,26 @@ static void imx8mm_tz380_init(void)
 	tzc380_init(IMX_TZASC_BASE);
 
 	/* Enable 1G-5G S/NS RW */
-	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G) | TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
+	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G)
+		| TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
 }
-
-#define CCGR(x)		(0x4000 + (x) * 16)
+#endif
 
 void noc_wrapper_pre_suspend(unsigned int proc_num)
 {
-	uint32_t val;
-
+#if 0
 	if (!imx_is_m4_enabled() || !imx_m4_lpa_active()) {
 		/* enable MASTER1 & MASTER2 power down in A53 LPM mode */
-		val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
-		val &= ~(1 << 7);
-		val &= ~(1 << 8);
-		mmio_write_32(IMX_GPC_BASE + LPCR_A53_BSC, val);
+		mmio_clrbits_32(IMX_GPC_BASE + LPCR_A53_BSC, (0x1 << 8) | (0x1 << 7));
 
-		val = mmio_read_32(IMX_GPC_BASE + MST_CPU_MAPPING);
-		val |= (0x3 << 1);
-		mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
+		mmio_setbits_32(IMX_GPC_BASE + MST_CPU_MAPPING, (0x3 << 1));
 
 		/* noc can only be power down when all the pu domain is off */
-		if (!pu_domain_status) {
+		if (!pu_domain_status)
 			/* enable noc power down */
 			imx_noc_slot_config(true);
-
-			/*
-			 * below clocks must be enabled to make sure RDC MRCs
-			 * can be successfully reloaded.
-			 */
-			mmio_setbits_32(IMX_CCM_BASE + 0xa300, (0x1 << 28));
-			mmio_write_32(IMX_CCM_BASE + CCGR(5), 0x3);
-			mmio_write_32(IMX_CCM_BASE + CCGR(37), 0x3);
-			mmio_write_32(IMX_CCM_BASE + CCGR(87), 0x3);
-		}
 	}
+#endif
 	/*
 	 * gic redistributor context save must be called when
 	 * the GIC CPU interface is disabled and before distributor save.
@@ -640,18 +637,13 @@ void noc_wrapper_pre_suspend(unsigned int proc_num)
 
 void noc_wrapper_post_resume(unsigned int proc_num)
 {
-	uint32_t val;
+#if 0
 
 	if (!imx_is_m4_enabled() || !imx_m4_lpa_active()) {
 		/* disable MASTER1 & MASTER2 power down in A53 LPM mode */
-		val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
-		val |= (1 << 7);
-		val |= (1 << 8);
-		mmio_write_32(IMX_GPC_BASE + LPCR_A53_BSC, val);
+		mmio_setbits_32(IMX_GPC_BASE + LPCR_A53_BSC, (0x1 << 8) | (0x1 << 7));
 
-		val = mmio_read_32(IMX_GPC_BASE + MST_CPU_MAPPING);
-		val &= ~(0x3 << 1);
-		mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
+		mmio_clrbits_32(IMX_GPC_BASE + MST_CPU_MAPPING, (0x3 << 1));
 
 		/* noc can only be power down when all the pu domain is off */
 		if (!pu_domain_status) {
@@ -661,6 +653,8 @@ void noc_wrapper_post_resume(unsigned int proc_num)
 			imx_noc_slot_config(false);
 		}
 	}
+#endif
+
 	/* restore gic context */
 	plat_gic_restore(proc_num, &imx_gicv3_ctx);
 }
@@ -676,15 +670,15 @@ void imx_set_sys_wakeup(int last_core, bool pdn)
 		/* select the external IRQ as the LPM wakeup source */
 		val |= (1 << IRQ_SRC_A53_WUP);
 		/* select the external IRQ as last core's wakeup source */
-		val &= ~A53_CORE_WUP_SRC(last_core); 
+		val &= ~A53_CORE_WUP_SRC(last_core);
 	} else {
 		val &= ~(1 << IRQ_SRC_A53_WUP);
 		val |= A53_CORE_WUP_SRC(last_core);
 	}
 	mmio_write_32(IMX_GPC_BASE + LPCR_A53_BSC, val);
-	
+
 	/* clear last core's IMR based on GIC's mask setting */
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 5; i++) {
 		if (pdn)
 			irq_mask = ~dist_ctx->gicd_isenabler[i];
 		else
@@ -702,263 +696,59 @@ void imx_set_sys_wakeup(int last_core, bool pdn)
 	}
 }
 
-#define GPU_RCR		0x40
-#define VPU_RCR		0x44
-
-#define VPU_CTL_BASE	0x38330000
-#define BLK_SFT_RSTN_CSR 0x0
-#define H1_SFT_RSTN	(1 << 2)
-#define G1_SFT_RSTN	(1 << 1)
-#define G2_SFT_RSTN	(1 << 0)
-
-void vpu_sft_reset_assert(uint32_t domain_id)
-{
-	uint32_t val;
-
-	val = mmio_read_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR);
-
-	switch(domain_id) {
-	case VPU_G1:
-		val &= ~G1_SFT_RSTN;
-		mmio_write_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR, val);
-		break;
-	case VPU_G2:
-		val &= ~G2_SFT_RSTN;
-		mmio_write_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR, val);
-		break;
-	case VPU_H1:
-		val &= ~H1_SFT_RSTN;
-		mmio_write_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR, val);
-		break;
-	default:
-		break;
-	}
-}
-
-void vpu_sft_reset_deassert(uint32_t domain_id)
-{
-	uint32_t val;
-
-	val = mmio_read_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR);
-
-	switch(domain_id) {
-	case VPU_G1:
-		val |= G1_SFT_RSTN;
-		mmio_write_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR, val);
-		break;
-	case VPU_G2:
-		val |= G2_SFT_RSTN;
-		mmio_write_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR, val);
-		break;
-	case VPU_H1:
-		val |= H1_SFT_RSTN;
-		mmio_write_32(VPU_CTL_BASE + BLK_SFT_RSTN_CSR, val);
-		break;
-	default:
-		break;
-	}
-}
-
 static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 {
-	uint32_t val;
-
 	struct imx_pwr_domain *pwr_domain = &pu_domains[domain_id];
 
 	if (on) {
 		pu_domain_status |= (1 << domain_id);
 
-		/* HSIOMIX has no PU bit, so skip for it */
-		if (domain_id != HSIOMIX) {
-			/* clear the PGC bit */
-			val = mmio_read_32(IMX_GPC_BASE + pwr_domain->pgc_offset);
-			val &= ~(1 << 0);
-			mmio_write_32(IMX_GPC_BASE + pwr_domain->pgc_offset, val);
+		/* clear the PGC bit */
+		mmio_clrbits_32(IMX_GPC_BASE + pwr_domain->pgc_offset, 0x1);
 
-			if (domain_id == VPU_G1 || domain_id == VPU_G2 || domain_id == VPU_H1)
-				vpu_sft_reset_assert(domain_id);
+		/* power up the domain */
+		mmio_setbits_32(IMX_GPC_BASE + PU_PGC_UP_TRG, pwr_domain->pwr_req);
 
-			/* power up the domain */
-			val = mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG);
-			val |= pwr_domain->pwr_req;
-			mmio_write_32(IMX_GPC_BASE + PU_PGC_UP_TRG, val);
-
-			/* wait for power request done */
-			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG) & pwr_domain->pwr_req);
-
-			if (domain_id == VPU_G1 || domain_id == VPU_G2 || domain_id == VPU_H1) {
-				vpu_sft_reset_deassert(domain_id);
-				/* dealy for a while to make sure reset done */
-				udelay(100);
-			}
-		}
-
-		if (domain_id == GPUMIX) {
-
-			/* assert reset */
-			mmio_write_32(IMX_SRC_BASE + GPU_RCR, 0x1);
-
-			/* power up GPU2D */
-			val = mmio_read_32(IMX_GPC_BASE + GPU2D_PGC);
-			val &= ~(1 << 0);
-			mmio_write_32(IMX_GPC_BASE + GPU2D_PGC, val);
-
-			val = mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG);
-			val |= GPU2D_PWR_REQ;
-			mmio_write_32(IMX_GPC_BASE + PU_PGC_UP_TRG, val);
-
-			/* wait for power request done */
-			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG) & GPU2D_PWR_REQ);
-
-			udelay(1);
-
-			/* power up GPU3D */
-			val = mmio_read_32(IMX_GPC_BASE + GPU3D_PGC);
-			val &= ~(1 << 0);
-			mmio_write_32(IMX_GPC_BASE + GPU3D_PGC, val);
-
-			val = mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG);
-			val |= GPU3D_PWR_REQ;
-			mmio_write_32(IMX_GPC_BASE + PU_PGC_UP_TRG, val);
-
-			/* wait for power request done */
-			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG) & GPU3D_PWR_REQ);
-
-			udelay(10);
-			/* release the gpumix reset */
-			mmio_write_32(IMX_SRC_BASE + GPU_RCR, 0x0);
-			udelay(10);
-		}
-
-		/* vpu sft clock enable */
-		if (domain_id == VPUMIX) {
-			mmio_write_32(IMX_SRC_BASE + VPU_RCR, 0x1);
-			udelay(5);
-			mmio_write_32(IMX_SRC_BASE + VPU_RCR, 0x0);
-			udelay(5);
-
-			/* enable all clock */
-			mmio_write_32(0x38330004, 0x7);
-		}
-
-		if (domain_id == DISPMIX) {
-			/* special setting for DISPMIX */
-			mmio_write_32(0x303845d0, 0x3);
-			mmio_write_32(0x32e28004, 0x1fff);
-			mmio_write_32(0x32e28000, 0x7f);
-			mmio_write_32(0x32e28008, 0x30000);
-		}
+		/* wait for power request done */
+		while (mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG) & pwr_domain->pwr_req);
 
 		/* handle the ADB400 sync */
 		if (!pwr_domain->init_on && pwr_domain->need_sync) {
 			/* clear adb power down request */
-			val = mmio_read_32(GPC_PU_PWRHSK);
-			val |= pwr_domain->adb400_sync;
-			mmio_write_32(GPC_PU_PWRHSK, val);
+			mmio_setbits_32(GPC_PU_PWRHSK, pwr_domain->adb400_sync);
 
 			/* wait for adb power request ack */
 			while (!(mmio_read_32(GPC_PU_PWRHSK) & pwr_domain->adb400_ack))
 				;
+		}
 
-			if (domain_id == GPUMIX) {
-				/* power up GPU2D ADB */
-				val = mmio_read_32(GPC_PU_PWRHSK);
-				val |= GPU2D_ADB400_SYNC;
-				mmio_write_32(GPC_PU_PWRHSK, val);
-
-				/* wait for adb power request ack */
-				while (!(mmio_read_32(GPC_PU_PWRHSK) & GPU2D_ADB400_ACK))
-					;
-
-				/* power up GPU3D ADB */
-				val = mmio_read_32(GPC_PU_PWRHSK);
-				val |= GPU3D_ADB400_SYNC;
-				mmio_write_32(GPC_PU_PWRHSK, val);
-
-				/* wait for adb power request ack */
-				while (!(mmio_read_32(GPC_PU_PWRHSK) & GPU3D_ADB400_ACK))
-					;
-			}
+		/* handle mediamix special */
+		if (domain_id == MEDIAMIX) {
+			mmio_write_32(0x32ec0000, 0x1FFFFFF);
+			mmio_write_32(0x32ec0004, 0x1FFFFFF);
+			mmio_write_32(0x32ec0008, 0x20000);
 		}
 	} else {
 		pu_domain_status &= ~(1 << domain_id);
 
-		if (domain_id == OTG1 || domain_id == OTG2)
-			return;
-
 		/* handle the ADB400 sync */
 		if (!pwr_domain->init_on && pwr_domain->need_sync) {
-
-			/* GPU2D & GPU3D ADB power down */
-			if (domain_id == GPUMIX) {
-				val = mmio_read_32(GPC_PU_PWRHSK);
-				val &= ~GPU2D_ADB400_SYNC;
-				mmio_write_32(GPC_PU_PWRHSK, val);
-
-				/* wait for adb power request ack */
-				while ((mmio_read_32(GPC_PU_PWRHSK) & GPU2D_ADB400_ACK))
-					;
-
-				val = mmio_read_32(GPC_PU_PWRHSK);
-				val &= ~GPU3D_ADB400_SYNC;
-				mmio_write_32(GPC_PU_PWRHSK, val);
-
-				/* wait for adb power request ack */
-				while ((mmio_read_32(GPC_PU_PWRHSK) & GPU3D_ADB400_ACK))
-					;
-			}
-
 			/* set adb power down request */
-			val = mmio_read_32(GPC_PU_PWRHSK);
-			val &= ~(pwr_domain->adb400_sync);
-			mmio_write_32(GPC_PU_PWRHSK, val);
+			mmio_clrbits_32(GPC_PU_PWRHSK, pwr_domain->adb400_sync);
 
 			/* wait for adb power request ack */
 			while ((mmio_read_32(GPC_PU_PWRHSK) & pwr_domain->adb400_ack))
 				;
 		}
 
-		if (domain_id == GPUMIX) {
-			/* power down GPU2D */
-			val = mmio_read_32(IMX_GPC_BASE + GPU2D_PGC);
-			val |= (1 << 0);
-			mmio_write_32(IMX_GPC_BASE + GPU2D_PGC, val);
+		/* set the PGC bit */
+		mmio_setbits_32(IMX_GPC_BASE + pwr_domain->pgc_offset, 0x1);
 
-			val = mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG);
-			val |= GPU2D_PWR_REQ;
-			mmio_write_32(IMX_GPC_BASE + PU_PGC_DN_TRG, val);
+		/* power down the domain */
+		mmio_setbits_32(IMX_GPC_BASE + PU_PGC_DN_TRG, pwr_domain->pwr_req);
 
-			/* wait for power request done */
-			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG) & GPU2D_PWR_REQ);
-
-			/* power down GPU3D */
-			val = mmio_read_32(IMX_GPC_BASE + GPU3D_PGC);
-			val |= (1 << 0);
-			mmio_write_32(IMX_GPC_BASE + GPU3D_PGC, val);
-
-			val = mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG);
-			val |= GPU3D_PWR_REQ;
-			mmio_write_32(IMX_GPC_BASE + PU_PGC_DN_TRG, val);
-
-			/* wait for power request done */
-			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG) & GPU3D_PWR_REQ);
-		}
-
-		/* HSIOMIX has no PU bit, so skip for it */
-		if (domain_id != HSIOMIX) {
-			/* set the PGC bit */
-			val = mmio_read_32(IMX_GPC_BASE + pwr_domain->pgc_offset);
-			val |= (1 << 0);
-			mmio_write_32(IMX_GPC_BASE + pwr_domain->pgc_offset, val);
-
-			/* power down the domain */
-			val = mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG);
-			val |= pwr_domain->pwr_req;
-			mmio_write_32(IMX_GPC_BASE + PU_PGC_DN_TRG, val);
-
-			/* wait for power request done */
-			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG) & pwr_domain->pwr_req);
-		}
+		/* wait for power request done */
+		while (mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG) & pwr_domain->pwr_req);
 	}
 
 	pwr_domain->init_on = false;
@@ -970,7 +760,7 @@ void imx_gpc_init(void)
 	int i;
 
 	/* mask all the wakeup irq by default */
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 5; i++) {
 		mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + i * 4, ~0x0);
 		mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE1_A53 + i * 4, ~0x0);
 		mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE2_A53 + i * 4, ~0x0);
@@ -986,25 +776,23 @@ void imx_gpc_init(void)
 	mmio_write_32(IMX_GPC_BASE + LPCR_A53_BSC, val);
 
 	/* clear MASTER1&MASTER2 mapping in CPU0(A53) */
-	val = mmio_read_32(IMX_GPC_BASE + MST_CPU_MAPPING);
-	val &= ~(0x3 << 1);
-	mmio_write_32(IMX_GPC_BASE + MST_CPU_MAPPING, val);
+	mmio_clrbits_32(IMX_GPC_BASE + MST_CPU_MAPPING, (0x3 << 1));
 
 	/*set all mix/PU in A53 domain */
-	mmio_write_32(IMX_GPC_BASE + GPC_PGC_CPU_0_1_MAPPING, 0xffff);
+	mmio_write_32(IMX_GPC_BASE + GPC_PGC_CPU_0_1_MAPPING, 0x3fffff);
 
 	/*
 	 * Set the CORE & SCU power up timing:
-	 * SW = 0x1, SW2ISO = 0x8;
+	 * SW = 0x1, SW2ISO = 0x1;
 	 * the CPU CORE and SCU power up timming counter
 	 * is drived  by 32K OSC, each domain's power up
 	 * latency is (SW + SW2ISO) / 32768
 	 */
-	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(0) + 0x4, 0x401);
-	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(1) + 0x4, 0x401);
-	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(2) + 0x4, 0x401);
-	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(3) + 0x4, 0x401);
-	mmio_write_32(IMX_GPC_BASE + PLAT_PGC_PCR + 0x4, 0x401);
+	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(0) + 0x4, 0x81);
+	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(1) + 0x4, 0x81);
+	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(2) + 0x4, 0x81);
+	mmio_write_32(IMX_GPC_BASE + COREx_PGC_PCR(3) + 0x4, 0x81);
+	mmio_write_32(IMX_GPC_BASE + PLAT_PGC_PCR + 0x4, 0x81);
 	mmio_write_32(IMX_GPC_BASE + GPC_PGC_SCU_TIMMING,
 		      (0x59 << 10) | 0x5B | (0x2 << 20));
 
@@ -1018,9 +806,9 @@ void imx_gpc_init(void)
 	val |= SLPCR_A53_FASTWUP_WAIT;
 	/* clear the RBC */
 	val &= ~(0x3f << SLPCR_RBC_SHIFT);
-	/* set the STBY_COUNT to 0x5, (128 * 30)us*/
+	/* set the STBY_COUNT to max, (512 * 30)us*/
 	val &= ~(0x7 << SLPCR_STBY_COUNT_SHFT);
-	val |= (0x5 << SLPCR_STBY_COUNT_SHFT);
+	val |= (0x7 << SLPCR_STBY_COUNT_SHFT);
 	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
 
 	/*
@@ -1028,12 +816,32 @@ void imx_gpc_init(void)
 	 * otherwise, the PU power up bit in GPC will NOT self-cleared.
 	 * only need to do it once.
 	 */
-	val = mmio_read_32(0x30390020);
-	val &= ~0x1;
-	mmio_write_32(0x30390020, val);
-	val = mmio_read_32(0x30390024);
-	val &= ~0x1;
-	mmio_write_32(0x30390024, val);
+	mmio_clrbits_32(IMX_SRC_BASE + 0x20, 0x1);
+	mmio_clrbits_32(IMX_SRC_BASE + 0x24, 0x1);
+
+	/* enable all power domain by default for bringup purpose */
+	mmio_write_32(0x303844f0, 0x3);
+	mmio_write_32(0x30384570, 0x3);
+
+	for (i = 0; i < 102; i++)
+		mmio_write_32(0x30384000 + i * 16, 0x3);
+
+	for (i = 0; i < 19; i++)
+		imx_gpc_pm_domain_enable(i, true);
+
+	/* 0:mipi_phy1; 1: pcie_phy; 2: usb1_phy; 3: usb2_phy; 4: mlmix; 5: audiomix; 6: gpu2d;
+	 * 7: gpu_share; 8: vpu_share; 9: gpu3d; 10: mediamix; 11:vpu_g1; 12:vpu_g2;
+	 * 13: vpu_h1; 14: hdmimix; 15: hdmi_phy; 16: mipi_phy2; 17: hsiomix; 18: ddrmix; 19: mediamix_ispdwp
+	 */
+	mmio_write_32(IMX_GPC_BASE + PU_PGC_UP_TRG, (0x1 | (0x1 << 1) | (0x1 <<2) | (0x1 << 3) |
+		(0x1 << 4) | (0x1 << 5) | (0x1 << 6) | (0x1 << 7) | (0x1 << 8) | (0x1 << 9) |
+		(0x1 << 10) | (0x1 << 11) | (0x1 << 12) | (0x1 << 13) | (0x1 << 14) | (0x1 << 15) |
+		(0x1 << 16) | (0x1 << 17) | (0x1 << 18) | (0x1 << 19)));
+
+	/* handle mediamix special */
+	mmio_write_32(0x32ec0000, 0x1FFFFFF);
+	mmio_write_32(0x32ec0004, 0x1FFFFFF);
+	mmio_write_32(0x32ec0008, 0x20000);
 }
 
 int imx_gpc_handler(uint32_t smc_fid,
