@@ -21,8 +21,6 @@
 #define CCM_SRC_CTRL(n)		(CCM_SRC_CTRL_OFFSET + 0x10 * (n))
 #define CCM_CCGR(n)		(CCM_CCGR_OFFSET + 0x10 * (n))
 
-#define DRAM_PLL_CTRL		(IMX_ANAMIX_BASE + 0x50)
-
 #define DBGCAM_EMPTY		0x36000000
 
 void dram_enter_retention(void)

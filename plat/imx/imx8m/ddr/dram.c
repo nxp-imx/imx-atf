@@ -15,10 +15,18 @@
 #define IMX_SIP_DDR_DVFS_GET_FREQ_COUNT		0x10
 #define IMX_SIP_DDR_DVFS_GET_FREQ_INFO		0x11
 
+#define TIMING_CFG_PTR(ptr, old_base, new_base)	\
+	((struct dram_cfg_param *)(((uint64_t)(ptr) & ~(uint64_t)(old_base)) + (uint64_t)(new_base)))
+
 struct dram_info dram_info;
 
 /* lock used for DDR DVFS */
 spinlock_t dfs_lock;
+
+#if defined(PLAT_imx8mq)
+/* ocram used to dram timing */
+static uint8_t dram_timing_saved[13 * 1024] __aligned(8);
+#endif
 
 static volatile uint32_t wfe_done;
 static volatile bool wait_ddrc_hwffc_done = true;
@@ -29,6 +37,24 @@ static uint32_t fsp_init_reg[3][4] = {
 	{ DDRC_FREQ1_INIT3(0), DDRC_FREQ1_INIT4(0), DDRC_FREQ1_INIT6(0), DDRC_FREQ1_INIT7(0) },
 	{ DDRC_FREQ2_INIT3(0), DDRC_FREQ2_INIT4(0), DDRC_FREQ2_INIT6(0), DDRC_FREQ2_INIT7(0) },
 };
+
+
+#if defined (PLAT_imx8mq)
+/* copy the dram timing info from DRAM to OCRAM */
+void imx8mq_dram_timing_copy(struct dram_timing_info *from)
+{
+	struct dram_timing_info *info = (struct dram_timing_info *)dram_timing_saved;
+
+	/* copy the whole 13KB content used for dram timing info */
+	memcpy(dram_timing_saved, from, sizeof(dram_timing_saved));
+
+	/* correct the header after copied into ocram */
+	info->ddrc_cfg = TIMING_CFG_PTR(info->ddrc_cfg, from, dram_timing_saved);
+	info->ddrphy_cfg = TIMING_CFG_PTR(info->ddrphy_cfg, from, dram_timing_saved);
+	info->ddrphy_trained_csr = TIMING_CFG_PTR(info->ddrphy_trained_csr, from, dram_timing_saved);
+	info->ddrphy_pie = TIMING_CFG_PTR(info->ddrphy_pie, from, dram_timing_saved);
+}
+#endif
 
 static void get_mr_values(uint32_t (*mr_value)[8])
 {
@@ -135,6 +161,12 @@ void dram_info_init(unsigned long dram_timing_base)
 	current_fsp = mmio_read_32(DDRC_DFIMISC(0)) & 0xf;
 	dram_info.boot_fsp = current_fsp;
 	dram_info.current_fsp = current_fsp;
+
+#if defined(PLAT_imx8mq)
+	imx8mq_dram_timing_copy((struct dram_timing_info *)dram_timing_base);
+
+	dram_timing_base = (unsigned long) dram_timing_saved;
+#endif
 
 	get_mr_values(dram_info.mr_table);
 

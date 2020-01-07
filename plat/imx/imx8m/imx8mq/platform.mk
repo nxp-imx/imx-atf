@@ -14,6 +14,12 @@ PLAT_INCLUDES		:=	-Iplat/imx/common/include		\
 # Include GICv3 driver files
 include drivers/arm/gic/v3/gicv3.mk
 
+IMX_DRAM_SOURCES	:=	plat/imx/imx8m/ddr/dram.c		\
+				plat/imx/imx8m/ddr/clock.c		\
+				plat/imx/imx8m/ddr/dram_retention.c	\
+				plat/imx/imx8m/ddr/ddr4_dvfs.c		\
+				plat/imx/imx8m/ddr/lpddr4_dvfs.c
+
 IMX_GIC_SOURCES		:=	${GICV3_SOURCES}			\
 				plat/common/plat_gicv3.c		\
 				plat/common/plat_psci_common.c		\
@@ -36,6 +42,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
 				drivers/delay_timer/delay_timer.c		\
 				drivers/delay_timer/generic_delay_timer.c	\
 				${XLAT_TABLES_LIB_SRCS}				\
+				${IMX_DRAM_SOURCES}				\
 				${IMX_GIC_SOURCES}
 
 XLAT_TABLE_IN_OCRAM_S	:=	1
