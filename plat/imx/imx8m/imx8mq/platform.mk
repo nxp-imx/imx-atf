@@ -36,6 +36,12 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
 				drivers/delay_timer/generic_delay_timer.c	\
 				${IMX_GIC_SOURCES}
 
+XLAT_TABLE_IN_OCRAM_S	:=	1
+STACK_IN_OCRAM_S       :=      1
+
+$(eval $(call add_define,XLAT_TABLE_IN_OCRAM_S))
+$(eval $(call add_define,STACK_IN_OCRAM_S))
+
 USE_COHERENT_MEM	:=	1
 RESET_TO_BL31		:=	1
 A53_DISABLE_NON_TEMPORAL_HINT := 0
