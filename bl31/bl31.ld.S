@@ -19,6 +19,10 @@ MEMORY {
 #else
 #define NOBITS RAM
 #endif
+
+#if XLAT_TABLE_IN_OCRAM_S
+    RAM_S (rwx): ORIGIN = 0x180000, LENGTH = 0x8000
+#endif
 }
 
 #ifdef PLAT_EXTRA_LD_SCRIPT
@@ -143,9 +147,13 @@ SECTIONS
     __NOBITS_START__ = .;
 #endif
 
+#if !STACK_IN_OCRAM_S
     STACK_SECTION >NOBITS
+#endif
     BSS_SECTION >NOBITS
+#if !XLAT_TABLE_IN_OCRAM_S
     XLAT_TABLE_SECTION >NOBITS
+#endif
 
 #if USE_COHERENT_MEM
     /*
@@ -196,4 +204,15 @@ SECTIONS
     /DISCARD/ : {
         *(.dynsym .dynstr .hash .gnu.hash)
     }
+
+#if XLAT_TABLE_IN_OCRAM_S
+    . = 0x180000;
+    XLAT_TABLE_SECTION >RAM_S
+
+#if STACK_IN_OCRAM_S
+    STACK_SECTION >RAM_S
+#endif
+
+ASSERT(. <= OCRAM_S_LIMIT, "OCRAM_S limit has been exceeded.")
+#endif
 }
