@@ -12,6 +12,7 @@
 #include <lib/mmio.h>
 #include <lib/psci/psci.h>
 
+#include <dram.h>
 #include <gpc.h>
 #include <imx8m_psci.h>
 #include <plat_imx8.h>
@@ -63,6 +64,7 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
 		imx_set_sys_lpm(core_id, true);
+		dram_enter_retention();
 	}
 }
 
@@ -73,6 +75,7 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 
 	/* check the system level status */
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
+		dram_exit_retention();
 		imx_set_sys_lpm(core_id, false);
 		imx_clear_rbc_count();
 	}
