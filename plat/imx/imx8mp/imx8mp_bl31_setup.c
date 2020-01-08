@@ -260,6 +260,9 @@ void bl31_plat_arch_setup(void)
 		BL31_COHERENT_RAM_LIMIT - BL31_COHERENT_RAM_BASE,
 		MT_DEVICE | MT_RW);
 #endif
+
+       mmap_add_region(0x32700000, 0x32700000, 0x100000,  MT_DEVICE | MT_RW);
+
 	/* setup xlat table */
 	init_xlat_tables();
 

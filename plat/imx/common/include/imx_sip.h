@@ -83,7 +83,7 @@ int imx_misc_set_temp_handler(uint32_t smc_fid, u_register_t x1,
 				u_register_t x4);
 #endif
 
-#if defined(PLAT_IMX8M) || defined(PLAT_IMX8MM) || defined(PLAT_IMX8MN)
+#if defined(PLAT_IMX8M) || defined(PLAT_IMX8MM) || defined(PLAT_IMX8MN) || defined(PLAT_IMX8MP)
 int imx_gpc_handler(uint32_t  smc_fid, u_register_t x1,
 	u_register_t x2, u_register_t x3);
 int lpddr4_dvfs_handler(uint32_t  smc_fid, u_register_t x1,

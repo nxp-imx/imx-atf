@@ -194,6 +194,15 @@ struct imx_pwr_domain {
 	bool init_on;
 };
 
+struct imx_noc_setting {
+       uint32_t domain_id;
+       uint32_t start;
+       uint32_t end;
+       uint32_t prioriy;
+       uint32_t mode;
+       uint32_t socket_qos_en;
+};
+
 enum pu_domain_id {
 	/* hsio ss */
 	HSIOMIX,
@@ -243,6 +252,22 @@ static struct imx_pwr_domain pu_domains[20] = {
 	[MIPI_PHY2] = IMX_PD_DOMAIN(MIPI_PHY2),
 	[HSIOMIX] = IMX_MIX_DOMAIN(HSIOMIX),
 	[MEDIAMIX_ISPDWP] = IMX_PD_DOMAIN(MEDIAMIX_ISPDWP),
+};
+
+static struct imx_noc_setting noc_setting[] = {
+       {MLMIX, 0x180, 0x180, 0x80000303, 0x0, 0x0},
+       {AUDIOMIX, 0x200, 0x480, 0x80000404, 0x0, 0x0},
+       {GPUMIX, 0x500, 0x580, 0x80000303, 0x0, 0x0},
+       {HDMIMIX, 0x600, 0x680, 0x80000202, 0x0, 0x1},
+       {HDMIMIX, 0x700, 0x700, 0x80000505, 0x0, 0x0},
+       {HSIOMIX, 0x780, 0x900, 0x80000303, 0x0, 0x0},
+       {MEDIAMIX, 0x980, 0xb80, 0x80000202, 0x0, 0x1},
+       {MEDIAMIX_ISPDWP, 0xc00, 0xd00, 0x80000505, 0x0, 0x0},
+       //can't access VPU NoC if only power up VPUMIX,
+       //need to power up both NoC and IP
+       {VPU_G1, 0xd80, 0xd80, 0x80000303, 0x0, 0x0},
+       {VPU_G2, 0xe00, 0xe00, 0x80000303, 0x0, 0x0},
+       {VPU_H1, 0xe80, 0xe80, 0x80000303, 0x0, 0x0}
 };
 
 static uint32_t gpc_imr_offset[] = { 0x30, 0x40, 0x1c0, 0x1d0, };
@@ -655,6 +680,17 @@ void noc_wrapper_post_resume(unsigned int proc_num)
 	}
 #endif
 
+    /* config main NoC */
+    //A53
+    mmio_write_32 (0x32700008, 0x80000303);
+    mmio_write_32 (0x3270000c, 0x0);
+    //SUPERMIX
+    mmio_write_32 (0x32700088, 0x80000303);
+    mmio_write_32 (0x3270008c, 0x0);
+    //GIC
+    mmio_write_32 (0x32700108, 0x80000303);
+    mmio_write_32 (0x3270010c, 0x0);
+
 	/* restore gic context */
 	plat_gic_restore(proc_num, &imx_gicv3_ctx);
 }
@@ -696,6 +732,74 @@ void imx_set_sys_wakeup(int last_core, bool pdn)
 	}
 }
 
+static void imx_config_noc(uint32_t domain_id)
+{
+       int i;
+
+       if (domain_id == HSIOMIX) {
+              //enable HSIOMIX clock
+              mmio_write_32 (0x32f10000, 0x2);
+       }
+
+       if (domain_id == HDMIMIX) {
+              uint32_t hurry;
+
+              /* reset HDMI AXI and APB clock */
+              mmio_write_32(0x30388b00, 0x0);  //Disable HDMI APB
+              mmio_write_32(0x30388b80, 0x0);  //Dosable HDMI AXI
+
+              mmio_write_32(0x30388b00, 0x12010001);
+              mmio_write_32(0x30388b80, 0x17000000);
+
+              /* enable lcdif3 in hdmi_blk GPC/Reset */
+              mmio_write_32(0x32fc0020, 0xffffffff);
+              mmio_write_32(0x32fc0040, 0xFFFFFFFF);
+              mmio_write_32(0x32fc0050, 0x7ffff87e);
+              mmio_write_32(0x32fc0220, 0x22018);
+              mmio_write_32(0x32fc0220, 0x22010);
+
+              //set GPR to make lcdif read hurry level 0x7
+              hurry = mmio_read_32 (0x32fc0200);
+              hurry |= 0x00077000;
+              mmio_write_32 (0x32fc0200, hurry);
+       }
+
+       if (domain_id == MEDIAMIX) {
+              uint32_t hurry;
+
+              /* handle mediamix special */
+              mmio_write_32(0x32ec0000, 0x1FFFFFF);
+              mmio_write_32(0x32ec0004, 0x1FFFFFF);
+              mmio_write_32(0x32ec0008, 0x20000);
+
+              //set GPR to make lcdif read hurry level 0x7
+              hurry = mmio_read_32 (0x32ec004c);
+              hurry |= 0xfc00;
+              mmio_write_32 (0x32ec004c, hurry);
+              //set GPR to make isi write hurry level 0x7
+              hurry = mmio_read_32 (0x32ec0050);
+              hurry |= 0x1ff00000;
+              mmio_write_32 (0x32ec0050, hurry);
+       }
+
+       /* set MIX NoC */
+       for (i=0; i<sizeof(noc_setting)/sizeof(struct imx_noc_setting); i++) {
+              if (noc_setting[i].domain_id == domain_id) {
+                     udelay(50);
+                     uint32_t offset = noc_setting[i].start;
+                     while (offset <= noc_setting[i].end) {
+                            //printf ("config noc, offset: 0x%x\n", offset);
+                            mmio_write_32 (0x32700000 + offset + 0x8, noc_setting[i].prioriy);
+                            mmio_write_32 (0x32700000 + offset + 0xc, noc_setting[i].mode);
+                            mmio_write_32 (0x32700000 + offset + 0x18, noc_setting[i].socket_qos_en);
+                            offset += 0x80;
+                     }
+              }
+       }
+
+       return;
+}
+
 static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 {
 	struct imx_pwr_domain *pwr_domain = &pu_domains[domain_id];
@@ -722,12 +826,8 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 				;
 		}
 
-		/* handle mediamix special */
-		if (domain_id == MEDIAMIX) {
-			mmio_write_32(0x32ec0000, 0x1FFFFFF);
-			mmio_write_32(0x32ec0004, 0x1FFFFFF);
-			mmio_write_32(0x32ec0008, 0x20000);
-		}
+              imx_config_noc (domain_id);
+
 	} else {
 		pu_domain_status &= ~(1 << domain_id);
 
@@ -842,6 +942,17 @@ void imx_gpc_init(void)
 	mmio_write_32(0x32ec0000, 0x1FFFFFF);
 	mmio_write_32(0x32ec0004, 0x1FFFFFF);
 	mmio_write_32(0x32ec0008, 0x20000);
+
+    /* config main NoC */
+    //A53
+    mmio_write_32 (0x32700008, 0x80000303);
+    mmio_write_32 (0x3270000c, 0x0);
+    //SUPERMIX
+    mmio_write_32 (0x32700088, 0x80000303);
+    mmio_write_32 (0x3270008c, 0x0);
+    //GIC
+    mmio_write_32 (0x32700108, 0x80000303);
+    mmio_write_32 (0x3270010c, 0x0);
 }
 
 int imx_gpc_handler(uint32_t smc_fid,
