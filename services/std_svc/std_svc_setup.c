@@ -141,7 +141,7 @@ static uintptr_t std_svc_smc_handler(uint32_t smc_fid,
 		SMC_RET1(handle, ret);
 	}
 
-#if SPM_MM
+#if SPM_MM || TRUSTY_SPM
 	/*
 	 * Dispatch SPM calls to SPM SMC handler and return its return
 	 * value
