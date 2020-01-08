@@ -181,6 +181,7 @@ static unsigned int gicd_read_isenabler(uintptr_t base, unsigned int id)
 	return mmio_read_32(base + GICD_ISENABLER + (n << 2));
 }
 
+#pragma weak imx_set_sys_wakeup
 /*
  * gic's clock will be gated in system suspend, so gic has no ability to
  * to wakeup the system, we need to config the imr based on the irq
@@ -294,6 +295,7 @@ void imx_anamix_override(bool enter)
 	}
 }
 
+#pragma weak imx_gpc_handler
 int imx_gpc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_register_t x3)
 {
 	switch (x1) {
