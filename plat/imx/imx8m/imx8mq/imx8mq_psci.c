@@ -72,13 +72,14 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 	}
 
 	if (is_local_state_off(CLUSTER_PWR_STATE(target_state)))
-		imx_set_cluster_powerdown(core_id, true);
+		imx_set_cluster_powerdown(core_id, CLUSTER_PWR_STATE(target_state));
 	else
 		imx_set_cluster_standby(true);
 
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
 		imx_set_sys_lpm(core_id, true);
 		dram_enter_retention();
+		imx_anamix_override(true);
 	}
 }
 
@@ -90,13 +91,14 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 	/* check the system level status */
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
 		dram_exit_retention();
+		imx_anamix_override(true);
 		imx_set_sys_lpm(core_id, false);
 		imx_clear_rbc_count();
 	}
 
 	/* check the cluster level power status */
 	if (is_local_state_off(CLUSTER_PWR_STATE(target_state)))
-		imx_set_cluster_powerdown(core_id, false);
+		imx_set_cluster_powerdown(core_id, PSCI_LOCAL_STATE_RUN);
 	else
 		imx_set_cluster_standby(false);
 
