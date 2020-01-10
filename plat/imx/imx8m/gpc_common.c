@@ -256,10 +256,6 @@ void imx_clear_rbc_count(void)
 }
 
 #define MAX_PLL_NUM	10
-struct pll_override {
-	uint32_t reg;
-	uint32_t override_mask;
-};
 
 struct pll_override pll[MAX_PLL_NUM] = {
 	{.reg = 0x0, .override_mask = (1 << 12) | (1 << 8), },
@@ -275,6 +271,8 @@ struct pll_override pll[MAX_PLL_NUM] = {
 };
 
 #define PLL_BYPASS	BIT(4)
+
+#pragma weak imx_anamix_override
 void imx_anamix_override(bool enter)
 {
 	int i;
