@@ -90,8 +90,8 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 
 	/* check the system level status */
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
-		dram_exit_retention();
 		imx_anamix_override(true);
+		dram_exit_retention();
 		imx_set_sys_lpm(core_id, false);
 		imx_clear_rbc_count();
 	}
