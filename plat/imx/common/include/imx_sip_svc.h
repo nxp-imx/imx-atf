@@ -26,6 +26,10 @@
 #define IMX_SIP_BUILDINFO			0xC2000003
 #define IMX_SIP_BUILDINFO_GET_COMMITHASH	0x00
 
+#define IMX_SIP_SRC			0xc2000005
+#define IMX_SIP_SRC_M4_START		0x00
+#define IMX_SIP_SRC_M4_STARTED		0x01
+
 #define IMX_SIP_GET_SOC_INFO		0xC2000006
 
 #define IMX_SIP_HAB            0xc2000007
@@ -52,6 +56,8 @@ int imx_soc_info_handler(uint32_t smc_fid, u_register_t x1,
 			 u_register_t x2, u_register_t x3);
 int imx_gpc_handler(uint32_t smc_fid, u_register_t x1,
 		    u_register_t x2, u_register_t x3);
+int imx_src_handler(uint32_t smc_fid, u_register_t x1,
+		    u_register_t x2, u_register_t x3);
 int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 	u_register_t x1, u_register_t x2, u_register_t x3);
 
@@ -64,7 +70,8 @@ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 
 int imx_gpc_handler(uint32_t smc_fid, u_register_t x1,
 		    u_register_t x2, u_register_t x3);
-
+int imx_src_handler(uint32_t smc_fid, u_register_t x1,
+		    u_register_t x2, u_register_t x3);
 int imx_hab_handler(uint32_t smc_fid, u_register_t x1,
 	u_register_t x2, u_register_t x3, u_register_t x4);
 #endif
