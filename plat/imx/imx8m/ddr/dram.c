@@ -11,6 +11,7 @@
 #include <plat/common/platform.h>
 
 #include <dram.h>
+#include <gpc.h>
 
 #define IMX_SIP_DDR_DVFS_GET_FREQ_COUNT		0x10
 #define IMX_SIP_DDR_DVFS_GET_FREQ_INFO		0x11
@@ -251,6 +252,12 @@ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 		for (int i = 0; i < PLATFORM_CORE_COUNT; i++)
 			if (cpu_id != i && (online_cores & (0x1 << (i * 8))))
 				plat_ic_raise_el3_sgi(0x8, i);
+#if defined(PLAT_imx8mq)
+		for (int i = 0; i < 4; i++) {
+			if (i != cpu_id && online_cores & (1 << (i * 8)))
+				imx_gpc_core_wake(1 << i);
+		}
+#endif
 
 		/* make sure all the core in WFE */
 		online_cores &= ~(0x1 << (cpu_id * 8));
