@@ -156,6 +156,9 @@
 #define SRC_OTG2PHY_SCR			U(0x24)
 #define SRC_GPR1_OFFSET			U(0x74)
 
+#define SRC_SCR_M4_ENABLE_MASK		BIT(3)
+#define SRC_SCR_M4C_NON_SCLR_RST_MASK  	BIT(0)
+
 #define SNVS_LPCR			U(0x38)
 #define SNVS_LPCR_SRTC_ENV		BIT(0)
 #define SNVS_LPCR_DP_EN			BIT(5)

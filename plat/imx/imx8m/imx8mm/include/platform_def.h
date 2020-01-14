@@ -138,11 +138,15 @@
 
 #define SRC_A53RCR0			U(0x4)
 #define SRC_A53RCR1			U(0x8)
+#define SRC_M4RCR			U(0xc)
 #define SRC_OTG1PHY_SCR			U(0x20)
 #define SRC_OTG2PHY_SCR			U(0x24)
 #define SRC_GPR1_OFFSET			U(0x74)
 #define SRC_GPR10_OFFSET		U(0x98)
 #define SRC_GPR10_PERSIST_SECONDARY_BOOT	BIT(30)
+
+#define SRC_SCR_M4_ENABLE_MASK		BIT(3)
+#define SRC_SCR_M4C_NON_SCLR_RST_MASK  	BIT(0)
 
 #define SNVS_LPCR			U(0x38)
 #define SNVS_LPCR_SRTC_ENV		BIT(0)

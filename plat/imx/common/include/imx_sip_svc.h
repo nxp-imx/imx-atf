@@ -29,6 +29,8 @@
 #define IMX_SIP_DDR_DVFS		0xc2000004
 
 #define IMX_SIP_SRC			0xC2000005
+#define IMX_SIP_SRC_M4_START		0x00
+#define IMX_SIP_SRC_M4_STARTED		0x01
 #define IMX_SIP_SRC_SET_SECONDARY_BOOT	0x10
 #define IMX_SIP_SRC_IS_SECONDARY_BOOT	0x11
 
@@ -64,6 +66,8 @@ int imx_soc_info_handler(uint32_t smc_fid, u_register_t x1,
 			 u_register_t x2, u_register_t x3);
 int imx_gpc_handler(uint32_t smc_fid, u_register_t x1,
 		    u_register_t x2, u_register_t x3);
+int imx_src_handler(uint32_t smc_fid, u_register_t x1,
+		    u_register_t x2, u_register_t x3);
 int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 	u_register_t x1, u_register_t x2, u_register_t x3);
 
@@ -76,14 +80,8 @@ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 
 int imx_gpc_handler(uint32_t smc_fid, u_register_t x1,
 		    u_register_t x2, u_register_t x3);
-#endif
-
-#if defined(PLAT_imx8mm) || defined(PLAT_imx8mq)
 int imx_src_handler(uint32_t smc_fid, u_register_t x1,
-		    u_register_t x2, u_register_t x3, void *handle);
-#endif
-
-#if defined(PLAT_imx8mm) || defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
+		    u_register_t x2, u_register_t x3);
 int imx_hab_handler(uint32_t smc_fid, u_register_t x1,
 		    u_register_t x2, u_register_t x3, u_register_t x4);
 #endif
