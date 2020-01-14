@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -84,6 +84,13 @@
 #define IMX_DDR_IPS_BASE		U(0x3d000000)
 #define IMX_DDR_IPS_SIZE		U(0x1800000)
 #define IMX_ROM_BASE			U(0x0)
+#define IMX_ROM_SIZE			U(0x40000)
+#define IMX_NS_OCRAM_BASE		U(0x900000)
+#define IMX_NS_OCRAM_SIZE		U(0x60000)
+#define IMX_CAAM_RAM_BASE		U(0x100000)
+#define IMX_CAAM_RAM_SIZE		U(0x10000)
+#define IMX_DRAM_BASE			U(0x40000000)
+#define IMX_DRAM_SIZE			U(0xc0000000)
 
 #define IMX_GIC_BASE			PLAT_GICD_BASE
 #define IMX_GIC_SIZE			U(0x200000)
