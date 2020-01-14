@@ -15,6 +15,7 @@
 
 #include <gpc.h>
 #include <imx8m_psci.h>
+#include <imx_sip_svc.h>
 #include <plat_imx8.h>
 
 #define MAX_PLL_NUM	U(10)
@@ -301,6 +302,28 @@ int imx_gpc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_regist
 	default:
 		return SMC_UNK;
 	}
+
+	return 0;
+}
+
+#pragma weak imx_src_handler
+/* imx8mq/imx8mm need to verrride below function */
+int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
+		    u_register_t x3)
+{
+	uint32_t val;
+
+	switch(x1) {
+	case IMX_SIP_SRC_M4_START:
+		mmio_clrbits_32(IMX_IOMUX_GPR_BASE + 0x58, 0x1);
+		break;
+	case IMX_SIP_SRC_M4_STARTED:
+		val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x58);
+		return !(val & 0x1);
+	default:
+		return SMC_UNK;
+
+	};
 
 	return 0;
 }
