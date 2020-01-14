@@ -196,6 +196,10 @@ void bl31_platform_setup(void)
 	plat_gic_init();
 
 	imx_gpc_init();
+
+	/* Enable and reset M7 */
+	mmio_setbits_32(IMX_SRC_BASE + 0xc,  SRC_SCR_M4_ENABLE_MASK);
+	mmio_clrbits_32(IMX_SRC_BASE + 0xc, SRC_SCR_M4C_NON_SCLR_RST_MASK);
 }
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(unsigned int type)
