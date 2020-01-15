@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019-2020 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #define PLATFORM_LINKER_FORMAT		"elf64-littleaarch64"
 #define PLATFORM_LINKER_ARCH		aarch64
 
