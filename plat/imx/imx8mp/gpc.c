@@ -941,7 +941,7 @@ void imx_gpc_init(void)
 	/* handle mediamix special */
 	mmio_write_32(0x32ec0000, 0x1FFFFFF);
 	mmio_write_32(0x32ec0004, 0x1FFFFFF);
-	mmio_write_32(0x32ec0008, 0x20000);
+	mmio_write_32(0x32ec0008, 0x40030000);
 
     /* config main NoC */
     //A53
