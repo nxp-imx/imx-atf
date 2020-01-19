@@ -43,6 +43,8 @@ static uintptr_t imx_sip_handler(unsigned int smc_fid,
 		return dram_dvfs_handler(smc_fid, handle, x1, x2, x3);
 	case IMX_SIP_HAB:
 		SMC_RET1(handle, imx_hab_handler(smc_fid, x1, x2, x3, x4));
+	case IMX_SIP_NOC:
+		SMC_RET1(handle, imx_noc_handler(smc_fid, x1, x2, x3));
 		break;
 #endif
 #if defined(PLAT_imx8mm) || defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
