@@ -45,6 +45,15 @@
 #define IMX_SIP_HAB_FAILSAFE		0x05
 #define IMX_SIP_HAB_CHECK_TARGET	0x06
 
+#define IMX_SIP_NOC			0xc2000008
+#define IMX_SIP_NOC_LCDIF		0x0
+#define IMX_SIP_NOC_PRIORITY		0x1
+#define NOC_GPU_PRIORITY		0x10
+#define NOC_DCSS_PRIORITY		0x11
+#define NOC_VPU_PRIORITY		0x12
+#define NOC_CPU_PRIORITY		0x13
+#define NOC_MIX_PRIORITY		0x14
+
 #define IMX_SIP_WAKEUP_SRC		0xC2000009
 #define IMX_SIP_WAKEUP_SRC_SCU		0x1
 #define IMX_SIP_WAKEUP_SRC_IRQSTEER	0x2
@@ -71,6 +80,8 @@ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 
 int imx_hab_handler(uint32_t smc_fid, u_register_t x1,
 	u_register_t x2, u_register_t x3, u_register_t x4);
+int imx_noc_handler(uint32_t smc_fid, u_register_t x1,
+	u_register_t x2, u_register_t x3);
 #endif
 #if defined(PLAT_imx8mm) || defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
 int dram_dvfs_handler(uint32_t smc_fid, void *handle,
