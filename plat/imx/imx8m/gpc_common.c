@@ -26,6 +26,8 @@ DEFINE_BAKERY_LOCK(gpc_lock);
 
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN		0x03
 
+struct plat_gic_ctx imx_gicv3_ctx;
+
 #pragma weak imx_set_cpu_pwr_off
 #pragma weak imx_set_cpu_pwr_on
 #pragma weak imx_set_cpu_lpm
@@ -216,14 +218,20 @@ void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
 	}
 }
 
-/*
- * this function only need to be override by platform
- * that support noc power down, for example: imx8mm.
- *  otherwize, keep it empty.
- */
 void imx_noc_slot_config(bool pdn)
 {
-
+	if (pdn) {
+		mmio_setbits_32(IMX_GPC_BASE + SLTx_CFG(1), NOC_PDN_SLT_CTRL);
+		mmio_setbits_32(IMX_GPC_BASE + SLTx_CFG(2), NOC_PUP_SLT_CTRL);
+		/* clear a53's PDN ack, use NOC's PDN ack */
+		mmio_clrsetbits_32(IMX_GPC_BASE + PGC_ACK_SEL_A53, 0xffff, NOC_PGC_PDN_ACK);
+		mmio_setbits_32(IMX_GPC_BASE + NOC_PGC_PCR, 0x1);
+	} else {
+		mmio_clrbits_32(IMX_GPC_BASE + SLTx_CFG(1), NOC_PDN_SLT_CTRL);
+		mmio_clrbits_32(IMX_GPC_BASE + SLTx_CFG(2), NOC_PUP_SLT_CTRL);
+		mmio_write_32(IMX_GPC_BASE + PGC_ACK_SEL_A53, A53_DUMMY_PUP_ACK | A53_DUMMY_PDN_ACK);
+		mmio_clrbits_32(IMX_GPC_BASE + NOC_PGC_PCR, 0x1);
+	}
 }
 
 /* this is common for all imx8m soc */
@@ -240,9 +248,6 @@ void imx_set_sys_lpm(unsigned int last_core, bool retention)
 			SLPCR_BYPASS_PMIC_READY);
 
 	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
-
-	/* config the noc power down */
-	imx_noc_slot_config(retention);
 
 	/* config wakeup irqs' mask in gpc */
 	imx_set_sys_wakeup(last_core, retention);
