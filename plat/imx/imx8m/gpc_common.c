@@ -24,12 +24,26 @@ DEFINE_BAKERY_LOCK(gpc_lock);
 
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN		0x03
 
+#define M4_LPA_ACTIVE	0x5555
+#define M4_LPA_IDLE	0x0
+#define LPA_STATUS	U(0x94)
+
 struct plat_gic_ctx imx_gicv3_ctx;
 
 #pragma weak imx_set_cpu_pwr_off
 #pragma weak imx_set_cpu_pwr_on
 #pragma weak imx_set_cpu_lpm
 #pragma weak imx_set_cluster_powerdown
+
+bool imx_m4_lpa_active(void)
+{
+	return mmio_read_32(IMX_SRC_BASE + LPA_STATUS) & M4_LPA_ACTIVE;
+}
+
+bool imx_is_m4_enabled(void)
+{
+	return mmio_read_32(IMX_M4_STATUS) & IMX_M4_ENABLED;
+}
 
 void imx_set_cpu_secure_entry(unsigned int core_id, uintptr_t sec_entrypoint)
 {
@@ -211,6 +225,10 @@ void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
 		mmio_write_32(IMX_GPC_BASE + gpc_imr_offset[last_core] + i * 4,
 			      irq_mask);
 	}
+
+	/* enable the MU wakeup */
+	if (imx_is_m4_enabled())
+		mmio_clrbits_32(IMX_GPC_BASE + gpc_imr_offset[last_core] + 0x8, BIT(24));
 }
 
 void imx_noc_slot_config(bool pdn)
@@ -232,17 +250,16 @@ void imx_noc_slot_config(bool pdn)
 /* this is common for all imx8m soc */
 void imx_set_sys_lpm(unsigned int last_core, bool retention)
 {
-	uint32_t val;
-
-	val = mmio_read_32(IMX_GPC_BASE + SLPCR);
-	val &= ~(SLPCR_EN_DSM | SLPCR_VSTBY | SLPCR_SBYOS |
-		 SLPCR_BYPASS_PMIC_READY | SLPCR_A53_FASTWUP_STOP_MODE);
-
 	if (retention)
-		val |= (SLPCR_EN_DSM | SLPCR_VSTBY | SLPCR_SBYOS |
-			SLPCR_BYPASS_PMIC_READY);
+		mmio_clrsetbits_32(IMX_GPC_BASE + SLPCR, SLPCR_A53_FASTWUP_STOP_MODE,
+			SLPCR_EN_DSM | SLPCR_VSTBY | SLPCR_SBYOS | SLPCR_BYPASS_PMIC_READY);
+	else
+		mmio_clrsetbits_32(IMX_GPC_BASE + SLPCR, SLPCR_EN_DSM | SLPCR_VSTBY |
+			 SLPCR_SBYOS | SLPCR_BYPASS_PMIC_READY, SLPCR_A53_FASTWUP_STOP_MODE);
 
-	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
+	/* mask M4 DSM trigger if M4 is NOT enabled */
+	if (!imx_is_m4_enabled())
+		mmio_setbits_32(IMX_GPC_BASE + LPCR_M4, BIT(31));
 
 	/* config wakeup irqs' mask in gpc */
 	imx_set_sys_wakeup(last_core, retention);
