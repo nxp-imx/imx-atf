@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #include <common/debug.h>
+#include <drivers/arm/tzc380.h>
 #include <drivers/delay_timer.h>
 #include <lib/mmio.h>
 #include <lib/psci/psci.h>
@@ -19,6 +20,7 @@
 #include <imx_aipstz.h>
 #include <imx_sip_svc.h>
 #include <platform_def.h>
+#include <plat_imx8.h>
 
 #define CCGR(x)		(0x4000 + (x) * 0x10)
 #define IMR_NUM		U(5)
@@ -305,6 +307,69 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 		}
 	}
 }
+
+static void imx8mm_tz380_init(void)
+{
+	unsigned int val;
+
+	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x28);
+	if ((val & GPR_TZASC_EN) != GPR_TZASC_EN)
+		return;
+
+	tzc380_init(IMX_TZASC_BASE);
+
+	/* Enable 1G-5G S/NS RW */
+	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G)
+		| TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
+}
+
+void imx_noc_wrapper_pre_suspend(unsigned int proc_num)
+{
+	/* enable MASTER1 & MASTER2 power down in A53 LPM mode */
+	mmio_clrbits_32(IMX_GPC_BASE + LPCR_A53_BSC, MASTER1_LPM_HSK | MASTER2_LPM_HSK);
+	mmio_setbits_32(IMX_GPC_BASE+ MST_CPU_MAPPING, MASTER1_MAPPING | MASTER2_MAPPING);
+
+	/* noc can only be power down when all the pu domain is off */
+	if (!pu_domain_status) {
+		/* enable noc power down */
+		imx_noc_slot_config(true);
+	}
+	/*
+	 * gic redistributor context save must be called when
+	 * the GIC CPU interface is disabled and before distributor save.
+	 */
+	plat_gic_save(proc_num, &imx_gicv3_ctx);
+}
+
+void imx_noc_wrapper_post_resume(unsigned int proc_num)
+{
+	/* disable MASTER1 & MASTER2 power down in A53 LPM mode */
+	mmio_setbits_32(IMX_GPC_BASE + LPCR_A53_BSC, MASTER1_LPM_HSK | MASTER2_LPM_HSK);
+	mmio_clrbits_32(IMX_GPC_BASE + MST_CPU_MAPPING, MASTER1_MAPPING | MASTER2_MAPPING);
+
+	/* noc can only be power down when all the pu domain is off */
+	if (!pu_domain_status) {
+		/* re-init the tz380 if resume from noc power down */
+		imx8mm_tz380_init();
+		/* disable noc power down */
+		imx_noc_slot_config(false);
+
+		/* config main NoC */
+		//A53
+		mmio_write_32 (0x32700008, 0x80000303);
+		mmio_write_32 (0x3270000c, 0x0);
+		//SUPERMIX
+		mmio_write_32 (0x32700088, 0x80000303);
+		mmio_write_32 (0x3270008c, 0x0);
+		//GIC
+		mmio_write_32 (0x32700108, 0x80000303);
+		mmio_write_32 (0x3270010c, 0x0);
+	}
+
+	/* restore gic context */
+	plat_gic_restore(proc_num, &imx_gicv3_ctx);
+}
+
 
 void imx_gpc_init(void)
 {
