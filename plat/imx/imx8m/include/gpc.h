@@ -30,6 +30,7 @@
 #define A53_CORE0_PGC			0x800
 #define A53_PLAT_PGC			0x900
 #define PLAT_PGC_PCR			0x900
+#define NOC_PGC_PCR			0xa40
 #define PGC_SCU_TIMING			0x910
 
 #define MASK_DSM_TRIGGER_A53		BIT(31)
@@ -42,6 +43,8 @@
 #define CPU_CLOCK_ON_LPM		BIT(14)
 #define A53_CLK_ON_LPM			BIT(14)
 #define MASTER0_LPM_HSK			BIT(6)
+#define MASTER1_LPM_HSK			BIT(7)
+#define MASTER2_LPM_HSK			BIT(8)
 
 #define L2PGE				BIT(31)
 #define EN_L2_WFI_PDN			BIT(5)
@@ -61,6 +64,10 @@
 #define A53_DUMMY_PUP_ACK		BIT(31)
 #define A53_PLAT_PDN_ACK		BIT(2)
 #define A53_PLAT_PUP_ACK		BIT(18)
+#define NOC_PDN_SLT_CTRL		BIT(10)
+#define NOC_PUP_SLT_CTRL		BIT(11)
+#define NOC_PGC_PDN_ACK			BIT(3)
+#define NOC_PGC_PUP_ACK			BIT(19)
 
 #define PLAT_PUP_SLT_CTRL		BIT(9)
 #define PLAT_PDN_SLT_CTRL		BIT(8)
@@ -125,6 +132,8 @@ struct pll_override {
 
 DECLARE_BAKERY_LOCK(gpc_lock);
 
+extern struct plat_gic_ctx imx_gicv3_ctx;
+
 /* function declare */
 void imx_gpc_init(void);
 void imx_set_cpu_secure_entry(unsigned int core_index, uintptr_t sec_entrypoint);
@@ -140,6 +149,8 @@ void imx_set_rbc_count(void);
 void imx_clear_rbc_count(void);
 void imx_anamix_override(bool enter);
 void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on);
+void imx_noc_wrapper_pre_suspend(unsigned int proc_num);
+void imx_noc_wrapper_post_resume(unsigned int proc_num);
 
 #if defined(PLAT_imx8mq)
 void imx_gpc_set_a53_core_awake(uint32_t core_id);
