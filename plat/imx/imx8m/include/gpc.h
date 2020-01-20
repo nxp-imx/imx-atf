@@ -62,6 +62,8 @@ struct pll_override {
 
 DECLARE_BAKERY_LOCK(gpc_lock);
 
+extern struct plat_gic_ctx imx_gicv3_ctx;
+
 /* function declare */
 void imx_gpc_init(void);
 void imx_set_cpu_secure_entry(unsigned int core_index, uintptr_t sec_entrypoint);
@@ -77,6 +79,8 @@ void imx_set_rbc_count(void);
 void imx_clear_rbc_count(void);
 void imx_anamix_override(bool enter);
 void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on);
+void imx_noc_wrapper_pre_suspend(unsigned int proc_num);
+void imx_noc_wrapper_post_resume(unsigned int proc_num);
 
 #if defined(PLAT_imx8mq)
 void imx_gpc_set_a53_core_awake(uint32_t core_id);
