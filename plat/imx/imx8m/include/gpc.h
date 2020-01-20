@@ -81,6 +81,7 @@ void imx_anamix_override(bool enter);
 void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on);
 void imx_noc_wrapper_pre_suspend(unsigned int proc_num);
 void imx_noc_wrapper_post_resume(unsigned int proc_num);
+bool imx_m4_lpa_active(void);
 
 #if defined(PLAT_imx8mq)
 void imx_gpc_set_a53_core_awake(uint32_t core_id);

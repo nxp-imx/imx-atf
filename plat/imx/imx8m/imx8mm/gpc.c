@@ -422,8 +422,9 @@ void imx_gpc_init(void)
 	/* clear DSM by default */
 	val = mmio_read_32(IMX_GPC_BASE + SLPCR);
 	val &= ~SLPCR_EN_DSM;
-	/* enable the fast wakeup wait mode */
+	/* enable the fast wakeup wait/stop mode */
 	val |= SLPCR_A53_FASTWUP_WAIT_MODE;
+	val |= SLPCR_A53_FASTWUP_STOP_MODE;
 	/* clear the RBC */
 	val &= ~(0x3f << SLPCR_RBC_COUNT_SHIFT);
 	/* set the STBY_COUNT to 0x5, (128 * 30)us */
