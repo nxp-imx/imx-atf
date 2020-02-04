@@ -17,7 +17,7 @@
 #include <runtime_svc.h>
 #include <imx_sip.h>
 
-#if defined(PLAT_IMX8QM) || defined(PLAT_IMX8QX)
+#if defined(PLAT_IMX8QM) || defined(PLAT_IMX8QX) || defined(PLAT_IMX8DXL)
 static bool wakeup_src_irqsteer;
 
 bool imx_is_wakeup_src_irqsteer(void)

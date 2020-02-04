@@ -53,7 +53,7 @@ uintptr_t imx_svc_smc_handler(uint32_t smc_fid,
 		SMC_RET1(handle, imx_noc_handler(smc_fid, x1, x2, x3));
 		break;
 #endif
-#if defined(PLAT_IMX8QM) || defined(PLAT_IMX8QX)
+#if defined(PLAT_IMX8QM) || defined(PLAT_IMX8QX) || defined(PLAT_IMX8DXL)
 	case  IMX_SIP_CPUFREQ:
 		SMC_RET1(handle, imx_cpufreq_handler(smc_fid, x1, x2, x3));
 		break;

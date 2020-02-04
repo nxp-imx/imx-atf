@@ -70,7 +70,7 @@
 
 #define IMX_SIP_MISC_SET_TEMP		0xc200000c
 
-#if defined(PLAT_IMX8QM) || defined(PLAT_IMX8QX)
+#if defined(PLAT_IMX8QM) || defined(PLAT_IMX8QX) || defined(PLAT_IMX8DXL)
 int imx_cpufreq_handler(uint32_t smc_fid, u_register_t x1,
 			u_register_t x2, u_register_t x3);
 int imx_srtc_handler(uint32_t smc_fid, void *handle, u_register_t x1,
