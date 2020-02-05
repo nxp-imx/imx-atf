@@ -41,3 +41,7 @@ MULTI_CONSOLE_API	:=	1
 ifneq (${SPD},none)
 $(eval $(call add_define,TEE_IMX8))
 endif
+
+ifeq (${PLAT},imx8dx)
+$(eval $(call add_define,SOC_IMX8DX))
+endif
