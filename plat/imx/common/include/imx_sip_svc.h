@@ -54,7 +54,7 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1,
 		    u_register_t x2, u_register_t x3, void *handle);
 #endif
 
-#if (defined(PLAT_imx8qm) || defined(PLAT_imx8qx) || defined(PLAT_imx8dxl))
+#if (defined(PLAT_imx8qm) || defined(PLAT_imx8qx) || defined(PLAT_imx8dx) || defined(PLAT_imx8dxl))
 int imx_cpufreq_handler(uint32_t smc_fid, u_register_t x1,
 			u_register_t x2, u_register_t x3);
 int imx_srtc_handler(uint32_t smc_fid, void *handle, u_register_t x1,
