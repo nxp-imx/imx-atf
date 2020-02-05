@@ -17,7 +17,7 @@
 #include <lib/mmio.h>
 #include <sci/sci.h>
 
-#if defined(PLAT_imx8qm) || defined(PLAT_imx8qx) || defined(PLAT_imx8dxl)
+#if defined(PLAT_imx8qm) || defined(PLAT_imx8qx) || defined(PLAT_imx8dx) || defined(PLAT_imx8dxl)
 
 #ifdef PLAT_imx8qm
 const static int ap_cluster_index[PLATFORM_CLUSTER_COUNT] = {
@@ -99,7 +99,7 @@ static void imx_cpufreq_set_target(uint32_t cluster_id, unsigned long freq)
 #ifdef PLAT_imx8qm
 	sc_pm_set_clock_rate(ipc_handle, ap_cluster_index[cluster_id], SC_PM_CLK_CPU, &rate);
 #endif
-#if defined(PLAT_imx8qx) || defined(PLAT_imx8dxl)
+#if defined(PLAT_imx8qx) || defined(PLAT_imx8dx) || defined(PLAT_imx8dxl)
 	sc_pm_set_clock_rate(ipc_handle, SC_R_A35, SC_PM_CLK_CPU, &rate);
 #endif
 }
@@ -198,7 +198,7 @@ int imx_get_cpu_rev(uint32_t *cpu_id, uint32_t *cpu_rev)
 
 	return 0;
 }
-#endif /* defined(PLAT_imx8qm) || defined(PLAT_imx8qx) || defined(PLAT_imx8dxl) */
+#endif /* defined(PLAT_imx8qm) || defined(PLAT_imx8qx) || defined(PLAT_imx8dx) || defined(PLAT_imx8qm) || defined(PLAT_imx8dxl) */
 
 #if defined(PLAT_imx8mm) || defined(PLAT_imx8mq)
 int imx_src_handler(uint32_t smc_fid,
