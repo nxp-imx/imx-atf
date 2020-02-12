@@ -83,9 +83,9 @@
 /* enable it to make debug message to SC console */
 #define SC_CONSOLE			0
 
-#define DEBUG_CONSOLE			1
+#define DEBUG_CONSOLE			0
 
-#if 1
+#ifdef TEE_IMX8
 #define DEBUG_CONSOLE_A35		1
 #else
 #define DEBUG_CONSOLE_A35		0
