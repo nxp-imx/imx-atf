@@ -37,10 +37,14 @@
 #define BL31_LIMIT			0x80020000
 
 #ifdef TEE_IMX8
+#if defined (SOC_IMX8DX)
+#define BL32_BASE			0xbe000000
+#else
 #define BL32_BASE			0xfe000000
+#endif
 #define BL32_SIZE			0x02000000
 #define BL32_SHM_SIZE			0x00400000
-#define BL32_LIMIT			0x100000000
+#define BL32_LIMIT			(BL32_BASE + BL32_SIZE)
 #define PLAT_TEE_IMAGE_OFFSET		0x84000000
 #endif
 
