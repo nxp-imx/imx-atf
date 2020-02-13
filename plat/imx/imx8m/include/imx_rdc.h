@@ -10,6 +10,7 @@
 #include <lib/utils_def.h>
 
 #include <platform_def.h>
+#include <imx_sec_def.h>
 
 #define MDAn(x)		(IMX_RDC_BASE + 0x200 + (x) * 4)
 #define PDAPn(x)	(IMX_RDC_BASE + 0x400 + (x) * 4)
