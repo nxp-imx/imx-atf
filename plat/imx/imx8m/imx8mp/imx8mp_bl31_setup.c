@@ -45,10 +45,10 @@ static const struct aipstz_cfg aipstz[] = {
 
 static const struct imx_rdc_cfg rdc[] = {
 	/* Master domain assignment */
-	RDC_MDAn(0x1, DID1),
+	RDC_MDAn(RDC_MDA_M7, DID1),
 
 	/* peripherals domain permission */
-	RDC_PDAPn(105, D0R | D0W),
+	RDC_PDAPn(RDC_PDAP_UART2, D0R | D0W),
 
 	/* memory region */
 
