@@ -45,6 +45,7 @@ USE_COHERENT_MEM	:=	0
 MULTI_CONSOLE_API	:=	1
 RESET_TO_BL31		:=	1
 ERROR_DEPRECATED	:=	1
+WARMBOOT_ENABLE_DCACHE_EARLY:=	1
 
 ifneq (${SPD},none)
 $(eval $(call add_define,TEE_IMX8))

@@ -15,6 +15,7 @@
 #include <plat_imx8.h>
 #include <platform_def.h>
 #include <psci.h>
+#include <spinlock.h>
 #include <imx_sip.h>
 #include <tzc380.h>
 #include <soc.h>
@@ -271,13 +272,153 @@ static struct imx_noc_setting noc_setting[] = {
        {VPU_H1, 0xe80, 0xe80, 0x80000303, 0x0, 0x0}
 };
 
-static uint32_t gpc_imr_offset[] = { 0x30, 0x40, 0x1c0, 0x1d0, };
+static uint32_t gpc_imr_offset[] = { IMX_GPC_BASE + 0x30, IMX_GPC_BASE + 0x44, IMX_GPC_BASE + 0x194, IMX_GPC_BASE + 0x1a8, };
 /* save gic dist&redist context when NOC wrapper is power down */
 static struct plat_gic_ctx imx_gicv3_ctx;
 
 static unsigned int pu_domain_status;
 
 DEFINE_BAKERY_LOCK(gpc_lock);
+
+static uint32_t gpc_saved_imrs[20];
+static uint32_t gpc_wake_irqs[5];
+spinlock_t gpc_imr_lock[4];
+
+static void gpc_imr_core_spin_lock(unsigned int core_id)
+{
+	spin_lock(&gpc_imr_lock[core_id]);
+}
+
+static void gpc_imr_core_spin_unlock(unsigned int core_id)
+{
+	spin_unlock(&gpc_imr_lock[core_id]);
+}
+
+static void gpc_save_imr_lpm(unsigned int core_id, unsigned int imr_idx)
+{
+	uint32_t reg = gpc_imr_offset[core_id] + imr_idx * 4;
+
+	gpc_imr_core_spin_lock(core_id);
+
+	gpc_saved_imrs[core_id + imr_idx * 4] = mmio_read_32(reg);
+	mmio_write_32(reg, ~gpc_wake_irqs[imr_idx]);
+
+	gpc_imr_core_spin_unlock(core_id);
+}
+
+static void gpc_restore_imr_lpm(unsigned int core_id, unsigned int imr_idx)
+{
+	uint32_t reg = gpc_imr_offset[core_id] + imr_idx * 4;
+	uint32_t val = gpc_saved_imrs[core_id + imr_idx * 4];
+
+	gpc_imr_core_spin_lock(core_id);
+
+	mmio_write_32(reg, val);
+
+	gpc_imr_core_spin_unlock(core_id);
+}
+
+void imx_set_sys_wakeup(int last_core, bool pdn)
+{
+	unsigned int imr, core;
+
+	if (pdn)
+		for (imr = 0; imr < 5; imr++)
+			for (core = 0; core < 4; core++)
+				gpc_save_imr_lpm(core, imr);
+	else
+		for (imr = 0; imr < 5; imr++)
+			for (core = 0; core < 4; core++)
+				gpc_restore_imr_lpm(core, imr);
+}
+
+static void imx_gpc_hwirq_mask(unsigned int hwirq)
+{
+	uintptr_t reg;
+	unsigned int val;
+
+	gpc_imr_core_spin_lock(0);
+	reg = gpc_imr_offset[0] + (hwirq / 32) * 4;
+	val = mmio_read_32(reg);
+	val |= 1 << hwirq % 32;
+	mmio_write_32(reg, val);
+	gpc_imr_core_spin_unlock(0);
+}
+
+static void imx_gpc_hwirq_unmask(unsigned int hwirq)
+{
+	uintptr_t reg;
+	unsigned int val;
+
+	gpc_imr_core_spin_lock(0);
+	reg = gpc_imr_offset[0] + (hwirq / 32) * 4;
+	val = mmio_read_32(reg);
+	val &= ~(1 << hwirq % 32);
+	mmio_write_32(reg, val);
+	gpc_imr_core_spin_unlock(0);
+}
+
+static void imx_gpc_set_wake(uint32_t hwirq, unsigned int on)
+{
+	uint32_t mask, idx;
+
+	mask = 1 << hwirq % 32;
+	idx = hwirq / 32;
+	gpc_wake_irqs[idx] = on ? gpc_wake_irqs[idx] | mask :
+				 gpc_wake_irqs[idx] & ~mask;
+}
+
+static void imx_gpc_mask_irq0(uint32_t core_id, uint32_t mask)
+{
+	gpc_imr_core_spin_lock(core_id);
+	if (mask)
+		mmio_setbits_32(gpc_imr_offset[core_id], 1);
+	else
+		mmio_clrbits_32(gpc_imr_offset[core_id], 1);
+	dsb();
+	gpc_imr_core_spin_unlock(core_id);
+}
+
+void imx_gpc_core_wake(uint32_t cpumask)
+{
+	for (int i = 0; i < 4; i++)
+		if (cpumask & (1 << i))
+			imx_gpc_mask_irq0(i, false);
+}
+
+void imx_gpc_set_a53_core_awake(uint32_t core_id)
+{
+	imx_gpc_mask_irq0(core_id, true);
+}
+
+static void imx_gpc_set_affinity(uint32_t hwirq, unsigned cpu_idx)
+{
+	uintptr_t reg;
+	unsigned int val;
+
+	/*
+	 * using the mask/unmask bit as affinity function.unmask the
+	 * IMR bit to enable IRQ wakeup for this core.
+	 */
+	gpc_imr_core_spin_lock(cpu_idx);
+	reg = gpc_imr_offset[cpu_idx] + (hwirq / 32) * 4;
+	val = mmio_read_32(reg);
+	val &= ~(1 << hwirq % 32);
+	mmio_write_32(reg, val);
+	gpc_imr_core_spin_unlock(cpu_idx);
+
+	/* clear affinity of other core */
+	for (int i = 0; i < 4; i++) {
+		if (cpu_idx != i) {
+			gpc_imr_core_spin_lock(i);
+			reg = gpc_imr_offset[i] + (hwirq / 32) * 4;
+			val = mmio_read_32(reg);
+			val |= (1 << hwirq % 32);
+			mmio_write_32(reg, val);
+			gpc_imr_core_spin_unlock(i);
+		}
+	}
+}
 
 bool imx_is_m4_enabled(void)
 {
@@ -696,6 +837,7 @@ void noc_wrapper_post_resume(unsigned int proc_num)
 	plat_gic_restore(proc_num, &imx_gicv3_ctx);
 }
 
+#if 0
 /* use external IRQ wakeup source for LPM if NOC power down */
 void imx_set_sys_wakeup(int last_core, bool pdn)
 {
@@ -732,6 +874,7 @@ void imx_set_sys_wakeup(int last_core, bool pdn)
 		mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_A53 + 0x8, val);
 	}
 }
+#endif
 
 static void imx_config_noc(uint32_t domain_id)
 {
@@ -869,9 +1012,19 @@ void imx_gpc_init(void)
 		mmio_write_32(IMX_GPC_BASE + GPC_IMR1_CORE0_M4 + i * 4, ~0x0);
 	}
 
+	/* Due to the hardware design requirement, need to make
+	 * sure GPR interrupt(#32) is unmasked during RUN mode to
+	 * avoid entering DSM mode by mistake.
+	 */
+	for (i = 0; i < 4; i++)
+		mmio_write_32(gpc_imr_offset[i], ~0x1);
+
+	/* leave the IOMUX_GPC bit 12 on for core wakeup */
+	mmio_setbits_32(IMX_IOMUX_GPR_BASE + 0x4, 1 << 12);
+
 	val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
 	/* use GIC wake_request to wakeup C0~C3 from LPM */
-	val |= 0x30c00000;
+	val |= 0x40000000;
 	/* clear the MASTER0 LPM handshake */
 	val &= ~(1 << 6);
 	mmio_write_32(IMX_GPC_BASE + LPCR_A53_BSC, val);
@@ -964,6 +1117,21 @@ int imx_gpc_handler(uint32_t smc_fid,
 	switch(x1) {
 	case FSL_SIP_CONFIG_GPC_PM_DOMAIN:
 		imx_gpc_pm_domain_enable(x2, x3);
+		break;
+	case FSL_SIP_CONFIG_GPC_CORE_WAKE:
+		imx_gpc_core_wake(x2);
+		break;
+	case FSL_SIP_CONFIG_GPC_SET_WAKE:
+		imx_gpc_set_wake(x2, x3);
+		break;
+	case FSL_SIP_CONFIG_GPC_MASK:
+		imx_gpc_hwirq_mask(x2);
+		break;
+	case FSL_SIP_CONFIG_GPC_UNMASK:
+		imx_gpc_hwirq_unmask(x2);
+		break;
+	case FSL_SIP_CONFIG_GPC_SET_AFF:
+		imx_gpc_set_affinity(x2, x3);
 		break;
 	default:
 		return SMC_UNK;
