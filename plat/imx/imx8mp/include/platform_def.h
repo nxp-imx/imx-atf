@@ -48,8 +48,8 @@
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 32)
 #define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 32)
 
-#define MAX_XLAT_TABLES			4
-#define MAX_MMAP_REGIONS		13
+#define MAX_XLAT_TABLES			8
+#define MAX_MMAP_REGIONS		16
 
 #define HAB_RVT_BASE			0x00000900 /* HAB_RVT for i.MX8MM */
 
