@@ -4,6 +4,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
+# Translation tables library
+include lib/xlat_tables_v2/xlat_tables.mk
+
 PLAT_INCLUDES		:=	-Iplat/imx/imx8qm/include		\
 				-Iplat/imx/common/include		\
 
@@ -24,11 +27,10 @@ BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
 				plat/imx/common/imx8_psci.c		\
 				plat/imx/common/imx_sip_svc.c		\
 				plat/imx/common/imx_sip_handler.c	\
-				lib/xlat_tables/aarch64/xlat_tables.c		\
-				lib/xlat_tables/xlat_tables_common.c		\
 				lib/cpus/aarch64/cortex_a53.S			\
 				lib/cpus/aarch64/cortex_a72.S			\
 				drivers/arm/cci/cci.c				\
+				${XLAT_TABLES_LIB_SRCS}				\
 				${IMX_GIC_SOURCES}				\
 
 include plat/imx/common/sci/sci_api.mk
@@ -46,3 +48,7 @@ ENABLE_CPU_DYNAMIC_RETENTION := 1
 $(eval $(call add_define,ENABLE_CPU_DYNAMIC_RETENTION))
 ENABLE_L2_DYNAMIC_RETENTION := 1
 $(eval $(call add_define,ENABLE_L2_DYNAMIC_RETENTION))
+
+ifeq (${SPD},trusty)
+	BL31_CFLAGS    +=      -DPLAT_XLAT_TABLES_DYNAMIC=1
+endif
