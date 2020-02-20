@@ -69,3 +69,7 @@ $(eval $(call add_define,IMX_BOOT_UART_BASE))
 
 EL3_EXCEPTION_HANDLING := 1
 SDEI_SUPPORT := 1
+
+ifeq (${SPD},trusty)
+	BL31_CFLAGS    +=      -DPLAT_XLAT_TABLES_DYNAMIC=1
+endif

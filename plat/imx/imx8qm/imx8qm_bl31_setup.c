@@ -19,7 +19,7 @@
 #include <drivers/console.h>
 #include <lib/el3_runtime/context_mgmt.h>
 #include <lib/mmio.h>
-#include <lib/xlat_tables/xlat_tables.h>
+#include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/common/platform.h>
 
 #include <imx8qm_pads.h>
