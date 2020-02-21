@@ -38,7 +38,7 @@
 
 #ifdef TEE_IMX8
 #if defined (SOC_IMX8DX)
-#define BL32_BASE			0xbe000000
+#define BL32_BASE			0x96000000
 #else
 #define BL32_BASE			0xfe000000
 #endif
