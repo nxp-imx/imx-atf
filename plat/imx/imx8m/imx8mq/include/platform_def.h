@@ -54,6 +54,10 @@
 #define MAX_MMAP_REGIONS		14
 #endif
 
+#ifdef SPD_trusty
+#define IMX8M_TRUSTY_STACK_SIZE		0x100
+#endif
+
 #define HAB_RVT_BASE			U(0x00000880) /* HAB_RVT for i.MX8MQ */
 
 #define IMX_BOOT_UART_BASE		U(0x30860000)
@@ -151,4 +155,9 @@
 #define COUNTER_FREQUENCY		8000000 /* 8MHz */
 
 #define DEBUG_CONSOLE			0
+#if !DEBUG_CONSOLE
+#undef LOG_LEVEL
+#define LOG_LEVEL 			0
+#endif
+
 #define IMX_WDOG_B_RESET
