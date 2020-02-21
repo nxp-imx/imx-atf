@@ -272,7 +272,9 @@ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 			lpddr4_swffc(&dram_info, dev_fsp, fsp_index);
 			dev_fsp = (~dev_fsp) & 0x1;
 		} else if (dram_info.dram_type == DDRC_DDR4) {
+#if !defined(PLAT_imx8mq)
 			ddr4_swffc(&dram_info, fsp_index);
+#endif
 		}
 
 		dram_info.current_fsp = fsp_index;
