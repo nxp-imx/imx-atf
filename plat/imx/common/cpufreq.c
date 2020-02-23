@@ -26,7 +26,7 @@ static void imx_cpufreq_set_target(uint32_t cluster_id, unsigned long freq)
 #ifdef PLAT_IMX8QM
 	sc_pm_set_clock_rate(ipc_handle, ap_cluster_index[cluster_id], SC_PM_CLK_CPU, &rate);
 #endif
-#ifdef PLAT_IMX8QX
+#if defined(PLAT_IMX8QX) || defined(PLAT_IMX8DXL)
 	sc_pm_set_clock_rate(ipc_handle, SC_R_A35, SC_PM_CLK_CPU, &rate);
 #endif
 }

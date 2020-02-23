@@ -13,6 +13,7 @@
 #define FSL_SIP_CONFIG_GPC_SET_WAKE	0x02
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN	0x03
 #define FSL_SIP_CONFIG_GPC_SET_AFF	0x04
+#define FSL_SIP_CONFIG_GPC_CORE_WAKE    0x05
 
 #define IMX_SIP_CPUFREQ			0xC2000001
 #define IMX_SIP_SET_CPUFREQ		0x00
@@ -69,7 +70,7 @@
 
 #define IMX_SIP_MISC_SET_TEMP		0xc200000c
 
-#if defined(PLAT_IMX8QM) || defined(PLAT_IMX8QX)
+#if defined(PLAT_IMX8QM) || defined(PLAT_IMX8QX) || defined(PLAT_IMX8DXL)
 int imx_cpufreq_handler(uint32_t smc_fid, u_register_t x1,
 			u_register_t x2, u_register_t x3);
 int imx_srtc_handler(uint32_t smc_fid, void *handle, u_register_t x1,

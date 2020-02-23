@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright 2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -16,10 +16,10 @@
 #define CACHE_WRITEBACK_GRANULE		64
 
 #define PLAT_PRIMARY_CPU		0x0
-#define PLATFORM_MAX_CPU_PER_CLUSTER	4
+#define PLATFORM_MAX_CPU_PER_CLUSTER	2
 #define PLATFORM_CLUSTER_COUNT		1
-#define PLATFORM_CORE_COUNT		4
-#define PLATFORM_CLUSTER0_CORE_COUNT	4
+#define PLATFORM_CORE_COUNT		2
+#define PLATFORM_CLUSTER0_CORE_COUNT	2
 #define PLATFORM_CLUSTER1_CORE_COUNT	0
 
 #define IMX_PWR_LVL0			MPIDR_AFFLVL0
@@ -37,14 +37,10 @@
 #define BL31_LIMIT			0x80020000
 
 #ifdef TEE_IMX8
-#if defined (SOC_IMX8DX)
-#define BL32_BASE			0xbe000000
-#else
 #define BL32_BASE			0xfe000000
-#endif
 #define BL32_SIZE			0x02000000
 #define BL32_SHM_SIZE			0x00400000
-#define BL32_LIMIT			(BL32_BASE + BL32_SIZE)
+#define BL32_LIMIT			0x100000000
 #define PLAT_TEE_IMAGE_OFFSET		0x84000000
 #endif
 
@@ -95,6 +91,6 @@
 #define DEBUG_CONSOLE_A35		0
 #endif
 
-#define PLAT_IMX8QX			1
+#define PLAT_IMX8DXL			1
 
 #endif /* PLATFORM_DEF_H */

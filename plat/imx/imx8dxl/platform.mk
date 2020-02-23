@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+# Copyright 2020 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-PLAT_INCLUDES		:=	-Iplat/imx/imx8qx/include		\
+PLAT_INCLUDES		:=	-Iplat/imx/imx8dxl/include		\
 				-Iplat/imx/common/include		\
 
 IMX_GIC_SOURCES	:=		drivers/arm/gic/v3/gicv3_helpers.c	\
@@ -17,8 +17,8 @@ IMX_GIC_SOURCES	:=		drivers/arm/gic/v3/gicv3_helpers.c	\
 
 BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
 				plat/imx/common/imx8_helpers.S		\
-				plat/imx/imx8qx/imx8qx_bl31_setup.c	\
-				plat/imx/imx8qx/imx8qx_psci.c		\
+				plat/imx/imx8dxl/imx8dxl_bl31_setup.c	\
+				plat/imx/imx8dxl/imx8dxl_psci.c		\
 				plat/imx/common/imx8_topology.c		\
 				plat/imx/common/imx8_psci.c		\
 				plat/imx/common/cpufreq.c		\
@@ -40,8 +40,4 @@ MULTI_CONSOLE_API	:=	1
 
 ifneq (${SPD},none)
 $(eval $(call add_define,TEE_IMX8))
-endif
-
-ifeq (${PLAT},imx8dx)
-$(eval $(call add_define,SOC_IMX8DX))
 endif

@@ -10,6 +10,8 @@
 #include <stdbool.h>
 
 void imx_gpc_set_m_core_pgc(unsigned int cpu, bool pdn);
+void imx_gpc_set_a53_core_awake(uint32_t core_id);
+void imx_gpc_core_wake(uint32_t cpumask);
 void imx_anamix_pre_suspend(void);
 void imx_anamix_post_resume(void);
 void imx_gpc_init(void);
