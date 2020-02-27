@@ -322,15 +322,14 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 #ifdef SPD_trusty
 	bl32_image_ep_info.args.arg0 = BL32_SIZE;
 	bl32_image_ep_info.args.arg1 = BL32_BASE;
-#else
-	/* Pass TEE base and size to uboot */
-	bl33_image_ep_info.args.arg1 = 0xBE000000;
 #endif
+	/* Pass TEE base and size to uboot */
+	bl33_image_ep_info.args.arg1 = BL32_BASE;
 	/* TEE size + RDC reserved memory = 0x2000000 + 0x2000000 + 0x30000000 */
 #ifdef DECRYPTED_BUFFER_START
 	bl33_image_ep_info.args.arg2 = 0xC0000000 - DECRYPTED_BUFFER_START;
 #else
-	bl33_image_ep_info.args.arg2 = 0x2000000;
+	bl33_image_ep_info.args.arg2 = BL32_SIZE;
 #endif
 #endif
 

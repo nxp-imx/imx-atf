@@ -31,15 +31,13 @@
 
 #define BL31_BASE			0x920000
 #define BL31_LIMIT			0x940000
-
-#ifdef SPD_trusty
 #define BL32_SIZE			0x02000000
-#define BL32_LIMIT			0xC0000000
-#endif
 #ifdef USE_4G_DRAM
 #define BL32_BASE			0xfe000000
+#define BL32_LIMIT			0xffffffff
 #else
 #define BL32_BASE			0xbe000000
+#define BL32_LIMIT			0xC0000000
 #endif
 
 /* non-secure uboot base */
