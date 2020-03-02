@@ -944,6 +944,18 @@ static void imx_config_noc(uint32_t domain_id)
        return;
 }
 
+void imx_aips5_init(void)
+{
+	/* config the AIPSTZ5, since it depends on power up audio mix */
+	mmio_write_32(0x30df0000, 0x77777777);
+	mmio_write_32(0x30df0004, 0x77777777);
+	mmio_write_32(0x30df0040, 0x0);
+	mmio_write_32(0x30df0044, 0x0);
+	mmio_write_32(0x30df0048, 0x0);
+	mmio_write_32(0x30df004c, 0x0);
+	mmio_write_32(0x30df0050, 0x0);
+}
+
 static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 {
 	struct imx_pwr_domain *pwr_domain = &pu_domains[domain_id];
@@ -972,6 +984,9 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, uint32_t on)
 
               imx_config_noc (domain_id);
 
+		/* AIPS5 config is lost when audiomix is off, so need to re-init it */
+		if (domain_id == AUDIOMIX)
+			imx_aips5_init();
 	} else {
 		pu_domain_status &= ~(1 << domain_id);
 
