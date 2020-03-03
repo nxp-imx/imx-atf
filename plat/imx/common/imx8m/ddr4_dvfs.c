@@ -72,7 +72,7 @@ void dram_cfg_all_mr(unsigned int num_rank, unsigned int pstate)
 	}
 }
 
-void sw_pstate(unsigned int pstate)
+void sw_pstate(unsigned int pstate, unsigned int drate)
 {
 	volatile unsigned int tmp;
 	unsigned int i;
@@ -111,7 +111,7 @@ void sw_pstate(unsigned int pstate)
 	} while (tmp);
 
 	/* change the clock to the target frequency */
-	dram_clock_switch(pstate);
+	dram_clock_switch(drate, false);
 
 	mmio_write_32(DDRC_DFIMISC(0), 0x00000000 | (pstate << 8));
 	/* wait DFISTAT.dfi_init_complete to 1 */
@@ -136,131 +136,7 @@ void sw_pstate(unsigned int pstate)
 	} while (tmp == 0x23);
 }
 
-void ddr4_dll_change(unsigned int num_rank, unsigned int pstate, unsigned int cur_pstate)
-{
-	volatile unsigned int tmp;
-	enum DLL_STATE { NO_CHANGE=0, ON2OFF=1, OFF2ON=2} dll_sw; /* 0-no change, 1-on2off, 2-off2on.; */
-
-	if (pstate != 0 && cur_pstate == 0)
-		dll_sw = ON2OFF;
-	else if (pstate == 0 && cur_pstate != 0)
-		dll_sw = OFF2ON;
-	else
-		dll_sw = NO_CHANGE;
-
-	/* the the following software programming sequence to switch from DLL-on to DLL-off, or reverse: */
-	mmio_write_32(DDRC_SWCTL(0), 0x0000);
-
-	mmio_write_32(DDRC_PCTRL_0(0), 0x00000000);
-
-	/* 1. Set the DBG1.dis_hif = 1. This prevents further reads/writes being received on the HIF. */
-	mmio_setbits_32(DDRC_DBG1(0), (0x1 << 1));
-
-	/* 2. Set ZQCTL0.dis_auto_zq=1, to disable automatic generation of ZQCS/MPC(ZQ calibration) */
-	mmio_setbits_32(DDRC_FREQ1_ZQCTL0(0), (1 << 31));
-	mmio_setbits_32(DDRC_FREQ2_ZQCTL0(0), (1 << 31));
-	mmio_setbits_32(DDRC_ZQCTL0(0), (1 << 31));
-
-	/* 3. Set RFSHCTL3.dis_auto_refresh=1, to disable automatic refreshes */
-	mmio_setbits_32(DDRC_RFSHCTL3(0), 0x1);
-	/* 4. Ensure all commands have been flushed from the uMCTL2 by polling */
-	do {
-		tmp = 0x36000000 & mmio_read_32(DDRC_DBGCAM(0));
-	} while (tmp != 0x36000000);
-
-	/* mmio_write_32(DDRC_PCTRL_0(0), 0x00000000); */
-
-	/* 5. Perform an MRS command (using MRCTRL0 and MRCTRL1 registers) to disable RTT_NOM: */
-	/* a. DDR3: Write 0 to MR1[9], MR1[6] and MR1[2] */
-	/* b. DDR4: Write 0 to MR1[10:8] */
-	for (int i = 1; i <= num_rank; i++) {
-		if (mr_value[1] & 0x700)
-			ddr4_mr_write(1, mr_value[1] & 0xF8FF, 0, i);
-	}
-
-	/* 6. For DDR4 only: Perform an MRS command (using MRCTRL0 and MRCTRL1 registers) to write 0 to */
-	/* MR5[8:6] to disable RTT_PARK */
-	for (int i = 1; i < num_rank; i++) {
-		if (mr_value[5] & 0x1C0)
-			ddr4_mr_write(5, mr_value[5] & 0xFE3F, 0, i);
-	}
-
-	if(dll_sw == ON2OFF) {
-	        /* 7. Perform an MRS command (using MRCTRL0 and MRCTRL1 registers) to write 0 to MR2[11:9], to */
-		/* disable RTT_WR (and therefore disable dynamic ODT). This applies for both DDR3 and DDR4. */
-		for (int i = 1; i <= num_rank; i++) {
-			if (mr_value[2] & 0xE00)
-				ddr4_mr_write(2, mr_value[2] & 0xF1FF, 0, i);
-		}
-
-		/* 8. Perform an MRS command (using MRCTRL0 and MRCTRL1 registers) to disable the DLL. The */
-		/* timing of this MRS is automatically handled by the uMCTL2. */
-		/* a. DDR3: Write 1 to MR1[0] */
-		/* b. DDR4: Write 0 to MR1[0] */
-		for (int i = 1; i <= num_rank; i++) {
-			ddr4_mr_write(1, mr_value[1] & 0xFFFE, 0, i);
-		}
-	}
-
-	/* 9. Put the SDRAM into self-refresh mode by setting PWRCTL.selfref_sw = 1, and polling */
-	/* STAT.operating_mode to ensure the DDRC has entered self-refresh. */
-	mmio_setbits_32(DDRC_PWRCTL(0), (1 << 5));
-	/*
-	 * 10. Wait until STAT.operating_mode[1:0]==11 indicating that the DWC_ddr_umctl2
-	 * core is in selfrefresh mode. Ensure transition to self-refresh was due to software
-	 * by checking that
-	 */
-	/* STAT.selfref_type[1:0]=2`b10. */
-	do {
-		tmp  = 0x3f & (mmio_read_32((DDRC_STAT(0))));
-	} while (tmp != 0x23);
-
-	/* 11. Set the MSTR.dll_off_mode = 1 or 0. */
-	if (dll_sw == ON2OFF)
-		mmio_setbits_32(DDRC_MSTR(0), (1 << 15));
-
-	if(dll_sw == OFF2ON)
-		mmio_clrbits_32(DDRC_MSTR(0), (1 << 15));
-
-	sw_pstate(pstate);
-
-	/* DRAM dll enable */
-	if (dll_sw == OFF2ON) {
-		for (int i = 1; i <= num_rank; i++) {
-			ddr4_mr_write(1, mr_value[1] | 0x1, 0, i);
-		}
-
-		for (int i = 1; i <= num_rank; i++) {
-			ddr4_mr_write(0, mr_value[0] | 0x100, 0, i);
-		}
-	}
-
-	dram_cfg_all_mr(num_rank, pstate);
-
-	/* 16. Re-enable automatic generation of ZQCS/MPC(ZQ calibration) commands */
-	mmio_clrbits_32(DDRC_FREQ1_ZQCTL0(0), (1 << 31));
-	mmio_clrbits_32(DDRC_FREQ2_ZQCTL0(0), (1 << 31));
-	mmio_clrbits_32(DDRC_ZQCTL0(0), (1 << 31));
-
-	/* 17. Re-enable automatic refreshes (RFSHCTL3.dis_auto_refresh = 0) if they have been previously disabled. */
-	mmio_clrbits_32(DDRC_RFSHCTL3(0), 0x1);
-	/* 18. Restore ZQCTL0.dis_srx_zqcl */
-	/* 19. Write DBG1.dis_hif = 0 to re-enable reads and writes. */
-	mmio_clrbits_32(DDRC_DBG1(0), (0x1 << 1));
-
-	mmio_write_32(DDRC_PCTRL_0(0), 0x00000001);
-	/* 27. Write 1 to SBRCTL.scrub_en. Enable SBR if desired, only required if SBR instantiated. */
-
-	/* set SWCTL.sw_done to enable quasi-dynamic register programming outside reset. */
-	mmio_write_32(DDRC_SWCTL(0), 0x0001);
-
-	/* wait SWSTAT.sw_done_ack to 1 */
-	do {
-		tmp  = 0x1 & mmio_read_32(DDRC_SWSTAT(0));
-	} while (!tmp);
-}
-
-void ddr4_dll_no_change(unsigned int num_rank, unsigned int pstate)
+void ddr4_dll_no_change(unsigned int num_rank, unsigned int pstate, unsigned int drate)
 {
 	volatile unsigned int tmp;
 	/* 1. set SWCTL.sw_done to disable quasi-dynamic register programming outside reset. */
@@ -302,7 +178,7 @@ void ddr4_dll_no_change(unsigned int num_rank, unsigned int pstate)
 		tmp  = 0x3f & (mmio_read_32((DDRC_STAT(0))));
 	} while (tmp != 0x23);
 
-	sw_pstate(pstate);
+	sw_pstate(pstate, drate);
 	dram_cfg_all_mr(num_rank, pstate);
 
 	/* 23. Enable HIF commands by setting DBG1.dis_hif=0. */
@@ -339,14 +215,11 @@ void get_mr_values(unsigned int pstate)
 
 void ddr4_swffc(struct dram_info *dram_info, unsigned int pstate)
 {
-	unsigned int cur_pstate = dram_info->current_fsp;
+	unsigned int drate = dram_info->timing_info->fsp_table[pstate];
 
 	get_mr_values(pstate);
 
-	if ((pstate == 0 && cur_pstate !=0) || (pstate != 0 && cur_pstate == 0))
-		ddr4_dll_change(dram_info->num_rank, pstate, cur_pstate);
-	else
-		ddr4_dll_no_change(dram_info->num_rank, pstate);
+	ddr4_dll_no_change(dram_info->num_rank, pstate, drate);
 
 	dram_info->current_fsp = pstate;
 }

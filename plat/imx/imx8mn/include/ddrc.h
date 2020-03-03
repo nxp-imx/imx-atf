@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019-2020 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #ifndef __IMX_DDRC_H
 #define __IMX_DDRC_H
 

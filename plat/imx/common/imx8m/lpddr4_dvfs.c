@@ -11,8 +11,6 @@
 
 #include "lpddr4_define.h"
 
-extern void dram_clock_switch(unsigned target_freq);
-
 void lpddr4_swffc(struct dram_info *info, unsigned int init_fsp,
 	 unsigned int tgt_freq, bool bypass_mode)
 
@@ -20,6 +18,7 @@ void lpddr4_swffc(struct dram_info *info, unsigned int init_fsp,
 	unsigned int mr, emr, emr2, emr3;
 	unsigned int mr11, mr12, mr22, mr14;
 	unsigned int tmp;
+	unsigned int derate_backup[3];
 
 	/* 1. program targetd UMCTL2_REGS_FREQ1/2/3,already done, skip it. */
 
@@ -109,14 +108,17 @@ void lpddr4_swffc(struct dram_info *info, unsigned int init_fsp,
 
 	/* 10. Disable automatic derating: derate_enable */
 	tmp= mmio_read_32(DDRC_DERATEEN(0));
+	derate_backup[0] = tmp;
 	tmp &= ~0x1;
 	mmio_write_32(DDRC_DERATEEN(0), tmp);
 
 	tmp= mmio_read_32(DDRC_FREQ1_DERATEEN(0));
+	derate_backup[1] = tmp;
 	tmp &= ~0x1;
 	mmio_write_32(DDRC_FREQ1_DERATEEN(0), tmp);
 
 	tmp= mmio_read_32(DDRC_FREQ2_DERATEEN(0));
+	derate_backup[2] = tmp;
 	tmp &= ~0x1;
 	mmio_write_32(DDRC_FREQ2_DERATEEN(0), tmp);
 
@@ -218,12 +220,9 @@ void lpddr4_swffc(struct dram_info *info, unsigned int init_fsp,
 
 	/* change the clock frequency */
 #if defined(PLAT_IMX8M)
-	if (bypass_mode)
-		dram_clock_switch(tgt_freq);
-	else
-		dram_pll_init(info->timing_info->fsp_table[tgt_freq]);
+	dram_clock_switch(info->timing_info->fsp_table[tgt_freq], bypass_mode);
 #else
-	dram_clock_switch(tgt_freq);
+	dram_clock_switch(info->timing_info->fsp_table[tgt_freq], true);
 #endif
 
 	/* dfi_init_start de-assert */
@@ -347,9 +346,9 @@ void lpddr4_swffc(struct dram_info *info, unsigned int init_fsp,
 	}
 
 	/* 40. re-emable automatic derating: derate_enable */
-	tmp= mmio_read_32(DDRC_DERATEEN(0));
-	tmp &= 0xFFFFFFFE;
-	mmio_write_32(DDRC_DERATEEN(0), tmp);
+	mmio_write_32(DDRC_DERATEEN(0), derate_backup[0]);
+	mmio_write_32(DDRC_FREQ1_DERATEEN(0), derate_backup[1]);
+	mmio_write_32(DDRC_FREQ2_DERATEEN(0), derate_backup[2]);
 
 	/* 41. write 1 to PCTRL.port_en */
 	mmio_write_32(DDRC_PCTRL_0(0), 0x1);

@@ -184,7 +184,9 @@ void lpddr4_exit_retention(void)
 
 	/* before write Dynamic reg, sw_done should be 0 */
 	mmio_write_32(DDRC_SWCTL(0), 0x00000000);
+#if !defined(PLAT_imx8mn)
 	mmio_write_32(DDRC_DDR_SS_GPR0, 0x01); /*LPDDR4 mode */
+#endif
 	mmio_write_32(DDRC_DFIMISC(0), 0x00000000);
 
 	/* dram phy re-init */
@@ -250,8 +252,6 @@ void lpddr4_exit_retention(void)
 		INFO("wait STAT to normal state\n");
 	}
  
-	mmio_write_32(DDRC_DERATEEN(0), 0x00000302);
-
 	mmio_write_32(DDRC_PCTRL_0(0), 0x00000001); 
 	 /* dis_auto-refresh is set to 0 */
 	mmio_write_32(DDRC_RFSHCTL3(0), 0x00000000);
