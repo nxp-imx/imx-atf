@@ -40,6 +40,7 @@
 #define BL32_BASE			0xfe000000
 #define BL32_SIZE			0x02000000
 #define BL32_LIMIT			(BL32_BASE + BL32_SIZE)
+#define BL32_FDT_OVERLAY_ADDR		0x43100000
 #endif
 
 /* non-secure uboot base */
