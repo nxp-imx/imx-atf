@@ -32,11 +32,9 @@
 #define BL31_BASE			0x920000
 #define BL31_LIMIT			0x940000
 
-#ifdef SPD_trusty
-#define BL32_SIZE			0x02000000
-#define BL32_LIMIT			0xC0000000
-#endif
 #define BL32_BASE			0xbe000000
+#define BL32_SIZE			0x02000000
+#define BL32_LIMIT			(BL32_BASE + BL32_SIZE)
 
 /* non-secure uboot base */
 #define PLAT_NS_IMAGE_OFFSET		0x40200000

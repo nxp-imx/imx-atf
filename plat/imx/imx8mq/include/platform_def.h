@@ -38,6 +38,8 @@
 #define BL32_BASE			tee_base_address
 #else
 #define BL32_BASE			0xfe000000
+#define BL32_SIZE			0x02000000
+#define BL32_LIMIT			(BL32_BASE + BL32_SIZE)
 #endif
 
 /* non-secure uboot base */
