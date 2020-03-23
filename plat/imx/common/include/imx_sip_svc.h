@@ -75,7 +75,7 @@ int imx_hab_handler(uint32_t smc_fid, u_register_t x1,
 int imx_noc_handler(uint32_t smc_fid, u_register_t x1,
 	u_register_t x2, u_register_t x3);
 #endif
-#if defined(PLAT_imx8mm) || defined(PLAT_imx8mn)
+#if defined(PLAT_imx8mm) || defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
 int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 	u_register_t x1, u_register_t x2, u_register_t x3);
 
