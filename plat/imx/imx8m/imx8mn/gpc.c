@@ -21,25 +21,6 @@
 #include <imx_sip_svc.h>
 #include <plat_imx8.h>
 
-#define MIPI_PWR_REQ		BIT(0)
-#define OTG1_PWR_REQ		BIT(2)
-#define HSIOMIX_PWR_REQ		BIT(4)
-#define GPUMIX_PWR_REQ		BIT(7)
-#define DISPMIX_PWR_REQ		BIT(10)
-
-#define HSIOMIX_ADB400_SYNC	BIT(5)
-#define DISPMIX_ADB400_SYNC	BIT(7)
-#define GPUMIX_ADB400_SYNC	(0x5 << 9)
-#define HSIOMIX_ADB400_ACK	BIT(23)
-#define DISPMIX_ADB400_ACK	BIT(25)
-#define GPUMIX_ADB400_ACK	(0x5 << 27)
-
-#define MIPI_PGC		0xc00
-#define OTG1_PGC		0xc80
-#define HSIOMIX_PGC	        0xd00
-#define GPUMIX_PGC		0xdc0
-#define DISPMIX_PGC		0xe80
-
 #define CCGR(x)		(0x4000 + (x) * 16)
 
 enum pu_domain_id {
