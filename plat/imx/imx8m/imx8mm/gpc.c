@@ -23,8 +23,6 @@
 
 #define CCGR(x)		(0x4000 + (x) * 16)
 
-#define CCGR(x)		(0x4000 + (x) * 16)
-
 enum pu_domain_id {
 	HSIOMIX,
 	PCIE,
