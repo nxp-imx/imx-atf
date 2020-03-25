@@ -38,11 +38,14 @@
 #define OCRAM_BASE		0x100000
 #define OCRAM_ALIAS_SIZE 0x18000 /* The lower 96KB is in OCRAM alias from 0x0 */
 
+#define BL32_SHM_SIZE			0x00400000
 #ifdef SPD_trusty
-#define BL32_BASE			0xfe000000
-#define BL32_SIZE			0x02000000
-#define BL32_LIMIT			0x100000000
+#define BL32_LIMIT			(BL32_BASE + BL32_SIZE)
+#else
+#define BL32_LIMIT			(BL32_BASE + BL32_SIZE - BL32_SHM_SIZE)
 #endif
+#define BL32_FDT_OVERLAY_ADDR		0x9d000000
+
 
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 32)
 #define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 32)
