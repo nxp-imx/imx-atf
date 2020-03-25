@@ -77,7 +77,6 @@ static const struct imx_csu_cfg csu_cfg[] = {
 	{0}
 };
 
-
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
 
@@ -115,7 +114,7 @@ static void bl31_tzc380_setup(void)
 
 	/* Enable 1G-5G S/NS RW */
 	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G) |
-		TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
+				TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
 }
 
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,

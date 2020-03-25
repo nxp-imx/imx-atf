@@ -107,7 +107,7 @@ static uint32_t get_spsr_for_bl33_entry(void)
 	return spsr;
 }
 
-void bl31_tzc380_setup(void)
+static void bl31_tzc380_setup(void)
 {
 	unsigned int val;
 
@@ -124,7 +124,7 @@ void bl31_tzc380_setup(void)
 
 	/* Enable 1G-5G S/NS RW */
 	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G) |
-		TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
+				TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
 }
 
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
