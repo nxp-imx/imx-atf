@@ -129,23 +129,6 @@ static uint32_t get_spsr_for_bl33_entry(void)
 	return spsr;
 }
 
-static void bl31_tz380_setup(void)
-{
-	unsigned int val;
-
-	val = mmio_read_32(IMX_IOMUX_GPR_BASE + IOMUXC_GPR10);
-	if ((val & GPR_TZASC_EN) != GPR_TZASC_EN)
-		return;
-
-	tzc380_init(IMX_TZASC_BASE);
-	/*
-	 * Need to substact offset 0x40000000 from CPU address when
-	 * programming tzasc region for i.mx8mq. Enable 1G-5G S/NS RW
-	 */
-	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G) |
-				TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
-}
-
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 			u_register_t arg2, u_register_t arg3)
 {
@@ -199,8 +182,6 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl32_image_ep_info.args.arg3 = BL32_FDT_OVERLAY_ADDR;
 #endif
 #endif
-
-	bl31_tz380_setup();
 }
 
 void bl31_plat_arch_setup(void)

@@ -82,7 +82,6 @@ static const struct imx_csu_cfg csu_cfg[] = {
 	{0}
 };
 
-
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
 
