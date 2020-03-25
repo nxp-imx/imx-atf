@@ -35,6 +35,13 @@ include plat/imx/common/sci/sci_api.mk
 USE_COHERENT_MEM	:=	1
 RESET_TO_BL31		:=	1
 
+
+BL32_BASE		?=	0x96000000
+$(eval $(call add_define,BL32_BASE))
+
+BL32_SIZE		?=	0x2000000
+$(eval $(call add_define,BL32_SIZE))
+
 ifeq (${SPD},trusty)
 	BL31_CFLAGS    +=      -DPLAT_XLAT_TABLES_DYNAMIC=1
 endif
