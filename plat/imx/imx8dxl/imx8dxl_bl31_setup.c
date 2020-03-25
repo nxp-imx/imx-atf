@@ -164,7 +164,7 @@ void imx8_partition_resources(void)
 	sc_err_t err;
 	bool owned;
 	int i;
-#ifdef SPD_trusty
+#if defined(SPD_opteed) || defined(SPD_trusty)
 	sc_rm_mr_t mr_tee = 64;
 	bool mr_tee_atf_same = false;
 	sc_faddr_t reg_start;
@@ -213,7 +213,7 @@ void imx8_partition_resources(void)
 				if (BL31_BASE >= start && (BL31_LIMIT - 1) <= end) {
 					mr_record = mr; /* Record the mr for ATF running */
 				}
-#ifdef SPD_trusty
+#if defined(SPD_opteed) || defined(SPD_trusty)
 				else if (BL32_BASE >= start && (BL32_LIMIT -1) <= end) {
 					mr_tee = mr;
 				}
@@ -230,7 +230,7 @@ void imx8_partition_resources(void)
 		}
 	}
 
-#ifdef SPD_trusty
+#if defined(SPD_opteed) || defined(SPD_trusty)
 	if (mr_tee != 64) {
 		err = sc_rm_get_memreg_info(ipc_handle, mr_tee, &start, &end);
 		if (err) {
@@ -263,7 +263,7 @@ void imx8_partition_resources(void)
 	if (mr_record != 64) {
 		err = sc_rm_get_memreg_info(ipc_handle, mr_record, &start, &end);
 
-#ifdef SPD_trusty
+#if defined(SPD_opteed) || defined(SPD_trusty)
 		if (BL32_BASE >= start && (BL32_LIMIT - 1) <= end)
 			mr_tee_atf_same = true;
 #endif
@@ -272,7 +272,7 @@ void imx8_partition_resources(void)
 			ERROR("Memreg get info failed, %u\n", mr_record);
 		} else {
 			if ((BL31_LIMIT - 1) < end) {
-#ifdef SPD_trusty
+#if defined(SPD_opteed) || defined(SPD_trusty)
 				if ((end > BL32_BASE) && mr_tee_atf_same)
 					reg_end = BL32_BASE - 1;
 #endif
@@ -285,7 +285,7 @@ void imx8_partition_resources(void)
 						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL31_LIMIT, reg_end);
 				}
 			}
-#ifdef SPD_trusty
+#if defined(SPD_opteed) || defined(SPD_trusty)
 			if (mr_tee_atf_same) {
 				if ((BL32_LIMIT - 1) < end) {
 					reg_start = BL32_LIMIT;
@@ -435,13 +435,23 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 
 	bl33_image_ep_info.pc = PLAT_NS_IMAGE_OFFSET;
 	bl33_image_ep_info.spsr = get_spsr_for_bl33_entry();
-#ifdef SPD_trusty
+#if defined(SPD_opteed) || defined(SPD_trusty)
 	SET_PARAM_HEAD(&bl32_image_ep_info, PARAM_EP, VERSION_1, 0);
 	SET_SECURITY_STATE(bl32_image_ep_info.h.attr, SECURE);
 	bl32_image_ep_info.pc = BL32_BASE;
 	bl32_image_ep_info.spsr = 0;
+#ifdef SPD_trusty
 	bl32_image_ep_info.args.arg0 = BL32_SIZE;
 	bl32_image_ep_info.args.arg1 = BL32_BASE;
+#endif
+#ifdef SPD_opteed
+	bl33_image_ep_info.args.arg1 = BL32_BASE;
+	bl33_image_ep_info.args.arg2 = BL32_SIZE;
+	/* Make sure memory is clean */
+	mmio_write_32(BL32_FDT_OVERLAY_ADDR, 0);
+	bl33_image_ep_info.args.arg3 = BL32_FDT_OVERLAY_ADDR;
+	bl32_image_ep_info.args.arg3 = BL32_FDT_OVERLAY_ADDR;
+#endif
 #endif
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 }
@@ -463,7 +473,7 @@ void bl31_plat_arch_setup(void)
 		MT_RW | MT_MEMORY | MT_SECURE);
 	mmap_add(imx_mmap);
 
-#ifdef SPD_trusty
+#if defined(SPD_opteed) || defined(SPD_trusty)
 	mmap_add_region(BL32_BASE, BL32_BASE, BL32_SIZE, MT_MEMORY | MT_RW);
 #endif
 
