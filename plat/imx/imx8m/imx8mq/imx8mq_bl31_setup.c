@@ -110,7 +110,7 @@ static uint32_t get_spsr_for_bl33_entry(void)
 	return spsr;
 }
 
-static void bl31_tz380_setup(void)
+static void bl31_tzc380_setup(void)
 {
 	unsigned int val;
 
@@ -176,7 +176,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 #endif
 #endif
 
-	bl31_tz380_setup();
+	bl31_tzc380_setup();
 }
 
 void bl31_plat_arch_setup(void)
