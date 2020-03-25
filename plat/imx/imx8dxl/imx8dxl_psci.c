@@ -36,9 +36,9 @@ static void imx_enable_irqstr_wakeup(void)
 
 	/* enable the irqsteer to handle wakeup irq */
 	mmio_write_32(IMX_WUP_IRQSTR_BASE, 0x1);
-	for (int i = 0; i < 15; i++) {
+	for (int i = 0; i < 11; i++) {
 		irq_mask = dist_ctx->gicd_isenabler[i];
-		mmio_write_32(IMX_WUP_IRQSTR_BASE + 0x3c - 0x4 * i, irq_mask);
+		mmio_write_32(IMX_WUP_IRQSTR_BASE + 0x2c - 0x4 * i, irq_mask);
 	}
 
 	/* set IRQSTR low power mode */
@@ -55,7 +55,7 @@ static void imx_disable_irqstr_wakeup(void)
 
 	/* disable the irqsteer */
 	mmio_write_32(IMX_WUP_IRQSTR_BASE, 0x0);
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < 12; i ++)
 		mmio_write_32(IMX_WUP_IRQSTR_BASE + 0x4 + 0x4 * i, 0x0);
 
 	/* Put IRQSTEER into OFF mode */
