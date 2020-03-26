@@ -41,6 +41,17 @@ struct imx_noc_setting {
        uint32_t socket_qos_en;
 };
 
+enum clk_type {
+	CCM_ROOT_SLICE,
+	CCM_CCGR,
+};
+
+struct clk_setting {
+	uint32_t offset;
+	uint32_t val;
+	enum clk_type type;
+};
+
 enum pu_domain_id {
 	/* hsio ss */
 	HSIOMIX,
@@ -107,6 +118,12 @@ static struct imx_noc_setting noc_setting[] = {
 	{ VPU_G1, 0xd80, 0xd80, 0x80000303, 0x0, 0x0},
 	{ VPU_G2, 0xe00, 0xe00, 0x80000303, 0x0, 0x0},
 	{ VPU_H1, 0xe80, 0xe80, 0x80000303, 0x0, 0x0}
+};
+
+static struct clk_setting hsiomix_clk[] = {
+	{ 0x8380, 0x0, CCM_ROOT_SLICE },
+	{ 0x44d0, 0x0, CCM_CCGR },
+	{ 0x45c0, 0x0, CCM_CCGR },
 };
 
 static uint32_t gpc_saved_imrs[20];
@@ -323,6 +340,15 @@ void imx_aips5_init(void)
 void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 {
 	struct imx_pwr_domain *pwr_domain = &pu_domains[domain_id];
+	int i;
+
+	if (domain_id == HSIOMIX) {
+		for (i = 0; i < ARRAY_SIZE(hsiomix_clk); i++) {
+			hsiomix_clk[i].val = mmio_read_32(IMX_CCM_BASE + hsiomix_clk[i].offset);
+				mmio_setbits_32(IMX_CCM_BASE + hsiomix_clk[i].offset,
+					hsiomix_clk[i].type == CCM_ROOT_SLICE ? BIT(28) : 0x3);
+			}
+	}
 
 	if (on) {
 		pu_domain_status |= (1 << domain_id);
@@ -415,6 +441,11 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 			mmio_write_32(0x32fc0040, 0x0);
 			mmio_write_32(0x32fc0050, 0x0);
 		}
+	}
+
+	if (domain_id == HSIOMIX) {
+		for (i = 0; i < ARRAY_SIZE(hsiomix_clk); i++)
+			mmio_write_32(IMX_CCM_BASE + hsiomix_clk[i].offset, hsiomix_clk[i].val);
 	}
 
 	pwr_domain->init_on = false;
