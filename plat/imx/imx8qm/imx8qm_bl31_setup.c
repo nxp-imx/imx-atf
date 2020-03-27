@@ -29,6 +29,7 @@
 #include <imx_sip_svc.h>
 #include <string.h>
 
+#define DATA_SECTION_RESTORE_FLAG	0x11223344
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
 
 IMPORT_SYM(unsigned long, __COHERENT_RAM_START__, BL31_COHERENT_RAM_START);
@@ -37,6 +38,8 @@ IMPORT_SYM(unsigned long, __RO_START__, BL31_RO_START);
 IMPORT_SYM(unsigned long, __RO_END__, BL31_RO_END);
 IMPORT_SYM(unsigned long, __RW_START__, BL31_RW_START);
 IMPORT_SYM(unsigned long, __RW_END__, BL31_RW_END);
+IMPORT_SYM(unsigned long, __DATA_START__, BL31_DATA_START);
+IMPORT_SYM(unsigned long, __DATA_END__, BL31_DATA_END);
 
 #if DEBUG_CONSOLE
 extern unsigned long console_list;
@@ -398,6 +401,20 @@ void mx8_partition_resources(void)
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 				u_register_t arg2, u_register_t arg3)
 {
+	unsigned int count = (BL31_DATA_END - BL31_DATA_START) / 4;
+	unsigned int *data = (unsigned int *)(BL31_LIMIT - (BL31_DATA_END - BL31_DATA_START) - 0x4);
+	unsigned *ptr = (unsigned int *)BL31_DATA_START;
+	int i;
+
+	if (*data != DATA_SECTION_RESTORE_FLAG) {
+		*data = DATA_SECTION_RESTORE_FLAG;
+		for (i = 0; i < count; i++)
+			*(++data) = *(ptr++);
+	} else {
+		for (i = 0; i < count; i++)
+			*(ptr++) = *(++data);
+	}
+
 #if DEBUG_CONSOLE
 	static console_lpuart_t console;
 
