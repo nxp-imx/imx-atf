@@ -31,6 +31,7 @@
 #include <imx_sip_svc.h>
 #include <string.h>
 
+#define DATA_SECTION_RESTORE_FLAG	0x11223344
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
 
 static const unsigned long BL31_COHERENT_RAM_START	= BL_COHERENT_RAM_BASE;
@@ -40,6 +41,8 @@ static const unsigned long BL31_RO_END			= BL_CODE_END;
 static const unsigned long BL31_RW_END			= BL_END;
 
 IMPORT_SYM(unsigned long, __RW_START__, BL31_RW_START);
+IMPORT_SYM(unsigned long, __DATA_START__, BL31_DATA_START);
+IMPORT_SYM(unsigned long, __DATA_END__, BL31_DATA_END);
 
 #if DEBUG_CONSOLE
 extern unsigned long console_list;
@@ -417,6 +420,17 @@ void mx8_partition_resources(void)
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 				u_register_t arg2, u_register_t arg3)
 {
+	unsigned int count = (BL31_DATA_END - BL31_DATA_START);
+	unsigned char *data = (unsigned char *)(BL31_LIMIT - (BL31_DATA_END - BL31_DATA_START));
+	unsigned char *ptr = (unsigned char *)BL31_DATA_START;
+
+	if (*data != DATA_SECTION_RESTORE_FLAG) {
+		*data = DATA_SECTION_RESTORE_FLAG;
+		memcpy(data, ptr, count);
+	} else {
+		memcpy(ptr, data, count);
+	}
+
 #if DEBUG_CONSOLE
 	static console_t console;
 
