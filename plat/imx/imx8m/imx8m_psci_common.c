@@ -176,10 +176,11 @@ void __dead2 imx_system_reset(void)
 	/* WDOG_B reset */
 	val = mmio_read_16(wdog_base);
 #ifdef IMX_WDOG_B_RESET
-	val = (val & 0x00FF) | WDOG_WCR_WDZST | WDOG_WCR_WDE |
-		WDOG_WCR_WDT | WDOG_WCR_SRS;
+	val = (val & 0x001F) | WDOG_WCR_WDZST | WDOG_WCR_WDE |
+		WDOG_WCR_WDT | WDOG_WCR_SRS | BIT(8);
 #else
-	val = (val & 0x00FF) | WDOG_WCR_WDZST | WDOG_WCR_SRS;
+	val = (val & 0x00FF) | WDOG_WCR_WDZST | WDOG_WCR_WDE |
+		WDOG_WCR_WDA;
 #endif
 	mmio_write_16(wdog_base, val);
 
