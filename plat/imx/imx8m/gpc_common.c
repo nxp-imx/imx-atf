@@ -48,7 +48,7 @@ bool imx_m4_lpa_active(void)
 
 bool imx_is_m4_enabled(void)
 {
-	return mmio_read_32(IMX_M4_STATUS) & IMX_M4_ENABLED;
+	return !(mmio_read_32(IMX_M4_STATUS) & IMX_M4_ENABLED_MASK);
 }
 
 void imx_set_cpu_secure_entry(unsigned int core_id, uintptr_t sec_entrypoint)
