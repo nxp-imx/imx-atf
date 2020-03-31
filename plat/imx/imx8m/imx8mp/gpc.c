@@ -496,6 +496,17 @@ void imx_noc_wrapper_post_resume(unsigned int proc_num)
 		imx8mm_tz380_init();
 		/* disable noc power down */
 		imx_noc_slot_config(false);
+
+		/* config main NoC */
+		//A53
+		mmio_write_32 (0x32700008, 0x80000303);
+		mmio_write_32 (0x3270000c, 0x0);
+		//SUPERMIX
+		mmio_write_32 (0x32700088, 0x80000303);
+		mmio_write_32 (0x3270008c, 0x0);
+		//GIC
+		mmio_write_32 (0x32700108, 0x80000303);
+		mmio_write_32 (0x3270010c, 0x0);
 	}
 
 	/* restore gic context */
