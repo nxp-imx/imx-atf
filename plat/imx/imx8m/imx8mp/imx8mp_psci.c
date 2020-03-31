@@ -31,6 +31,35 @@ void imx_pwr_domain_off(const psci_power_state_t *target_state)
 	udelay(50);
 }
 
+void imx_domain_suspend(const psci_power_state_t *target_state)
+{
+	uint64_t base_addr = BL31_BASE;
+	uint64_t mpidr = read_mpidr_el1();
+	unsigned int core_id = MPIDR_AFFLVL0_VAL(mpidr);
+
+	if (is_local_state_off(CORE_PWR_STATE(target_state))) {
+		plat_gic_cpuif_disable();
+		imx_set_cpu_secure_entry(core_id, base_addr);
+		imx_set_cpu_lpm(core_id, true);
+	} else {
+		dsb();
+		write_scr_el3(read_scr_el3() | SCR_FIQ_BIT);
+		isb();
+	}
+
+	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state)))
+		imx_set_cluster_powerdown(core_id, CLUSTER_PWR_STATE(target_state));
+
+	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
+		if (!imx_m4_lpa_active()) {
+			imx_set_sys_lpm(core_id, true);
+			dram_enter_retention();
+			imx_anamix_override(true);
+			imx_noc_wrapper_pre_suspend(core_id);
+		}
+	}
+}
+
 void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 {
 	uint64_t mpidr = read_mpidr_el1();
@@ -43,7 +72,6 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 			dram_exit_retention();
 			imx_set_sys_lpm(core_id, false);
 		}
-	imx_set_sys_wakeup(core_id, false);
 	}
 
 	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state))) {
