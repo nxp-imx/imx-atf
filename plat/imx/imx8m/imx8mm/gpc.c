@@ -442,7 +442,7 @@ void imx_gpc_init(void)
 }
 
 int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
-		    u_register_t x3)
+		    u_register_t x3, void *handle)
 {
 	uint32_t val;
 

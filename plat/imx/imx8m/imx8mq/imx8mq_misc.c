@@ -10,7 +10,7 @@
 #include <imx_sip_svc.h>
 
 int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
-		    u_register_t x3)
+		    u_register_t x3, void *handle)
 {
 	uint32_t val;
 
