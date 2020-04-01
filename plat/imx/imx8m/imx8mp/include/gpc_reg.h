@@ -28,6 +28,7 @@
 #define PU_PGC_UP_TRG			0xD8
 #define CPU_PGC_DN_TRG			0xDC
 #define PU_PGC_DN_TRG			0xE4
+#define LPS_CPU1			0xEC
 
 #define A53_CORE0_PGC			0x800
 #define A53_PLAT_PGC			0x900
