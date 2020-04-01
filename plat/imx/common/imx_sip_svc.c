@@ -37,7 +37,7 @@ static uintptr_t imx_sip_handler(unsigned int smc_fid,
 		SMC_RET1(handle, imx_gpc_handler(smc_fid, x1, x2, x3));
 		break;
 	case IMX_SIP_SRC:
-		SMC_RET1(handle, imx_src_handler(smc_fid, x1, x2, x3));
+		SMC_RET1(handle, imx_src_handler(smc_fid, x1, x2, x3, handle));
 		break;
 	case IMX_SIP_DDR_DVFS:
 		return dram_dvfs_handler(smc_fid, handle, x1, x2, x3);
@@ -55,7 +55,7 @@ static uintptr_t imx_sip_handler(unsigned int smc_fid,
 		SMC_RET1(handle, imx_gpc_handler(smc_fid, x1, x2, x3));
 		break;
 	case IMX_SIP_SRC:
-		SMC_RET1(handle, imx_src_handler(smc_fid, x1, x2, x3));
+		SMC_RET1(handle, imx_src_handler(smc_fid, x1, x2, x3, handle));
 		break;
 	case IMX_SIP_HAB:
 		SMC_RET1(handle, imx_hab_handler(smc_fid, x1, x2, x3, x4));

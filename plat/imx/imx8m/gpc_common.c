@@ -12,6 +12,8 @@
 #include <common/runtime_svc.h>
 #include <lib/mmio.h>
 #include <lib/psci/psci.h>
+#include <drivers/delay_timer.h>
+#include <lib/libc/errno.h>
 
 #include <gpc.h>
 #include <imx8m_psci.h>
@@ -331,9 +333,12 @@ int imx_gpc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_regist
 #pragma weak imx_src_handler
 /* imx8mq/imx8mm need to verrride below function */
 int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
-		    u_register_t x3)
+		    u_register_t x3, void *handle)
 {
 	uint32_t val;
+	uint64_t timeout;
+	int ret1 = 0, ret2 = 0;
+	uint32_t offset;
 
 	switch(x1) {
 	case IMX_SIP_SRC_M4_START:
@@ -342,6 +347,49 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 	case IMX_SIP_SRC_M4_STARTED:
 		val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x58);
 		return !(val & 0x1);
+	case IMX_SIP_SRC_M4_STOP:
+		/*
+		 * Safe stop
+		 *    If M4 already in WFI,  perform below steps.
+		 * a)	Set [0x303A_002C].0=0   [ request SLEEPHOLDREQn ]
+		 * b)	Wait  [0x303A_00EC].1 = 0  [ wait SLEEPHOLDACKn ]
+		 * c)	Set  GPR.CPUWAIT=1
+		 * d)	Set [0x303A_002C].0=1  [ de-assert SLEEPHOLDREQn ]
+		 * e)	Set SRC_M7_RCR[3:0] = 0xE0   [ reset M7 core/plat ]
+		 * f)	Wait SRC_M7_RCR[3:0] = 0x8
+		 * The following steps move to start part.
+		 * g/h is actually no needed here.
+		 * g)	Init TCM or DDR
+		 * h)	Set GPR.INITVTOR
+		 * i)	Set GPR.CPUWAIT=0,  M7 starting running
+		 */
+		offset = LPS_CPU1;
+		val = mmio_read_32(IMX_GPC_BASE + offset);
+		/* Not in stop/wait mode */
+		if (!(val & (0x3 << 24))) {
+			mmio_clrbits_32(IMX_GPC_BASE + 0x2C, 0x1);
+
+			timeout = timeout_init_us(10000);
+			while((mmio_read_32(IMX_GPC_BASE + offset) & 0x2)) {
+				if (timeout_elapsed(timeout)) {
+					ret1 = -ETIMEDOUT;
+					break;
+				}
+			}
+		}
+		mmio_setbits_32(IMX_IOMUX_GPR_BASE + 0x58, 0x1);
+		mmio_setbits_32(IMX_GPC_BASE + 0x2C, 0x1);
+		mmio_setbits_32(IMX_SRC_BASE + 0xC, 0xE);
+		timeout = timeout_init_us(10000);
+		while ((mmio_read_32(IMX_SRC_BASE + 0xC) & 0xF) != 8) {
+			if (timeout_elapsed(timeout)) {
+				ret2 = -ETIMEDOUT;
+				break;
+			}
+		}
+		SMC_SET_GP(handle, CTX_GPREG_X1, ret1);
+		SMC_SET_GP(handle, CTX_GPREG_X2, ret2);
+		break;
 	default:
 		return SMC_UNK;
 
