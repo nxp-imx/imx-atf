@@ -43,6 +43,13 @@ static uint32_t gpc_imr_offset[] = {
 
 spinlock_t gpc_imr_lock[4];
 
+static bool is_pcie1_power_down = true;
+static uint32_t gpc_pu_m_core_offset[11] = {
+	0xc00, 0xc40, 0xc80, 0xcc0,
+	0xdc0, 0xe00, 0xe40, 0xe80,
+	0xec0, 0xf00, 0xf40,
+};
+
 static void gpc_imr_core_spin_lock(unsigned int core_id)
 {
 	spin_lock(&gpc_imr_lock[core_id]);
@@ -353,12 +360,77 @@ void imx_anamix_override(bool enter)
 	}
 }
 
+void imx_gpc_set_m_core_pgc(unsigned int offset, bool pdn)
+{
+	uintptr_t val;
+
+	val = mmio_read_32(IMX_GPC_BASE + offset);
+	val &= BIT(0);
+
+	if(pdn)
+		val |= BIT(0);
+	mmio_write_32(IMX_GPC_BASE + offset, val);
+}
+
+void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
+{
+	uint32_t val;
+	uintptr_t reg;
+
+	/*
+	 * PCIE1 and PCIE2 share the same reset signal, if we power down
+	 * PCIE2, PCIE1 will be hold in reset too.
+	 * 1. when we want to power up PCIE1, the PCIE2 power domain also
+	 *    need to be power on;
+	 * 2. when we want to power down PCIE2 power domain, we should make
+	 *    sure PCIE1 is already power down.
+	*/
+	if (domain_id == 1 && !on) {
+		is_pcie1_power_down = true;
+	} else if (domain_id == 1 && on) {
+		imx_gpc_pm_domain_enable(10, true);
+		is_pcie1_power_down = false;
+	}
+
+	if (domain_id == 10 && !on && !is_pcie1_power_down)
+		return;
+
+	/* need to handle GPC_PU_PWRHSK */
+	/* GPU */
+	if (domain_id == 4 && !on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) & ~0x40);
+	if (domain_id == 4 && on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) | 0x40);
+	/* VPU */
+	if (domain_id == 5 && !on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) & ~0x20);
+	if (domain_id == 5 && on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) | 0x20);
+	/* DISPLAY */
+	if (domain_id == 7 && !on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) & ~0x10);
+	if (domain_id == 7 && on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) | 0x10);
+
+	imx_gpc_set_m_core_pgc(gpc_pu_m_core_offset[domain_id], true);
+
+	reg = IMX_GPC_BASE + (on ? 0xf8 : 0x104);
+	val = 1 << (domain_id > 3 ? (domain_id + 3) : domain_id);
+	mmio_write_32(reg, val);
+	while(mmio_read_32(reg) & val)
+		;
+	imx_gpc_set_m_core_pgc(gpc_pu_m_core_offset[domain_id], false);
+}
+
 int imx_gpc_handler(uint32_t smc_fid,
 			  u_register_t x1,
 			  u_register_t x2,
 			  u_register_t x3)
 {
 	switch (x1) {
+	case FSL_SIP_CONFIG_GPC_PM_DOMAIN:
+		imx_gpc_pm_domain_enable(x2, x3);
+		break;
 	case FSL_SIP_CONFIG_GPC_CORE_WAKE:
 		imx_gpc_core_wake(x2);
 		break;
