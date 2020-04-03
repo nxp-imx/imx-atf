@@ -29,7 +29,7 @@
 #define FSL_SIP_CONFIG_GPC_SET_AFF	0x04
 #define FSL_SIP_CONFIG_GPC_CORE_WAKE	0x05
 
-
+#define IMR_NUM		U(5)
 #define CCGR(x)		(0x4000 + (x) * 16)
 
 struct imx_noc_setting {
@@ -535,7 +535,7 @@ void imx_gpc_init(void)
 	int i;
 
 	/* mask all the wakeup irq by default */
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < IMR_NUM; i++) {
 		mmio_write_32(IMX_GPC_BASE + IMR1_CORE0_A53 + i * 4, ~0x0);
 		mmio_write_32(IMX_GPC_BASE + IMR1_CORE1_A53 + i * 4, ~0x0);
 		mmio_write_32(IMX_GPC_BASE + IMR1_CORE2_A53 + i * 4, ~0x0);
