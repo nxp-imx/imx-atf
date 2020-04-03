@@ -303,9 +303,6 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			const plat_psci_ops_t **psci_ops)
 {
-	u_register_t mpidr = read_mpidr_el1();
-	unsigned int cluster_id = MPIDR_AFFLVL1_VAL(mpidr);
-
 	imx_mailbox_init(sec_entrypoint);
 	*psci_ops = &imx_plat_psci_ops;
 
@@ -326,13 +323,6 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 		SC_PM_PW_MODE_ON, SC_PM_PW_MODE_ON);
 	sc_pm_req_sys_if_power_mode(ipc_handle, SC_R_A72, SC_PM_SYS_IF_INTERCONNECT,
 		SC_PM_PW_MODE_ON, SC_PM_PW_MODE_ON);
-
-	/*
-	 * set partition reboot address for primary CPU, boot device is NOT owned
-	 * by ATF, so pass 0 here
-	 */
-	sc_pm_set_boot_parm(ipc_handle, cluster_id == 0 ? SC_R_A53_0 : SC_R_A72_0,
-		BL31_BASE, SC_R_MU_0A, 0);
 
 	return 0;
 }
