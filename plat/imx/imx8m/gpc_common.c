@@ -24,7 +24,6 @@
 
 #define M4_LPA_ACTIVE	0x5555
 #define M4_LPA_IDLE	0x0
-#define LPA_STATUS	U(0x94)
 
 static uint32_t gpc_imr_offset[] = {
 	IMR1_CORE0_A53, IMR1_CORE1_A53,
@@ -42,7 +41,7 @@ struct plat_gic_ctx imx_gicv3_ctx;
 
 bool imx_m4_lpa_active(void)
 {
-	return mmio_read_32(IMX_SRC_BASE + LPA_STATUS) & M4_LPA_ACTIVE;
+	return mmio_read_32(IMX_SRC_BASE + LPA_STATUS) == M4_LPA_ACTIVE;
 }
 
 bool imx_is_m4_enabled(void)
