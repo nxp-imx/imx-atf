@@ -30,7 +30,6 @@ DEFINE_BAKERY_LOCK(gpc_lock);
 
 #define M4_LPA_ACTIVE	0x5555
 #define M4_LPA_IDLE	0x0
-#define LPA_STATUS	U(0x94)
 
 struct plat_gic_ctx imx_gicv3_ctx;
 
@@ -45,7 +44,7 @@ struct plat_gic_ctx imx_gicv3_ctx;
 
 bool imx_m4_lpa_active(void)
 {
-	return mmio_read_32(IMX_SRC_BASE + LPA_STATUS) & M4_LPA_ACTIVE;
+	return mmio_read_32(IMX_SRC_BASE + LPA_STATUS) == M4_LPA_ACTIVE;
 }
 
 bool imx_is_m4_enabled(void)
