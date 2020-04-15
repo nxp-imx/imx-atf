@@ -64,10 +64,10 @@ struct imx_csu_cfg {
 	{CSU_HP, .idx = (i), .hp = (val), .lock =(lk), }
 
 #define CSU_SA(i, val, lk)	\
-	{CSU_SA, .idx(i), .sa = (val), .lock = (lk), }
+	{CSU_SA, .idx = (i), .sa = (val), .lock = (lk), }
 
 #define CSU_HPCTRL(i, val, lk)	\
-	{CSU_HPCONTROL, .idx(i), .hpctrl = (val), .lock = (lk), }
+	{CSU_HPCONTROL, .idx = (i), .hpctrl = (val), .lock = (lk), }
 
 void imx_csu_init(const struct imx_csu_cfg *csu_cfg);
 
