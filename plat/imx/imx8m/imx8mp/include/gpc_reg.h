@@ -70,8 +70,8 @@
 
 #define NOC_PDN_SLT_CTRL		BIT(12)
 #define NOC_PUP_SLT_CTRL		BIT(13)
-#define NOC_PGC_PDN_ACK			BIT(8)
-#define NOC_PGC_PUP_ACK			BIT(19)
+#define NOC_PGC_PDN_ACK			BIT(12)
+#define NOC_PGC_PUP_ACK			BIT(13)
 
 #define PLAT_PUP_SLT_CTRL		BIT(9)
 #define PLAT_PDN_SLT_CTRL		BIT(8)

@@ -351,7 +351,8 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 	}
 
 	if (on) {
-		pu_domain_status |= (1 << domain_id);
+		if (pwr_domain->need_sync)
+			pu_domain_status |= (1 << domain_id);
 
 		if (domain_id == HDMIMIX) {
 			/* assert the reset */
@@ -404,7 +405,8 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 		if (domain_id == AUDIOMIX)
 			imx_aips5_init();
 	} else {
-		pu_domain_status &= ~(1 << domain_id);
+		if (pwr_domain->need_sync)
+			pu_domain_status &= ~(1 << domain_id);
 
 		/* handle the ADB400 sync */
 		if (!pwr_domain->init_on && pwr_domain->need_sync) {
