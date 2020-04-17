@@ -147,6 +147,9 @@
 #define OCRAM_S_SIZE			U(0x8000)
 #define OCRAM_S_LIMIT			(OCRAM_S_BASE + OCRAM_S_SIZE)
 
+#define IMX_SCTR_BASE			0x306c0000
+#define CNTFID0_OFF			U(0x20)
+#define CNTFID1_OFF			U(0x24)
 #define COUNTER_FREQUENCY		8000000 /* 8MHz */
 
 #define DEBUG_CONSOLE			0

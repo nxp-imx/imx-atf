@@ -231,7 +231,7 @@ entry_point_info_t *bl31_plat_get_next_image_ep_info(unsigned int type)
 
 unsigned int plat_get_syscnt_freq2(void)
 {
-	return COUNTER_FREQUENCY;
+	return mmio_read_32(IMX_SCTR_BASE + CNTFID0_OFF);
 }
 
 void bl31_plat_runtime_setup(void)
