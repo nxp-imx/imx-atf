@@ -405,6 +405,9 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 		if (domain_id == AUDIOMIX)
 			imx_aips5_init();
 	} else {
+		if (imx_m4_lpa_active() && domain_id == AUDIOMIX)
+			return;
+ 
 		if (pwr_domain->need_sync)
 			pu_domain_status &= ~(1 << domain_id);
 
