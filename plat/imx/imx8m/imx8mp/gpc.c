@@ -188,7 +188,7 @@ void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
 
 	/* enable the MU wakeup */
 	if (imx_m4_lpa_active())
-		mmio_clrbits_32(IMX_GPC_BASE + gpc_imr_offset[last_core] + 0x8, BIT(24));
+		mmio_clrbits_32(gpc_imr_offset[last_core] + 0x8, BIT(24));
 }
 
 static void imx_gpc_hwirq_mask(unsigned int hwirq)
