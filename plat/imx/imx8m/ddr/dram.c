@@ -189,6 +189,17 @@ void dram_info_init(unsigned long dram_timing_base)
 	rc = register_interrupt_type_handler(INTR_TYPE_EL3, waiting_dvfs, flags);
 	if (rc)
 		panic();
+
+	if (dram_info.dram_type == DDRC_LPDDR4 && current_fsp != 0x0) {
+		/* flush the L1/L2 cache */
+		dcsw_op_all(DCCSW);
+		lpddr4_swffc(&dram_info, dev_fsp, 0x0);
+		dev_fsp = (~dev_fsp) & 0x1;
+	} else if (current_fsp != 0x0) {
+		/* flush the L1/L2 cache */
+		dcsw_op_all(DCCSW);
+		ddr4_swffc(&dram_info, 0x0);
+	}
 }
 
 
@@ -272,7 +283,7 @@ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 		if (dram_info.dram_type == DDRC_LPDDR4) {
 			lpddr4_swffc(&dram_info, dev_fsp, fsp_index);
 			dev_fsp = (~dev_fsp) & 0x1;
-		} else if (dram_info.dram_type == DDRC_DDR4) {
+		} else {
 			ddr4_swffc(&dram_info, fsp_index);
 		}
 
