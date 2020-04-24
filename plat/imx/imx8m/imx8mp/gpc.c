@@ -408,6 +408,10 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 		if (imx_m4_lpa_active() && domain_id == AUDIOMIX)
 			return;
  
+		/* keep the USB PHY always on currently */
+		if (domain_id == USB1_PHY || domain_id == USB2_PHY)
+			return;
+
 		if (pwr_domain->need_sync)
 			pu_domain_status &= ~(1 << domain_id);
 
@@ -521,17 +525,8 @@ void imx_noc_wrapper_post_resume(unsigned int proc_num)
 uint32_t pd_init_on[] = {
 	/* hsio ss */
 	HSIOMIX,
-	PCIE_PHY,
 	USB1_PHY,
 	USB2_PHY,
-	/* media ss */
-	MEDIAMIX,
-	MEDIAMIX_ISPDWP,
-	MIPI_PHY1,
-	MIPI_PHY2,
-	/* HDMI ss */
-	HDMIMIX,
-	HDMI_PHY,
 };
 
 void imx_gpc_init(void)
@@ -622,11 +617,6 @@ void imx_gpc_init(void)
 
 	for (i = 0; i < ARRAY_SIZE(pd_init_on); i++)
 		imx_gpc_pm_domain_enable(pd_init_on[i], true);
-
-	/* handle mediamix special */
-	mmio_write_32(0x32ec0000, 0x1FFFFFF);
-	mmio_write_32(0x32ec0004, 0x1FFFFFF);
-	mmio_write_32(0x32ec0008, 0x40030000);
 
 	/* config main NoC */
 	//A53
