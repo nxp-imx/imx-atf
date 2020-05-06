@@ -29,8 +29,8 @@
 #include <imx_sip_svc.h>
 #include <string.h>
 
-#define DATA_SECTION_RESTORE_FLAG	0x11223344
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
+int data_section_restore_flag = 0x1;
 
 IMPORT_SYM(unsigned long, __COHERENT_RAM_START__, BL31_COHERENT_RAM_START);
 IMPORT_SYM(unsigned long, __COHERENT_RAM_END__, BL31_COHERENT_RAM_END);
@@ -402,17 +402,17 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 				u_register_t arg2, u_register_t arg3)
 {
 	unsigned int count = (BL31_DATA_END - BL31_DATA_START) / 4;
-	unsigned int *data = (unsigned int *)(BL31_LIMIT - (BL31_DATA_END - BL31_DATA_START) - 0x4);
+	unsigned int *data = (unsigned int *)(BL31_LIMIT - (BL31_DATA_END - BL31_DATA_START));
 	unsigned *ptr = (unsigned int *)BL31_DATA_START;
 	int i;
 
-	if (*data != DATA_SECTION_RESTORE_FLAG) {
-		*data = DATA_SECTION_RESTORE_FLAG;
+	if (data_section_restore_flag == 0x1) {
+		data_section_restore_flag = 0x2;
 		for (i = 0; i < count; i++)
-			*(++data) = *(ptr++);
+			*(data++) = *(ptr++);
 	} else {
 		for (i = 0; i < count; i++)
-			*(ptr++) = *(++data);
+			*(ptr++) = *(data++);
 	}
 
 #if DEBUG_CONSOLE
