@@ -56,6 +56,12 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 			dram_enter_retention();
 			imx_anamix_override(true);
 			imx_noc_wrapper_pre_suspend(core_id);
+		} else {
+			/*
+			 * when A53 don't enter DSM, only need to
+			 * set the system wakeup option.
+			 */
+			imx_set_sys_wakeup(core_id, true);
 		}
 	}
 }
@@ -71,6 +77,8 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 			imx_anamix_override(false);
 			dram_exit_retention();
 			imx_set_sys_lpm(core_id, false);
+		} else {
+			imx_set_sys_wakeup(core_id, false);
 		}
 	}
 

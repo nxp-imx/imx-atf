@@ -71,6 +71,27 @@ static void get_mr_values(uint32_t (*mr_value)[8])
 	}
 }
 
+static void save_rank_setting(void)
+{
+	uint32_t i, offset;
+	uint32_t pstate_num = dram_info.num_fsp;
+
+	for(i = 0; i < pstate_num; i++) {
+		offset = i ? (i + 1) * 0x1000 : 0;
+		if (dram_info.dram_type == DDRC_LPDDR4) {
+			dram_info.rank_setting[i][0] = mmio_read_32(DDRC_DRAMTMG2(0) + offset);
+		} else {
+			dram_info.rank_setting[i][0] = mmio_read_32(DDRC_DRAMTMG2(0) + offset);
+			dram_info.rank_setting[i][1] = mmio_read_32(DDRC_DRAMTMG9(0) + offset);
+		}
+#if !defined(PLAT_imx8mq)
+		dram_info.rank_setting[i][2] = mmio_read_32(DDRC_RANKCTL(0) + offset);
+#endif
+	}
+#if defined(PLAT_imx8mq)
+	dram_info.rank_setting[0][2] = mmio_read_32(DDRC_RANKCTL(0));
+#endif
+}
 /* Restore the ddrc configs */
 void dram_umctl2_init(struct dram_timing_info *timing)
 {
@@ -154,7 +175,8 @@ void dram_info_init(unsigned long dram_timing_base)
 	ddrc_mstr = mmio_read_32(DDRC_MSTR(0));
 
 	dram_info.dram_type = ddrc_mstr & DDR_TYPE_MASK;
-	dram_info.num_rank = (ddrc_mstr >> 24) & ACTIVE_RANK_MASK;
+	dram_info.num_rank = ((ddrc_mstr >> 24) & ACTIVE_RANK_MASK) == 0x3 ?
+		DDRC_ACTIVE_TWO_RANK : DDRC_ACTIVE_ONE_RANK;
 
 	/* Get current fsp info */
 	current_fsp = mmio_read_32(DDRC_DFIMISC(0)) & 0xf;
@@ -177,6 +199,9 @@ void dram_info_init(unsigned long dram_timing_base)
 			break;
 	dram_info.num_fsp = i;
 
+	/* save the DRAMTMG2/9 for rank to rank workaround */
+	save_rank_setting();
+
 	/* check if has bypass mode support */
 	if (dram_info.timing_info->fsp_table[i-1] < 666)
 		dram_info.bypass_mode = true;
@@ -188,6 +213,17 @@ void dram_info_init(unsigned long dram_timing_base)
 	rc = register_interrupt_type_handler(INTR_TYPE_EL3, waiting_dvfs, flags);
 	if (rc)
 		panic();
+
+	if (dram_info.dram_type == DDRC_LPDDR4 && current_fsp != 0x0) {
+		/* flush the L1/L2 cache */
+		dcsw_op_all(DCCSW);
+		lpddr4_swffc(&dram_info, dev_fsp, 0x0);
+		dev_fsp = (~dev_fsp) & 0x1;
+	} else if (current_fsp != 0x0) {
+		/* flush the L1/L2 cache */
+		dcsw_op_all(DCCSW);
+		ddr4_swffc(&dram_info, 0x0);
+	}
 }
 
 
