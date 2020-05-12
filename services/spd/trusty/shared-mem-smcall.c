@@ -14,6 +14,8 @@
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <platform_def.h>
 #include <trusty/arm_ffa.h>
+#include <trusty/ffa_helpers.h>
+#include <trusty/plat/shared_mem.h>
 
 /*
  * Use a 512KB buffer by default for shared memory descriptors. Set
@@ -22,6 +24,20 @@
 #ifndef TRUSTY_SHARED_MEMORY_OBJ_SIZE
 #define TRUSTY_SHARED_MEMORY_OBJ_SIZE (512 * 1024)
 #endif
+
+#pragma weak plat_mem_set_shared
+int plat_mem_set_shared(struct ffa_mtd *mtd, bool shared)
+{
+	/**
+	 * The platform should check that the memory is nonsecure, however a
+	 * default implementation is provided here without that check for
+	 * backward compatibility.
+	 */
+	if (trusty_ffa_should_be_secure(mtd)) {
+		return -EINVAL;
+	}
+	return 0;
+}
 
 /**
  * struct trusty_shmem_obj - Shared memory object.
@@ -183,8 +199,7 @@ trusty_shmem_obj_lookup(struct trusty_shmem_obj_state *state, uint64_t handle)
 static struct ffa_comp_mrd *
 trusty_shmem_obj_get_comp_mrd(struct trusty_shmem_obj *obj)
 {
-	return (struct ffa_comp_mrd *)
-		((uint8_t *)(&obj->desc) + obj->desc.emad[0].comp_mrd_offset);
+	return trusty_ffa_mtd_get_comp_mrd(&obj->desc);
 }
 
 /**
@@ -285,6 +300,7 @@ static int trusty_shmem_check_obj(struct trusty_shmem_obj *obj)
 static long trusty_ffa_fill_desc(struct trusty_shmem_client_state *client,
 				 struct trusty_shmem_obj *obj,
 				 uint32_t fragment_length,
+				 ffa_mtd_flag32_t mtd_flags,
 				 void *smc_handle)
 {
 	int ret;
@@ -315,7 +331,7 @@ static long trusty_ffa_fill_desc(struct trusty_shmem_client_state *client,
 	if (!obj->desc_filled) {
 		/* First fragment, descriptor header has been copied */
 		obj->desc.handle = trusty_shmem_obj_state.next_handle++;
-		obj->desc.flags = FFA_MTD_FLAG_TYPE_SHARE_MEMORY;
+		obj->desc.flags = mtd_flags;
 		obj->desc.memory_region_attributes |= FFA_MEM_ATTR_NONSECURE;
 	}
 
@@ -334,9 +350,15 @@ static long trusty_ffa_fill_desc(struct trusty_shmem_client_state *client,
 			 (uint32_t)obj->desc.sender_id << 16, 0, 0, 0);
 	}
 
+	ret = plat_mem_set_shared(&obj->desc, true);
+	if (ret) {
+		goto err_share_fail;
+	}
+
 	SMC_RET8(smc_handle, SMC_FC_FFA_SUCCESS, 0, handle_low, handle_high, 0,
 		 0, 0, 0);
 
+err_share_fail:
 err_bad_desc:
 err_arg:
 	trusty_shmem_obj_free(&trusty_shmem_obj_state, obj);
@@ -364,6 +386,7 @@ static long trusty_ffa_mem_share(struct trusty_shmem_client_state *client,
 				 uint32_t fragment_length,
 				 uint64_t address,
 				 uint32_t page_count,
+				 ffa_mtd_flag32_t mtd_flags,
 				 void *smc_handle)
 {
 	struct trusty_shmem_obj *obj;
@@ -389,7 +412,8 @@ static long trusty_ffa_mem_share(struct trusty_shmem_client_state *client,
 		return -ENOMEM;
 	}
 
-	return trusty_ffa_fill_desc(client, obj, fragment_length, smc_handle);
+	return trusty_ffa_fill_desc(client, obj, fragment_length, mtd_flags,
+				    smc_handle);
 }
 
 /**
@@ -438,7 +462,8 @@ static long trusty_ffa_mem_frag_tx(struct trusty_shmem_client_state *client,
 		return -EINVAL;
 	}
 
-	return trusty_ffa_fill_desc(client, obj, fragment_length, smc_handle);
+	return trusty_ffa_fill_desc(client, obj, fragment_length, 0,
+				    smc_handle);
 }
 
 /**
@@ -526,10 +551,12 @@ trusty_ffa_mem_retrieve_req(struct trusty_shmem_client_state *client,
 		return -EINVAL;
 	}
 
-	if (req->flags != 0 && req->flags != FFA_MTD_FLAG_TYPE_SHARE_MEMORY) {
+	if (req->flags != 0 && req->flags != obj->desc.flags) {
 		/*
-		 * Current implementation does not support lend or donate, and
-		 * it supports no other flags.
+		 * Current implementation does not support donate, and it
+		 * supports no other flags. obj->desc.flags will be
+		 * FFA_MTD_FLAG_TYPE_SHARE_MEMORY or
+		 * FFA_MTD_FLAG_TYPE_LEND_MEMORY.
 		 */
 		NOTICE("%s: invalid flags 0x%x\n", __func__, req->flags);
 		return -EINVAL;
@@ -695,6 +722,7 @@ static int trusty_ffa_mem_reclaim(struct trusty_shmem_client_state *client,
 				  uint32_t handle_low, uint32_t handle_high,
 				  uint32_t flags)
 {
+	int ret;
 	struct trusty_shmem_obj *obj;
 	uint64_t handle = handle_low | (((uint64_t)handle_high) << 32);
 
@@ -715,7 +743,14 @@ static int trusty_ffa_mem_reclaim(struct trusty_shmem_client_state *client,
 	if (obj->in_use) {
 		return -EACCES;
 	}
+
+	ret = plat_mem_set_shared(&obj->desc, false);
+	if (ret) {
+		return ret;
+	}
+
 	trusty_shmem_obj_free(&trusty_shmem_obj_state, obj);
+
 	return 0;
 }
 
@@ -1027,12 +1062,28 @@ uintptr_t spmd_smc_handler(uint32_t smc_fid,
 		ret = trusty_ffa_id_get(client, &ret_reg2);
 		break;
 
+	case SMC_FC_FFA_MEM_LEND:
+		ret = trusty_ffa_mem_share(client, w1, w2, w3, w4,
+					   FFA_MTD_FLAG_TYPE_LEND_MEMORY,
+					   handle);
+		break;
+
+	case SMC_FC64_FFA_MEM_LEND:
+		ret = trusty_ffa_mem_share(client, w1, w2, x3, w4,
+					   FFA_MTD_FLAG_TYPE_LEND_MEMORY,
+					   handle);
+		break;
+
 	case SMC_FC_FFA_MEM_SHARE:
-		ret = trusty_ffa_mem_share(client, w1, w2, w3, w4, handle);
+		ret = trusty_ffa_mem_share(client, w1, w2, w3, w4,
+					   FFA_MTD_FLAG_TYPE_SHARE_MEMORY,
+					   handle);
 		break;
 
 	case SMC_FC64_FFA_MEM_SHARE:
-		ret = trusty_ffa_mem_share(client, w1, w2, x3, w4, handle);
+		ret = trusty_ffa_mem_share(client, w1, w2, x3, w4,
+					   FFA_MTD_FLAG_TYPE_SHARE_MEMORY,
+					   handle);
 		break;
 
 	case SMC_FC_FFA_MEM_RETRIEVE_REQ:
