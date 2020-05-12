@@ -160,6 +160,11 @@ typedef uint8_t ffa_mem_flag8_t;
  *     Used by @SMC_FC_FFA_MEM_RETRIEVE_RESP to indicate that memory came from
  *     @SMC_FC_FFA_MEM_SHARE and by @SMC_FC_FFA_MEM_RETRIEVE_REQ to specify that
  *     it must have.
+ * * @FFA_MTD_FLAG_TYPE_LEND_MEMORY
+ *     Lend memory transaction flag.
+ *     Used by @SMC_FC_FFA_MEM_RETRIEVE_RESP to indicate that memory came from
+ *     @SMC_FC_FFA_MEM_LEND and by @SMC_FC_FFA_MEM_RETRIEVE_REQ to specify that
+ *     it must have.
  * * @FFA_MTD_FLAG_ADDRESS_RANGE_ALIGNMENT_HINT_MASK
  *     Not supported by this implementation.
  */
@@ -169,6 +174,7 @@ typedef uint32_t ffa_mtd_flag32_t;
 #define FFA_MTD_FLAG_ZERO_MEMORY_AFTER_RELINQUISH (1U << 2)
 #define FFA_MTD_FLAG_TYPE_MASK (3U << 3)
 #define FFA_MTD_FLAG_TYPE_SHARE_MEMORY (1U << 3)
+#define FFA_MTD_FLAG_TYPE_LEND_MEMORY (2U << 3)
 #define FFA_MTD_FLAG_ADDRESS_RANGE_ALIGNMENT_HINT_MASK (0x1FU << 5)
 
 /**
@@ -468,9 +474,54 @@ enum ffa_error {
 /**
  * SMC_FC_FFA_MEM_LEND - 32 bit SMC opcode to lend memory
  *
- * Not currently supported.
+ * Register arguments:
+ *
+ * * w1:     Total length
+ * * w2:     Fragment length
+ * * w3:     Address
+ * * w4:     Page count
+ *
+ * Return:
+ * * w0:     &SMC_FC_FFA_SUCCESS
+ * * w2/w3:  Handle
+ *
+ * or
+ *
+ * * w0:     &SMC_FC_FFA_MEM_FRAG_RX
+ * * w1-:    See &SMC_FC_FFA_MEM_FRAG_RX
+ *
+ * or
+ *
+ * * w0:     &SMC_FC_FFA_ERROR
+ * * w2:     Error code (&enum ffa_error)
  */
 #define SMC_FC_FFA_MEM_LEND SMC_FASTCALL_NR_SHARED_MEMORY(0x72)
+
+/**
+ * SMC_F64C_FFA_MEM_LEND - 64 bit SMC opcode to lend memory
+ *
+ * Register arguments:
+ *
+ * * w1:     Total length
+ * * w2:     Fragment length
+ * * x3:     Address
+ * * w4:     Page count
+ *
+ * Return:
+ * * w0:     &SMC_FC_FFA_SUCCESS
+ * * w2/w3:  Handle
+ *
+ * or
+ *
+ * * w0:     &SMC_FC_FFA_MEM_FRAG_RX
+ * * w1-:    See &SMC_FC_FFA_MEM_FRAG_RX
+ *
+ * or
+ *
+ * * w0:     &SMC_FC_FFA_ERROR
+ * * w2:     Error code (&enum ffa_error)
+ */
+#define SMC_FC64_FFA_MEM_LEND SMC_FASTCALL64_NR_SHARED_MEMORY(0x72)
 
 /**
  * SMC_FC_FFA_MEM_SHARE - 32 bit SMC opcode to share memory
