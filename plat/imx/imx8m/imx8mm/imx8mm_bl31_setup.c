@@ -90,6 +90,11 @@ static const struct imx_csu_cfg csu_cfg[] = {
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
 
+
+#if defined (CSU_RDC_TEST)
+static void csu_rdc_test(void);
+#endif
+
 /* get SPSR for BL33 entry */
 static uint32_t get_spsr_for_bl33_entry(void)
 {
@@ -182,6 +187,10 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 #endif
 
 	bl31_tzc380_setup();
+
+#if defined (CSU_RDC_TEST)
+	csu_rdc_test();
+#endif
 }
 
 #define MAP_BL31_TOTAL										   \
@@ -248,5 +257,40 @@ void plat_trusty_set_boot_args(aapcs64_params_t *args)
 	args->arg0 = BL32_SIZE;
 	args->arg1 = BL32_BASE;
 	args->arg2 = TRUSTY_PARAMS_LEN_BYTES;
+}
+#endif
+
+#if defined (CSU_RDC_TEST)
+static const struct imx_rdc_cfg rdc_for_test[] = {
+	/* Master domain assignment */
+
+	/* peripherals domain permission */
+
+	RDC_PDAPn(RDC_PDAP_CSU, D2R | D2W),
+
+	/* memory region */
+
+	/* Sentinel */
+	{0},
+};
+
+static const struct imx_csu_cfg csu_cfg_for_test[] = {
+	/* peripherals csl setting */
+	CSU_CSLx(CSU_CSL_RDC, CSU_SEC_LEVEL_4, LOCKED),
+	CSU_CSLx(CSU_CSL_CSU, CSU_SEC_LEVEL_4, LOCKED),
+	/* master HP0~1 */
+
+	/* SA setting */
+
+	/* HP control setting */
+
+	/* Sentinel */
+	{0}
+};
+
+static void csu_rdc_test(void)
+{
+	imx_csu_init(csu_cfg_for_test);
+	imx_rdc_init(rdc_for_test);
 }
 #endif
