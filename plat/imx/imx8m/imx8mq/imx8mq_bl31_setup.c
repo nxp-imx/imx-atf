@@ -133,7 +133,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	int i;
 	/* enable CSU NS access permission */
 	for (i = 0; i < 64; i++) {
-		mmio_write_32(IMX_CSU_BASE + i * 4, 0xffffffff);
+		mmio_write_32(IMX_CSU_BASE + i * 4, 0x00ff00ff);
 	}
 
 	imx_aipstz_init(aipstz);
