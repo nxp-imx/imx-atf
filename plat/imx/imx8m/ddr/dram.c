@@ -222,7 +222,9 @@ void dram_info_init(unsigned long dram_timing_base)
 	} else if (current_fsp != 0x0) {
 		/* flush the L1/L2 cache */
 		dcsw_op_all(DCCSW);
+#if !defined(PLAT_imx8mq)
 		ddr4_swffc(&dram_info, 0x0);
+#endif
 	}
 }
 
