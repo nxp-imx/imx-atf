@@ -34,7 +34,7 @@
 static const mmap_region_t imx_mmap[] = {
 	GIC_MAP, AIPS_MAP, OCRAM_S_MAP, DDRC_MAP,
 	NOC_MAP, CAAM_RAM_MAP, NS_OCRAM_MAP,
-	ROM_MAP, DRAM_MAP, {0},
+	ROM_MAP, DRAM_MAP, VPU_BLK_CTL_MAP, {0},
 };
 
 static const struct aipstz_cfg aipstz[] = {
