@@ -203,6 +203,9 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 			mmio_write_32(IMX_HDMI_CTL_BASE + RTX_CLK_CTL1, 0x7ffff87e);
 		}
 
+		if (domain_id == VPU_H1)
+			mmio_clrbits_32(IMX_VPU_BLK_BASE + 0x4, BIT(2));
+
 		/* clear the PGC bit */
 		mmio_clrbits_32(IMX_GPC_BASE + pwr_domain->pgc_offset, 0x1);
 
@@ -231,6 +234,9 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 			/* enable HSIOMIX clock */
 			mmio_write_32(IMX_HSIOMIX_CTL_BASE, 0x2);
 		}
+
+		if (domain_id == VPU_H1)
+			mmio_setbits_32(IMX_VPU_BLK_BASE + 0x4, BIT(2));
 
 		/* handle the ADB400 sync */
 		if (pwr_domain->need_sync) {

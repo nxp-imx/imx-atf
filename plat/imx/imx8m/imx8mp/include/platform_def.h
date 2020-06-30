@@ -121,6 +121,8 @@
 #define IMX_CAAM_RAM_SIZE		U(0x10000)
 #define IMX_DRAM_BASE			U(0x40000000)
 #define IMX_DRAM_SIZE			U(0xc0000000)
+#define IMX_VPU_BLK_BASE		U(0x38330000)
+#define IMX_VPU_BLK_SIZE		U(0x10000)
 
 #define IMX_GIC_BASE			PLAT_GICD_BASE
 #define IMX_GIC_SIZE			U(0x200000)
@@ -207,5 +209,6 @@
  * for explanation of this mapping scheme.
  */
 #define DRAM_MAP	MAP_REGION_FLAT(IMX_DRAM_BASE, IMX_DRAM_SIZE, MT_MEMORY | MT_RW | MT_NS) /* DRAM */
+#define VPU_BLK_CTL_MAP	MAP_REGION_FLAT(IMX_VPU_BLK_BASE, IMX_VPU_BLK_SIZE, MT_DEVICE | MT_RW) /* VPU BLK CTL */
 
 #endif /* platform_def.h */
