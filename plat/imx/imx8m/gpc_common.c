@@ -29,6 +29,8 @@ DEFINE_BAKERY_LOCK(gpc_lock);
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN		0x03
 
 #define M4_LPA_ACTIVE	0x5555
+#define DSP_LPA_ACTIVE	0xD
+#define	DSP_LPA_DRAM_ACTIVE 0x1D
 #define M4_LPA_IDLE	0x0
 
 struct plat_gic_ctx imx_gicv3_ctx;
@@ -44,7 +46,12 @@ struct plat_gic_ctx imx_gicv3_ctx;
 
 bool imx_m4_lpa_active(void)
 {
-	return mmio_read_32(IMX_SRC_BASE + LPA_STATUS) == M4_LPA_ACTIVE;
+	uint32_t lpa_status;
+
+	lpa_status = mmio_read_32(IMX_SRC_BASE + LPA_STATUS);
+
+	return (lpa_status == M4_LPA_ACTIVE || lpa_status == DSP_LPA_ACTIVE ||
+		lpa_status == DSP_LPA_DRAM_ACTIVE);
 }
 
 bool imx_is_m4_enabled(void)
