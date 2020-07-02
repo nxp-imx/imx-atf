@@ -125,7 +125,17 @@ SKIP_FP:
 	msr	CORTEX_A72_ECTLR_EL1, x1
 	isb
 #endif
+#if defined(PLAT_imx8ulp)
+	mrs	x0, CORTEX_A35_CPUECTLR_EL1
+	orr     x0, x0, #(0x1 << 0)
+	orr     x0, x0, #(0x1 << 3)
+	msr	CORTEX_A35_CPUECTLR_EL1, x0
 
+	mrs	x0, L2ECTLR_EL1
+	orr     x0, x0, #(0x1 << 0)
+	msr	L2ECTLR_EL1, x0
+	isb
+#endif
 	/* enable EL2 cpuectlr RW access */
 	mov	x0, #0x73
 	msr	actlr_el3, x0
