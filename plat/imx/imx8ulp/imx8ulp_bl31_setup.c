@@ -17,6 +17,8 @@
 #include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/common/platform.h>
+#include <upower_soc_defs.h>
+#include <upower_api.h>
 
 #include <imx8_lpuart.h>
 #include <plat_imx8.h>
@@ -30,6 +32,8 @@ static entry_point_info_t bl33_image_ep_info;
 static const mmap_region_t imx_mmap[] = {
 	MAP_REGION_FLAT(DEVICE0_BASE, DEVICE0_SIZE, MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(DEVICE1_BASE, DEVICE1_SIZE, MT_DEVICE | MT_RW),
+	/* For SCMI shared memory region */
+	MAP_REGION_FLAT(0x2201f000, 0x1000, MT_RW | MT_DEVICE),
 	{0}
 };
 
@@ -100,8 +104,12 @@ void bl31_plat_arch_setup(void)
 	init_xlat_tables();
 
 	enable_mmu_el3(0);
+
+	/* TODO: Hack, refine this piece, scmi channel free */
+	mmio_write_32(0x2201f004, 1);
 }
 
+extern uint32_t upower_init(void);
 void bl31_platform_setup(void)
 {
 	/* select the arch timer source */
@@ -111,6 +119,8 @@ void bl31_platform_setup(void)
 
 	plat_gic_driver_init();
 	plat_gic_init();
+
+	upower_init();
 }
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(unsigned int type)
