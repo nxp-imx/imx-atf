@@ -12,6 +12,7 @@ include drivers/arm/gic/v3/gicv3.mk
 
 PLAT_INCLUDES		:=	-Iplat/imx/imx8ulp/include		\
 				-Iplat/imx/common/include		\
+				-Iplat/imx/imx8ulp/upower
 
 IMX_GIC_SOURCES		:=	${GICV3_SOURCES}			\
 				plat/common/plat_gicv3.c		\
@@ -29,8 +30,12 @@ BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
 				lib/cpus/aarch64/cortex_a35.S		\
 				drivers/delay_timer/delay_timer.c	\
 				drivers/delay_timer/generic_delay_timer.c \
+				plat/imx/imx8ulp/scmi/scmi.c		\
+				plat/imx/imx8ulp/scmi/scmi_pd.c		\
+				plat/imx/imx8ulp/upower/upower_api.c	\
+				plat/imx/imx8ulp/upower/upower_hal.c	\
 				${XLAT_TABLES_LIB_SRCS}			\
-				${IMX_GIC_SOURCES}			\
+				${IMX_GIC_SOURCES}
 
 USE_COHERENT_MEM	:=	1
 RESET_TO_BL31		:=	1
