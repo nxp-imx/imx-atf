@@ -51,11 +51,20 @@ static const struct imx_rdc_cfg rdc[] = {
 	/* Master domain assignment */
 	RDC_MDAn(RDC_MDA_M7, DID1),
 
+	RDC_MDAn(RDC_MDA_LCDIF1, DID3),
+	RDC_MDAn(RDC_MDA_LCDIF2, DID3),
+	RDC_MDAn(RDC_MDA_HDMI_TX, DID3),
+	RDC_MDAn(RDC_MDA_GPU2D, DID2),
+
+
 	/* peripherals domain permission */
 	RDC_PDAPn(RDC_PDAP_UART2, D0R | D0W),
 	RDC_PDAPn(RDC_PDAP_WDOG1, D0R | D0W),
 
 	/* memory region */
+	RDC_MEM_REGIONn(39, 0x00000000, 0x50000000, LCK|ENA|D3R|D3W|D2R|/*D2W|*/D1R|D1W|D0R|D0W),
+	RDC_MEM_REGIONn(40, 0x50000000, 0x58000000, LCK|ENA|D3R|D3W|D2R|D2W|D1R|D1W|/*D0R|*/D0W),
+	RDC_MEM_REGIONn(41, 0x58000000, 0xFFFFFFFF, LCK|ENA|D3R|D3W|D2R|/*D2W|*/D1R|D1W|D0R|D0W),
 
 	/* Sentinel */
 	{0},
