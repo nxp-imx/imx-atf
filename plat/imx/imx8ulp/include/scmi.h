@@ -86,6 +86,19 @@ enum {
 
 int scmi_power_domain_handler(uint32_t msg_id, void *shmem);
 
+
+#define PERFORMANCE_DOMAIN_ATTRIBUTES		3
+#define PERFORMANCE_DESCRIBE_LEVELS		4
+#define PERFORMANCE_LIMITS_SET			5
+#define PERFORMANCE_LIMITS_GET			6
+#define PERFORMANCE_LEVEL_SET			7
+#define PERFORMANCE_LEVEL_GET			8
+#define PERFORMANCE_NOTIFY_LIMITS		9
+#define PERFORMANCE_NOTIFY_LEVEL		0xA
+#define PERFORMANCE_DESCRIBE_FAST_CHANNEL	0xB
+
+int scmi_perf_domain_handler(uint32_t msg_id, void *shmem);
+
 #define SMC_SHMEM_BASE	0x2201f000
 
 #endif
