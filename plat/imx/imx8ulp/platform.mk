@@ -33,6 +33,7 @@ BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
 				plat/imx/imx8ulp/scmi/scmi.c		\
 				plat/imx/imx8ulp/scmi/scmi_pd.c		\
 				plat/imx/imx8ulp/scmi/scmi_perf.c	\
+				plat/imx/imx8ulp/scmi/scmi_sensor.c	\
 				plat/imx/imx8ulp/scmi/clk_hal.c		\
 				plat/imx/imx8ulp/upower/upower_api.c	\
 				plat/imx/imx8ulp/upower/upower_hal.c	\
