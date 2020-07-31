@@ -108,6 +108,8 @@ int scmi_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_register_
 		return scmi_power_domain_handler(msg_id, shmem);
 	case SCMI_PROTOCOL_PERF_DOMAIN:
 		return scmi_perf_domain_handler(msg_id, shmem);
+	case SCMI_PROTOCOL_SENSOR:
+		return scmi_sensor_handler(msg_id, shmem);
 	default:
 		mem->status = 1;
 		response->status = SCMI_RET_NOT_SUPPORTED;

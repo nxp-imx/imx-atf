@@ -99,6 +99,13 @@ int scmi_power_domain_handler(uint32_t msg_id, void *shmem);
 
 int scmi_perf_domain_handler(uint32_t msg_id, void *shmem);
 
+#define SENSOR_DESCRIPTION_GET			0x003
+#define SENSOR_CONFIG_SET			0x004
+#define SENSOR_TRIP_POINT_SET			0x005
+#define SENSOR_READING_GET			0x006
+
+int scmi_sensor_handler(uint32_t msg_id, void *shmem);
+
 #define SMC_SHMEM_BASE	0x2201f000
 
 #endif
