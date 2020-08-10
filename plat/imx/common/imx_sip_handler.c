@@ -13,6 +13,7 @@
 #include <common/runtime_svc.h>
 #include <imx_sip_svc.h>
 #include <sci/sci.h>
+#include <errno.h>
 
 #if defined(PLAT_imx8qm) || defined(PLAT_imx8qx) || defined(PLAT_imx8dx) || defined(PLAT_imx8dxl)
 
@@ -249,3 +250,25 @@ int putchar(int c)
 	return c;
 }
 #endif
+
+int fips_config_handler(uint32_t smc_fid,
+			u_register_t x1,
+			u_register_t x2,
+			u_register_t x3,
+			u_register_t x4)
+{
+	sc_err_t sc_err = SC_ERR_NOTFOUND;
+	uint8_t cmd = x1;
+	uint8_t mode;
+
+	switch (cmd) {
+	case IMX_SIP_FIPS_CONFIG_SET:
+		mode = x2;
+		sc_err = sc_seco_set_fips_mode(ipc_handle, mode, NULL);
+		break;
+	default:
+		break;
+	}
+
+	return (sc_err == SC_ERR_NONE) ? 0 : -EINVAL;
+}
