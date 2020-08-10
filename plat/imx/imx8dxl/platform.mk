@@ -35,16 +35,16 @@ include plat/imx/common/sci/sci_api.mk
 USE_COHERENT_MEM	:=	1
 RESET_TO_BL31		:=	1
 
+ENABLE_CPU_DYNAMIC_RETENTION := 1
+$(eval $(call add_define,ENABLE_CPU_DYNAMIC_RETENTION))
+ENABLE_L2_DYNAMIC_RETENTION := 1
+$(eval $(call add_define,ENABLE_L2_DYNAMIC_RETENTION))
+
 IMX_DEBUG_UART		?= 	0
 $(eval $(call add_define,IMX_USE_UART${IMX_DEBUG_UART}))
 
 DEBUG_CONSOLE		?= 	0
 $(eval $(call add_define,DEBUG_CONSOLE))
-
-ENABLE_CPU_DYNAMIC_RETENTION := 1
-$(eval $(call add_define,ENABLE_CPU_DYNAMIC_RETENTION))
-ENABLE_L2_DYNAMIC_RETENTION := 1
-$(eval $(call add_define,ENABLE_L2_DYNAMIC_RETENTION))
 
 BL32_BASE		?=	0x96000000
 $(eval $(call add_define,BL32_BASE))
