@@ -57,6 +57,9 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 			imx_anamix_override(true);
 			imx_noc_wrapper_pre_suspend(core_id);
 		} else {
+			/* flag 0xD means DSP LPA buffer is in OCRAM */
+			if (mmio_read_32(IMX_SRC_BASE + 0x98) == 0xD)
+				dram_enter_retention();
 			/*
 			 * when A53 don't enter DSM, only need to
 			 * set the system wakeup option.
@@ -78,6 +81,10 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 			dram_exit_retention();
 			imx_set_sys_lpm(core_id, false);
 		} else {
+			/* flag 0xD means DSP LPA buffer is in OCRAM */
+			if (mmio_read_32(IMX_SRC_BASE + 0x98) == 0xD)
+				dram_exit_retention();
+
 			imx_set_sys_wakeup(core_id, false);
 		}
 	}
