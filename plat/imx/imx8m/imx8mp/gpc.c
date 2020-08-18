@@ -473,6 +473,9 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 		if (domain_id == VPU_H1 || domain_id == VPU_G1 || domain_id == VPU_G2)
 			return;
 
+		/* disable the memory repair clock before power down */
+		mmio_write_32(IMX_CCM_BASE + 0x4640, 0x0);
+
 		if (domain_id == VPUMIX)
 			mmio_write_32(IMX_GPC_BASE + PU_PGC_DN_TRG, VPU_G1_PWR_REQ |
 				 VPU_G2_PWR_REQ | VPU_H1_PWR_REQ);
@@ -482,6 +485,9 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 
 		/* wait for power request done */
 		while (mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG) & pwr_domain->pwr_req);
+
+		/* enable the memory repair clock after power down */
+		mmio_write_32(IMX_CCM_BASE + 0x4640, 0x3);
 
 		if (domain_id == HDMIMIX) {
 			/* disable all the clocks of HDMIMIX */
