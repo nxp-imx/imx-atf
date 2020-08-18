@@ -61,6 +61,10 @@
 #define IMX_SIP_MISC_SET_TEMP		0xC200000C
 
 #define IMX_SIP_DDR_DVFS		0xc2000004
+
+#define IMX_SIP_FIPS_CONFIG		0xc200000D
+#define IMX_SIP_FIPS_CONFIG_SET		0x1
+
 #if defined(PLAT_imx8mq)
 int imx_soc_info_handler(uint32_t smc_fid, u_register_t x1,
 			 u_register_t x2, u_register_t x3);
@@ -101,6 +105,8 @@ int imx_misc_set_temp_handler(uint32_t smc_fid, u_register_t x1,
 			      u_register_t x2, u_register_t x3,
 			      u_register_t x4);
 int imx_get_cpu_rev(uint32_t *cpu_id, uint32_t *cpu_rev);
+int fips_config_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
+			u_register_t x3, u_register_t x4);
 #endif
 uint64_t imx_buildinfo_handler(uint32_t smc_fid, u_register_t x1,
 			       u_register_t x2, u_register_t x3,

@@ -771,6 +771,37 @@ sc_err_t sc_seco_secvio_config(sc_ipc_t ipc, uint8_t id, uint8_t access,
 sc_err_t sc_seco_secvio_dgo_config(sc_ipc_t ipc, uint8_t id,
 				   uint8_t access, uint32_t *data);
 
+/*!
+ * This function configures the SECO in FIPS mode
+ *
+ * Only the owner of the SC_R_SYSTEM resource or a partition with access
+ * permissions to SC_R_SYSTEM can do this.
+ *
+ * This function permanently configures the SECO in FIPS approved mode. When in
+ * FIPS approved mode the following services will be disabled and receive a
+ * failure response:
+ * - Encrypted boot is not supported
+ * - Attestation is not supported
+ * - Manufacturing protection is not supported
+ * - DTCP load
+ * - SHE services are not supported
+ * - Assign JR is not supported (all JRs owned by SECO)
+ *
+ * @param[in]     ipc         IPC handle
+ * @param[in]     mode        FIPS mode
+ * @param[out]    reason      pointer to return failure reason
+ *
+ * @return Returns and error code (SC_ERR_NONE = success).
+ *
+ * Return errors codes:
+ * - SC_ERR_UNAVAILABLE if SECO not available,
+ * - SC_ERR_NOACCESS if caller does not have SC_R_SYSTEM access,
+ * - SC_ERR_IPC if SECO response has bad header tag or size,
+ * - SC_ERR_VERSION if SECO response has bad version,
+ * - Others, see the [Security Service Detailed Description](\ref seco_err) section
+ */
+sc_err_t sc_seco_set_fips_mode(sc_ipc_t ipc, uint8_t mode, uint32_t *status);
+
 /* @} */
 
 #endif				/* SC_SECO_API_H */
