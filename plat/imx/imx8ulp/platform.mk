@@ -30,6 +30,7 @@ BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
 				lib/cpus/aarch64/cortex_a35.S		\
 				drivers/delay_timer/delay_timer.c	\
 				drivers/delay_timer/generic_delay_timer.c \
+				plat/imx/imx8ulp/xrdc/mrc.c		\
 				plat/imx/imx8ulp/scmi/scmi.c		\
 				plat/imx/imx8ulp/scmi/scmi_pd.c		\
 				plat/imx/imx8ulp/scmi/scmi_perf.c	\
