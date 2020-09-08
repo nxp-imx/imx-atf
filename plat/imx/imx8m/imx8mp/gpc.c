@@ -356,7 +356,6 @@ void imx_noc_wrapper_post_resume(unsigned int proc_num)
 	plat_gic_restore(proc_num, &imx_gicv3_ctx);
 }
 
-
 void imx_gpc_init(void)
 {
 	uint32_t val;
@@ -441,4 +440,15 @@ void imx_gpc_init(void)
 	imx_gpc_pm_domain_enable(HSIOMIX, true);
 	imx_gpc_pm_domain_enable(USB1_PHY, true);
 	imx_gpc_pm_domain_enable(USB2_PHY, true);
+
+	/* config main NoC */
+	//A53
+	mmio_write_32 (0x32700008, 0x80000303);
+	mmio_write_32 (0x3270000c, 0x0);
+	//SUPERMIX
+	mmio_write_32 (0x32700088, 0x80000303);
+	mmio_write_32 (0x3270008c, 0x0);
+	//GIC
+	mmio_write_32 (0x32700108, 0x80000303);
+	mmio_write_32 (0x3270010c, 0x0);
 }
