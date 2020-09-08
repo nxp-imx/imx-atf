@@ -373,6 +373,12 @@ void imx_noc_wrapper_post_resume(unsigned int proc_num)
 	plat_gic_restore(proc_num, &imx_gicv3_ctx);
 }
 
+uint32_t pd_init_on[] = {
+	/* hsio ss */
+	HSIOMIX,
+	USB1_PHY,
+	USB2_PHY,
+};
 
 void imx_gpc_init(void)
 {
@@ -447,7 +453,17 @@ void imx_gpc_init(void)
 		mmio_write_32(IMX_CCM_BASE + CCGR(i), 0x3);
 	}
 
-	for (i = 0; i < 20; i++) {
-		imx_gpc_pm_domain_enable(i, true);
-	}
+	for (i = 0; i < ARRAY_SIZE(pd_init_on); i++)
+		imx_gpc_pm_domain_enable(pd_init_on[i], true);
+
+	/* config main NoC */
+	//A53
+	mmio_write_32 (0x32700008, 0x80000303);
+	mmio_write_32 (0x3270000c, 0x0);
+	//SUPERMIX
+	mmio_write_32 (0x32700088, 0x80000303);
+	mmio_write_32 (0x3270008c, 0x0);
+	//GIC
+	mmio_write_32 (0x32700108, 0x80000303);
+	mmio_write_32 (0x3270010c, 0x0);
 }
