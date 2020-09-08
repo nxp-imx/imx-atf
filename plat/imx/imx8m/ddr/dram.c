@@ -76,6 +76,9 @@ static void save_rank_setting(void)
 	uint32_t i, offset;
 	uint32_t pstate_num = dram_info.num_fsp;
 
+	/* only support maximum 3 setpoints */
+	pstate_num = (pstate_num > MAX_FSP_NUM) ? MAX_FSP_NUM : pstate_num;
+
 	for(i = 0; i < pstate_num; i++) {
 		offset = i ? (i + 1) * 0x1000 : 0;
 		if (dram_info.dram_type == DDRC_LPDDR4) {
@@ -199,6 +202,9 @@ void dram_info_init(unsigned long dram_timing_base)
 		if (!dram_info.timing_info->fsp_table[i])
 			break;
 	dram_info.num_fsp = i;
+
+	/* only support maximum 3 setpoints */
+	dram_info.num_fsp = (i > MAX_FSP_NUM) ? MAX_FSP_NUM : i;
 
 	/* save the DRAMTMG2/9 for rank to rank workaround */
 	save_rank_setting();

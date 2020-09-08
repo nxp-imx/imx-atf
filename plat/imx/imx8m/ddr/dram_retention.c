@@ -24,6 +24,9 @@ static void rank_setting_update(void)
 	uint32_t i, offset;
 	uint32_t pstate_num = dram_info.num_fsp;
 
+	/* only support maximum 3 setpoints */
+	pstate_num = (pstate_num > MAX_FSP_NUM) ? MAX_FSP_NUM : pstate_num;
+
 	for (i = 0; i < pstate_num; i++) {
 		offset = i ? (i + 1) * 0x1000 : 0;
 		if (dram_info.dram_type == DDRC_LPDDR4) {
