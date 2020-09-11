@@ -156,6 +156,11 @@ extern int xrdc_config_pdac(uint32_t, uint32_t, uint32_t, uint32_t);
 	xrdc_config_pdac(3, 47, 0, 7);
 	xrdc_config_mrc11_hifi_itcm();
 	xrdc_config_mrc11_hifi_dtcm();
+	xrdc_config_pdac(4, 8, 1, 7); /* DMA1 (DID=1) access to SAI4 regs */
+	xrdc_config_pdac(4, 9, 1, 7); /* DMA1 (DID=1) access to SAI5 regs */
+	xrdc_config_pdac(5, 41, 7, 7); /* (DID=7) access to SAI6 regs */
+	xrdc_config_pdac(5, 42, 7, 7); /* (DID=7) access to SAI7 regs */
+	xrdc_config_pdac(5, 43, 7, 7); /* (DID=7) access to SPDIF regs */
 #endif
 
 	return 0;

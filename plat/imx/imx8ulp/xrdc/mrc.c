@@ -111,7 +111,7 @@ int xrdc_config_pdac(uint32_t bridge, uint32_t index, uint32_t dom, uint32_t per
 		return -EINVAL;
 	}
 	val = mmio_read_32(w0_addr);
-	mmio_write_32(w0_addr, (val & ~(0x7 << (dom * 3))) | perm);
+	mmio_write_32(w0_addr, (val & ~(0x7 << (dom * 3))) | (perm << (dom * 3)));
 
 	val = mmio_read_32(w0_addr + 4);
 	mmio_write_32(w0_addr + 4, val | BIT_32(31));
