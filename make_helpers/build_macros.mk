@@ -37,6 +37,11 @@ define uppercase
 $(eval uppercase_result:=$(call uppercase_internal,$(uppercase_table),$(1)))$(uppercase_result)
 endef
 
+define	SET_FLAG
+$1	:= yes
+$2_$1	:= yes
+endef
+
 # Convenience function for adding build definitions
 # $(eval $(call add_define,FOO)) will have:
 # -DFOO if $(FOO) is empty; -DFOO=$(FOO) otherwise
