@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -24,7 +24,10 @@ enum {
 	NON_TRUSTED_FW_KEY_CERT,
 	NON_TRUSTED_FW_CONTENT_CERT,
 	SIP_SECURE_PARTITION_CONTENT_CERT,
-	FWU_CERT
+	FWU_CERT,
+	DDR_FW_KEY_CERT,
+	DDR_UDIMM_FW_CONTENT_CERT,
+	DDR_RDIMM_FW_CONTENT_CERT
 };
 
 #endif /* TBB_CERT_H */

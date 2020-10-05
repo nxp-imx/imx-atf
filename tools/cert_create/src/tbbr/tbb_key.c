@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -53,6 +53,12 @@ static key_t tbb_keys[] = {
 		.opt = "nt-fw-key",
 		.help_msg = "Non Trusted Firmware Content Certificate key (input/output file)",
 		.desc = "Non Trusted Firmware Content Certificate key"
+	},
+	[DDR_FW_CONTENT_KEY] = {
+		.id = DDR_FW_CONTENT_KEY,
+		.opt = "ddr-fw-key",
+		.help_msg = "DDR Firmware Content Certificate key (input/output file)",
+		.desc = "DDR Firmware Content Certificate key"
 	}
 };
 
