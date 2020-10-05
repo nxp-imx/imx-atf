@@ -104,12 +104,8 @@ BL2_HDR_LOC	:=	$$(echo "obase=16; ${BL2_HDR_LOC_HDR}" | bc)
 # Core Errata
 ERRATA_A72_859971	:= 1
 
-# DDR Errata
-ERRATA_SOC_A011396	:= 1
-
+# SoC Errata
 ERRATA_SOC_A050426	:= 1
-
-ERRATA_DDR_A050450	:= 1
 
 ifneq (${CACHE_LINE},)
 $(eval $(call add_define_val,PLATFORM_CACHE_LINE_SHIFT,${CACHE_LINE}))
