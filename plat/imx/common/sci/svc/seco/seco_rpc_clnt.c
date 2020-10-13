@@ -626,4 +626,25 @@ sc_err_t sc_seco_secvio_dgo_config(sc_ipc_t ipc, uint8_t id, uint8_t access,
 	return err;
 }
 
+sc_err_t sc_seco_set_fips_mode(sc_ipc_t ipc, uint8_t mode, uint32_t *status)
+{
+	sc_rpc_msg_t msg;
+	sc_err_t err;
+
+	RPC_VER(&msg) = SC_RPC_VERSION;
+	RPC_SIZE(&msg) = 2U;
+	RPC_SVC(&msg) = U8(SC_RPC_SVC_SECO);
+	RPC_FUNC(&msg) = U8(SECO_FUNC_SET_FIPS_MODE);
+
+	RPC_U8(&msg, 0U) = mode;
+
+	sc_call_rpc(ipc, &msg, SC_FALSE);
+
+	if (status)
+		*status = (uint32_t)RPC_U32(&msg, 0U);
+
+	err = RPC_R8(&msg);
+	return (sc_err_t)err;
+}
+
 /**@}*/

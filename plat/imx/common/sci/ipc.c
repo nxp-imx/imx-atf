@@ -11,6 +11,8 @@
 
 #include "imx8_mu.h"
 
+sc_ipc_t ipc_handle;
+
 #include <lib/bakery_lock.h>
 DEFINE_BAKERY_LOCK(sc_ipc_bakery_lock);
 #define sc_ipc_lock_init()	bakery_lock_init(&sc_ipc_bakery_lock)

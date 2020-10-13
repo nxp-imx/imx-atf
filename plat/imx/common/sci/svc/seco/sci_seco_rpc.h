@@ -51,6 +51,7 @@
 #define SECO_FUNC_SECVIO_ENABLE 25U	/* Index for sc_seco_secvio_enable() RPC call */
 #define SECO_FUNC_SECVIO_CONFIG 26U	/* Index for sc_seco_secvio_config() RPC call */
 #define SECO_FUNC_SECVIO_DGO_CONFIG 27U	/* Index for sc_seco_secvio_dgo_config() RPC call */
+#define SECO_FUNC_SET_FIPS_MODE 29U /* Index for sc_seco_set_fips_mode() RPC call */
 /*@}*/
 
 /* Types */

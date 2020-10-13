@@ -71,6 +71,10 @@ static uintptr_t imx_sip_handler(unsigned int smc_fid,
 		return imx_otp_handler(smc_fid, handle, x1, x2);
 	case IMX_SIP_MISC_SET_TEMP:
 		SMC_RET1(handle, imx_misc_set_temp_handler(smc_fid, x1, x2, x3, x4));
+#ifdef FIPS_CONFIG
+	case IMX_SIP_FIPS_CONFIG:
+		SMC_RET1(handle, fips_config_handler(smc_fid, x1, x2, x3, x4));
+#endif
 #endif
 	case  IMX_SIP_BUILDINFO:
 		SMC_RET1(handle, imx_buildinfo_handler(smc_fid, x1, x2, x3, x4));
