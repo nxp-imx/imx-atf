@@ -279,9 +279,9 @@ void imx8_partition_resources(void)
 			ERROR("Memreg get info failed, %u\n", mr_tee);
 		} else {
 			if ((BL32_LIMIT - 1) < end) {
-				err = sc_rm_memreg_alloc(ipc_handle, &mr, BL32_LIMIT , end);
+				err = sc_rm_memreg_frag(ipc_handle, &mr, BL32_LIMIT , end);
 				if (err) {
-					ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL32_LIMIT, end);
+					ERROR("sc_rm_memreg_frag failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL32_LIMIT, end);
 				} else {
 					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
 					if (err)
@@ -290,9 +290,9 @@ void imx8_partition_resources(void)
 			}
 
 			if (start < (BL32_BASE - 1)) {
-				err = sc_rm_memreg_alloc(ipc_handle, &mr, start, BL32_BASE - 1);
+				err = sc_rm_memreg_frag(ipc_handle, &mr, start, BL32_BASE - 1);
 				if (err) {
-					ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", start, (sc_faddr_t)BL32_BASE - 1);
+					ERROR("sc_rm_memreg_frag failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", start, (sc_faddr_t)BL32_BASE - 1);
 				} else {
 					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
 					if (err)
@@ -318,9 +318,9 @@ void imx8_partition_resources(void)
 				if ((end > BL32_BASE) && mr_tee_atf_same)
 					reg_end = BL32_BASE - 1;
 #endif
-				err = sc_rm_memreg_alloc(ipc_handle, &mr, BL31_LIMIT, reg_end);
+				err = sc_rm_memreg_frag(ipc_handle, &mr, BL31_LIMIT, reg_end);
 				if (err) {
-					ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL31_LIMIT, reg_end);
+					ERROR("sc_rm_memreg_frag failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL31_LIMIT, reg_end);
 				} else {
 					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
 					if (err)
@@ -331,9 +331,9 @@ void imx8_partition_resources(void)
 			if (mr_tee_atf_same) {
 				if ((BL32_LIMIT - 1) < end) {
 					reg_start = BL32_LIMIT;
-					err = sc_rm_memreg_alloc(ipc_handle, &mr, reg_start, end);
+					err = sc_rm_memreg_frag(ipc_handle, &mr, reg_start, end);
 					if (err) {
-						ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", reg_start, reg_end);
+						ERROR("sc_rm_memreg_frag failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", reg_start, reg_end);
 					} else {
 						err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
 						if (err)
@@ -344,9 +344,9 @@ void imx8_partition_resources(void)
 #endif
 
 			if (start < (BL31_BASE - 1)) {
-				err = sc_rm_memreg_alloc(ipc_handle, &mr, start, BL31_BASE - 1);
+				err = sc_rm_memreg_frag(ipc_handle, &mr, start, BL31_BASE - 1);
 				if (err)
-					ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
+					ERROR("sc_rm_memreg_frag failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
 						start, (sc_faddr_t)BL31_BASE - 1);
 				err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
 				if (err)
@@ -363,9 +363,9 @@ void imx8_partition_resources(void)
 			ERROR("Memreg get info failed, %u\n", mr_ocram);
 		} else {
 			if ((OCRAM_BASE + OCRAM_ALIAS_SIZE - 1) < end) {
-				err = sc_rm_memreg_alloc(ipc_handle, &mr, OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
+				err = sc_rm_memreg_frag(ipc_handle, &mr, OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
 				if (err) {
-					ERROR("sc_rm_memreg_alloc failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
+					ERROR("sc_rm_memreg_frag failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
 				} else {
 					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
 					if (err)
