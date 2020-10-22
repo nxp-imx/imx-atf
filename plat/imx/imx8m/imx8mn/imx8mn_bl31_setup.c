@@ -123,9 +123,16 @@ static void bl31_tzc380_setup(void)
 	 * programming tzasc region for i.mx8mm.
 	 */
 
+#ifdef SPD_trusty
+	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G) |
+			TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_NS_RW);
+	tzc380_configure_region(1, (BL32_BASE - IMX_DRAM_BASE), TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_32M) |
+			TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_S_RW);
+#else
 	/* Enable 1G-5G S/NS RW */
 	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G) |
 				TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
+#endif
 }
 
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
