@@ -126,6 +126,10 @@ void dram_exit_retention(void)
 	mmio_write_32(CCM_CCGR(5), 2);
 	mmio_write_32(CCM_SRC_CTRL(15), 2);
 
+	/* change the clock source of dram_apb_clk_root */
+	mmio_write_32(0x3038a088, (0x7 << 24) | (0x7 << 16));
+	mmio_write_32(0x3038a084, (0x4 << 24) | (0x3 << 16));
+
 	/* disable iso */
 	mmio_setbits_32(IMX_GPC_BASE + PU_PGC_UP_TRG, DDRMIX_PWR_REQ);
 	mmio_write_32(SRC_DDR1_RCR, 0x8F000006);
