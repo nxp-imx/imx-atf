@@ -49,8 +49,8 @@
 
 #define PLAT_IMX8MP_BOOT_MMC_BASE	U(0x30B50000) /* SD */
 #else
-#define BL31_BASE			U(0x960000)
-#define BL31_LIMIT			U(0x980000)
+#define BL31_BASE			U(0x970000)
+#define BL31_LIMIT			U(0x990000)
 #endif
 
 #define PLAT_PRI_BITS			U(3)
