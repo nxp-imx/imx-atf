@@ -149,7 +149,7 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 			imx_set_sys_lpm(core_id, false);
 		} else {
 			/* flag 0xD means DSP LPA buffer is in OCRAM */
-			if (mmio_read_32(IMX_SRC_BASE + 0x98) == 0xD)
+			if (mmio_read_32(IMX_SRC_BASE + LPA_STATUS) == 0xD)
 				dram_exit_retention();
 		}
 
