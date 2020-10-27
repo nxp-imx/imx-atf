@@ -26,7 +26,6 @@
 #define SLT_COREx_PUP(core_id)		(0x2 << ((core_id) * 2))
 #define SLT_COREx_PUP_ACK(core_id)	((core_id) < 2 ? (1 << ((core_id) + 16)) : (1 << ((core_id) + 27)))
 
-#define IRQ_IMR_NUM	4
 #define IMR_MASK_ALL	0xffffffff
 
 #define IMX_PD_DOMAIN(name)				\
