@@ -142,4 +142,6 @@
 #define MEDIAMIX_ISPDWP_PGC		0xf80
 #define DDRMIX_PGC			0xfc0
 
+#define IRQ_IMR_NUM			5U
+
 #endif /* GPC_REG_H */

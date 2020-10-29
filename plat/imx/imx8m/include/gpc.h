@@ -26,7 +26,6 @@
 #define SLT_COREx_PUP(core_id)		(0x2 << ((core_id) * 2))
 #define SLT_COREx_PUP_ACK(core_id)	((core_id) < 2 ? (1 << ((core_id) + 16)) : (1 << ((core_id) + 27)))
 
-#define IRQ_IMR_NUM	4
 #define IMR_MASK_ALL	0xffffffff
 
 #define IMX_PD_DOMAIN(name)				\
@@ -84,7 +83,7 @@ void imx_noc_wrapper_pre_suspend(unsigned int proc_num);
 void imx_noc_wrapper_post_resume(unsigned int proc_num);
 bool imx_m4_lpa_active(void);
 
-#if defined(PLAT_imx8mq) || defined(PLAT_imx8mp)
+#if defined(PLAT_imx8mq)
 void imx_gpc_set_a53_core_awake(uint32_t core_id);
 void imx_gpc_core_wake(uint32_t cpumask);
 #endif

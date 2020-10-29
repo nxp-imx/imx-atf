@@ -13,7 +13,6 @@
 #include <drivers/delay_timer.h>
 #include <lib/mmio.h>
 #include <lib/psci/psci.h>
-#include <lib/spinlock.h>
 #include <lib/smccc.h>
 #include <platform_def.h>
 #include <services/std_svc.h>
@@ -22,13 +21,7 @@
 #include <imx_sip_svc.h>
 #include <plat_imx8.h>
 
-#define FSL_SIP_CONFIG_GPC_MASK		0x00
-#define FSL_SIP_CONFIG_GPC_UNMASK	0x01
-#define FSL_SIP_CONFIG_GPC_SET_WAKE	0x02
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN	0x03
-#define FSL_SIP_CONFIG_GPC_SET_AFF	0x04
-#define FSL_SIP_CONFIG_GPC_CORE_WAKE	0x05
-
 #define IMR_NUM		U(5)
 #define CCGR(x)		(0x4000 + (x) * 16)
 
@@ -112,7 +105,7 @@ static struct imx_noc_setting noc_setting[] = {
 	{ HDMIMIX, 0x700, 0x700, 0x80000505, 0x0, 0x0},
 	{ HSIOMIX, 0x780, 0x900, 0x80000303, 0x0, 0x0},
 	{ MEDIAMIX, 0x980, 0xb80, 0x80000202, 0x0, 0x1},
-	{ MEDIAMIX_ISPDWP, 0xc00, 0xd00, 0x80000505, 0x0, 0x0},
+	{ MEDIAMIX_ISPDWP, 0xc00, 0xd00, 0x80000707, 0x0, 0x0},
 	//can't access VPU NoC if only power up VPUMIX,
 	//need to power up both NoC and IP
 	{ VPU_G1, 0xd80, 0xd80, 0x80000303, 0x0, 0x0},
@@ -126,158 +119,7 @@ static struct clk_setting hsiomix_clk[] = {
 	{ 0x45c0, 0x0, CCM_CCGR },
 };
 
-static uint32_t gpc_saved_imrs[20];
-static uint32_t gpc_wake_irqs[5];
-static uint32_t gpc_imr_offset[] = {
-	IMX_GPC_BASE + IMR1_CORE0_A53,
-	IMX_GPC_BASE + IMR1_CORE1_A53,
-	IMX_GPC_BASE + IMR1_CORE2_A53,
-	IMX_GPC_BASE + IMR1_CORE3_A53,
-	IMX_GPC_BASE + IMR1_CORE0_M4,
-};
-
 static unsigned int pu_domain_status;
-spinlock_t gpc_imr_lock[4];
-
-static void gpc_imr_core_spin_lock(unsigned int core_id)
-{
-	spin_lock(&gpc_imr_lock[core_id]);
-}
-
-static void gpc_imr_core_spin_unlock(unsigned int core_id)
-{
-	spin_unlock(&gpc_imr_lock[core_id]);
-}
-
-static void gpc_save_imr_lpm(unsigned int core_id, unsigned int imr_idx)
-{
-	uint32_t reg = gpc_imr_offset[core_id] + imr_idx * 4;
-
-	gpc_imr_core_spin_lock(core_id);
-
-	gpc_saved_imrs[core_id + imr_idx * 4] = mmio_read_32(reg);
-	mmio_write_32(reg, ~gpc_wake_irqs[imr_idx]);
-
-	gpc_imr_core_spin_unlock(core_id);
-}
-
-static void gpc_restore_imr_lpm(unsigned int core_id, unsigned int imr_idx)
-{
-	uint32_t reg = gpc_imr_offset[core_id] + imr_idx * 4;
-	uint32_t val = gpc_saved_imrs[core_id + imr_idx * 4];
-
-	gpc_imr_core_spin_lock(core_id);
-
-	mmio_write_32(reg, val);
-
-	gpc_imr_core_spin_unlock(core_id);
-}
-
-void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
-{
-	unsigned int imr, core;
-
-	if (pdn)
-		for (imr = 0; imr < 5; imr++)
-			for (core = 0; core < 4; core++)
-				gpc_save_imr_lpm(core, imr);
-	else
-		for (imr = 0; imr < 5; imr++)
-			for (core = 0; core < 4; core++)
-				gpc_restore_imr_lpm(core, imr);
-
-	/* enable the MU wakeup */
-	if (imx_m4_lpa_active())
-		mmio_clrbits_32(gpc_imr_offset[last_core] + 0x8, BIT(24));
-}
-
-static void imx_gpc_hwirq_mask(unsigned int hwirq)
-{
-	uintptr_t reg;
-	unsigned int val;
-
-	gpc_imr_core_spin_lock(0);
-	reg = gpc_imr_offset[0] + (hwirq / 32) * 4;
-	val = mmio_read_32(reg);
-	val |= 1 << hwirq % 32;
-	mmio_write_32(reg, val);
-	gpc_imr_core_spin_unlock(0);
-}
-
-static void imx_gpc_hwirq_unmask(unsigned int hwirq)
-{
-	uintptr_t reg;
-	unsigned int val;
-
-	gpc_imr_core_spin_lock(0);
-	reg = gpc_imr_offset[0] + (hwirq / 32) * 4;
-	val = mmio_read_32(reg);
-	val &= ~(1 << hwirq % 32);
-	mmio_write_32(reg, val);
-	gpc_imr_core_spin_unlock(0);
-}
-
-static void imx_gpc_set_wake(uint32_t hwirq, unsigned int on)
-{
-	uint32_t mask, idx;
-
-	mask = 1 << hwirq % 32;
-	idx = hwirq / 32;
-	gpc_wake_irqs[idx] = on ? gpc_wake_irqs[idx] | mask :
-				 gpc_wake_irqs[idx] & ~mask;
-}
-
-static void imx_gpc_mask_irq0(uint32_t core_id, uint32_t mask)
-{
-	gpc_imr_core_spin_lock(core_id);
-	if (mask)
-		mmio_setbits_32(gpc_imr_offset[core_id], 1);
-	else
-		mmio_clrbits_32(gpc_imr_offset[core_id], 1);
-	dsb();
-	gpc_imr_core_spin_unlock(core_id);
-}
-
-void imx_gpc_core_wake(uint32_t cpumask)
-{
-	for (int i = 0; i < 4; i++)
-		if (cpumask & (1 << i))
-			imx_gpc_mask_irq0(i, false);
-}
-
-void imx_gpc_set_a53_core_awake(uint32_t core_id)
-{
-	imx_gpc_mask_irq0(core_id, true);
-}
-
-static void imx_gpc_set_affinity(uint32_t hwirq, unsigned cpu_idx)
-{
-	uintptr_t reg;
-	unsigned int val;
-
-	/*
-	 * using the mask/unmask bit as affinity function.unmask the
-	 * IMR bit to enable IRQ wakeup for this core.
-	 */
-	gpc_imr_core_spin_lock(cpu_idx);
-	reg = gpc_imr_offset[cpu_idx] + (hwirq / 32) * 4;
-	val = mmio_read_32(reg);
-	val &= ~(1 << hwirq % 32);
-	mmio_write_32(reg, val);
-	gpc_imr_core_spin_unlock(cpu_idx);
-
-	/* clear affinity of other core */
-	for (int i = 0; i < 4; i++) {
-		if (cpu_idx != i) {
-			gpc_imr_core_spin_lock(i);
-			reg = gpc_imr_offset[i] + (hwirq / 32) * 4;
-			val = mmio_read_32(reg);
-			val |= (1 << hwirq % 32);
-			mmio_write_32(reg, val);
-			gpc_imr_core_spin_unlock(i);
-		}
-	}
-}
 
 static void imx_config_noc(uint32_t domain_id)
 {
@@ -391,9 +233,6 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 		if (domain_id == VPU_H1)
 			mmio_clrbits_32(IMX_VPU_BLK_BASE + 0x4, BIT(2));
 
-		/* disable the memory repair clock before power up */
-		mmio_write_32(IMX_CCM_BASE + 0x4640, 0x0);
-
 		/* clear the PGC bit */
 		mmio_clrbits_32(IMX_GPC_BASE + pwr_domain->pgc_offset, 0x1);
 
@@ -402,9 +241,6 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 
 		/* wait for power request done */
 		while (mmio_read_32(IMX_GPC_BASE + PU_PGC_UP_TRG) & pwr_domain->pwr_req);
-
-		/* enable the memory repair clock after power up */
-		mmio_write_32(IMX_CCM_BASE + 0x4640, 0x3);
 
 		/* wait for memory repair done */
 		wait_memrepair_done(domain_id);
@@ -466,28 +302,11 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 		/* set the PGC bit */
 		mmio_setbits_32(IMX_GPC_BASE + pwr_domain->pgc_offset, 0x1);
 
-		/*
-		 * leave the G1, G2, H1 power domain on until VPUMIX power off,
-		 * otherwise system will hang due to VPUMIX ACK
-		 */
-		if (domain_id == VPU_H1 || domain_id == VPU_G1 || domain_id == VPU_G2)
-			return;
-
-		/* disable the memory repair clock before power down */
-		mmio_write_32(IMX_CCM_BASE + 0x4640, 0x0);
-
-		if (domain_id == VPUMIX)
-			mmio_write_32(IMX_GPC_BASE + PU_PGC_DN_TRG, VPU_G1_PWR_REQ |
-				 VPU_G2_PWR_REQ | VPU_H1_PWR_REQ);
-
 		/* power down the domain */
 		mmio_setbits_32(IMX_GPC_BASE + PU_PGC_DN_TRG, pwr_domain->pwr_req);
 
 		/* wait for power request done */
 		while (mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG) & pwr_domain->pwr_req);
-
-		/* enable the memory repair clock after power down */
-		mmio_write_32(IMX_CCM_BASE + 0x4640, 0x3);
 
 		if (domain_id == HDMIMIX) {
 			/* disable all the clocks of HDMIMIX */
@@ -587,20 +406,9 @@ void imx_gpc_init(void)
 		mmio_write_32(IMX_GPC_BASE + IMR1_CORE0_M4 + i * 4, ~0x0);
 	}
 
-	/* Due to the hardware design requirement, need to make
-	 * sure GPR interrupt(#32) is unmasked during RUN mode to
-	 * avoid entering DSM mode by mistake.
-	 */
-	for (i = 0; i < 4; i++)
-		mmio_write_32(gpc_imr_offset[i], ~0x1);
-
-	/* leave the IOMUX_GPC bit 12 on for core wakeup */
-	mmio_setbits_32(IMX_IOMUX_GPR_BASE + 0x4, 1 << 12);
-
-
 	val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
 	/* use GIC wake_request to wakeup C0~C3 from LPM */
-	val |= 0x40000000;
+	val |= 0x30c00000;
 	/* clear the MASTER0 LPM handshake */
 	val &= ~(1 << 6);
 	mmio_write_32(IMX_GPC_BASE + LPCR_A53_BSC, val);
@@ -672,36 +480,4 @@ void imx_gpc_init(void)
 	//GIC
 	mmio_write_32 (0x32700108, 0x80000303);
 	mmio_write_32 (0x3270010c, 0x0);
-
-}
-
-int imx_gpc_handler(uint32_t smc_fid,
-			  u_register_t x1,
-			  u_register_t x2,
-			  u_register_t x3)
-{
-	switch(x1) {
-	case FSL_SIP_CONFIG_GPC_PM_DOMAIN:
-		imx_gpc_pm_domain_enable(x2, x3);
-		break;
-	case FSL_SIP_CONFIG_GPC_CORE_WAKE:
-		imx_gpc_core_wake(x2);
-		break;
-	case FSL_SIP_CONFIG_GPC_SET_WAKE:
-		imx_gpc_set_wake(x2, x3);
-		break;
-	case FSL_SIP_CONFIG_GPC_MASK:
-		imx_gpc_hwirq_mask(x2);
-		break;
-	case FSL_SIP_CONFIG_GPC_UNMASK:
-		imx_gpc_hwirq_unmask(x2);
-		break;
-	case FSL_SIP_CONFIG_GPC_SET_AFF:
-		imx_gpc_set_affinity(x2, x3);
-		break;
-	default:
-		return SMC_UNK;
-	}
-
-	return 0;
 }
