@@ -143,3 +143,15 @@ int xrdc_config_mrc11_hifi_dtcm(void)
 	return 0;
 }
 
+int xrdc_config_mrc6_dma2_ddr(void)
+{
+	uint32_t accset1 = SP(RW) | SU(RW) | NP(RW) | NU(RW);
+	uint32_t accset2 = 0;
+
+	xrdc_config_mrc_w0_w1(6, 0, 0xe0000000, 256 * 1024 * 1024);
+	/* Dom0 RW, accset1 */
+	xrdc_config_mrc_dx_perm(6, 0, 0, 1);
+	xrdc_config_mrc_w3_w4(6, 0, 0, BIT_32(31) | (accset2 << 16) | accset1);
+
+	return 0;
+}
