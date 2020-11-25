@@ -9,6 +9,7 @@ The QorIQ family of ARM based SoCs that are supported on TF-A are:
         Platform Name:
 
         a. lx2160ardb (Board details can be fetched from the link: `lx2160ardb`_)
+        b. ls1046ardb (Board details can be fetched from the link: `ls1046ardb`_)
 
 
 Table of supported boot-modes by each platform & platform that needs FIP-DDR:
@@ -18,6 +19,8 @@ Table of supported boot-modes by each platform & platform that needs FIP-DDR:
 |   |      PLAT       |  SD   |  QSPI  |  NOR  | NAND  | eMMC  | Flexspi-NOR | Flexspi-NAND | FIP-DDR Needed |
 +===+=================+=======+========+=======+=======+=======+=============+==============+================+
 | 1.| lx2160ardb      |  yes  |        |       |       |  yes  |   yes       |              |     yes        |
++---+-----------------+-------+--------+-------+-------+-------+-------------+--------------+----------------+
+| 2.| ls1046ardb      |  yes  |  yes   |       |       |       |             |              |     no         |
 +---+-----------------+-------+--------+-------+-------+-------+-------------+--------------+----------------+
 
 Boot Sequence
@@ -221,3 +224,4 @@ Refer nxp-ls-tbbr.rst for detailed user steps.
 
 
 .. _lx2160ardb: https://www.nxp.com/products/processors-and-microcontrollers/arm-processors/layerscape-communication-process/layerscape-lx2160a-multicore-communications-processor:LX2160A
+.. _ls1046ardb: https://www.nxp.com/design/qoriq-developer-resources/layerscape-ls1046a-reference-design-board:LS1046A-RDB
