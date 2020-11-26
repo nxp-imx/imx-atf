@@ -33,7 +33,6 @@
 #
 
 # Certificate generation tool default parameters
-TRUSTED_KEY_CERT	:=	${BUILD_PLAT}/trusted_key.crt
 FWU_CERT		:=	${BUILD_PLAT}/fwu_cert.crt
 
 # Default non-volatile counter values (overridable by the platform)
@@ -44,7 +43,17 @@ NTFW_NVCTR_VAL		?=	0
 $(eval $(call CERT_ADD_CMD_OPT,${TFW_NVCTR_VAL},--tfw-nvctr))
 $(eval $(call CERT_ADD_CMD_OPT,${NTFW_NVCTR_VAL},--ntfw-nvctr))
 
-# Add Trusted Key certificate to the fiptool and cert_create command line options
+# Add Trusted Key certificate to the fiptool and cert_create command line options.
+#
+# Few platform like NXP SoC LX2160A based platforms, needs additional images
+# like fip-ddr to be part of chain-of-trust.
+#
+# As part of TBBR build-images step, "trusted_key.crt" that got generated, needs
+# to be retained for trust anchoring the key cert & content cert of this additional
+# fip image, with the "trusted_key.crt".
+ifeq (${TRUSTED_KEY_CERT},)
+TRUSTED_KEY_CERT	?=	${BUILD_PLAT}/trusted_key.crt
+endif
 $(eval $(call TOOL_ADD_PAYLOAD,${TRUSTED_KEY_CERT},--trusted-key-cert))
 
 # Add fwu certificate to the fiptool and cert_create command line options

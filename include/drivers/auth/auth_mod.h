@@ -8,7 +8,9 @@
 #define AUTH_MOD_H
 
 #if TRUSTED_BOARD_BOOT
-
+#ifdef MBEDTLS_CONFIG_FILE
+#include <drivers/auth/mbedtls/mbedtls_config.h>
+#endif
 #include <common/tbbr/cot_def.h>
 #include <common/tbbr/tbbr_img_def.h>
 #include <drivers/auth/auth_common.h>

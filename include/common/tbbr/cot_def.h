@@ -14,6 +14,7 @@
 #define COT_MAX_VERIFIED_PARAMS		4
 #endif
 
+
 /*
  * Maximum key and hash sizes (in DER format).
  *
