@@ -197,7 +197,7 @@ void ddr4_swffc(struct dram_info *info, unsigned int pstate)
 	 * controller is not in self-refresh mode.
 	 */
 	if ((mmio_read_32(DDRC_STAT(0)) & 0x3) == 0x3)
-		printf("C: Error DRAM should not in Self Refresh\n");
+		VERBOSE("DRAM is in Self Refresh\n");
 
 	/*
 	 * 13. Assert PWRCTL.selfref_sw for the DWC_ddr_umctl2 core to enter
