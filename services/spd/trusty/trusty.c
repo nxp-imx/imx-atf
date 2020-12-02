@@ -536,9 +536,19 @@ DECLARE_RT_SVC(
 	trusty_fast,
 
 	OEN_TOS_START,
-	OEN_TOS_END,
+	SMC_ENTITY_SECURE_MONITOR,
 	SMC_TYPE_FAST,
 	trusty_setup,
+	trusty_smc_handler
+);
+
+DECLARE_RT_SVC(
+	trusty_fast_uuid,
+
+	OEN_TOS_END,
+	OEN_TOS_END,
+	SMC_TYPE_FAST,
+	NULL,
 	trusty_smc_handler
 );
 
