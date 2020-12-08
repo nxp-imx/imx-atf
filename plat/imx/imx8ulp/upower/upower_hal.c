@@ -144,19 +144,9 @@ uint32_t upower_init(void)
 	NOTICE("=== %x\n", mmio_read_32(0x283590f4));
 #endif
 
-#define mmio_setbits32(addr, set)		mmio_write_32(addr, mmio_read_32(addr) | (set))
-#define mmio_clrbits32(addr, clear)		mmio_write_32(addr, mmio_read_32(addr) & ~(clear))
-	mmio_setbits32(0x2da50008, BIT_32(19) | BIT_32(17) | BIT_32(18));
-	mmio_clrbits32(0x2da50008, BIT_32(16));
-	printf("xxxxxx %x\n", mmio_read_32(0x2da50008));
-extern int xrdc_config_mrc11_hifi_itcm(void);
-extern int xrdc_config_mrc11_hifi_dtcm(void);
 extern int xrdc_config_pdac(uint32_t, uint32_t, uint32_t, uint32_t);
 extern int xrdc_config_mrc6_dma2_ddr(void);
 #if 1
-	xrdc_config_pdac(3, 47, 0, 7);
-	xrdc_config_mrc11_hifi_itcm();
-	xrdc_config_mrc11_hifi_dtcm();
 	xrdc_config_pdac(4, 8, 1, 7); /* DMA1 (DID=1) access to SAI4 regs */
 	xrdc_config_pdac(4, 9, 1, 7); /* DMA1 (DID=1) access to SAI5 regs */
 	xrdc_config_pdac(5, 41, 0, 7); /* (DID=0) access to SAI6 regs */
