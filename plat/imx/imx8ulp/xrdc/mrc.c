@@ -119,6 +119,19 @@ int xrdc_config_pdac(uint32_t bridge, uint32_t index, uint32_t dom, uint32_t per
 	return 0;
 }
 
+int xrdc_config_mda(uint32_t mda_con, uint32_t dom)
+{
+	uint32_t w0_addr;
+	uint32_t val;
+
+	w0_addr = XRDC_ADDR + 0x800 + mda_con * 0x20;
+
+	val = mmio_read_32(w0_addr);
+	mmio_write_32(w0_addr, (val & (~0xF)) | dom | BIT_32(31));
+
+	return 0;
+}
+
 int xrdc_config_mrc11_hifi_itcm(void)
 {
 	xrdc_config_mrc_w0_w1(11, 0, 0x21170000, 64 * 1024);
@@ -152,6 +165,21 @@ int xrdc_config_mrc6_dma2_ddr(void)
 	/* Dom0 RW, accset1 */
 	xrdc_config_mrc_dx_perm(6, 0, 0, 1);
 	xrdc_config_mrc_w3_w4(6, 0, 0, BIT_32(31) | (accset2 << 16) | accset1);
+
+	return 0;
+}
+
+int xrdc_config_mrc7_hifi_ddr(void)
+{
+	xrdc_config_mrc_w0_w1(7, 0, 0x90000000, 256 * 1024 * 1024);
+	/* Dom2 RX, accset1 */
+	xrdc_config_mrc_dx_perm(7, 0, 2, 1);
+	xrdc_config_mrc_w3_w4(7, 0, BIT_32(31), BIT_32(31) | ((SP(RW) | SU(RW) | NP(RW)) << 16) | 0xFFF);
+
+	xrdc_config_mrc_w0_w1(7, 1, 0x80000000, 256 * 1024 * 1024);
+	/* Dom2 RX, accset1 */
+	xrdc_config_mrc_dx_perm(7, 1, 2, 1);
+	xrdc_config_mrc_w3_w4(7, 1, BIT_32(31), BIT_32(31) | ((SP(RW) | SU(RW) | NP(RW)) << 16) | 0xFFF);
 
 	return 0;
 }
