@@ -447,6 +447,7 @@ void soc_platform_setup(void)
 	plat_ls_gic_driver_init(NXP_GICD_ADDR, NXP_GICR_ADDR,
 				PLATFORM_CORE_COUNT,
 				ls_interrupt_props,
+				ARRAY_SIZE(ls_interrupt_props),
 				target_mask_array,
 				plat_core_pos);
 

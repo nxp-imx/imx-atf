@@ -16,6 +16,7 @@ void plat_ls_gic_driver_init(uintptr_t nxp_gicd_addr,
 			     uintptr_t nxp_gicr_addr,
 			     uint8_t plat_core_count,
 			     interrupt_prop_t *ls_interrupt_props,
+			     uint8_t ls_interrupt_prop_count,
 			     uintptr_t *target_mask_array,
 			     mpidr_hash_fn mpidr_to_core_pos)
 {
@@ -24,7 +25,7 @@ void plat_ls_gic_driver_init(uintptr_t nxp_gicd_addr,
 	ls_gic_data.gicd_base = nxp_gicd_addr;
 	ls_gic_data.gicr_base = nxp_gicr_addr;
 	ls_gic_data.interrupt_props = ls_interrupt_props;
-	ls_gic_data.interrupt_props_num = ARRAY_SIZE(ls_interrupt_props);
+	ls_gic_data.interrupt_props_num = ls_interrupt_prop_count;
 	ls_gic_data.rdistif_num = plat_core_count;
 	ls_gic_data.rdistif_base_addrs = target_mask_array;
 	ls_gic_data.mpidr_to_core_pos = mpidr_to_core_pos;

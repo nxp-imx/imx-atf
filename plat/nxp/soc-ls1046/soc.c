@@ -384,6 +384,7 @@ void soc_platform_setup(void)
 #endif
 				PLATFORM_CORE_COUNT,
 				ls_interrupt_props,
+				ARRAY_SIZE(ls_interrupt_props),
 				target_mask_array);
 
 	plat_ls_gic_init();

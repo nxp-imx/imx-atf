@@ -58,6 +58,7 @@ void plat_ls_gic_driver_init(const uintptr_t nxp_gicd_addr,
 			     const uintptr_t nxp_gicc_addr,
 			     uint8_t plat_core_count,
 			     interrupt_prop_t *ls_interrupt_props,
+			     uint8_t ls_interrupt_prop_count,
 			     uint32_t *target_mask_array);
 void plat_ls_gic_init(void);
 void plat_ls_gic_cpuif_enable(void);

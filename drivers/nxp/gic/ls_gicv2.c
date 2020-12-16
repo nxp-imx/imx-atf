@@ -16,6 +16,7 @@ void plat_ls_gic_driver_init(uintptr_t nxp_gicd_addr,
 			     uintptr_t nxp_gicc_addr,
 			     uint8_t plat_core_count,
 			     interrupt_prop_t *ls_interrupt_props,
+			     uint8_t ls_interrupt_prop_count,
 			     uint32_t *target_mask_array)
 {
 	static struct gicv2_driver_data ls_gic_data;
@@ -25,7 +26,7 @@ void plat_ls_gic_driver_init(uintptr_t nxp_gicd_addr,
 	ls_gic_data.target_masks = target_mask_array;
 	ls_gic_data.target_masks_num = plat_core_count;
 	ls_gic_data.interrupt_props = ls_interrupt_props;
-	ls_gic_data.interrupt_props_num = ARRAY_SIZE(ls_interrupt_props);
+	ls_gic_data.interrupt_props_num = ls_interrupt_prop_count;
 
 	gicv2_driver_init(&ls_gic_data);
 }

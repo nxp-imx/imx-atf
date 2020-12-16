@@ -100,6 +100,7 @@ void plat_ls_gic_driver_init(const uintptr_t nxp_gicd_addr,
 			     const uintptr_t nxp_gicr_addr,
 			     uint8_t plat_core_count,
 			     interrupt_prop_t *ls_interrupt_props,
+			     uint8_t ls_interrupt_prop_count,
 			     uintptr_t *target_mask_array,
 			     mpidr_hash_fn mpidr_to_core_pos);
 //void plat_ls_gic_driver_init(void);
