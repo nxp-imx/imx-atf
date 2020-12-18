@@ -349,7 +349,7 @@ int ls_qspi_io_setup(void)
 
 int emmc_sdhc2_io_setup(void)
 {
-#ifdef EMMC_BOOT
+#if defined(EMMC_BOOT) && defined(NXP_ESDHC2_ADDR)
 	uintptr_t block_dev_spec;
 	int ret;
 
@@ -373,7 +373,7 @@ int emmc_sdhc2_io_setup(void)
 
 int emmc_io_setup(void)
 {
-#ifdef SD_BOOT
+#if defined(SD_BOOT) || defined(EMMC_BOOT)
 	uintptr_t block_dev_spec;
 	int ret;
 
