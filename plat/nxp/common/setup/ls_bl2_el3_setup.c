@@ -276,11 +276,6 @@ void bl2_plat_preload_setup(void)
 
 	soc_preload_setup();
 
-	if (dram_regions_info.total_dram_size < NXP_DRAM0_SIZE) {
-		NOTICE("ERROR: DRAM0 Size is not correctly configured.");
-		assert(0);
-	}
-
 	if ((dram_regions_info.region[0].addr == 0)
 		&& (dram_regions_info.total_dram_size > 0)) {
 		populate_dram_regions_info();
