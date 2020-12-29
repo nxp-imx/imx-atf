@@ -92,3 +92,7 @@ endif
 ifeq (${IFC_NOR_NEEDED},yes)
 include ${PLAT_DRIVERS_PATH}/ifc/nor/ifc_nor.mk
 endif
+
+ifeq (${IFC_NAND_NEEDED},yes)
+include ${PLAT_DRIVERS_PATH}/ifc/nand/ifc_nand.mk
+endif
