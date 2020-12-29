@@ -9,6 +9,9 @@
 #define __CSU_H__
 
 #define CSU_SEC_ACCESS_REG_OFFSET	(0x0021C)
+/* Bit mask */
+#define TZASC_BYPASS_MUX_DISABLE        0x4
+
 
 enum csu_cslx_access {
 	CSU_NS_SUP_R = 0x08,
