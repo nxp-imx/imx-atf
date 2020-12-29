@@ -6,6 +6,7 @@
  */
 
 #include <asm_macros.S>
+#include <cortex_a53.h>
 #include <drivers/console.h>
 #include <lib/cpus/aarch64/cortex_a72.h>
 
@@ -23,6 +24,8 @@
 	.globl _disable_ldstr_pfetch_A53
 	.globl _disable_ldstr_pfetch_A72
 	.global	_set_smmu_pagesz_64
+
+#define CPUACTLR_L1PCTL_MASK    0x0000E000
 
 	/* int plat_crash_console_init(void)
 	 * Function to initialize the crash console
@@ -154,6 +157,32 @@ func plat_core_pos
 endfunc plat_core_pos
 
 #endif
+
+/* this function disables the load-store prefetch of the calling core
+ * Note: this function is for A53 cores ONLY
+ * in:  none
+ * out: none
+ * uses x0
+ */
+func _disable_ldstr_pfetch_A53
+
+    mrs   x0, CORTEX_A53_CPUACTLR_EL1
+    tst   x0, #CPUACTLR_L1PCTL_MASK
+    b.ne  1f
+    b     2f
+
+.align 6
+1:   // disable L1 prefetch for this A53 core
+    dsb   sy
+    isb
+    bic   x0, x0, #CPUACTLR_L1PCTL_MASK
+    msr   CORTEX_A53_CPUACTLR_EL1, x0
+    isb
+
+2:
+    ret
+endfunc _disable_ldstr_pfetch_A53
+
 
 /* this function disables the load-store prefetch of the calling core
  * Note: this function is for A72 cores ONLY
