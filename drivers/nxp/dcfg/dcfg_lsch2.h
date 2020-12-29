@@ -42,9 +42,11 @@
 #define SVR_PERSONALITY_SHIFT		9
 #define SVR_SEC_MASK			0x100
 #define SVR_SEC_SHIFT			8
-#define SVR_MAJ_VER_MASK		0xF0
-#define SVR_MAJ_VER_SHIFT		4
-#define SVR_MIN_VER_MASK		0xF
+#define SVR_MAJ_REV_MASK		0xF0
+#define SVR_MAJ_REV_SHIFT		4
+#define SVR_MIN_REV_MASK		0xF
+#define SVR_MINOR_REV_0			0x00
+#define SVR_MINOR_REV_1			0x01
 
 #define DISR5_DDRC1_MASK		0x1
 #define DISR5_OCRAM_MASK		0x40

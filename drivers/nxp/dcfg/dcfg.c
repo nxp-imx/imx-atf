@@ -52,8 +52,8 @@ const soc_info_t *get_soc_info(void)
 
 	soc_info.personality = (reg & SVR_PERSONALITY_MASK)
 				>> SVR_PERSONALITY_SHIFT;
-	soc_info.maj_ver = (reg & SVR_MAJ_VER_MASK) >> SVR_MAJ_VER_SHIFT;
-	soc_info.min_ver = reg & SVR_MIN_VER_MASK;
+	soc_info.maj_ver = (reg & SVR_MAJ_REV_MASK) >> SVR_MAJ_REV_SHIFT;
+	soc_info.min_ver = reg & SVR_MIN_REV_MASK;
 
 	soc_info.is_populated = true;
 	return (const soc_info_t *) &soc_info;
