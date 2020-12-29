@@ -11,6 +11,8 @@
 /* dcfg block register offsets and bitfields */
 #define DCFG_PORSR1_OFFSET		0x00
 #define DCFG_DEVDISR1_OFFSET		0x070
+#define DCFG_DEVDISR2_OFFSET		0x074
+#define DCFG_DEVDISR3_OFFSET		0x078
 #define DCFG_DEVDISR4_OFFSET		0x07C
 #define DCFG_DEVDISR5_OFFSET		0x080
 #define DCFG_COREDISR_OFFSET		0x094
@@ -28,6 +30,10 @@
 
 #define DCFG_RSTRQSR1_OFFSET		0x0C8
 #define DCFG_RSTRQMR1_OFFSET		0x0C0
+
+/* PORSR1 bit mask */
+#define PORSR1_RCW_MASK			0xff800000
+#define PORSR1_RCW_SHIFT		23
 
 /* DCFG DCSR Macros */
 #define DCFG_DCSR_PORCR1_OFFSET		0x0
