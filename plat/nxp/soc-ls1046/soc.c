@@ -40,6 +40,7 @@
 #include <sfp.h>
 #endif
 
+#include "ns_access.h"
 #include "plat_common.h"
 #include "platform_def.h"
 #include "soc.h"
@@ -413,7 +414,7 @@ void soc_init(void)
 	cci_enable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(read_mpidr()));
 
 	/* Init CSU to enable non-secure access to peripherals */
-	enable_layerscape_ns_access(NXP_CSU_ADDR);
+	enable_layerscape_ns_access(ns_dev, ARRAY_SIZE(ns_dev), NXP_CSU_ADDR);
 
 	 /* make sure any parallel init tasks are finished */
 	soc_init_finish();

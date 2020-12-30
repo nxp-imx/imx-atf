@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef __NS_ACCESS_H_
-#define __NS_ACCESS_H_
+#ifndef NS_ACCESS_H
+#define NS_ACCESS_H
 
 #include <csu.h>
 
@@ -91,7 +91,7 @@ enum csu_cslx_ind {
 	CSU_CSLX_DSCR = 121,
 };
 
-static struct csu_ns_dev_st ns_dev[] = {
+struct csu_ns_dev_st ns_dev[] = {
 	 {CSU_CSLX_PCIE2_IO, CSU_ALL_RW},
 	 {CSU_CSLX_PCIE1_IO, CSU_ALL_RW},
 	 {CSU_CSLX_MG2TPR_IP, CSU_ALL_RW},
@@ -172,4 +172,4 @@ static struct csu_ns_dev_st ns_dev[] = {
 	 {CSU_CSLX_DSCR, CSU_ALL_RW},
 };
 
-#endif
+#endif /* NS_ACCESS_H */
