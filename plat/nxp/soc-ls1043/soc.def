@@ -112,6 +112,7 @@ BL2_HDR_LOC		:=	$$(echo "obase=16; ${BL2_HDR_LOC_HDR}" | bc)
 #
 # Core Errata
 ERRATA_A53_855873	:=	1
+ERRATA_A53_1530924	:=	1
 
 # SoC ERRATAS to be enabled
 ERRATA_SOC_A008850	:=	1
