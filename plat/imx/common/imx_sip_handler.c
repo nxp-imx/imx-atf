@@ -215,11 +215,17 @@ static uint64_t imx_get_commit_hash(u_register_t x2,
 			if (*(parse) == 'g') {
 				/* Default is 7 hexadecimal digits */
 				memcpy((void *)&hash, (void *)(parse + 1), 7);
-				break;
+				return hash;
 			}
 		}
 
 	} while (parse != NULL);
+
+	/* When no tag, the build string only contains commit and dirty */
+	parse = strchr(version_string, ':');
+	if (parse && *(parse + 1) != '\0') {
+		memcpy((void *)&hash, (void *)(parse + 1), 7);
+	}
 
 	return hash;
 }
