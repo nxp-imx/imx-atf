@@ -1,8 +1,7 @@
 /*
- * Copyright 2018-2020 NXP
+ * Copyright 2018-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
- *
  */
 
 #include <assert.h>
@@ -227,9 +226,7 @@ void soc_early_init(void)
 	sec_init(NXP_CAAM_ADDR);
 #endif
 
-	/* Add Erratums here */
-	erratum_a008850_early();
-	erratum_a010539();
+	soc_errata();
 
 	/*
 	 * Initialize system level generic timer for Layerscape Socs.

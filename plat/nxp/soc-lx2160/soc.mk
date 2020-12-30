@@ -1,5 +1,5 @@
 #
-# Copyright 2018-2020 NXP
+# Copyright 2018-2021 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -98,7 +98,8 @@ $(eval $(call SET_FLAG,DDR_FIP_IO_NEEDED,BL2))
 PLAT_INCLUDES		+=	-I${PLAT_COMMON_PATH}/include/default\
 				-I${BOARD_PATH}\
 				-I${PLAT_COMMON_PATH}/include/default/ch_${CHASSIS}\
-				-I${PLAT_SOC_PATH}/include
+				-I${PLAT_SOC_PATH}/include\
+				-I${PLAT_COMMON_PATH}/soc_errata
 
 ifeq (${SECURE_BOOT},yes)
 include ${PLAT_COMMON_PATH}/tbbr/tbbr.mk
@@ -137,7 +138,7 @@ endif
 include ${PLAT_DRIVERS_PATH}/drivers.mk
 
  # Adding SoC specific files
-include ${PLAT_SOC_PATH}/erratas_soc.mk
+include ${PLAT_COMMON_PATH}/soc_errata/errata.mk
 
 PLAT_INCLUDES		+=	${NV_STORAGE_INCLUDES}\
 				${WARM_RST_INCLUDES}
