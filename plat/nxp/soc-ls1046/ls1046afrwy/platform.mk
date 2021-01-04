@@ -26,7 +26,7 @@ ERRATA_DDR_A010165		:=	1
 
  # On-Board Flash Details
 QSPI_FLASH_SZ	:=	0x20000000
-NOR_FLASH_SIZE	:=	0x20000000
+NOR_FLASH_SZ	:=	0x20000000
 
 
  # Platform specific features.
