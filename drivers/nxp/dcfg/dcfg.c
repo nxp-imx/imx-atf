@@ -80,14 +80,11 @@ const devdisr5_info_t *get_devdisr5_info(void)
 
 	reg = gur_in32(dcfg_init_info->g_nxp_dcfg_addr + DCFG_DEVDISR5_OFFSET);
 
+	devdisr5_info.ddrc1_present = (reg & DISR5_DDRC1_MASK) ? 0 : 1;
 #if defined(CONFIG_CHASSIS_3_2)
-	devdisr5_info.ddrc1_present = (reg & DISR5_DDRC1_MASK) ? 0 : 1;
 	devdisr5_info.ddrc2_present = (reg & DISR5_DDRC2_MASK) ? 0 : 1;
-	devdisr5_info.ocram_present = (reg & DISR5_OCRAM_MASK) ? 0 : 1;
-#elif defined(CONFIG_CHASSIS_2)
-	devdisr5_info.ddrc1_present = (reg & DISR5_DDRC1_MASK) ? 0 : 1;
-	devdisr5_info.ocram_present = (reg & DISR5_OCRAM_MASK) ? 0 : 1;
 #endif
+	devdisr5_info.ocram_present = (reg & DISR5_OCRAM_MASK) ? 0 : 1;
 	devdisr5_info.is_populated = true;
 
 	return (const devdisr5_info_t *) &devdisr5_info;
