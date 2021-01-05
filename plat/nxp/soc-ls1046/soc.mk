@@ -14,6 +14,7 @@ BOARD_PATH	:=	${PLAT_SOC_PATH}/${BOARD}
 $(info board PAth = ${BOARD_PATH})
  # get SoC-specific defnitions
 include ${PLAT_SOC_PATH}/soc.def
+include ${PLAT_COMMON_PATH}/soc_common_def.mk
 
  # SoC-specific
 NXP_WDOG_RESTART	:= no
