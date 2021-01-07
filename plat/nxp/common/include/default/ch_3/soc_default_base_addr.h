@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 NXP
+ * Copyright 2018-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -15,12 +15,13 @@
 #define NXP_DCSR_ADDR			0x700000000
 #define NXP_DCSR_SIZE			0x40000000
 
-/* Flex-SPI controller address */
-#define NXP_FLEXSPI_ADDR		0x020C0000
-/* Flex-SPI Flash Start address */
-#define NXP_FLEXSPI_FLASH_ADDR		0x20000000
+/* Quad SPI Region #1 base address */
+#define NXP_QSPI_FLASH_ADDR		0x20000000
 
-/* MMU 500 soc.c*/
+/* IFC Region #1 base address */
+#define NXP_NOR_FLASH_ADDR		0x30000000
+
+/* MMU 500 */
 #define NXP_SMMU_ADDR			0x05000000
 
 #define NXP_SNVS_ADDR			0x01E90000
@@ -50,8 +51,8 @@
 #define NXP_TIMER_STATUS_ADDR		0x023F0000
 
 #define NXP_GICD_ADDR			0x06000000
-#define NXP_GICR_ADDR			0x06200000
-#define NXP_GICR_SGI_ADDR		0x06210000
+#define NXP_GICR_ADDR			0x06100000
+#define NXP_GICR_SGI_ADDR		0x06110000
 
 #define NXP_CAAM_ADDR			0x08000000
 
@@ -61,4 +62,25 @@
 
 #define NXP_RESET_ADDR			0x01E60000
 #define NXP_SEC_REGFILE_ADDR		0x01E88000
-#endif	/*	SOC_DEFAULT_BASE_ADDR_H		*/
+
+#define NXP_RST_ADDR			0x01E88000
+
+/* DDR memory Map */
+#define NXP_DDR_ADDR			0x01080000
+
+/* QuadSPI base address */
+#define NXP_QSPI_ADDR			0x020C0000
+/* IFC base address */
+#define NXP_IFC_ADDR			0x02240000
+
+/* CCI400 base address */
+#define NXP_CCI_ADDR			0x04090000
+
+/* Global Generic Reference Timer base address */
+#define NXP_TIMER_ADDR			0x023E0000
+
+/* OCRAM TZPC base address */
+#define NXP_OCRAM_TZPC_ADDR		0x02200000
+
+#define NXP_EPU_ADDR			0x700060000
+#endif	/* SOC_DEFAULT_BASE_ADDR_H */
