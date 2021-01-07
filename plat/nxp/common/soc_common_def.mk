@@ -58,52 +58,33 @@ ifeq (${SEC_MEM_NON_COHERENT},yes)
 $(eval $(call add_define,SEC_MEM_NON_COHERENT))
 endif
 
-ifneq (${NXP_ESDHC_ENDIANNESS},)
-$(eval $(call add_define,NXP_ESDHC_${NXP_ESDHC_ENDIANNESS}))
-endif
+# Module endianness definition
+
+NXP_MODULES := \
+  NXP_ESDHC \
+  NXP_SFP \
+  NXP_GPIO \
+  NXP_SNVS \
+  NXP_GUR \
+  NXP_FSPI \
+  NXP_SEC \
+  NXP_DDR \
+  NXP_QSPI \
+  NXP_SCFG \
+  NXP_IFC
+
+define add_module_endianness_define
+  ifneq ($$($(1)_ENDIANNESS),)
+    $$(eval $$(call add_define,$(1)_$$($(1)_ENDIANNESS)))
+  else
+    $$(eval $$(call add_define,$(1)_BE))
+  endif
+endef
+
+$(foreach m,$(NXP_MODULES),$(eval $(call add_module_endianness_define,$(m))))
 
 ifneq (${NXP_SFP_VER},)
 $(eval $(call add_define,NXP_SFP_VER_${NXP_SFP_VER}))
-endif
-
-ifneq (${NXP_SFP_ENDIANNESS},)
-$(eval $(call add_define,NXP_SFP_${NXP_SFP_ENDIANNESS}))
-endif
-
-ifneq (${NXP_GPIO_ENDIANNESS},)
-$(eval $(call add_define,NXP_GPIO_${NXP_GPIO_ENDIANNESS}))
-endif
-
-ifneq (${NXP_SNVS_ENDIANNESS},)
-$(eval $(call add_define,NXP_SNVS_${NXP_SNVS_ENDIANNESS}))
-endif
-
-ifneq (${NXP_GUR_ENDIANNESS},)
-$(eval $(call add_define,NXP_GUR_${NXP_GUR_ENDIANNESS}))
-endif
-
-ifneq (${NXP_FSPI_ENDIANNESS},)
-$(eval $(call add_define,NXP_FSPI_${NXP_FSPI_ENDIANNESS}))
-endif
-
-ifneq (${NXP_SEC_ENDIANNESS},)
-$(eval $(call add_define,NXP_SEC_${NXP_SEC_ENDIANNESS}))
-endif
-
-ifneq (${NXP_DDR_ENDIANNESS},)
-$(eval $(call add_define,NXP_DDR_${NXP_DDR_ENDIANNESS}))
-endif
-
-ifneq (${NXP_QSPI_ENDIANNESS},)
-$(eval $(call add_define,NXP_QSPI_${NXP_QSPI_ENDIANNESS}))
-endif
-
-ifneq (${NXP_SCFG_ENDIANNESS},)
-$(eval $(call add_define,NXP_SCFG_${NXP_SCFG_ENDIANNESS}))
-endif
-
-ifneq (${NXP_IFC_ENDIANNESS},)
-$(eval $(call add_define,NXP_IFC_${NXP_IFC_ENDIANNESS}))
 endif
 
 ifneq (${NXP_DDR_INTLV_256B},)

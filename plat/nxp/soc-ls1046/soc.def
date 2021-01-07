@@ -54,35 +54,9 @@ NXP_SFP_VER		:= 3_2
 # with CAAM for BL2 running from OCRAM
 SEC_MEM_NON_COHERENT	:= yes
 
-# Defining the endianness for NXP ESDHC
-NXP_ESDHC_ENDIANNESS	:= BE
-
-# Defining the endianness for NXP SFP
-NXP_SFP_ENDIANNESS	:= BE
-
-# Defining the endianness for NXP GPIO
-NXP_GPIO_ENDIANNESS	:= BE
-
-# Defining the endianness for NXP SNVS
-NXP_SNVS_ENDIANNESS	:= BE
-
-# Defining the endianness for NXP CCSR GUR register
-NXP_GUR_ENDIANNESS	:= BE
-
-# Defining the endianness for NXP FSPI register
-NXP_FSPI_ENDIANNESS	:= BE
-
-# Defining the endianness for NXP SEC
-NXP_SEC_ENDIANNESS	:= BE
-
-# Defining the endianness for NXP DDR
-NXP_DDR_ENDIANNESS	:= BE
-
-# Defining the endianness for NXP QSPI
-NXP_QSPI_ENDIANNESS	:= BE
-
-# Defining the endianness for NXP CCSR SCFG register
-NXP_SCFG_ENDIANNESS	:= BE
+# Endianness definitions for NXP modules.
+#   The default is BE. Specify LE if the module is not. For example,
+#   NXP_ESDHC_ENDIANNESS := LE
 
 
 # OCRAM MAP
