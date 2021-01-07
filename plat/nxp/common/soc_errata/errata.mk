@@ -7,38 +7,22 @@
 # These should be enabled by the platform if the erratum workaround needs to be
 # applied.
 
-# Flag to apply erratum 8850 workaround during reset.
-ERRATA_SOC_A008850	?=0
+ERRATA := \
+  ERRATA_SOC_A008850 \
+  ERRATA_SOC_A009660 \
+  ERRATA_SOC_A010539 \
+  ERRATA_SOC_A050426
 
-ifeq (${ERRATA_SOC_A008850},1)
-INCL_SOC_ERRATA_SOURCES := yes
-$(eval $(call add_define,ERRATA_SOC_A008850))
-endif
+define add_errata_define
+  $(1) ?= 0
+  ifeq ($$($(1)),1)
+    SOC_ERRATA_SOURCES := yes
+    $$(eval $$(call add_define,$(1)))
+  endif
+endef
 
-# Flag to apply erratum 9660 workaround during reset.
-ERRATA_SOC_A009660	?=0
+$(foreach e,$(ERRATA),$(eval $(call add_errata_define,$(e))))
 
-ifeq (${ERRATA_SOC_A009660},1)
-INCL_SOC_ERRATA_SOURCES := yes
-$(eval $(call add_define,ERRATA_SOC_A009660))
-endif
-
-# Flag to apply erratum 010539 workaround during reset.
-ERRATA_SOC_A010539	?=0
-
-ifeq (${ERRATA_SOC_A010539},1)
-INCL_SOC_ERRATA_SOURCES := yes
-$(eval $(call add_define,ERRATA_SOC_A010539))
-endif
-
-# Flag to apply erratum 50426 workaround during reset.
-ERRATA_SOC_A050426	?=0
-
-ifeq (${ERRATA_SOC_A050426},1)
-INCL_SOC_ERRATA_SOURCES := yes
-$(eval $(call add_define,ERRATA_SOC_A050426))
-endif
-
-ifeq (${INCL_SOC_ERRATA_SOURCES},yes)
-BL2_SOURCES	+= 	${PLAT_COMMON_PATH}/soc_errata/errata.c
+ifeq ($(SOC_ERRATA_SOURCES),yes)
+  BL2_SOURCES += $(PLAT_COMMON_PATH)/soc_errata/errata.c
 endif
