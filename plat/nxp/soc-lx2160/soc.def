@@ -107,6 +107,10 @@ ERRATA_A72_859971	:= 1
 # SoC Errata
 ERRATA_SOC_A050426	:= 1
 
+# DDR Errata
+ERRATA_DDR_A011396	:= 1
+ERRATA_DDR_A050450	:= 1
+
 # enable dynamic memory mapping
 PLAT_XLAT_TABLES_DYNAMIC :=	1
 
