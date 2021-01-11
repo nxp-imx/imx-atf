@@ -23,7 +23,7 @@ else ifeq (${SOC},ls1012a)
 SOC_NUM :=	1012
 SWAP	= 	1
 CH	=	2
-else ifeq (${SOC},ls1088)
+else ifeq (${SOC},ls1088a)
 SOC_NUM :=	1088
 CH	=	3
 else ifeq (${SOC},ls2088)
