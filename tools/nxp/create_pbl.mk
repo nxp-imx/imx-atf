@@ -19,7 +19,7 @@ else ifeq (${SOC},ls1043)
 SOC_NUM :=	1043
 SWAP	= 	1
 CH	=	2
-else ifeq (${SOC},ls1012)
+else ifeq (${SOC},ls1012a)
 SOC_NUM :=	1012
 SWAP	= 	1
 CH	=	2
