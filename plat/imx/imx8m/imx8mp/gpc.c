@@ -281,6 +281,13 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 	} else {
 		if (imx_m4_lpa_active() && domain_id == AUDIOMIX)
 			return;
+
+                //if (imx_m4_lpa_active() && (domain_id == GPUMIX || domain_id == GPU2D || domain_id == GPU3D))
+                //        return;
+
+                if (imx_m4_lpa_active() && (domain_id == GPU3D))
+                        return;
+
  
 		/* keep the USB PHY always on currently */
 		if (domain_id == USB1_PHY || domain_id == USB2_PHY)

@@ -22,10 +22,10 @@
 
 #define FSL_SIP_CONFIG_GPC_PM_DOMAIN		0x03
 
-#define M4_LPA_ACTIVE	0x5555
-#define DSP_LPA_ACTIVE	0xD
-#define	DSP_LPA_DRAM_ACTIVE 0x1D
-#define M4_LPA_IDLE	0x0
+
+#define M4_LPA_MASK     0x0F00
+#define M4_LPA_ACTIVE   0x0500
+#define M4_LPA_IDLE     0x0
 
 static uint32_t gpc_imr_offset[] = {
 	IMR1_CORE0_A53, IMR1_CORE1_A53,
@@ -43,12 +43,7 @@ struct plat_gic_ctx imx_gicv3_ctx;
 
 bool imx_m4_lpa_active(void)
 {
-	uint32_t lpa_status;
-
-	lpa_status = mmio_read_32(IMX_SRC_BASE + LPA_STATUS);
-
-	return (lpa_status == M4_LPA_ACTIVE || lpa_status == DSP_LPA_ACTIVE ||
-		lpa_status == DSP_LPA_DRAM_ACTIVE);
+	return (mmio_read_32(IMX_SRC_BASE + LPA_STATUS) & M4_LPA_MASK)  == M4_LPA_ACTIVE;
 }
 
 bool imx_is_m4_enabled(void)
@@ -267,6 +262,16 @@ void imx_set_sys_lpm(unsigned int last_core, bool retention)
 	else
 		mmio_clrsetbits_32(IMX_GPC_BASE + SLPCR, SLPCR_EN_DSM | SLPCR_VSTBY |
 			 SLPCR_SBYOS | SLPCR_BYPASS_PMIC_READY, SLPCR_A53_FASTWUP_STOP_MODE);
+
+
+        if (imx_is_m4_enabled() && imx_m4_lpa_active()) {
+                uint32_t val;
+                val = mmio_read_32(IMX_GPC_BASE + SLPCR);
+                val |= SLPCR_A53_FASTWUP_STOP_MODE;
+                mmio_write_32(IMX_GPC_BASE + 0x14, val);
+                return;
+        }
+
 
 	/* mask M4 DSM trigger if M4 is NOT enabled */
 	if (!imx_is_m4_enabled())

@@ -73,6 +73,7 @@ void dram_phy_init(struct dram_timing_info *timing);
 /* dram retention */
 void dram_enter_retention(void);
 void dram_exit_retention(void);
+void dram_exit_retention_with_target(uint32_t target);
 
 void dram_clock_switch(unsigned int target_drate, bool bypass_mode);
 

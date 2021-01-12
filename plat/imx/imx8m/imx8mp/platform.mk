@@ -14,7 +14,6 @@ PLAT_INCLUDES		:=	-Iplat/imx/common/include		\
 IMX_DRAM_SOURCES	:=	plat/imx/imx8m/ddr/dram.c		\
 				plat/imx/imx8m/ddr/clock.c		\
 				plat/imx/imx8m/ddr/dram_retention.c	\
-				plat/imx/imx8m/ddr/ddr4_dvfs.c		\
 				plat/imx/imx8m/ddr/lpddr4_dvfs.c
 
 IMX_GIC_SOURCES		:=	drivers/arm/gic/v3/gicv3_helpers.c	\
@@ -28,6 +27,9 @@ IMX_GIC_SOURCES		:=	drivers/arm/gic/v3/gicv3_helpers.c	\
 
 BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
 				plat/imx/imx8m/gpc_common.c			\
+				plat/imx/imx8m/fsl_sema4.c			\
+				plat/imx/imx8m/sema4.c   			\
+				plat/imx/imx8m/imx8_i2c.c                       \
 				plat/imx/imx8m/hab.c				\
 				plat/imx/imx8m/imx_aipstz.c			\
 				plat/imx/imx8m/imx_rdc.c			\
