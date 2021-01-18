@@ -14,6 +14,20 @@
 #define TZPC_BLOCK_SIZE			0x1000
 #endif
 
+/* Reset block register offsets */
+#ifdef NXP_RESET_ADDR
+
+/* Register Offset */
+#define RST_RSTCR_OFFSET		0x0
+#define RST_RSTRQMR1_OFFSET		0x10
+#define RST_RSTRQSR1_OFFSET		0x18
+#define BRR_OFFSET			0x60
+
+/* helper macros */
+#define RSTRQMR_RPTOE_MASK		(1 << 19)
+#endif /* NXP_RESET_ADDR */
+
+
 #define PCIeRC_RN_I_NODE_ID_OFFSET	0x8
 #define PoS_CONTROL_REG_OFFSET		0x0
 #define POS_EARLY_WR_COMP_EN		0x20
@@ -35,7 +49,9 @@
 #define EPU_EPIMCR10_OFFSET		0x128
 #define EPU_EPCTR10_OFFSET		0xa28
 #define EPU_EPCCR10_OFFSET		0x828
+#ifndef EPU_EPCCR10_VAL
 #define EPU_EPCCR10_VAL			0xb2800000
+#endif
 #define EPU_EPIMCR10_VAL		0xba000000
 #define EPU_EPCTR10_VAL			0x0
 #define EPU_EPGCR_VAL			(1 << 31)
@@ -69,5 +85,15 @@
 
 /* reset register bit */
 #define RSTRQMR_RPTOE_MASK		(1 << 19)
+
+/* secmon register offsets and bitfields */
+#define SECMON_HPCOMR_OFFSET	0x4
+#define SECMON_HPCOMR_NPSWAEN	0x80000000
+
+/* Secure-Register-File register offsets and bit masks */
+#ifdef NXP_RST_ADDR
+/* Register Offset */
+#define CORE_HOLD_OFFSET		0x140
+#endif
 
 #endif /* SOC_DEFAULT_HELPER_MACROS_H */
