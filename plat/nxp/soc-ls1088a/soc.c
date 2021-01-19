@@ -54,21 +54,10 @@ static dcfg_init_info_t dcfg_init_data = {
  */
 const unsigned char *plat_get_power_domain_tree_desc(void)
 {
-	uint32_t *ccsr_svr = (uint32_t *)(NXP_DCFG_ADDR + DCFG_SVR_OFFSET);
-	uint32_t num_clusters = NUMBER_OF_CLUSTERS;
-	uint32_t cores_per_cluster = CORES_PER_CLUSTER;
-	uint32_t svr = mmio_read_32((uintptr_t)ccsr_svr);
-	unsigned int i, ver;
+	unsigned int i;
+	uint8_t num_clusters, cores_per_cluster;
 
-	ver = (svr >> 8) & SVR_WO_E;
-
-	for (i = 0; i < ARRAY_SIZE(soc_list); i++) {
-		if ((soc_list[i].personality & SVR_WO_E) == ver) {
-			num_clusters = soc_list[i].num_clusters;
-			cores_per_cluster = soc_list[i].cores_per_cluster;
-			break;
-		}
-	}
+	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
 
 	/*
 	 * The highest level is the system level. The next level is constituted
@@ -97,47 +86,13 @@ unsigned int plat_ls_get_cluster_core_count(u_register_t mpidr)
 }
 
 /*
- * This function returns the number of clusters in the SoC
- */
-static unsigned int get_num_cluster(void)
-{
-	uint32_t *ccsr_svr = (uint32_t *)(NXP_DCFG_ADDR + DCFG_SVR_OFFSET);
-	uint32_t num_clusters = NUMBER_OF_CLUSTERS;
-	uint32_t svr = mmio_read_32((uintptr_t)ccsr_svr);
-	unsigned int i, ver;
-
-	ver = (svr >> 8) & SVR_WO_E;
-
-	for (i = 0; i < ARRAY_SIZE(soc_list); i++) {
-		if ((soc_list[i].personality & SVR_WO_E) == ver) {
-			num_clusters = soc_list[i].num_clusters;
-			break;
-		}
-	}
-
-	return num_clusters;
-}
-
-/*
  * This function returns the total number of cores in the SoC
  */
-unsigned int get_tot_num_cores(void)
+unsigned int get_tot_num_cores()
 {
-	uint32_t *ccsr_svr = (uint32_t *)(NXP_DCFG_ADDR + DCFG_SVR_OFFSET);
-	uint32_t num_clusters = NUMBER_OF_CLUSTERS;
-	uint32_t cores_per_cluster = CORES_PER_CLUSTER;
-	uint32_t svr = mmio_read_32((uintptr_t)ccsr_svr);
-	unsigned int i, ver;
+	uint8_t num_clusters, cores_per_cluster;
 
-	ver = (svr >> 8) & SVR_WO_E;
-
-	for (i = 0; i < ARRAY_SIZE(soc_list); i++) {
-		if ((soc_list[i].personality & SVR_WO_E) == ver) {
-			num_clusters = soc_list[i].num_clusters;
-			cores_per_cluster = soc_list[i].cores_per_cluster;
-			break;
-		}
-	}
+	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
 
 	return (num_clusters * cores_per_cluster);
 }
@@ -147,7 +102,11 @@ unsigned int get_tot_num_cores(void)
  */
 unsigned int get_pmu_idle_cluster_mask(void)
 {
-	return ((1 << get_num_cluster()) - 2);
+	uint8_t num_clusters, cores_per_cluster;
+
+	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
+
+	return ((1 << num_clusters) - 2);
 }
 
 /*
@@ -155,7 +114,11 @@ unsigned int get_pmu_idle_cluster_mask(void)
  */
 unsigned int get_pmu_flush_cluster_mask(void)
 {
-	return ((1 << get_num_cluster()) - 2);
+	uint8_t num_clusters, cores_per_cluster;
+
+	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
+
+	return ((1 << num_clusters) - 2);
 }
 
 /*
@@ -353,6 +316,10 @@ void soc_platform_setup(void)
  */
 void soc_init(void)
 {
+	uint8_t num_clusters, cores_per_cluster;
+
+	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
+
 	/* low-level init of the soc */
 	soc_init_start();
 	soc_init_percpu();
@@ -368,7 +335,7 @@ void soc_init(void)
 	/*
 	 * Enable Interconnect coherency for the primary CPU's cluster.
 	 */
-	plat_ls_interconnect_enter_coherency(get_num_cluster());
+	plat_ls_interconnect_enter_coherency(num_clusters);
 
 	/* set platform security policies */
 	_set_platform_security();

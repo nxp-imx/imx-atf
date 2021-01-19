@@ -12,6 +12,7 @@
 
 #include <lib/el3_runtime/cpu_data.h>
 #include <platform_def.h>
+#include "dcfg.h"
 
 #ifdef IMAGE_BL31
 
@@ -129,18 +130,19 @@ void ls_setup_page_tables(uintptr_t total_base,
 #endif
 );
 
-
 /* Structure to define SoC personality */
 struct soc_type {
 	char name[10];
-	uint32_t personality;
-	uint32_t num_clusters;
-	uint32_t cores_per_cluster;
+	uint32_t version;
+	uint8_t num_clusters;
+	uint8_t cores_per_cluster;
 };
+void get_cluster_info(struct soc_type *soc_list, uint8_t ps_count,
+		uint8_t *num_clusters, uint8_t *cores_per_cluster);
 
 #define SOC_ENTRY(n, v, ncl, nc) {	\
 		.name = #n,		\
-		.personality = SVR_##v,	\
+		.version = SVR_##v,	\
 		.num_clusters = (ncl),	\
 		.cores_per_cluster = (nc)}
 

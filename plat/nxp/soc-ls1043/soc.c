@@ -127,28 +127,6 @@ static void set_base_freq_CNTFID0(void)
 	write_cntfrq_el0(counter_base_frequency);
 }
 
-
-/*
- * This function returns the number of clusters in the SoC
- */
-static unsigned int get_num_cluster(void)
-{
-	const soc_info_t *soc_info = get_soc_info();
-	uint32_t num_clusters = NUMBER_OF_CLUSTERS;
-	unsigned int i;
-
-	for (i = 0; i < ARRAY_SIZE(soc_list); i++) {
-		if (soc_list[i].personality == soc_info->personality) {
-			num_clusters = soc_list[i].num_clusters;
-			break;
-		}
-	}
-
-	VERBOSE("NUM of cluster = 0x%x\n", num_clusters);
-
-	return num_clusters;
-}
-
 void soc_preload_setup(void)
 {
 
@@ -160,6 +138,10 @@ void soc_preload_setup(void)
  ******************************************************************************/
 void soc_early_init(void)
 {
+	uint8_t num_clusters, cores_per_cluster;
+
+	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
+
 	dram_regions_info_t *dram_regions_info = get_dram_regions_info();
 
 	dcfg_init(&dcfg_init_data);
@@ -188,8 +170,7 @@ void soc_early_init(void)
 	/*
 	 * Enable Interconnect coherency for the primary CPU's cluster.
 	 */
-	plat_ls_interconnect_enter_coherency(get_num_cluster());
-
+	plat_ls_interconnect_enter_coherency(num_clusters);
 
 #if TRUSTED_BOARD_BOOT
 	uint32_t mode;

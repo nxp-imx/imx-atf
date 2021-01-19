@@ -25,8 +25,7 @@
 /* DRAM0 Size defined in platform_def.h */
 #define	NXP_DRAM0_SIZE		PLAT_DEF_DRAM0_SIZE
 
-/* SVR Definition */
-#define SVR_WO_E		0xFFFFFE
+/* SVR Definition (not include major and minor rev) */
 #define SVR_LS1043A		0x879200
 #define SVR_LS1043A_P23         0x879202
 #define SVR_LS1023A             0x879208

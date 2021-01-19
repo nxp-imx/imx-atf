@@ -33,10 +33,9 @@
 /* End: Macros used by soc.c: get_boot_dev */
 
 /* bits */
-/* SVR Definition */
-#define SVR_LS1046A		0x04
-#define SVR_LS1026A		0x02
-#define SVR_LS1046AE		0x00
+/* SVR Definition (not include major and minor rev) */
+#define SVR_LS1046A		0x870700
+#define SVR_LS1026A		0x87070a
 
 /* Number of cores in platform */
 /* Used by common code for array initialization */
