@@ -23,6 +23,4 @@ endef
 
 $(foreach e,$(ERRATA),$(eval $(call add_errata_define,$(e))))
 
-ifeq ($(SOC_ERRATA_SOURCES),yes)
-  BL2_SOURCES += $(PLAT_COMMON_PATH)/soc_errata/errata.c
-endif
+BL2_SOURCES += $(PLAT_COMMON_PATH)/soc_errata/errata.c

@@ -71,6 +71,8 @@
 
 /* DDR memory Map */
 #define NXP_DDR_ADDR			0x01080000
+#define NXP_DDR2_ADDR			0x01090000
+#define NXP_DDR3_ADDR			0x08210000
 
 /* QuadSPI base address */
 #define NXP_QSPI_ADDR			0x020C0000
@@ -87,4 +89,12 @@
 #define NXP_OCRAM_TZPC_ADDR		0x02200000
 
 #define NXP_EPU_ADDR			0x700060000
+
+#define NXP_CCN_ADDR			0x04000000
+#define NXP_CCN_HNI_ADDR		0x04080000
+#define NXP_CCN_HN_F_0_ADDR		0x04200000
+#define NXP_CCN_HN_F_1_ADDR		0x04210000
+
+#define TPMWAKEMR0_ADDR			0x700123c50
+
 #endif	/* SOC_DEFAULT_BASE_ADDR_H */
