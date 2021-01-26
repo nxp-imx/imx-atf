@@ -1529,22 +1529,22 @@ _getGICC_BaseAddr:
 	/* can be at 4k or 64k offsets */
 
 	/* read the scfg reg GIC400_ADDR_ALIGN */
-	mov  x0, #NXP_SCFG_ADDR
-	ldr  w1, [x0, #SCFG_GIC400_ADDR_ALIGN_OFFSET]
-	rev  w0, w1
+	mov	x0, #NXP_SCFG_ADDR
+	ldr	w1, [x0, #SCFG_GIC400_ADDR_ALIGN_OFFSET]
+	rev	w0, w1
 
 	/* x0 = GIC400_ADDR_ALIGN value */
-	and   x0, x0, #GIC400_ADDR_ALIGN_4KMODE_MASK
-	mov   x1, #GIC400_ADDR_ALIGN_4KMODE_EN
-	cmp   x0, x1
-	b.ne  9f
+	and	x0, x0, #GIC400_ADDR_ALIGN_4KMODE_MASK
+	mov	x1, #GIC400_ADDR_ALIGN_4KMODE_EN
+	cmp	x0, x1
+	b.ne	9f
 
 	/* load the base addresses for 4k offsets */
-	ldr   x0, =NXP_GICC_4K_ADDR
-	b     10f
+	ldr	x0, =NXP_GICC_4K_ADDR
+	b	10f
 9:
 	/* load the base address for 64k offsets */
-	ldr   x0, =NXP_GICC_64K_ADDR
+	ldr	x0, =NXP_GICC_64K_ADDR
 10:
 	ret
 
