@@ -7,10 +7,15 @@
 
 #include <cci.h>
 #include <mmio.h>
+#include <soc_default_base_addr.h>
+#include <ls_interconnect.h>
+#include <plat_common.h>
+#include <dcfg.h>
+#include <scfg.h>
 
 void erratum_a008850_early(void)
 {
-#ifdef ERRATA_PLAT_A008850
+#ifdef ERRATA_SOC_A008850
 	/* part 1 of 2 */
 	uintptr_t cci_base = NXP_CCI_ADDR;
 	uint32_t val = mmio_read_32(cci_base + CTRL_OVERRIDE_REG);
@@ -24,7 +29,7 @@ void erratum_a008850_early(void)
 
 void erratum_a008850_post(void)
 {
-#ifdef ERRATA_PLAT_A008850
+#ifdef ERRATA_SOC_A008850
 	/* part 2 of 2 */
 	uintptr_t cci_base = NXP_CCI_ADDR;
 	uint32_t val = mmio_read_32(cci_base + CTRL_OVERRIDE_REG);
@@ -42,7 +47,7 @@ void erratum_a008850_post(void)
 
 void erratum_a010539(void)
 {
-#ifdef ERRATA_PLAT_A010539
+#ifdef ERRATA_SOC_A010539
 #if POLICY_OTA
 	/*
 	 * For POLICY_OTA Bootstrap, BOOT_DEVICE_EMMC is used to get FIP and
@@ -57,8 +62,8 @@ void erratum_a010539(void)
 		uint32_t val;
 
 		val = (gur_in32(porsr1) & ~PORSR1_RCW_MASK);
-		out_be32((void *)(NXP_DCSR_DCFG_ADDR + DCFG_DCSR_PORCR1_OFFSET), val);
-		out_be32((void *)(NXP_SCFG_ADDR + 0x1a8), 0xffffffff);
+		gur_out32((void *)(NXP_DCSR_DCFG_ADDR + DCFG_DCSR_PORCR1_OFFSET), val);
+		scfg_out32((void *)(NXP_SCFG_ADDR + 0x1a8), 0xffffffff);
 	}
 
 #endif
