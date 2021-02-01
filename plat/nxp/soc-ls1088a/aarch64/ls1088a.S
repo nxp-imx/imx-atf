@@ -96,8 +96,6 @@
 .equ CNTP_CTL_EL0_IMASK, 0x2
 /* shifted value for incrementing cluster count in mpidr */
 .equ MPIDR_CLUSTER, 0x100
-/* reset register bit */
-.equ TPMWAKEMR0_ADDR, 0x700123c50
 
 /*
  * this function starts the initialization tasks of the soc,
