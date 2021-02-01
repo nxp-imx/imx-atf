@@ -13,11 +13,8 @@ PLAT_SOC_PATH	:=	${PLAT_PATH}/soc-${SOC}
 BOARD_PATH	:=	${PLAT_SOC_PATH}/${BOARD}
 $(info board path = ${BOARD_PATH})
 
+# Use Personal linker file bl2_el3_ls2088.ld.S
 SEPARATE_RW_AND_NOLOAD	:=	1
-
-ifeq (${SEPARATE_RW_AND_NOLOAD}, 1)
-$(eval $(call add_define,SEPARATE_RW_AND_NOLOAD))
-endif
 
  # get SoC-specific defnitions
 include ${PLAT_SOC_PATH}/soc.def
@@ -149,7 +146,3 @@ BL2_SOURCES		+=	${DDR_CNTLR_SOURCES}\
 
  # Adding TFA setup files
 include ${PLAT_PATH}/common/setup/common.mk
-
-ifeq (${SEPARATE_RW_AND_NOLOAD}, 1)
-BL2_LINKERFILE          :=      ${PLAT_SOC_PATH}/bl2_el3_ls2088.ld.S
-endif

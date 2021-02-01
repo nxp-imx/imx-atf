@@ -59,7 +59,6 @@ $(eval $(call add_define,SEC_MEM_NON_COHERENT))
 endif
 
 # Module endianness definition
-
 NXP_MODULES := \
   NXP_ESDHC \
   NXP_SFP \
@@ -82,6 +81,7 @@ define add_module_endianness_define
 endef
 
 $(foreach m,$(NXP_MODULES),$(eval $(call add_module_endianness_define,$(m))))
+# End Module endianness definition
 
 ifneq (${NXP_SFP_VER},)
 $(eval $(call add_define,NXP_SFP_VER_${NXP_SFP_VER}))
@@ -93,4 +93,10 @@ endif
 
 ifneq (${PLAT_XLAT_TABLES_DYNAMIC},)
 $(eval $(call add_define,PLAT_XLAT_TABLES_DYNAMIC))
+endif
+
+# Use a personal linker file
+ifeq (${SEPARATE_RW_AND_NOLOAD}, 1)
+$(eval $(call add_define,SEPARATE_RW_AND_NOLOAD))
+BL2_LINKERFILE	:=	${PLAT_SOC_PATH}/bl2_el3_${SOC}.ld.S
 endif

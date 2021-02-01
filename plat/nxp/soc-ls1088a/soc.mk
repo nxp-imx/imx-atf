@@ -12,9 +12,9 @@ PLAT_DRIVERS_PATH:=	drivers/nxp
 PLAT_SOC_PATH	:=	${PLAT_PATH}/soc-${SOC}
 BOARD_PATH	:=	${PLAT_SOC_PATH}/${BOARD}
 
+# Use Personal linker file bl2_el3_ls1088a.ld.S
 SEPARATE_RW_AND_NOLOAD	:= 1
 
-$(eval $(call add_define,SEPARATE_RW_AND_NOLOAD))
 # For Security Features
 DISABLE_FUSE_WRITE	:= 1
 ifeq (${TRUSTED_BOARD_BOOT}, 1)
@@ -133,5 +133,3 @@ BL2_SOURCES		+=	${DDR_CNTLR_SOURCES}\
 
 # Adding TFA setup files
 include ${PLAT_COMMON_PATH}/setup/common.mk
-
-BL2_LINKERFILE		:=	${PLAT_SOC_PATH}/bl2_el3_ls1088a.ld.S
