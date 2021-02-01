@@ -1719,7 +1719,7 @@ start_line_2:
 	/* x11 = PMU_IPSTPACK4_OFFSET */
 	ldr	w1, [x7, x11]
 	tst	w1, w3
-	b.ne	1f
+	b.ne	5f
 	subs	x2, x2, #1
 	/* poll on ipstpack4 - end */
 	b.gt	start_line_2
