@@ -16,25 +16,25 @@ $(info board path = ${BOARD_PATH})
 # Use Personal linker file bl2_el3_ls2088.ld.S
 SEPARATE_RW_AND_NOLOAD	:=	1
 
- # get SoC-specific defnitions
+# get SoC-specific defnitions
 include ${PLAT_SOC_PATH}/soc.def
 include ${PLAT_COMMON_PATH}/soc_common_def.mk
 
- # SoC-specific
+# SoC-specific
 NXP_WDOG_RESTART	:=	no
 
- # Selecting dependent module,
- # Selecting dependent drivers, and
- # Adding defines.
+# Selecting dependent module,
+# Selecting dependent drivers, and
+# Adding defines.
 
- # for features enabled above.
+# for features enabled above.
 ifeq (${NXP_WDOG_RESTART}, yes)
 NXP_NV_SW_MAINT_LAST_EXEC_DATA := yes
 LS_EL3_INTERRUPT_HANDLER := yes
 $(eval $(call add_define, NXP_WDOG_RESTART))
 endif
 
- # For Security Features
+# For Security Features
 DISABLE_FUSE_WRITE	:=	1
 ifeq (${TRUSTED_BOARD_BOOT}, 1)
 $(eval $(call SET_FLAG,SMMU_NEEDED,BL2))
@@ -46,7 +46,7 @@ SECURE_BOOT		:=	yes
 endif
 $(eval $(call SET_FLAG,CRYPTO_NEEDED,BL_COMM))
 
- # Selecting Drivers for SoC
+# Selecting Drivers for SoC
 $(eval $(call SET_FLAG,DCFG_NEEDED,BL_COMM))
 $(eval $(call SET_FLAG,TIMER_NEEDED,BL_COMM))
 $(eval $(call SET_FLAG,INTERCONNECT_NEEDED,BL_COMM))
@@ -59,11 +59,11 @@ $(eval $(call SET_FLAG,TZASC_NEEDED,BL2))
 $(eval $(call SET_FLAG,I2C_NEEDED,BL2))
 $(eval $(call SET_FLAG,IMG_LOADR_NEEDED,BL2))
 
- # Selecting PSCI & SIP_SVC support
+# Selecting PSCI & SIP_SVC support
 $(eval $(call SET_FLAG,PSCI_NEEDED,BL31))
 $(eval $(call SET_FLAG,SIPSVC_NEEDED,BL31))
 
- # Selecting Boot Source for the TFA images.
+# Selecting Boot Source for the TFA images.
 ifeq (${BOOT_MODE}, nor)
 $(eval $(call SET_FLAG,IFC_NOR_NEEDED,BL2))
 $(eval $(call add_define,NOR_BOOT))
@@ -105,7 +105,7 @@ ifeq (${SIPSVC_NEEDED}, yes)
 include ${PLAT_COMMON_PATH}/sip_svc/sipsvc.mk
 endif
 
- # for fuse-fip & fuse-programming
+# for fuse-fip & fuse-programming
 ifeq (${FUSE_PROG}, 1)
 include ${PLAT_COMMON_PATH}/fip_handler/fuse_fip/fuse.mk
 endif
@@ -114,10 +114,10 @@ ifeq (${IMG_LOADR_NEEDED},yes)
 include $(PLAT_COMMON_PATH)/img_loadr/img_loadr.mk
 endif
 
- # Adding source files for the above selected drivers.
+# Adding source files for the above selected drivers.
 include ${PLAT_DRIVERS_PATH}/drivers.mk
 
- # Adding SoC specific files
+# Adding SoC specific files
 include ${PLAT_COMMON_PATH}/soc_errata/errata.mk
 
 PLAT_INCLUDES		+=	${NV_STORAGE_INCLUDES}\
@@ -144,5 +144,5 @@ BL2_SOURCES		+=	${DDR_CNTLR_SOURCES}\
 				${TBBR_SOURCES}\
 				${FUSE_SOURCES}
 
- # Adding TFA setup files
+# Adding TFA setup files
 include ${PLAT_PATH}/common/setup/common.mk
