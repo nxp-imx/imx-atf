@@ -443,8 +443,6 @@ void soc_init(void)
 {
 	uint8_t num_clusters, cores_per_cluster;
 
-	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
-
 	/* low-level init of the soc */
 	soc_init_start();
 	soc_init_percpu();
@@ -462,6 +460,7 @@ void soc_init(void)
 	else
 		ccn_init(&plat_ccn_desc);
 
+	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
 	plat_ls_interconnect_enter_coherency(num_clusters);
 
 	/* Set platform security policies */

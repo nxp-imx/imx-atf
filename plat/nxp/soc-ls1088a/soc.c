@@ -318,8 +318,6 @@ void soc_init(void)
 {
 	uint8_t num_clusters, cores_per_cluster;
 
-	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
-
 	/* low-level init of the soc */
 	soc_init_start();
 	soc_init_percpu();
@@ -335,6 +333,7 @@ void soc_init(void)
 	/*
 	 * Enable Interconnect coherency for the primary CPU's cluster.
 	 */
+	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
 	plat_ls_interconnect_enter_coherency(num_clusters);
 
 	/* set platform security policies */

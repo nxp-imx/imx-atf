@@ -137,6 +137,10 @@ struct soc_type {
 	uint8_t num_clusters;
 	uint8_t cores_per_cluster;
 };
+/*
+ * Get cluster number and Core number per cluster.
+ * Must be called after dcfg is initialized(dcfg_init).
+ */
 void get_cluster_info(struct soc_type *soc_list, uint8_t ps_count,
 		uint8_t *num_clusters, uint8_t *cores_per_cluster);
 

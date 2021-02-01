@@ -147,8 +147,6 @@ void soc_early_init(void)
 {
 	uint8_t num_clusters, cores_per_cluster;
 
-	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
-
 	dram_regions_info_t *dram_regions_info = get_dram_regions_info();
 
 	dcfg_init(&dcfg_init_data);
@@ -177,6 +175,7 @@ void soc_early_init(void)
 	/*
 	 * Enable Interconnect coherency for the primary CPU's cluster.
 	 */
+	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
 	plat_ls_interconnect_enter_coherency(num_clusters);
 
 
