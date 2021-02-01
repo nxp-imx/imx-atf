@@ -161,6 +161,7 @@ static save_register syspll1_clk_root_bus_to_24m_registers[] = {
                                                             //{124,0}
 };
 
+#if 0
 static save_register syspll1_clk_root_bus_to_audiopll1_registers[] = {
                                                             {6, 0x350,0},   /*AUDIO_AXI*/  /*done by M7 side, but changed by Kernel  */
                                                             {16,0x053,0},   /*MAIN_AXI*/
@@ -172,6 +173,7 @@ static save_register syspll1_clk_root_bus_to_audiopll1_registers[] = {
                                                             {95,0,0},   /*UART2*/
                                                             {100,0,0},  /*GIC*/
 };
+#endif
 
 static save_register *syspll1_clk_root_bypass_registers;
 static uint8_t        syspll1_clk_root_bypass_registers_count;
@@ -261,8 +263,10 @@ static save_register syspll1_clk_root_disable_registers[] = {
 void bus_freq_dvfs(bool low_bus)
 {
         //SA_I2C_Type i2cSave;
-        syspll1_clk_root_bypass_registers = lpa_low_rate ? syspll1_clk_root_bus_to_24m_registers : syspll1_clk_root_bus_to_audiopll1_registers;
-        syspll1_clk_root_bypass_registers_count =  lpa_low_rate ? ARRAY_SIZE(syspll1_clk_root_bus_to_24m_registers) : ARRAY_SIZE(syspll1_clk_root_bus_to_audiopll1_registers);
+        //syspll1_clk_root_bypass_registers = lpa_low_rate ? syspll1_clk_root_bus_to_24m_registers : syspll1_clk_root_bus_to_audiopll1_registers;
+        //syspll1_clk_root_bypass_registers_count =  lpa_low_rate ? ARRAY_SIZE(syspll1_clk_root_bus_to_24m_registers) : ARRAY_SIZE(syspll1_clk_root_bus_to_audiopll1_registers);
+        syspll1_clk_root_bypass_registers = syspll1_clk_root_bus_to_24m_registers;
+        syspll1_clk_root_bypass_registers_count =  ARRAY_SIZE(syspll1_clk_root_bus_to_24m_registers);
 
         if (low_bus) {
 
