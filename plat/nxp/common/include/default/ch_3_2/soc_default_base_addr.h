@@ -1,8 +1,7 @@
 /*
- * Copyright 2018-2020 NXP
+ * Copyright 2018-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
- *
  */
 
 #ifndef SOC_DEFAULT_BASE_ADDR_H
@@ -81,4 +80,5 @@
 #define NXP_CCN_HNI_ADDR		0x04080000
 #define NXP_CCN_HN_F_0_ADDR		0x04200000
 
+#define NXP_EPU_ADDR			0x700060000
 #endif	/*	SOC_DEFAULT_BASE_ADDR_H		*/
