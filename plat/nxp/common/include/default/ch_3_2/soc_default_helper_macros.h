@@ -1,8 +1,7 @@
 /*
- * Copyright 2018-2020 NXP
+ * Copyright 2018-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
- *
  */
 
 #ifndef SOC_DEFAULT_HELPER_MACROS_H
@@ -38,6 +37,10 @@
 #define RSTRQMR_RPTOE_MASK		(1 << 19)
 
 #endif /* NXP_RESET_ADDR */
+
+/* secmon register offsets and bitfields */
+#define SECMON_HPCOMR_OFFSET	0x4
+#define SECMON_HPCOMR_NPSWAEN	0x80000000
 
 /* Secure-Register-File register offsets and bit masks */
 #ifdef NXP_RST_ADDR
