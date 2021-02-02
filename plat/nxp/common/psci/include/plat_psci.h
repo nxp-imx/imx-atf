@@ -1,8 +1,7 @@
 /*
- * Copyright 2018-2020 NXP
+ * Copyright 2018-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
- *
  */
 
 #ifndef PLAT_PSCI_H
@@ -57,6 +56,7 @@
 #define  CPUECTLR_RET_SET       0x2
 #define  CPUECTLR_TIMER_MASK    0x7
 #define  CPUECTLR_TIMER_8TICKS  0x2
+#define  CPUECTLR_TIMER_2TICKS  0x1
 #define  SCR_IRQ_MASK           0x2
 #define  SCR_FIQ_MASK           0x4
 
