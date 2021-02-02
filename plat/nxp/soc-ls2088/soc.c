@@ -34,6 +34,9 @@
 #if defined(NXP_SFP_ENABLED)
 #include "sfp.h"
 #endif
+#if TRUSTED_BOARD_BOOT
+#include <nxp_smmu.h>
+#endif
 
 static struct soc_type soc_list[] =  {
 	SOC_ENTRY(LS2080A, LS2080A, 4, 2),
