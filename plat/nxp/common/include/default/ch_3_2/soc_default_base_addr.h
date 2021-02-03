@@ -22,6 +22,9 @@
 /* MMU 500 soc.c*/
 #define NXP_SMMU_ADDR			0x05000000
 
+/* CCI400 base address */
+#define NXP_CCI_ADDR			0x04090000
+
 #define NXP_SNVS_ADDR			0x01E90000
 
 #define NXP_DCFG_ADDR			0x01E00000
