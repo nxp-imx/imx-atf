@@ -23,6 +23,9 @@
 #if POLICY_OTA
 #include <ls_ota.h>
 #endif
+#if defined(NXP_SFP_ENABLED)
+#include <sfp.h>
+#endif
 #include <pmu.h>
 #include <dcfg.h>
 #include <scfg.h>
