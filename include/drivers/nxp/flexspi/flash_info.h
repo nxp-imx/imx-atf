@@ -53,6 +53,11 @@
 #define F_SECTOR_ERASE_SZ		F_SECTOR_4K
 #endif
 
+/* Waiting time for WARM Boot, it varies for different flash model*/
+#ifdef NXP_WARM_BOOT
+#define FLASH_WR_COMP_WAIT_BY_NOP_COUNT	0x20000
+#endif
+
 #elif defined(CONFIG_MT35XU02G)
 #define F_SECTOR_128K			0x20000U
 #define F_PAGE_256			0x100U
@@ -61,10 +66,6 @@
 #define F_SECTOR_ERASE_SZ		F_SECTOR_128K
 #ifdef CONFIG_FSPI_4K_ERASE
 #define F_SECTOR_ERASE_SZ		F_SECTOR_4K
-#endif
-
-#ifdef NXP_WARM_BOOT
-#define FLASH_WR_COMP_WAIT_BY_NOP_COUNT	0x20000
 #endif
 
 #endif
