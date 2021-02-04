@@ -40,6 +40,7 @@ Platform Ports
    xilinx-versal
    xilinx-zynqmp
    brcm-stingray
+   nxp/index
 
 This section provides a list of supported upstream *platform ports* and the
 documentation associated with them.

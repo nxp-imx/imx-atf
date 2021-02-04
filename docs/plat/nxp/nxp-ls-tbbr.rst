@@ -1,72 +1,72 @@
+TBBR
+====
 
--------------
-NXP Platforms:
--------------
 TRUSTED_BOARD_BOOT option can be enabled by specifying TRUSTED_BOARD_BOOT=1 on command line during make.
 
+Bare-Minimum Preparation for TBBR
+---------------------------------
 
+* OTPMK (One Time Programable Key) needs to be burnt in fuses
 
-Bare-Minimum Preparation to run  TBBR on NXP Platforms:
-=======================================================
-- OTPMK(One Time Programable Key) needs to be burnt in fuses.
-  -- It is the 256 bit key that stores a secret value used by the NXP SEC 4.0 IP in Trusted or Secure mode.
-     --- It is primarily for the purpose of decrypting additional secrets stored in system non-volatile memory.
-  -- NXP CST tool gives an option to generate it.
+  * It is the 256 bit key that stores a secret value used by the NXP SEC 4.0 IP in Trusted or Secure mode.
+  * It is primarily for the purpose of decrypting additional secrets stored in system non-volatile memory.
+  * NXP CST tool gives an option to generate it.
 
-   Use the below command from directory 'cst', with correct options.
+    Use the below command from directory 'cst', with correct options.
 
-   .. code:: shell
+    .. code:: shell
 
-    => ./gen_otpmk_drbg
+      ./gen_otpmk_drbg
 
-- SRKH (Super Root Key Hash) needs to be burnt in fuses.
-  -- It is the 256 bit hash of the list of the public keys of the SRK key pair.
-  -- NXP CST tool gives an option to generate the RSA key pair and its hash.
+* SRKH (Super Root Key Hash) needs to be burnt in fuses
 
-   Use the below command from directory 'cst', with correct options.
+  * It is the 256 bit hash of the list of the public keys of the SRK key pair.
+  * NXP CST tool gives an option to generate the RSA key pair and its hash.
 
-   .. code:: shell
+    Use the below command from directory 'cst', with correct options.
 
-    => ./gen_keys
+    .. code:: shell
+
+      ./gen_keys
 
 Refer fuse frovisioning readme 'nxp-ls-fuse-prov.rst' for steps to blow these keys.
 
+Two options for TRUSTED_BOARD_BOOT
+----------------------------------
 
+Option 1: CoT using X 509 certificates
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Two options are provided for TRUSTED_BOARD_BOOT:
-================================================
+* This CoT is as provided by ARM.
 
--------------------------------------------------------------------------
-Option 1:
-CoT using X 509 certificates
--------------------------------------------------------------------------
+* To use this option user needs to specify mbedtld dir path in MBEDTLS_DIR.
 
-- This CoT is as provided by ARM.
+* To generate CSF header, path of CST repository needs to be specified as CST_DIR
 
-- To use this option user needs to specify mbedtld dir path in MBEDTLS_DIR.
+* CSF header is embedded to each of the BL2 image.
 
-- To generate CSF header, path of CST repository needs to be specified as CST_DIR
+* GENERATE_COT=1 adds the tool 'cert_create' to the build environment to generate
 
-- CSF header is embedded to each of the BL2 image.
+  * X509 Certificates as (.crt) files.
+  * X509 Pem key file as (.pem) files.
 
-- GENERATE_COT=1 adds the tool 'cert_create' to the build environment to generate:
-  -- X509 Certificates as (.crt) files.
-  -- X509 Pem key file as (.pem) files.
+* SAVE_KEYS=1 saves the keys and certificates, if GENERATE_COT=1.
 
-- SAVE_KEYS=1 saves the keys and certificates, if GENERATE_COT=1.
-  -- For this to work, file name for cert and keys are provided as part of  compilation or build command.
-     --- default file names will be used, incase not provided as part compilation or build command.
-     --- default folder 'BUILD_PLAT' will be used to store them.
+  * For this to work, file name for cert and keys are provided as part of  compilation or build command.
 
-- ROTPK for x.509 certificates is generated and embedded in bl2.bin and
+    * default file names will be used, in case it is not provided as part compilation or build command.
+    * default folder 'BUILD_PLAT' will be used to store them.
+
+* ROTPK for x.509 certificates is generated and embedded in bl2.bin and
   verified as part of CoT by Boot ROM during secure boot.
 
-- Compilation steps:
+* Compilation steps
 
-All Images
-   .. code:: shell
+  All Images
 
-       make PLAT=$PLAT TRUSTED_BOARD_BOOT=1 GENERATE_COT=1 MBEDTLS_DIR=$MBEDTLS_PATH CST_DIR=$CST_DIR_PATH \
+  .. code:: shell
+
+    make PLAT=$PLAT TRUSTED_BOARD_BOOT=1 GENERATE_COT=1 MBEDTLS_DIR=$MBEDTLS_PATH CST_DIR=$CST_DIR_PATH \
        BOOT_MODE=<platform_supported_boot_mode> \
        RCW=$RCW_BIN \
        BL32=$TEE_BIN SPD=opteed\
@@ -74,46 +74,50 @@ All Images
        pbl \
        fip
 
-Additional FIP_DDR Image (For NXP platforms like lx2160a)
-   .. code:: shell
+  Additional FIP_DDR Image (For NXP platforms like lx2160a)
 
-       make PLAT=$PLAT TRUSTED_BOARD_BOOT=1 GENERATE_COT=1 MBEDTLS_DIR=$MBEDTLS_PATH fip_ddr
+  .. code:: shell
 
-       Note: make target 'fip_ddr' should never be combine with other make target 'fip', 'pbl' & 'bl2'.
--------------------------------------------------------------------------
-Option 2:
-CoT using NXP CSF headers.
--------------------------------------------------------------------------
+    make PLAT=$PLAT TRUSTED_BOARD_BOOT=1 GENERATE_COT=1 MBEDTLS_DIR=$MBEDTLS_PATH fip_ddr
 
-- This option is automatically selected when TRUSTED_BOARD_BOOT is set but MBEDTLS_DIR path is not specified.
+  Note: make target 'fip_ddr' should never be combine with other make target 'fip', 'pbl' & 'bl2'.
 
-- CSF header is embedded to each of the BL31, BL32 and  BL33 image.
+Option 2: CoT using NXP CSF headers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- To generate CSF header, path of CST repository needs to be specified as CST_DIR
+* This option is automatically selected when TRUSTED_BOARD_BOOT is set but MBEDTLS_DIR path is not specified.
 
-- Default input files for CSF header generation is added in this repo.
+* CSF header is embedded to each of the BL31, BL32 and  BL33 image.
 
-- Default input file requires user to generate RSA key pair named
-  -- srk.pri, and
-  -- srk.pub, and add them in ATF repo.
-  -- These keys can be generated using gen_keys tool of CST.
+* To generate CSF header, path of CST repository needs to be specified as CST_DIR
 
-- To change the input file , user can use the options BL33_INPUT_FILE, BL32_INPUT_FILE, BL31_INPUT_FILE
+* Default input files for CSF header generation is added in this repo.
 
-- There are 2 paths in secure boot flow :
-  -- Development Mode (sb_en in RCW = 1, SFP->OSPR, ITS = 0)
-     --- In this flow , even on ROTPK comparison failure, flow would continue.
-     --- However SNVS is transitioned to non-secure state
+* Default input file requires user to generate RSA key pair named
 
-  -- Production mode (SFP->OSPR, ITS = 1)
-     --- Any failure is fatal failure
+  * srk.pri, and
+  * srk.pub, and add them in ATF repo.
+  * These keys can be generated using gen_keys tool of CST.
 
-- Compilation steps:
+* To change the input file , user can use the options BL33_INPUT_FILE, BL32_INPUT_FILE, BL31_INPUT_FILE
 
-All Images
-   .. code:: shell
+* There are 2 paths in secure boot flow :
 
-       make PLAT=$PLAT TRUSTED_BOARD_BOOT=1 CST_DIR=$CST_DIR_PATH \
+  * Development Mode (sb_en in RCW = 1, SFP->OSPR, ITS = 0)
+  * In this flow , even on ROTPK comparison failure, flow would continue.
+  * However SNVS is transitioned to non-secure state
+
+  * Production mode (SFP->OSPR, ITS = 1)
+
+    * Any failure is fatal failure
+
+* Compilation steps:
+
+  All Images
+
+  .. code:: shell
+
+    make PLAT=$PLAT TRUSTED_BOARD_BOOT=1 CST_DIR=$CST_DIR_PATH \
        BOOT_MODE=<platform_supported_boot_mode> \
        RCW=$RCW_BIN \
        BL32=$TEE_BIN SPD=opteed\
@@ -121,68 +125,82 @@ All Images
        pbl \
        fip
 
-Additional FIP_DDR Image (For NXP platforms like lx2160a)
-   .. code:: shell
+  Additional FIP_DDR Image (For NXP platforms like lx2160a)
 
-       make PLAT=$PLAT TRUSTED_BOARD_BOOT=1 CST_DIR=$CST_DIR_PATH fip_ddr
+  .. code:: shell
 
-- Compilation Steps with build option for generic image processing filters to prepend CSF header:
-  --  Generic image processing filters to prepend CSF header
-      BL32_INPUT_FILE = < file name>
-      BL33_INPUT_FILE = <file name>
+    make PLAT=$PLAT TRUSTED_BOARD_BOOT=1 CST_DIR=$CST_DIR_PATH fip_ddr
 
-   .. code:: shell
+* Compilation Steps with build option for generic image processing filters to prepend CSF header:
 
-       make PLAT=$PLAT TRUSTED_BOARD_BOOT=1 CST_DIR=$CST_DIR_PATH \
-       BOOT_MODE=<platform_supported_boot_mode> \
-       RCW=$RCW_BIN \
-       BL32=$TEE_BIN SPD=opteed\
-       BL33=$UBOOT_SECURE_BIN \
-       BL33_INPUT_FILE = <ip file> \
-       BL32_INPUT_FILE = <ip_file> \
-       BL31_INPUT_FILE = <ip file> \
-       pbl \
-       fip
+  * Generic image processing filters to prepend CSF header
 
+    BL32_INPUT_FILE = < file name>
+    BL33_INPUT_FILE = <file name>
 
-Deploy ATF Images
-=================
-Same steps as mentioned in the readme "nxp-layerscape.rst".
+    .. code:: shell
 
+      make PLAT=$PLAT TRUSTED_BOARD_BOOT=1 CST_DIR=$CST_DIR_PATH \
+        BOOT_MODE=<platform_supported_boot_mode> \
+        RCW=$RCW_BIN \
+        BL32=$TEE_BIN SPD=opteed \
+        BL33=$UBOOT_SECURE_BIN \
+        BL33_INPUT_FILE = <ip file> \
+        BL32_INPUT_FILE = <ip_file> \
+        BL31_INPUT_FILE = <ip file> \
+        pbl \
+        fip
 
+Deploy
+------
+Same steps as mentioned in the "nxp-layerscape.rst".
 
-Verification to check if Secure state is achieved:
-=================================================
+Verify Secure State
+-------------------
 
-+---+----------------+-----------------+------------------------+----------------------------------+-------------------------------+
-|   |   Platform     |  SNVS_HPSR_REG  | SYS_SECURE_BIT(=value) | SYSTEM_SECURE_CONFIG_BIT(=value) | SSM_STATE                     |
-+===+================+=================+========================+==================================+===============================+
-| 1.| lx2160ardb  or |    0x01E90014   | 15                     | 14-12                            | 11-8                          |
-|   | lx2160aqds  or |                 | ( = 1, BootROM Booted) | ( = 010 means Intent to Secure,  | (=1111 means secure boot)     |
-|   | lx2162aqds     |                 |                        | ( = 000 Unsecure)                | (=1011 means Non-secure Boot) |
-+---+----------------+-----------------+------------------------+----------------------------------+-------------------------------+
++----------------+---------------+------------------------+----------------------------------+-------------------------------+
+| Platform       | SNVS_HPSR_REG | SYS_SECURE_BIT(=value) | SYSTEM_SECURE_CONFIG_BIT(=value) | SSM_STATE                     |
++================+===============+========================+==================================+===============================+
+| lx2160ardb  or | 0x01E90014    | 15                     | 14-12                            | 11-8                          |
+| lx2160aqds  or |               | ( = 1, BootROM Booted) | ( = 010 means Intent to Secure,  | (=1111 means secure boot)     |
+| lx2162aqds     |               |                        | ( = 000 Unsecure)                | (=1011 means Non-secure Boot) |
++----------------+---------------+------------------------+----------------------------------+-------------------------------+
 
-- Production mode (SFP->OSPR, ITS = 1)
-  -- Linux prompt will successfully come. if the TBBR is successful.
-     --- Else, Linux boot will be successful.
-  -- For secure-boot status, read SNVS Register $SNVS_HPSR_REG from u-boot prompt:
-   .. code:: shell
+* Production mode (SFP->OSPR, ITS = 1)
 
-       => md $SNVS_HPSR_REG
-       => 8000AF00
+  * Linux prompt will successfully come. if the TBBR is successful.
 
-       In case it is read as 00000000, then read this register using jtag (in development mode only through CW tap).
-                   +0       +4       +8       +C
-       [0x01E90014] 8000AF00
+    * Else, Linux boot will be successful.
 
+  * For secure-boot status, read SNVS Register $SNVS_HPSR_REG from u-boot prompt:
 
-- Development Mode (sb_en in RCW = 1, SFP->OSPR, ITS = 0)
-  -- Refer the SoC specific table to read the register to interpret whether the secure boot is achieved or not.
-  -- Using JTAG (in development environment only, using CW tap):
-     --- For secure-boot status, read SNVS Register $SNVS_HPSR_REG
+    .. code:: shell
+
+      => md $SNVS_HPSR_REG
+      => 8000AF00
+
+    In case it is read as 00000000, then read this register using jtag (in development mode only through CW tap).
+
+    .. code:: shell
+
                    +0       +4       +8       +C
       [0x01E90014] 8000AF00
 
-- Interpretation of the value:
-  -- 0xA indicates BootROM booted, with intent to secure.
-  -- 0xF = secure boot, as SSM_STATE.
+
+* Development Mode (sb_en in RCW = 1, SFP->OSPR, ITS = 0)
+
+  * Refer the SoC specific table to read the register to interpret whether the secure boot is achieved or not.
+
+  * Using JTAG (in development environment only, using CW tap):
+
+    * For secure-boot status, read SNVS Register $SNVS_HPSR_REG
+
+    .. code:: shell
+
+                   +0       +4       +8       +C
+      [0x01E90014] 8000AF00
+
+* Interpretation of the value:
+
+  * 0xA indicates BootROM booted, with intent to secure.
+  * 0xF = secure boot, as SSM_STATE.
