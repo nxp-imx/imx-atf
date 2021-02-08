@@ -18,9 +18,6 @@
 #ifdef POLICY_FUSE_PROVISION
 #include <nxp_gpio.h>
 #endif
-#if TRUSTED_BOARD_BOOT
-#include <nxp_smmu.h>
-#endif
 #include <nxp_timer.h>
 #include <plat_common.h>
 #include <plat_console.h>
@@ -148,23 +145,13 @@ void soc_early_init(void)
 	plat_ls_interconnect_enter_coherency(get_num_cluster());
 
 #if TRUSTED_BOARD_BOOT
-	uint32_t mode;
-
 	sfp_init(NXP_SFP_ADDR);
-	/*
-	 * For secure boot disable SMMU.
-	 * Later when platform security policy comes in picture,
-	 * this might get modified based on the policy
-	 */
-	if (check_boot_mode_secure(&mode) == true)
-		bypass_smmu(NXP_SMMU_ADDR);
 
 	/*
 	 * For Mbedtls currently crypto is not supported via CAAM
 	 * enable it when that support is there. In tbbr.mk
 	 * the CAAM_INTEG is set as 0.
 	 */
-
 #ifndef MBEDTLS_X509
 	/* Initialize the crypto accelerator if enabled */
 	if (is_sec_enabled() == false)
