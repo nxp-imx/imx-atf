@@ -65,29 +65,20 @@ NXP_IFC_ENDIANNESS	:=	LE
 NXP_DDR_INTLV_256B	:=	1
 
 # OCRAM MAP for BL2
-# Before BL2
 # 0x18000000 - 0x18009fff -> Used by ROM code
-# 0x1800a000 - 0x1800dfff -> CSF header for BL2
-# (The above area i.e 0x18000000 - 0x1800dfff is available
-#  for DDR PHY images scratch pad region during BL2 run time)
-# For FlexSPI boot
-# 0x1800e000 - 0x18040000 -> Reserved for BL2 binary
-# For SD boot
-# 0x1800e000 - 0x18030000 -> Reserved for BL2 binary
-# 0x18030000 - 0x18040000 -> Reserved for SD buffer
+# 0x1800a000 - 0x1801Cfff -> Reserved for BL2 binary (76 KB)
+# 0x1801D000 - 0x1801ffff -> CSF header for BL2 (12 KB)
 OCRAM_START_ADDR	:=	0x18000000
 OCRAM_SIZE		:=	0x20000
 
 # Location of BL2 on OCRAM
-BL2_BASE_ADDR	:=	$(shell echo $$(( $(OCRAM_START_ADDR) + $(NXP_ROM_RSVD) + $(CSF_HDR_SZ) )))
+BL2_BASE_ADDR	:=	$(shell echo $$(( $(OCRAM_START_ADDR) + $(NXP_ROM_RSVD))))
 # Covert to HEX to be used by create_pbl.mk
 BL2_BASE	:=	$(shell echo "0x"$$(echo "obase=16; ${BL2_BASE_ADDR}" | bc))
 
-# BL2_HDR_LOC is at  (OCRAM_ADDR + NXP_ROM_RSVD)
-# This value BL2_HDR_LOC + CSF_HDR_SZ should not overalp with BL2_BASE
-BL2_HDR_LOC_HDR	?=	$(shell echo $$(( $(OCRAM_START_ADDR) + $(NXP_ROM_RSVD) )))
+BL2_HDR_LOC_HDR	?=	$(shell echo $$(( $(OCRAM_START_ADDR) + $(OCRAM_SIZE) - $(CSF_HDR_SZ))))
 # Covert to HEX to be used by create_pbl.mk
-BL2_HDR_LOC	:=	$$(echo "obase=16; ${BL2_HDR_LOC_HDR}" | bc)
+BL2_HDR_LOC	:=	$(shell echo "0x"$$(echo "obase=16; ${BL2_HDR_LOC_HDR}" | bc))
 
 # SoC ERRATAS to be enabled
 #
