@@ -266,6 +266,10 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 			pu_domain_status &= ~(1 << domain_id);
 		}
 
+		if (domain_id == HDMIMIX) {
+			mmio_setbits_32(0x32fc0040, 0xc02);
+		}
+
 		/* handle the ADB400 sync */
 		if (pwr_domain->need_sync) {
 			/* set adb power down request */
