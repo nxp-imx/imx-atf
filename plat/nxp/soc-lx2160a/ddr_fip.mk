@@ -63,8 +63,8 @@ endif
 
 ifeq (${TRUSTED_BOARD_BOOT},1)
 ifeq (${MBEDTLS_DIR},)
-include plat/nxp/soc-lx2160/ddr_sb.mk
+include plat/nxp/soc-lx2160a/ddr_sb.mk
 else
-include plat/nxp/soc-lx2160/ddr_tbbr.mk
+include plat/nxp/soc-lx2160a/ddr_tbbr.mk
 endif
 endif
