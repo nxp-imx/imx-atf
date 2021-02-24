@@ -114,7 +114,7 @@ int populate_tzc400_reg_list(struct tzc400_reg *tzc400_reg_list,
 		tzc400_reg_list[list_idx].start_addr = dram_start_addr;
 		tzc400_reg_list[list_idx].end_addr = dram_start_addr + dram_size
 							- 1;
-		tzc400_reg_list[list_idx].sec_attr = TZC_REGION_S_NONE;
+		tzc400_reg_list[list_idx].sec_attr = TZC_REGION_S_RDWR;
 		tzc400_reg_list[list_idx].nsaid_permissions = TZC_NS_ACCESS_ID;
 		list_idx++;
 	}
