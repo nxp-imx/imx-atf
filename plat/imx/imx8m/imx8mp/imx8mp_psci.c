@@ -120,7 +120,7 @@ static uint8_t ccgr_reserved_registers[] = {
 
 
 #if 1
-static uint8_t  lpa_low_rate = 1;
+static volatile uint8_t  lpa_low_rate =  0;
 /* except a53, m7, uart4 */
 static save_register syspll1_clk_root_bus_to_24m_registers[] = {
                                                             //{1,0,0},
@@ -570,7 +570,7 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
                         NOTICE("M7 alive, ddr also in retention \n");
 
                         refcount = mmio_read_32(CPUCNT) & 0xFF;
-                        lpa_low_rate = !(mmio_read_32(CPUCNT) & 0xF0000);
+                        //lpa_low_rate = !(mmio_read_32(CPUCNT) & 0xF0000);
                         refcount = refcount - 1;
                         mmio_clrsetbits_32(CPUCNT, 0xFF, refcount);
 
