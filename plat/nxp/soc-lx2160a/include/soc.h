@@ -52,11 +52,32 @@
 #define FLEXSPI_NOR		0xf
 /* End: Macros used by soc.c: get_boot_dev */
 
-/* bits */
-/* SVR Definition (not include major and minor rev) */
+/*
+ * SVR Definition of LX2160A
+ * (not include major and minor rev)
+ */
 #define SVR_LX2160A		0x873601
 #define SVR_LX2120A		0x873621
 #define SVR_LX2080A		0x873603
+
+/*
+ * SVR Definition of SoC LX2162A
+ * (not include major and minor rev)
+ * These info is listed in Table 331. LX2162A Personality
+ * summary of LX2162ARM(Reference Manual)
+ */
+#define SVR_LX2162A		0x873609
+#define SVR_LX2162E		0x873618
+#define SVR_LX2162C		0x873608
+#define SVR_LX2162N		0x873619
+#define SVR_LX2122A		0x873629
+#define SVR_LX2122E		0x873638
+#define SVR_LX2122C		0x873628
+#define SVR_LX2122N		0x873639
+#define SVR_LX2082A		0x87360b
+#define SVR_LX2082E		0x87361a
+#define SVR_LX2082C		0x87360a
+#define SVR_LX2082N		0x87361b
 
 /* Number of cores in platform */
 /* Used by common code for array initialization */
