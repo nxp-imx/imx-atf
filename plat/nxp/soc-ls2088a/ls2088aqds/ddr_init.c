@@ -156,7 +156,11 @@ long long init_ddr(void)
 	if (!info.clk)
 		info.clk = get_ddr_freq(&sys, 1);
 
-	dram_size = dram_init(&info);
+	dram_size = dram_init(&info
+#if defined(NXP_HAS_CCN504) || defined(NXP_HAS_CCN508)
+		    , NXP_CCN_HN_F_0_ADDR
+#endif
+		    );
 
 	if (dram_size < 0)
 		ERROR("DDR init failed.\n");
@@ -168,7 +172,11 @@ long long init_ddr(void)
 	info.ddr[0] = (void *)NXP_DDR3_ADDR;
 	info.clk = get_ddr_freq(&sys, 2);
 
-	dp_dram_size = dram_init(&info);
+	dp_dram_size = dram_init(&info
+#if defined(NXP_HAS_CCN504) || defined(NXP_HAS_CCN508)
+		    , NXP_CCN_HN_F_0_ADDR
+#endif
+		    );
 	if (dp_dram_size < 0)
 		debug("DPDDR init failed.\n");
 
