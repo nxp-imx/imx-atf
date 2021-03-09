@@ -335,6 +335,7 @@ void bus_freq_dvfs(bool low_bus)
                         mmio_write_32(_reg,  (mmio_read_32(_reg) & ~0x0000003F) | (((syspll1_clk_root_bypass_registers[cmpt_i].p23 & 0x3F00) >> 8) << 0));
                         /* change mux */
                         mmio_write_32(_reg,  (mmio_read_32(_reg) & ~0x07000000) | (((syspll1_clk_root_bypass_registers[cmpt_i].p23 & 0xF0) >> 4) << 24));
+                        mmio_write_32(_reg,  (mmio_read_32(_reg) & ~0x07000000) | (((syspll1_clk_root_bypass_registers[cmpt_i].p23 & 0xF0) >> 4) << 24));
                         //NOTICE("set clk root %d result: 0x%x \n", syspll1_clk_root_bypass_registers[cmpt_i].index, (mmio_read_32(_reg)));
                 }
 #endif
