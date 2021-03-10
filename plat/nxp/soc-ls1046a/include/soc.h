@@ -126,12 +126,9 @@ static const int cci_map[] = {
 	NXP_CCI_CLUSTER0_SL_IFACE_IX,
 };
 
-//void set_base_freq_CNTFID0(void);
-void soc_init_start(void);
-void soc_init_finish(void);
+void soc_init_lowlevel(void);
 void soc_init_percpu(void);
 void _soc_set_start_addr(unsigned long addr);
-//void _set_platform_security(void);
 #endif
 
 #endif /* _SOC_H */

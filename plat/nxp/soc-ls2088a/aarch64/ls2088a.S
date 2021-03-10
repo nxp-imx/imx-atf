@@ -16,9 +16,8 @@
 #include "plat_gic.h"
 #include "nxp_timer.h"
 
-.global soc_init_start
+.global soc_init_lowlevel
 .global soc_init_percpu
-.global soc_init_finish
 .global _set_platform_security
 .global _soc_set_start_addr
 
@@ -55,13 +54,12 @@
 
 
  /*
-  * This function starts the initialization tasks of the soc, using secondary cores
-  * if they are available
+  * This function initialize the soc.
   * in:
   * out:
   * uses x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11
   */
-func soc_init_start
+func soc_init_lowlevel
      /*
       * called from C, so save the non-volatile regs
       * save these as pairs of registers to maintain the
@@ -80,10 +78,6 @@ func soc_init_start
 	 */
 	bl	release_disabled	/* 0-8 */
 
-	/* init the task flags */
-	bl	_init_task_flags	/* 0-1 */
-
-
 	/* set SCRATCHRW7 to 0x0 */
 	ldr	x0, =DCFG_SCRATCHRW7_OFFSET
 	mov	x1, xzr
@@ -98,17 +92,7 @@ func soc_init_start
 	ldp	x6,  x7,  [sp], #16
 	ldp	x4,  x5,  [sp], #16
 	ret
-endfunc soc_init_start
-
-/*
- * This function completes the initialization tasks of the soc
- * in:
- * out:
- * uses x0, x1, x2, x3, x4
- */
-func soc_init_finish
-
-endfunc soc_init_finish
+endfunc soc_init_lowlevel
 
 /*
  * void soc_init_percpu(void)

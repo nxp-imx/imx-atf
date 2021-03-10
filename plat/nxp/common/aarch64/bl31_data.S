@@ -19,10 +19,6 @@
 .global _get_global_data
 .global _set_global_data
 .global _initialize_psci
-.global _init_task_flags
-.global _set_task1_start
-.global _set_task1_done
-
 
 /* Function returns the specified data field value from the specified cpu
  * core data area
@@ -274,43 +270,6 @@ func _setCoreState
 	ret
 endfunc _setCoreState
 
-
-/* Function sets the task1 start
- * in:  w0 = value to set flag to
- * out: none
- * uses x0, x1
- */
-func _set_task1_start
-
-	ldr  x1, =SMC_TASK1_BASE
-
-	add  x1, x1, #TSK_START_OFFSET
-	str  w0, [x1]
-	dc   cvac, x1
-	dsb  sy
-	isb
-	ret
-endfunc _set_task1_start
-
-
-/* Function sets the state of the task 1 done flag
- * in:  w0 = value to set flag to
- * out: none
- * uses x0, x1
- */
-func _set_task1_done
-
-	ldr  x1, =SMC_TASK1_BASE
-
-	add  x1, x1, #TSK_DONE_OFFSET
-	str  w0, [x1]
-	dc   cvac, x1
-	dsb  sy
-	isb
-	ret
-endfunc _set_task1_done
-
-
 /* Function initializes the smc global data entries
  * Note: the constant LAST_SMC_GLBL_OFFSET must reference the last entry in the
  *	   smc global region
@@ -509,51 +468,3 @@ func _initialize_psci
 	mov   x30, x7
 	ret
 endfunc _initialize_psci
-
-
-/* Function initializes the soc init task flags
- * in:  none
- * out: none
- * uses x0, x1, [x13, x14, x15]
- */
-func _init_task_flags
-
-	/* get the base address of the first task structure */
-	ldr  x0, =SMC_TASK1_BASE
-
-	/* x0 = task1 base address */
-
-	str  wzr, [x0, #TSK_START_OFFSET]
-	str  wzr, [x0, #TSK_DONE_OFFSET]
-	str  wzr, [x0, #TSK_CORE_OFFSET]
-	dc   cvac, x0
-
-	/* move to task2 structure */
-	add  x0, x0, #SMC_TASK_OFFSET
-
-	str  wzr, [x0, #TSK_START_OFFSET]
-	str  wzr, [x0, #TSK_DONE_OFFSET]
-	str  wzr, [x0, #TSK_CORE_OFFSET]
-	dc   cvac, x0
-
-	/* move to task3 structure */
-	add  x0, x0, #SMC_TASK_OFFSET
-
-	str  wzr, [x0, #TSK_START_OFFSET]
-	str  wzr, [x0, #TSK_DONE_OFFSET]
-	str  wzr, [x0, #TSK_CORE_OFFSET]
-	dc   cvac, x0
-
-	/* move to task4 structure */
-	add  x0, x0, #SMC_TASK_OFFSET
-
-	str  wzr, [x0, #TSK_START_OFFSET]
-	str  wzr, [x0, #TSK_DONE_OFFSET]
-	str  wzr, [x0, #TSK_CORE_OFFSET]
-	dc   cvac, x0
-
-	dsb  sy
-	isb
-	ret
-endfunc _init_task_flags
-

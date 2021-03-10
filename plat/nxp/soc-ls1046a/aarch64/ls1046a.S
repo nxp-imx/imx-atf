@@ -31,9 +31,8 @@
 #define ERROR_DDR_WAKE		-2
 #define ERROR_NO_QUIESCE	-3
 
-.global soc_init_start
+.global soc_init_lowlevel
 .global soc_init_percpu
-.global soc_init_finish
 .global _soc_core_release
 .global _soc_core_restart
 .global _soc_ck_disabled
@@ -62,13 +61,12 @@
 .global _soc_sys_exit_pwrdn
 
 
- /* this function starts the initialization tasks of the soc
-  * using secondary cores, if they are available.
+ /* This function initialize the soc
   * in:
   * out:
   * uses x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11
   */
-func soc_init_start
+func soc_init_lowlevel
      /* called from C, so save the non-volatile regs
       * save these as pairs of registers to maintain the
       *  required 16-byte alignment on the stack */
@@ -79,11 +77,7 @@ func soc_init_start
     stp  x12, x13, [sp, #-16]!
     stp  x18, x30, [sp, #-16]!
 
-     /* init the task flags. 0-1  */
-    bl  _init_task_flags
-
-1:
-     /* restore the aarch32/64 non-volatile registers */
+    /* restore the aarch32/64 non-volatile registers */
     ldp  x18, x30, [sp], #16
     ldp  x12, x13, [sp], #16
     ldp  x10, x11, [sp], #16
@@ -91,21 +85,7 @@ func soc_init_start
     ldp  x6,  x7,  [sp], #16
     ldp  x4,  x5,  [sp], #16
     ret
-endfunc soc_init_start
-
-/*---------------------------------------------------------------------------*/
-
- /* this function completes the initialization tasks of the soc
-  * in:
-  * out:
-  * uses x0, x1, x2, x3, x4
-  */
-func soc_init_finish
-    stp  x4,  x30,  [sp, #-16]!
-
-    ldp   x4,  x30,  [sp], #16
-    ret
-endfunc soc_init_finish
+endfunc soc_init_lowlevel
 
 /*---------------------------------------------------------------------------*/
 

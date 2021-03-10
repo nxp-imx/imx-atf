@@ -428,7 +428,7 @@ void soc_platform_setup(void)
 void soc_init(void)
 {
 	 /* low-level init of the soc */
-	soc_init_start();
+	soc_init_lowlevel();
 	soc_init_percpu();
 	_init_global_data();
 	_initialize_psci();
@@ -448,9 +448,6 @@ void soc_init(void)
 
 	/* Init CSU to enable non-secure access to peripherals */
 	enable_layerscape_ns_access(ns_dev, ARRAY_SIZE(ns_dev), NXP_CSU_ADDR);
-
-	/* make sure any parallel init tasks are finished */
-	soc_init_finish();
 
 	/* Initialize the crypto accelerator if enabled */
 	if (is_sec_enabled() == false)

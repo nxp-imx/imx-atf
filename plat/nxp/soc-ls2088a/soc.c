@@ -484,7 +484,7 @@ void soc_init(void)
 	uint8_t num_clusters, cores_per_cluster;
 
 	/* low-level init of the soc */
-	soc_init_start();
+	soc_init_lowlevel();
 	soc_init_percpu();
 	_init_global_data();
 	_initialize_psci();
@@ -510,9 +510,6 @@ void soc_init(void)
 
 	/* Set platform security policies */
 	_set_platform_security();
-
-	 /* make sure any parallel init tasks are finished */
-	soc_init_finish();
 
 	/* Init SEC Engine which will be used by SiP */
 	if (is_sec_enabled() == false)
