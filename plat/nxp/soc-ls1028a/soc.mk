@@ -39,24 +39,6 @@ $(eval $(call SET_FLAG,IMG_LOADR_NEEDED,BL2))
 $(eval $(call SET_FLAG,PSCI_NEEDED,BL31))
 $(eval $(call SET_FLAG,SIPSVC_NEEDED,BL31))
 
-# Selecting boot source
-ifeq (${BOOT_MODE}, flexspi_nor)
-$(eval $(call SET_FLAG,XSPI_NEEDED,BL2))
-$(eval $(call add_define,FLEXSPI_NOR_BOOT))
-else
-ifeq (${BOOT_MODE}, sd)
-$(eval $(call SET_FLAG,SD_MMC_NEEDED,BL2))
-$(eval $(call add_define,SD_BOOT))
-else
-ifeq (${BOOT_MODE}, emmc)
-$(eval $(call SET_FLAG,SD_MMC_NEEDED,BL2))
-$(eval $(call add_define,EMMC_BOOT))
-else
-$(error Un-supported Boot Mode = ${BOOT_MODE})
-endif
-endif
-endif
-
 PLAT_INCLUDES		+=	-I${PLAT_COMMON_PATH}/include/default\
 				-I${BOARD_PATH}\
 				-I${PLAT_COMMON_PATH}/include/default/ch_${CHASSIS}\
