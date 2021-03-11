@@ -19,6 +19,10 @@ NOR_FLASH_SZ	:=	0x20000000
 
 BL2_SOURCES	+=	${BOARD_PATH}/ddr_init.c
 
+SUPPORTED_BOOT_MODE	:=	qspi	\
+				sd	\
+				nor
+
 # Adding platform board build info
 include plat/nxp/common/plat_common_def.mk
 
