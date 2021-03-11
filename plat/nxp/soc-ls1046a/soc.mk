@@ -64,24 +64,6 @@ $(eval $(call SET_FLAG,IMG_LOADR_NEEDED,BL2))
 $(eval $(call SET_FLAG,PSCI_NEEDED,BL31))
 $(eval $(call SET_FLAG,SIPSVC_NEEDED,BL31))
 
- # Selecting Boot Source for the TFA images.
-ifeq (${BOOT_MODE}, qspi)
-$(eval $(call SET_FLAG,QSPI_NEEDED,BL2))
-$(eval $(call add_define,QSPI_BOOT))
-else
-ifeq (${BOOT_MODE}, sd)
-$(eval $(call SET_FLAG,SD_MMC_NEEDED,BL2))
-$(eval $(call add_define,SD_BOOT))
-else
-ifeq (${BOOT_MODE}, emmc)
-$(eval $(call SET_FLAG,SD_MMC_NEEDED,BL2))
-$(eval $(call add_define,EMMC_BOOT))
-else
-$(error Un-supported Boot Mode = ${BOOT_MODE})
-endif
-endif
-endif
-
 # Source File Addition
 # #####################
 
