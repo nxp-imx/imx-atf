@@ -245,11 +245,9 @@ void bl31_platform_setup(void)
 	mmio_setbits_32(IMX_SRC_BASE + 0xc,  SRC_SCR_M4_ENABLE_MASK);
 	mmio_clrbits_32(IMX_SRC_BASE + 0xc, SRC_SCR_M4C_NON_SCLR_RST_MASK);
 
-           /* CPUCNT bits [15:0] used as flags for LPA, clearing it at boot */
+        /* CPUCNT bits [15:0] used as flags for LPA, clearing it at boot */
         value = mmio_read_32(CPUCNT);
-        mmio_write_32(CPUCNT, (value & ~0xFFFF) | 0x1);
-        //while(1) This is blocking but CPUCNT overridden in case of PWRON RST (not on sw reboot)
-        //semaphore2_init(60);
+        mmio_write_32(CPUCNT, (value & ~0xFFFF) | 0x01);
         sema4_init();
 }
 
