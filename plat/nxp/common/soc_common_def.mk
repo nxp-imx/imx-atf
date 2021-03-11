@@ -98,3 +98,8 @@ ifeq (${SEPARATE_RW_AND_NOLOAD}, 1)
 $(eval $(call add_define,SEPARATE_RW_AND_NOLOAD))
 BL2_LINKERFILE	:=	${PLAT_SOC_PATH}/bl2_el3_${SOC}.ld.S
 endif
+
+ifeq (${OCRAM_ECC_EN},yes)
+$(eval $(call add_define,CONFIG_OCRAM_ECC_EN))
+include ${PLAT_COMMON_PATH}/ocram/ocram.mk
+endif

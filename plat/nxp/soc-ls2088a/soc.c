@@ -37,6 +37,9 @@
 #if TRUSTED_BOARD_BOOT
 #include <nxp_smmu.h>
 #endif
+#ifdef CONFIG_OCRAM_ECC_EN
+#include <ocram.h>
+#endif
 
 static struct soc_type soc_list[] =  {
 	SOC_ENTRY(LS2080A, LS2080A, 4, 2),
@@ -230,9 +233,11 @@ void soc_preload_setup(void)
 void soc_early_init(void)
 {
 	enum  boot_device dev = get_boot_dev();
-
 	dram_regions_info_t *dram_regions_info = get_dram_regions_info();
 
+#ifdef CONFIG_OCRAM_ECC_EN
+	ocram_init(NXP_OCRAM_ADDR, NXP_OCRAM_SIZE);
+#endif
 	dcfg_init(&dcfg_init_data);
 #ifdef POLICY_FUSE_PROVISION
 	gpio_init(&gpio_init_data);
