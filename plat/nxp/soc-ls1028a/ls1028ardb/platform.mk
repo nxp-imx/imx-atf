@@ -22,6 +22,10 @@ XSPI_FLASH_SZ	:=	0x10000000
 BL2_SOURCES	+=	${BOARD_PATH}/ddr_init.c \
 			${BOARD_PATH}/platform.c
 
+SUPPORTED_BOOT_MODE	:=	flexspi_nor	\
+				sd		\
+				emmc
+
 # Add platform board build info
 include plat/nxp/common/plat_common_def.mk
 
