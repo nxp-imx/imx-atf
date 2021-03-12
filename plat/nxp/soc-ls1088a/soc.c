@@ -32,6 +32,10 @@
 #include <sfp.h>
 #endif
 #include <soc.h>
+#ifdef CONFIG_OCRAM_ECC_EN
+#include <ocram.h>
+#endif
+
 
 static unsigned char _power_domain_tree_desc[NUMBER_OF_CLUSTERS + 2];
 static struct soc_type soc_list[] =  {
@@ -222,6 +226,9 @@ void soc_early_init(void)
 	enum boot_device dev;
 	dram_regions_info_t *dram_regions_info = get_dram_regions_info();
 
+#ifdef CONFIG_OCRAM_ECC_EN
+	ocram_init(NXP_OCRAM_ADDR, NXP_OCRAM_SIZE);
+#endif
 	dcfg_init(&dcfg_init_data);
 #if LOG_LEVEL > 0
 	/* Initialize the console to provide early debug support */

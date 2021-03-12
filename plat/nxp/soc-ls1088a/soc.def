@@ -74,3 +74,6 @@ BL2_BASE		:=	0x1800a000
 # In IMAGE_BL2, compile time flag for handling Cache coherency
 # with CAAM for BL2 running from OCRAM
 SEC_MEM_NON_COHERENT	:=	yes
+
+# OCRAM ECC Enabled
+OCRAM_ECC_EN		:=	yes
