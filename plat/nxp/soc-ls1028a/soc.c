@@ -35,6 +35,9 @@
 #include <plat_gic.h>
 #include <i2c.h>
 #include <caam.h>
+#ifdef CONFIG_OCRAM_ECC_EN
+#include <ocram.h>
+#endif
 
 static dcfg_init_info_t dcfg_init_data = {
 	.g_nxp_dcfg_addr = NXP_DCFG_ADDR,
@@ -88,6 +91,9 @@ void soc_early_init(void)
 {
 	uint8_t num_clusters, cores_per_cluster;
 
+#ifdef CONFIG_OCRAM_ECC_EN
+	ocram_init(NXP_OCRAM_ADDR, NXP_OCRAM_SIZE);
+#endif
 	dcfg_init(&dcfg_init_data);
 	enable_timer_base_to_cluster(NXP_PMU_ADDR);
 	enable_core_tb(NXP_PMU_ADDR);
