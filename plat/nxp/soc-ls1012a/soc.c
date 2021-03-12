@@ -27,6 +27,9 @@
 #include <sfp.h>
 #endif
 #include <soc.h>
+#ifdef CONFIG_OCRAM_ECC_EN
+#include <ocram.h>
+#endif
 
 const unsigned char _power_domain_tree_desc[] = {1, 1, 1};
 
@@ -116,6 +119,9 @@ void soc_early_init(void)
 {
 	dram_regions_info_t *dram_regions_info = get_dram_regions_info();
 
+#ifdef CONFIG_OCRAM_ECC_EN
+	ocram_init(NXP_OCRAM_ADDR, NXP_OCRAM_SIZE);
+#endif
 	dcfg_init(&dcfg_init_data);
 #ifdef POLICY_FUSE_PROVISION
 	gpio_init(&gpio_init_data);
