@@ -37,7 +37,8 @@ BL2_SOURCES	+=	${BOARD_PATH}/ddr_init.c\
 			${BOARD_PATH}/platform.c
 
 SUPPORTED_BOOT_MODE	:=	flexspi_nor	\
-				sd
+				sd		\
+				emmc
 
 # Adding platform board build info
 include plat/nxp/common/plat_common_def.mk
