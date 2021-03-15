@@ -29,6 +29,9 @@ WARM_BOOT	:=	no
 BL2_SOURCES	+=	${BOARD_PATH}/ddr_init.c\
 			${BOARD_PATH}/platform.c
 
+SUPPORTED_BOOT_MODE	:=	qspi	\
+				sd
+
 # Adding platform board build info
 include plat/nxp/common/plat_common_def.mk
 
