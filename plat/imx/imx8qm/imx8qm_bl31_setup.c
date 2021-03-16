@@ -202,6 +202,14 @@ void mx8_partition_resources(void)
 
 	err = sc_rm_set_parent(ipc_handle, os_part, secure_part);
 
+	err = sc_rm_set_resource_movable(ipc_handle, SC_R_ALL, SC_R_ALL, SC_TRUE);
+	if (err)
+		ERROR("sc_rm_set_resource_movable: setting all rsrc movable failed\n");
+
+	err = sc_rm_set_pad_movable(ipc_handle, SC_P_ALL, SC_P_ALL, SC_TRUE);
+	if (err)
+		ERROR("sc_rm_set_pad_movable: setting all pad movable failed\n");
+
 	/* set secure resources to NOT-movable */
 	for (i = 0; i < ARRAY_SIZE(secure_rsrcs); i++) {
 		err = sc_rm_set_resource_movable(ipc_handle, secure_rsrcs[i],
