@@ -220,6 +220,17 @@ void __init gicv3_distif_init(void)
 }
 
 /*******************************************************************************
+ * This function clears interrupts for current cluster at GIC distributor level
+ ******************************************************************************/
+void gicv3_distif_clear(void)
+{
+	assert(gicv3_driver_data);
+	assert(gicv3_driver_data->gicd_base);
+
+	gicv3_clear_spi_cluster(gicv3_driver_data->gicd_base);
+}
+
+/*******************************************************************************
  * This function initialises the GIC Redistributor interface of the calling CPU
  * (identified by the 'proc_num' parameter) based upon the data provided by the
  * platform while initialising the driver.
