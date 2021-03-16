@@ -55,10 +55,21 @@
 /*
  * SVR Definition of LX2160A
  * (not include major and minor rev)
+ * These info is listed in Table 344. LX2160A Personality
+ * summary of LX2160ARM(Reference Manual)
  */
 #define SVR_LX2160A		0x873601
+#define SVR_LX2160E		0x873610
+#define SVR_LX2160C		0x873600
+#define SVR_LX2160N		0x873611
 #define SVR_LX2120A		0x873621
+#define SVR_LX2120E		0x873630
+#define SVR_LX2120C		0x873620
+#define SVR_LX2120N		0x873631
 #define SVR_LX2080A		0x873603
+#define SVR_LX2080E		0x873612
+#define SVR_LX2080C		0x873602
+#define SVR_LX2080N		0x873613
 
 /*
  * SVR Definition of SoC LX2162A
