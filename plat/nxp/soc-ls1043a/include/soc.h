@@ -25,11 +25,20 @@
 /* DRAM0 Size defined in platform_def.h */
 #define	NXP_DRAM0_SIZE		PLAT_DEF_DRAM0_SIZE
 
-/* SVR Definition (not include major and minor rev) */
-#define SVR_LS1043A		0x879200
-#define SVR_LS1043A_P23         0x879202
-#define SVR_LS1023A             0x879208
-#define SVR_LS1023A_P23         0x87920A
+/*
+ * P23: 23 x 23 package
+ * A: without security
+ * AE: with security
+ * SVR Definition (not include major and minor rev)
+ */
+#define SVR_LS1023A		0x879209
+#define SVR_LS1023AE		0x879208
+#define SVR_LS1023A_P23		0x87920B
+#define SVR_LS1023AE_P23	0x87920A
+#define SVR_LS1043A		0x879201
+#define SVR_LS1043AE		0x879200
+#define SVR_LS1043A_P23		0x879203
+#define SVR_LS1043AE_P23	0x879202
 
 /* Number of cores in platform */
 #define PLATFORM_CORE_COUNT	4
