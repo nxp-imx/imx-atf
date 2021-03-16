@@ -74,6 +74,11 @@
 /* bitfield masks */
 #define POWMGTDCR_OVRD_EN       0x80000000
 
-#endif
+#endif /* NXP_RCPM_ADDR */
+
+#define DCFG_SBEESR2_ADDR		0x20140534
+#define DCFG_MBEESR2_ADDR		0x20140544
+/* SBEESR and MBEESR bit mask */
+#define OCRAM_EESR_MASK			0x00000060
 
 #endif	/*	SOC_DEFAULT_HELPER_MACROS_H	*/
