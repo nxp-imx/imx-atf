@@ -12,11 +12,21 @@
 #include "soc_default_base_addr.h"
 #include "soc_default_helper_macros.h"
 
-/* Required platform porting definitions */
-#define SVR_LS1048A		0x870320
-#define SVR_LS1084A		0x870302
-#define SVR_LS1088A		0x870300
-#define SVR_LS1044A		0x870322
+/*
+ * SVR Definition of LS1088A
+ * A: without security
+ * AE: with security
+ * (not include major and minor rev)
+ */
+#define SVR_LS1044A		0x870323
+#define SVR_LS1044AE		0x870322
+#define SVR_LS1048A		0x870321
+#define SVR_LS1048AE		0x870320
+#define SVR_LS1084A		0x870303
+#define SVR_LS1084AE		0x870302
+#define SVR_LS1088A		0x870301
+#define SVR_LS1088AE		0x870300
+
 #define SVR_WO_E		0xFFFFFE
 
 /* Number of cores in platform */

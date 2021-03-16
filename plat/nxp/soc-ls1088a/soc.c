@@ -39,10 +39,14 @@
 
 static unsigned char _power_domain_tree_desc[NUMBER_OF_CLUSTERS + 2];
 static struct soc_type soc_list[] =  {
-	SOC_ENTRY(LS1048A, LS1048A, 1, 4),
-	SOC_ENTRY(LS1084A, LS1084A, 2, 4),
-	SOC_ENTRY(LS1088A, LS1088A, 2, 4),
 	SOC_ENTRY(LS1044A, LS1044A, 1, 4),
+	SOC_ENTRY(LS1044AE, LS1044AE, 1, 4),
+	SOC_ENTRY(LS1048A, LS1048A, 1, 4),
+	SOC_ENTRY(LS1048AE, LS1048AE, 1, 4),
+	SOC_ENTRY(LS1084A, LS1084A, 2, 4),
+	SOC_ENTRY(LS1084AE, LS1084AE, 2, 4),
+	SOC_ENTRY(LS1088A, LS1088A, 2, 4),
+	SOC_ENTRY(LS1088AE, LS1088AE, 2, 4),
 };
 
 static dcfg_init_info_t dcfg_init_data = {
