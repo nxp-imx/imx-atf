@@ -234,6 +234,7 @@ void gicr_set_icfgr(uintptr_t base, unsigned int id, unsigned int cfg);
  ******************************************************************************/
 void gicv3_spis_config_defaults(uintptr_t gicd_base);
 void gicv3_ppi_sgi_config_defaults(uintptr_t gicr_base);
+void gicv3_clear_spi_cluster(uintptr_t gicd_base);
 unsigned int gicv3_secure_ppi_sgi_config_props(uintptr_t gicr_base,
 		const interrupt_prop_t *interrupt_props,
 		unsigned int interrupt_props_num);
