@@ -12,10 +12,20 @@
 #include <soc_default_base_addr.h>
 #include <soc_default_helper_macros.h>
 
-#define SVR_LS1017A		0x870B24
-#define SVR_LS1018A		0x870B20
-#define SVR_LS1027A		0x870B04
-#define SVR_LS1028A		0x870B00
+/*
+ * SVR Definition of LS1028A
+ * (not include major and minor rev)
+ * These info is listed in Table B-6. DCFG differences
+ * between LS1028A and LS1027A of LS1028ARM(Reference Manual)
+ */
+#define SVR_LS1017AN		0x870B25
+#define SVR_LS1017AE		0x870B24
+#define SVR_LS1018AN		0x870B21
+#define SVR_LS1018AE		0x870B20
+#define SVR_LS1027AN		0x870B05
+#define SVR_LS1027AE		0x870B04
+#define SVR_LS1028AN		0x870B01
+#define SVR_LS1028AE		0x870B00
 
 /* Number of cores in platform */
 #define PLATFORM_CORE_COUNT		 2
