@@ -32,10 +32,15 @@
 #define PORSR1_RCW_SHIFT	23
 /* End: Macros used by soc.c: get_boot_dev */
 
-/* bits */
-/* SVR Definition (not include major and minor rev) */
-#define SVR_LS1046A		0x870700
-#define SVR_LS1026A		0x87070a
+/*
+ * SVR Definition (not include major and minor rev)
+ * A: without security
+ * AE: with security
+ */
+#define SVR_LS1026A		0x870709
+#define SVR_LS1026AE		0x870708
+#define SVR_LS1046A		0x870701
+#define SVR_LS1046AE		0x870700
 
 /* Number of cores in platform */
 /* Used by common code for array initialization */

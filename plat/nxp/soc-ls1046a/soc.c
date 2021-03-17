@@ -94,7 +94,9 @@ unsigned int plat_get_syscnt_freq2(void)
 
 static struct soc_type soc_list[] =  {
 	SOC_ENTRY(LS1046A, LS1046A, 1, 4),
+	SOC_ENTRY(LS1046AE, LS1046AE, 1, 4),
 	SOC_ENTRY(LS1026A, LS1026A, 1, 2),
+	SOC_ENTRY(LS1026AE, LS1026AE, 1, 2),
 };
 
 #ifdef POLICY_FUSE_PROVISION
