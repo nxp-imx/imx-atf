@@ -31,7 +31,13 @@
 
 #ifdef PLAT_imx8qm
 static const int ap_cluster_index[PLATFORM_CLUSTER_COUNT] = {
+#if (defined COCKPIT_A53)
+	SC_R_A53,
+#elif (defined COCKPIT_A72)
+	SC_R_A72,
+#else
 	SC_R_A53, SC_R_A72,
+#endif
 };
 #endif
 

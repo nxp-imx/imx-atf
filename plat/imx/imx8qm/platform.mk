@@ -63,3 +63,11 @@ $(eval $(call add_define,BL32_SIZE))
 ifeq (${SPD},trusty)
 	BL31_CFLAGS    +=      -DPLAT_XLAT_TABLES_DYNAMIC=1
 endif
+
+# pass macros that allow building ATF in 2 flavors for Cockpit
+ifdef COCKPIT_A53
+        $(eval $(call add_define,COCKPIT_A53))
+endif
+ifdef COCKPIT_A72
+        $(eval $(call add_define,COCKPIT_A72))
+endif

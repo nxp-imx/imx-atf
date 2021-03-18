@@ -45,7 +45,22 @@ extern unsigned long console_list;
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
 
+#if (defined COCKPIT_A72)
+#define DEBUG_UART SC_R_UART_2
+#define DEBUG_UART_MUX_MOD      2   /* see imx8qm/iomuxd.h */
+#define DEBUG_UART_RX   SC_P_UART0_RTS_B
+#define DEBUG_UART_TX   SC_P_UART0_CTS_B
+#define NS_OS_MU	SC_R_MU_2A
+#else
+#define DEBUG_UART SC_R_UART_0
+#define DEBUG_UART_MUX_MOD      0   /* see imx8qm/iomuxd.h */
+#define DEBUG_UART_RX   SC_P_UART0_RX
+#define DEBUG_UART_TX   SC_P_UART0_TX
+#define NS_OS_MU	SC_R_MU_1A
+#endif
+
 #define UART_PAD_CTRL	(PADRING_IFMUX_EN_MASK | PADRING_GP_EN_MASK | \
+			(DEBUG_UART_MUX_MOD << PADRING_IFMUX_SHIFT) | \
 			(SC_PAD_CONFIG_OUT_IN << PADRING_CONFIG_SHIFT) | \
 			(SC_PAD_ISO_OFF << PADRING_LPCONFIG_SHIFT) | \
 			(SC_PAD_28FDSOI_DSE_DV_LOW << PADRING_DSE_SHIFT) | \
@@ -68,8 +83,8 @@ static entry_point_info_t bl33_image_ep_info;
 #endif
 
 static const int imx8qm_cci_map[] = {
-	CLUSTER0_CCI_SLVAE_IFACE,
-	CLUSTER1_CCI_SLVAE_IFACE
+	CLUSTER0_CCI_SLAVE_IFACE,
+	CLUSTER1_CCI_SLAVE_IFACE
 };
 
 static const mmap_region_t imx_mmap[] = {
@@ -102,7 +117,7 @@ static void lpuart32_serial_setbrg(unsigned int base, int baudrate)
 	if (baudrate == 0)
 		panic();
 
-	sc_pm_get_clock_rate(ipc_handle, IMX_RES_UART, 2, &rate);
+	sc_pm_get_clock_rate(ipc_handle, DEBUG_UART, 2, &rate);
 
 	baud_diff = baudrate;
 	osr = 0;
@@ -233,9 +248,12 @@ void mx8_partition_resources(void)
 				ERROR("Memreg get info failed, %u\n", mr);
 			} else {
 				NOTICE("Memreg %u 0x%" PRIx64 " -- 0x%" PRIx64 "\n", mr, start, end);
-
-				if (BL31_BASE >= start && (BL31_LIMIT - 1) <= end) {
+				/* keep MR that overlaps or include ATF address range */
+				if ( (BL31_BASE <= start && (BL31_LIMIT - 1) >= start)
+					|| (BL31_BASE <= end && (BL31_LIMIT - 1) >= end)
+					|| (BL31_BASE >= start && (BL31_LIMIT - 1) <= end) ) {
 					mr_record = mr; /* Record the mr for ATF running */
+					NOTICE("Memreg %u 0x%" PRIx64 " -- 0x%" PRIx64 " reserved to ATF\n", mr_record, start, end);
 				}
 #if defined(SPD_opteed) || defined(SPD_trusty)
 				else if (BL32_BASE >= start && (BL32_LIMIT -1) <= end) {
@@ -442,15 +460,15 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		panic();
 
 #if DEBUG_CONSOLE_A53
-	sc_pm_set_resource_power_mode(ipc_handle, IMX_RES_UART,
+	sc_pm_set_resource_power_mode(ipc_handle, DEBUG_UART,
 				      SC_PM_PW_MODE_ON);
 	sc_pm_clock_rate_t rate = 80000000;
-	sc_pm_set_clock_rate(ipc_handle, IMX_RES_UART, 2, &rate);
-	sc_pm_clock_enable(ipc_handle, IMX_RES_UART, 2, true, false);
+	sc_pm_set_clock_rate(ipc_handle, DEBUG_UART, 2, &rate);
+	sc_pm_clock_enable(ipc_handle, DEBUG_UART, 2, true, false);
 
 	/* configure UART pads */
-	sc_pad_set(ipc_handle, SC_P_UART0_RX, UART_PAD_CTRL);
-	sc_pad_set(ipc_handle, SC_P_UART0_TX, UART_PAD_CTRL);
+	sc_pad_set(ipc_handle, DEBUG_UART_RX, UART_PAD_CTRL);
+	sc_pad_set(ipc_handle, DEBUG_UART_TX, UART_PAD_CTRL);
 
 	lpuart32_serial_init(IMX_BOOT_UART_BASE);
 #endif
@@ -460,12 +478,12 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		     IMX_CONSOLE_BAUDRATE, &console);
 #endif
 
-	/* turn on MU1 for non-secure OS/Hypervisor */
-	sc_pm_set_resource_power_mode(ipc_handle, SC_R_MU_1A, SC_PM_PW_MODE_ON);
+	/* Turn on MU for non-secure OS/Hypervisor */
+	sc_pm_set_resource_power_mode(ipc_handle, NS_OS_MU, SC_PM_PW_MODE_ON);
 
-	/* Turn on GPT_0's power & clock for non-secure OS/Hypervisor */
-	sc_pm_set_resource_power_mode(ipc_handle, SC_R_GPT_0, SC_PM_PW_MODE_ON);
-	sc_pm_clock_enable(ipc_handle, SC_R_GPT_0, SC_PM_CLK_PER, true, 0);
+	/* Turn on GPT's power & clock for non-secure OS/Hypervisor */
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_GPT, SC_PM_PW_MODE_ON);
+	sc_pm_clock_enable(ipc_handle, SC_R_GPT, SC_PM_CLK_PER, true, 0);
 	mmio_write_32(IMX_GPT_LPCG_BASE, mmio_read_32(IMX_GPT_LPCG_BASE) | (1 << 25));
 
 	/*
@@ -506,7 +524,11 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 
 	/* init the first cluster's cci slave interface */
 	cci_init(PLAT_CCI_BASE, imx8qm_cci_map, PLATFORM_CLUSTER_COUNT);
+#if (!defined COCKPIT_A53) && (!defined COCKPIT_A72)
 	cci_enable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(read_mpidr_el1()));
+#else
+	NOTICE("bl31_early_platform_setup: skipping cci_enable_snoop_dvm_reqs()\n");
+#endif
 }
 
 void bl31_plat_arch_setup(void)
