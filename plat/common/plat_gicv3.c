@@ -6,6 +6,9 @@
 
 #include <assert.h>
 #include <stdbool.h>
+#if ((defined COCKPIT_A72) || (defined COCKPIT_A53))
+#include <plat_imx8.h>
+#endif
 
 #include <arch_helpers.h>
 #include <common/bl_common.h>
@@ -117,7 +120,11 @@ uint32_t plat_ic_acknowledge_interrupt(void)
 uint32_t plat_ic_get_interrupt_type(uint32_t id)
 {
 	assert(IS_IN_EL3());
+#if ((defined COCKPIT_A72) || (defined COCKPIT_A53))
+	return gicv3_get_interrupt_type(id, plat_get_core_pos());
+#else
 	return gicv3_get_interrupt_type(id, plat_my_core_pos());
+#endif
 }
 
 /*
