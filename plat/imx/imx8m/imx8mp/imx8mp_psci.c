@@ -136,31 +136,6 @@ void bus_freq_dvfs(bool low_bus)
 
                 NOTICE("bus_freq_dvfs low bus  \n");
 
-                /* GPU Power Domain on/off workaround for GPU not present issue  
-                 * need this ?*/
-                mmio_setbits_32(0x30390038, 1);
-                mmio_setbits_32(0x3039003c, 1);
-                mmio_setbits_32(0x30390040, 1);
-		/* set the PGC bit */
-		mmio_setbits_32(IMX_GPC_BASE + GPU3D_PGC, 0x1);
-		/* power down the domain */
-		mmio_setbits_32(IMX_GPC_BASE + PU_PGC_DN_TRG, GPU3D_PWR_REQ);
-		/* wait for power request done */
-		while (mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG) & GPU3D_PWR_REQ);
-		/* set the PGC bit */
-		mmio_setbits_32(IMX_GPC_BASE + GPU2D_PGC, 0x1);
-		/* power down the domain */
-		mmio_setbits_32(IMX_GPC_BASE + PU_PGC_DN_TRG, GPU2D_PWR_REQ);
-		/* wait for power request done */
-		while (mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG) & GPU2D_PWR_REQ);
-		/* set the PGC bit */
-		mmio_setbits_32(IMX_GPC_BASE + GPUMIX_PGC, 0x1);
-		/* power down the domain */
-		mmio_setbits_32(IMX_GPC_BASE + PU_PGC_DN_TRG, GPUMIX_PWR_REQ);
-		/* wait for power request done */
-		while (mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG) & GPUMIX_PWR_REQ);
-
-
                 syspll2_save    = mmio_read_32(0x30360104);
                 syspll3_save    = mmio_read_32(0x30360114);
                 syspll3div_save = mmio_read_32(0x30360118);
@@ -304,14 +279,6 @@ void bus_freq_dvfs(bool low_bus)
                         mmio_write_32(_reg,  (mmio_read_32(_reg) & ~0x00070000) | (((syspll1_clk_root_bypass_registers[cmpt_i].value & 0x07) >> 0) << 16));
                         mmio_write_32(_reg,  (mmio_read_32(_reg) & ~0x0000003F) | (((syspll1_clk_root_bypass_registers[cmpt_i].value & 0x3F00) >> 8) << 0));
                 }
-
-                for(volatile int i=0;i<50000;i++){} //200us
-
-                /* GPU Power Domain on/off workaround for GPU not present issue  
-                 * need this ?*/
-                mmio_clrbits_32(0x30390038, 1);
-                mmio_clrbits_32(0x3039003c, 1);
-                mmio_clrbits_32(0x30390040, 1);
 
                 /* enable ddr clock */
                 mmio_setbits_32(0x3038A000, (0x1 << 28));
