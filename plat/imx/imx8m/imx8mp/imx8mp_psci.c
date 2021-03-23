@@ -41,6 +41,7 @@ extern struct dram_info dram_info;
 
 
 static uint32_t syspll2_save, syspll3_save, syspll3div_save;
+static uint8_t  apll1enabled, apll2enabled;
 
 static save_ccgr_register ccgr_disabled_registers[103];
 static uint8_t ccgr_reserved_registers[] = {
@@ -52,8 +53,6 @@ static uint8_t ccgr_reserved_registers[] = {
                                           97, /* PLL  */
                                           101,/* AUDIO */
 };
-
-static volatile uint8_t  lpa_low_rate = 0;
 
 static save_register syspll1_clk_root_bus_to_24m_registers[] = {
                                                             {6, 0x000,0},   /*AUDIO_AXI*/  /*done by M7 side, but changed by Kernel  */
@@ -198,6 +197,19 @@ void bus_freq_dvfs(bool low_bus)
                 mmio_setbits_32(0x30360084, (0x1 << 4));
                 mmio_clrbits_32(0x30360084, (0x1 << 9));
 
+                apll1enabled =  !!(mmio_read_32(0x30360000) & 0x80000000);
+                apll2enabled =  !!(mmio_read_32(0x30360014) & 0x80000000);
+
+                if(apll1enabled){
+                        mmio_setbits_32(0x30360000, (0x1 << 4));
+                        mmio_clrbits_32(0x30360000, (0x1 << 9));
+                }
+                if(apll2enabled){
+                        mmio_setbits_32(0x30360014, (0x1 << 4));
+                        mmio_clrbits_32(0x30360014, (0x1 << 9));
+                }
+
+
                 NOTICE("disable sys pll 2  \n");
                 /* disable the SYSTEM PLL2, bypass first, then disable */
                 mmio_setbits_32(0x30360104, (0x1 << 4));
@@ -243,6 +255,19 @@ void bus_freq_dvfs(bool low_bus)
                         NOTICE("enabled SYSPLL3 \n");
                 }
 
+                if(apll1enabled){
+                        mmio_setbits_32(0x30360000, (0x1 << 9));
+                        while(!(mmio_read_32(0x30360000) & ( (uint32_t) 1 << 31)));
+                        mmio_clrbits_32(0x30360000, (0x1 << 4));
+                }
+
+                if(apll2enabled){
+                        mmio_setbits_32(0x30360014, (0x1 << 9));
+                        while(!(mmio_read_32(0x30360014) & ( (uint32_t) 1 << 31)));
+                        mmio_clrbits_32(0x30360014, (0x1 << 4));
+                }
+
+
                 /* enable the ARM PLL, enable first, then unbypass */
                 mmio_setbits_32(0x30360084, (0x1 << 9));
                 while(!(mmio_read_32(0x30360084) & (0x80000000)));
@@ -283,6 +308,9 @@ void bus_freq_dvfs(bool low_bus)
                 /* enable ddr clock */
                 mmio_setbits_32(0x3038A000, (0x1 << 28));
                 mmio_setbits_32(0x3038A080, (0x1 << 28));
+
+
+
         }
 }
 
@@ -315,7 +343,6 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 			imx_noc_wrapper_pre_suspend(core_id);
 		} else {
                         uint32_t refcount;
-                        uint8_t lpa_p2_lpddr4freq;
 			/*
 			 * when A53 don't enter DSM, only need to
 			 * set the system wakeup option.
@@ -325,8 +352,7 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
                         refcount = refcount - 1;
                         mmio_clrsetbits_32(CPUCNT, 0xFF, refcount);
 			imx_set_sys_lpm(core_id, true);
-                        lpa_p2_lpddr4freq = lpa_low_rate ? 2: 1;
-                        lpddr4_swffc(&dram_info, dev_fsp, lpa_p2_lpddr4freq);
+                        lpddr4_swffc(&dram_info, dev_fsp, 1);
                         dev_fsp = (~dev_fsp) & 0x1;
 			dram_enter_retention();
                         mmio_write_32(0x30384000 + (16 * 23), 0x2); /* 12C1 */
@@ -352,10 +378,8 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 			imx_set_sys_lpm(core_id, false);
 		} else {
                         uint32_t refcount;
-                        uint8_t lpa_p2_lpddr4freq;
                         bus_freq_dvfs(false);
-                        lpa_p2_lpddr4freq = lpa_low_rate ? 2: 1;
-			dram_exit_retention_with_target(lpa_p2_lpddr4freq);
+			dram_exit_retention_with_target(1);
                         lpddr4_swffc(&dram_info, dev_fsp, 0);
                         dev_fsp = (~dev_fsp) & 0x1;
                         NOTICE("restore freq  0 done \n");
