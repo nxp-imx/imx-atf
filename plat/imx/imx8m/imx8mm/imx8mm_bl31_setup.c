@@ -31,6 +31,8 @@
 #include <plat_imx8.h>
 
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
+#define SNVS_HPCOMR             0x04
+#define SNVS_NPSWA_EN           (1U << 31)
 
 static const mmap_region_t imx_mmap[] = {
 	MAP_REGION_FLAT(IMX_GIC_BASE, IMX_GIC_SIZE, MT_DEVICE | MT_RW),
@@ -151,6 +153,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		u_register_t arg2, u_register_t arg3)
 {
 	static console_t console;
+	unsigned int val;
 	int i;
 
 	/* Enable CSU NS access permission */
@@ -200,6 +203,9 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl32_image_ep_info.args.arg3 = BL32_FDT_OVERLAY_ADDR;
 #endif
 #endif
+
+	val = mmio_read_32(IMX_SNVS_BASE + SNVS_HPCOMR);
+	mmio_write_32(IMX_SNVS_BASE + SNVS_HPCOMR, val | SNVS_NPSWA_EN);
 
 	bl31_tzc380_setup();
 
