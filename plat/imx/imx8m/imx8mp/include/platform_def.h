@@ -175,5 +175,9 @@
 #define DRAM_MAP	MAP_REGION_FLAT(IMX_DRAM_BASE, IMX_DRAM_SIZE, MT_MEMORY | MT_RW | MT_NS) /* DRAM */
 #define VPU_BLK_CTL_MAP	MAP_REGION_FLAT(IMX_VPU_BLK_BASE, IMX_VPU_BLK_SIZE, MT_DEVICE | MT_RW) /* VPU BLK CTL */
 
+#ifdef SPD_trusty
+#undef LOG_LEVEL
+#define LOG_LEVEL 			0
+#endif
 
 #endif /* platform_def.h */
