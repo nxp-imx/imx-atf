@@ -144,4 +144,8 @@
 
 #define COUNTER_FREQUENCY		8000000 /* 8MHz */
 
+#ifdef SPD_trusty
+#define IMX_TRUSTY_STACK_SIZE 0x100
+#endif
+
 #define IMX_WDOG_B_RESET

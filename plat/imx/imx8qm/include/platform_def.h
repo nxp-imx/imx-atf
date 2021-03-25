@@ -99,4 +99,8 @@
 #define DEBUG_CONSOLE_A53		DEBUG_CONSOLE
 #endif
 
+#ifdef SPD_trusty
+#define IMX_TRUSTY_STACK_SIZE 0x100
+#endif
+
 #endif /* PLATFORM_DEF_H */

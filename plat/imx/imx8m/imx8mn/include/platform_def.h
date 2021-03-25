@@ -157,4 +157,8 @@
 #define ROM_MAP		MAP_REGION_FLAT(IMX_ROM_BASE, IMX_ROM_SIZE, MT_MEMORY | MT_RO) /* ROM code */
 #define DRAM_MAP	MAP_REGION_FLAT(IMX_DRAM_BASE, IMX_DRAM_SIZE, MT_MEMORY | MT_RW | MT_NS) /* DRAM */
 
+#ifdef SPD_trusty
+#define IMX_TRUSTY_STACK_SIZE 0x100
+#endif
+
 #endif /* platform_def.h */

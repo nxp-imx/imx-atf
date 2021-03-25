@@ -36,12 +36,7 @@ DEFINE_SVC_UUID2(trusty_uuid,
 #define TRUSTY_PARAMS_LEN_BYTES	(4096U * 2)
 
 struct trusty_stack {
-/* imx8mq has very limited ocram space, assign smaller space for imx8mq. */
-#if defined (PLAT_imx8mq)
-	uint8_t space[IMX8M_TRUSTY_STACK_SIZE] __aligned(16);
-#else
-	uint8_t space[PLATFORM_STACK_SIZE] __aligned(16);
-#endif
+	uint8_t space[IMX_TRUSTY_STACK_SIZE] __aligned(16);
 	uint32_t end;
 };
 

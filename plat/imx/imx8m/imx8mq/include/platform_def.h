@@ -55,7 +55,7 @@
 #endif
 
 #ifdef SPD_trusty
-#define IMX8M_TRUSTY_STACK_SIZE		0x100
+#define IMX_TRUSTY_STACK_SIZE 0x100
 #endif
 
 #define HAB_RVT_BASE			U(0x00000880) /* HAB_RVT for i.MX8MQ */
