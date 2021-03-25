@@ -77,18 +77,22 @@ static const struct imx_csu_cfg csu_cfg[] = {
 	/* master HP0~1 */
 
 	/* SA setting */
-	CSU_SA(0x1, 1, LOCKED),  /* M4 */
-	CSU_SA(0x2, 1, LOCKED),  /* SDMA1 */
-	CSU_SA(0x3, 1, LOCKED),  /* CSI */
-	CSU_SA(0x4, 1, LOCKED),  /* USB */
-	CSU_SA(0x5, 1, LOCKED),  /* PCIE */
-	CSU_SA(0x6, 1, LOCKED),  /* VPU */
-	CSU_SA(0x7, 1, LOCKED),  /* GPU */
-	CSU_SA(0x9, 1, LOCKED),  /* ENET */
-	CSU_SA(0xa, 1, LOCKED),  /* USDHC1 */
-	CSU_SA(0xb, 1, LOCKED),  /* USDHC2 */
-	CSU_SA(0xc, 1, LOCKED),  /* DCSS */
-	CSU_SA(0xe, 1, LOCKED),  /* DAP */
+	CSU_SA(CSU_SA_M4, 1, LOCKED),          /* M4 */
+	CSU_SA(CSU_SA_SDMA1, 1, LOCKED),       /* SDMA1 */
+	CSU_SA(CSU_SA_PCIE_CTRL1, 1, LOCKED),  /* PCIE */
+	CSU_SA(CSU_SA_USB1, 1, LOCKED),        /* USB1 */
+	CSU_SA(CSU_SA_USB2, 1, LOCKED),        /* USB2 */
+	CSU_SA(CSU_SA_VPU, 1, LOCKED),         /* VPU */
+	CSU_SA(CSU_SA_GPU, 1, LOCKED),         /* GPU */
+	CSU_SA(CSU_SA_ENET, 1, LOCKED),        /* ENET */
+	CSU_SA(CSU_SA_USDHC1, 1, LOCKED),      /* USDHC1 */
+	CSU_SA(CSU_SA_USDHC2, 1, LOCKED),      /* USDHC2 */
+	CSU_SA(CSU_SA_USDHC3, 1, LOCKED),      /* USDHC3 */
+	CSU_SA(CSU_SA_SDMA2, 1, LOCKED),       /* SDMA2 */
+	CSU_SA(CSU_SA_SDMA3, 1, LOCKED),       /* SDMA3 */
+	CSU_SA(CSU_SA_DAP, 1, LOCKED),         /* DAP */
+	CSU_SA(CSU_SA_LCDIF, 1, LOCKED),       /* LCDIF */
+	CSU_SA(CSU_SA_CSI, 1, LOCKED),         /* CSI */
 
 	/* HP control setting */
 
