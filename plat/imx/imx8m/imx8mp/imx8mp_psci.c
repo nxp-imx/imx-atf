@@ -18,7 +18,6 @@
 #include <imx8m_psci.h>
 #include <plat_imx8.h>
 #include <sema4.h>
-#include "imx8_i2c.h"
 #include "pmic.h"
 
 #define SEMA4ID 0
@@ -153,26 +152,30 @@ void bus_freq_dvfs(bool low_bus)
                 /* save clock root registers of clocks using system PLL1 and bypass these clocks */
                 NOTICE("bypass CCM \n");
                 for (uint32_t cmpt_i = 0; cmpt_i <  syspll1_clk_root_bypass_registers_count; cmpt_i++) {
-                        uint32_t _reg = 0x30388000 + (128 * syspll1_clk_root_bypass_registers[cmpt_i].index);
+                        uint32_t _reg   = 0x30388000 + (128 * syspll1_clk_root_bypass_registers[cmpt_i].index);
+                        uint32_t _regv  = mmio_read_32(_reg);
                         /* save mux * pre divider */
-                        syspll1_clk_root_bypass_registers[cmpt_i].value = (((mmio_read_32(_reg) >> 24) & 0x7 ) << 4) | 
-                                                                          (((mmio_read_32(_reg) >> 16) & 0x7 ) << 0) | 
-                                                                          (((mmio_read_32(_reg) >> 0 ) & 0x3F) << 8) ;
+                        syspll1_clk_root_bypass_registers[cmpt_i].value = (((_regv >> 24) & 0x7 ) << 4) | 
+                                                                          (((_regv >> 16) & 0x7 ) << 0) | 
+                                                                          (((_regv >> 0 ) & 0x3F) << 8) ;
 
+                        _regv = (_regv & ~0x00070000) | (((syspll1_clk_root_bypass_registers[cmpt_i].p23 & 0x0F) >> 0) << 16);
+                        _regv = (_regv & ~0x0000003F) | (((syspll1_clk_root_bypass_registers[cmpt_i].p23 & 0x3F00) >> 8) << 0);
                         /* change divider */
-                        mmio_write_32(_reg,  (mmio_read_32(_reg) & ~0x00070000) | (((syspll1_clk_root_bypass_registers[cmpt_i].p23 & 0x0F) >> 0) << 16));
-                        mmio_write_32(_reg,  (mmio_read_32(_reg) & ~0x0000003F) | (((syspll1_clk_root_bypass_registers[cmpt_i].p23 & 0x3F00) >> 8) << 0));
+                        mmio_write_32(_reg,  _regv);
                         /* change mux twice to avoid ccm core/bus switch source issue */
-                        mmio_write_32(_reg,  (mmio_read_32(_reg) & ~0x07000000) | (((syspll1_clk_root_bypass_registers[cmpt_i].p23 & 0xF0) >> 4) << 24));
-                        mmio_write_32(_reg,  (mmio_read_32(_reg) & ~0x07000000) | (((syspll1_clk_root_bypass_registers[cmpt_i].p23 & 0xF0) >> 4) << 24));
+                        _regv = (_regv & ~0x07000000) | (((syspll1_clk_root_bypass_registers[cmpt_i].p23 & 0xF0) >> 4) << 24);
+                        mmio_write_32(_reg,  _regv);
+                        mmio_write_32(_reg,  _regv);
                 }
 
                 /* disable syspll1 clock root registers */
                 NOTICE("Disable CCM \n");
                 for (uint32_t i = 0; i < ARRAY_SIZE(syspll1_clk_root_disable_registers); i++) {
                         uint32_t _reg = 0x30388000 + (128 * syspll1_clk_root_disable_registers[i].index);
-                        syspll1_clk_root_disable_registers[i].value = (mmio_read_32(_reg) >> 28) & 0x1;
-                        mmio_write_32(_reg, mmio_read_32(_reg) & ~0x10000000);
+                        uint32_t _regv  = mmio_read_32(_reg);
+                        syspll1_clk_root_disable_registers[i].value = (_regv >> 28) & 0x1;
+                        mmio_write_32(_reg, _regv & ~0x10000000);
                 }
 
                 NOTICE("Disable CCGR \r\n");
@@ -296,13 +299,17 @@ void bus_freq_dvfs(bool low_bus)
 
                 /* restore clock root registers of clocks using system PLL1 */
                 for (uint32_t cmpt_i = 0; cmpt_i < syspll1_clk_root_bypass_registers_count; cmpt_i++) {
-                        uint32_t _reg = 0x30388000 + (128 * syspll1_clk_root_bypass_registers[cmpt_i].index);
+                        uint32_t _reg  = 0x30388000 + (128 * syspll1_clk_root_bypass_registers[cmpt_i].index);
+                        uint32_t _regv = mmio_read_32(_reg);
+
+                        _regv = ( _regv & ~0x07000000) | (((syspll1_clk_root_bypass_registers[cmpt_i].value & 0x70) >> 4) << 24);
                         
                         /* restore mux */
-                        mmio_write_32(_reg,  (mmio_read_32(_reg) & ~0x07000000) | (((syspll1_clk_root_bypass_registers[cmpt_i].value & 0x70) >> 4) << 24));
+                        mmio_write_32(_reg,  _regv);
                         /* restore divider */
-                        mmio_write_32(_reg,  (mmio_read_32(_reg) & ~0x00070000) | (((syspll1_clk_root_bypass_registers[cmpt_i].value & 0x07) >> 0) << 16));
-                        mmio_write_32(_reg,  (mmio_read_32(_reg) & ~0x0000003F) | (((syspll1_clk_root_bypass_registers[cmpt_i].value & 0x3F00) >> 8) << 0));
+                        _regv = (_regv & ~0x00070000) | (((syspll1_clk_root_bypass_registers[cmpt_i].value & 0x07) >> 0) << 16);
+                        _regv = (_regv & ~0x0000003F) | (((syspll1_clk_root_bypass_registers[cmpt_i].value & 0x3F00) >> 8) << 0);
+                        mmio_write_32(_reg,  _regv);
                 }
 
                 /* enable ddr clock */
@@ -355,7 +362,6 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
                         lpddr4_swffc(&dram_info, dev_fsp, 1);
                         dev_fsp = (~dev_fsp) & 0x1;
 			dram_enter_retention();
-                        mmio_write_32(0x30384000 + (16 * 23), 0x2); /* 12C1 */
                         bus_freq_dvfs(true);
 			imx_set_sys_wakeup(core_id, true);
                         NOTICE("M7 alive, suspend ok! \n");
