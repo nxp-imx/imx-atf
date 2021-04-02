@@ -10,29 +10,29 @@ BYTE_SWAP	?=	${PLAT_TOOL_PATH}/byte_swap${BIN_EXT}
 
 HOST_GCC	:= gcc
 
-#SWAP is required for Chassis 2 platforms - LS102, ls1043 and ls1046 for QSPI
-ifeq (${SOC},ls1046)
+#SWAP is required for Chassis 2 platforms - ls1012a, ls1043a and ls1046a for QSPI
+ifeq (${SOC},ls1046a)
 SOC_NUM :=	1046
 SWAP	= 	1
 CH	=	2
-else ifeq (${SOC},ls1043)
+else ifeq (${SOC},ls1043a)
 SOC_NUM :=	1043
 SWAP	= 	1
 CH	=	2
-else ifeq (${SOC},ls1012)
+else ifeq (${SOC},ls1012a)
 SOC_NUM :=	1012
 SWAP	= 	1
 CH	=	2
-else ifeq (${SOC},ls1088)
+else ifeq (${SOC},ls1088a)
 SOC_NUM :=	1088
 CH	=	3
-else ifeq (${SOC},ls2088)
+else ifeq (${SOC},ls2088a)
 SOC_NUM :=	2088
 CH	=	3
-else ifeq (${SOC},lx2160)
+else ifeq (${SOC},lx2160a)
 SOC_NUM :=	2160
 CH	=	3
-else ifeq (${SOC},ls1028)
+else ifeq (${SOC},ls1028a)
 SOC_NUM :=	1028
 CH	=	3
 else

@@ -5,10 +5,13 @@
  *
  */
 
-#ifndef __CSU_H__
-#define __CSU_H__
+#ifndef CSU_H
+#define CSU_H
 
 #define CSU_SEC_ACCESS_REG_OFFSET	(0x0021C)
+/* Bit mask */
+#define TZASC_BYPASS_MUX_DISABLE        0x4
+
 
 enum csu_cslx_access {
 	CSU_NS_SUP_R = 0x08,
@@ -31,6 +34,7 @@ struct csu_ns_dev_st {
 	uint32_t val;
 };
 
-void enable_layerscape_ns_access(uintptr_t nxp_csu_addr);
+void enable_layerscape_ns_access(struct csu_ns_dev_st *csu_ns_dev,
+				     uint32_t num, uintptr_t nxp_csu_addr);
 
-#endif
+#endif /* CSU_H */

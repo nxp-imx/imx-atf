@@ -31,6 +31,13 @@
 #if defined(SD_BOOT) || defined(EMMC_BOOT)
 #include <sd_mmc.h>
 #endif
+#if defined(NOR_BOOT)
+#include <ifc_nor.h>
+#endif
+#if defined(NAND_BOOT)
+#include <ifc_nand.h>
+#endif
+
 #include <tools_share/firmware_image_package.h>
 
 #include "plat_common.h"
@@ -264,7 +271,7 @@ int open_backend(const uintptr_t spec)
 	return result;
 }
 
-#if defined(SD_BOOT) || defined(EMMC_BOOT)
+#if defined(SD_BOOT) || defined(EMMC_BOOT) || defined(NAND_BOOT)
 static int plat_io_block_setup(size_t fip_offset, uintptr_t block_dev_spec)
 {
 	int io_result;
@@ -283,7 +290,7 @@ static int plat_io_block_setup(size_t fip_offset, uintptr_t block_dev_spec)
 }
 #endif
 
-#if defined(FLEXSPI_NOR_BOOT) || defined(QSPI_BOOT)
+#if defined(FLEXSPI_NOR_BOOT) || defined(QSPI_BOOT) || defined(NOR_BOOT)
 static int plat_io_memmap_setup(size_t fip_offset)
 {
 	int io_result;
@@ -397,20 +404,48 @@ int emmc_io_setup(void)
 
 int ifc_nor_io_setup(void)
 {
+#if defined(NOR_BOOT)
+	int ret;
+
+	ret = ifc_nor_init(NXP_NOR_FLASH_ADDR,
+			NXP_NOR_FLASH_SIZE);
+
+	if (ret)
+		return ret;
+
+	return plat_io_memmap_setup(NXP_NOR_FLASH_ADDR + PLAT_FIP_OFFSET);
+#else
 	ERROR("NOR driver not present. Check your BUILD\n");
 
 	/* Should never reach here */
 	assert(0);
 	return -1;
+#endif
 }
 
 int ifc_nand_io_setup(void)
 {
+#if defined(NAND_BOOT)
+	uintptr_t block_dev_spec;
+	int ret;
+
+	ret = ifc_nand_init(&block_dev_spec,
+			NXP_IFC_REGION_ADDR,
+			NXP_IFC_ADDR,
+			NXP_IFC_SRAM_BUFFER_SIZE,
+			NXP_SD_BLOCK_BUF_ADDR,
+			NXP_SD_BLOCK_BUF_SIZE);
+	if (ret)
+		return ret;
+
+	return plat_io_block_setup(PLAT_FIP_OFFSET, block_dev_spec);
+#else
 	ERROR("NAND driver not present. Check your BUILD\n");
 
 	/* Should never reach here */
 	assert(0);
 	return -1;
+#endif
 }
 
 int ls_flexspi_nor_io_setup(void)
