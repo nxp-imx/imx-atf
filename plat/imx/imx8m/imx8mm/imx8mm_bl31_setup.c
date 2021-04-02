@@ -72,7 +72,9 @@ static const struct imx_rdc_cfg rdc[] = {
 static const struct imx_csu_cfg csu_cfg[] = {
 	/* peripherals csl setting */
 	CSU_CSLx(0x1, CSU_SEC_LEVEL_0, UNLOCKED),
-	CSU_CSLx(0x72, CSU_SEC_LEVEL_4, LOCKED), /* CAAM */
+	CSU_CSLx(CSU_CSL_CSU, CSU_SEC_LEVEL_4, LOCKED),
+	CSU_CSLx(CSU_CSL_RDC, CSU_SEC_LEVEL_4, LOCKED),
+	CSU_CSLx(CSU_CSL_TZASC, CSU_SEC_LEVEL_4, LOCKED),
 
 	/* master HP0~1 */
 
@@ -91,7 +93,7 @@ static const struct imx_csu_cfg csu_cfg[] = {
 	CSU_SA(CSU_SA_SDMA2, 1, LOCKED),       /* SDMA2 */
 	CSU_SA(CSU_SA_SDMA3, 1, LOCKED),       /* SDMA3 */
 	CSU_SA(CSU_SA_DAP, 1, LOCKED),         /* DAP */
-	CSU_SA(CSU_SA_LCDIF, 1, LOCKED),       /* LCDIF */
+	CSU_SA(CSU_SA_LCDIF, 1, UNLOCKED),     /* LCDIF */
 	CSU_SA(CSU_SA_CSI, 1, LOCKED),         /* CSI */
 
 	/* HP control setting */
@@ -141,7 +143,7 @@ static void bl31_tzc380_setup(void)
 	 */
 #ifdef SPD_trusty
 	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G) |
-			TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_NS_RW);
+			TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
 	tzc380_configure_region(1, (BL32_BASE - IMX_DRAM_BASE), TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_32M) |
 			TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_S_RW);
 
