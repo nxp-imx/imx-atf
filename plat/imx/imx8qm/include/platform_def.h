@@ -77,35 +77,35 @@
 #define CPU_START_ADDR      BL31_BASE	/* default behavior */
 #endif
 
+/* TEE section */
 #if defined(SPD_opteed) || defined(SPD_trusty)
+
 #ifdef COCKPIT_A53
 #define BL32_BASE			0xbe000000
 #define BL32_SIZE			0x02000000
-#define BL32_SHM_SIZE			0x00400000
-#define BL32_LIMIT			0xc0000000
-#else
+#else /* !(defined COCKPIT_A53) */
 #define BL32_BASE			0xfe000000
 #define BL32_SIZE			0x02000000
-#define BL32_SHM_SIZE			0x00400000
-#define BL32_LIMIT			0x100000000
-#endif
-#ifdef COCKPIT_A72
-#define BL32_FDT_OVERLAY_ADDR		0xdd000000
-#else
-#define BL32_FDT_OVERLAY_ADDR		0x9d000000
-#endif
-#endif
+#endif/* !(defined COCKPIT_A53) */
 
-#define OCRAM_BASE		0x100000
-#define OCRAM_ALIAS_SIZE 0x18000 /* The lower 96KB is in OCRAM alias from 0x0 */
-
-#define BL32_SHM_SIZE			0x00400000
 #ifdef SPD_trusty
 #define BL32_LIMIT			(BL32_BASE + BL32_SIZE)
 #else
 #define BL32_LIMIT			(BL32_BASE + BL32_SIZE - BL32_SHM_SIZE)
 #endif
+
+#ifdef COCKPIT_A72
+#define BL32_FDT_OVERLAY_ADDR		0xdd000000
+#else /* !(defined COCKPIT_A72) */
 #define BL32_FDT_OVERLAY_ADDR		0x9d000000
+#endif
+
+#endif /* TEE section */
+
+#define OCRAM_BASE		0x100000
+#define OCRAM_ALIAS_SIZE 0x18000 /* The lower 96KB is in OCRAM alias from 0x0 */
+
+#define BL32_SHM_SIZE			0x00400000
 
 #define PLAT_GICD_BASE			0x51a00000
 #define PLAT_GICR_BASE			0x51b00000
