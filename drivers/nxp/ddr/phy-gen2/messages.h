@@ -13,7 +13,7 @@ struct phy_msg {
 
 const static struct phy_msg messages_1d[] = {
 	{0x00000001,
-	 "PMU1:prbsGenCtl:%x\n"
+	 "PMU1:prbsGenCtl:%04x\n"
 	},
 	{0x00010000,
 	 "PMU1: loading 2D acsm sequence\n"
@@ -52,10 +52,10 @@ const static struct phy_msg messages_1d[] = {
 	 "PMU1: mxRdLat search for cs %d\n"
 	},
 	{0x000d0001,
-	 "PMU0: MaxRdLat non consistent DtsmLoThldXingInd 0x%03x\n"
+	 "PMU0: MaxRdLat non consistant DtsmLoThldXingInd 0x%03x\n"
 	},
 	{0x000e0003,
-	 "PMU4: CS %d Dbyte %d worked with DFIMRL = %d DFICLKs\n"
+	 "PMU4: CS %d Dbyte %d worked with DFIMRL = %d DFICLKs \n"
 	},
 	{0x000f0004,
 	 "PMU3: MaxRdLat Read Lane err mask for csn %d, DFIMRL %2d DFIClks, dbyte %d = 0x%03x\n"
@@ -76,7 +76,7 @@ const static struct phy_msg messages_1d[] = {
 	 "PMU: Error: Dbyte %d lane %d txDqDly passing region is too small (width = %d)\n"
 	},
 	{0x00150006,
-	 "PMU10: Adjusting rxclkdly db %d nib %d from %d+%d=%d->%d\n"
+	 "PMU4: Adjusting rxclkdly db %d nib %d from %d+%d=%d->%d\n"
 	},
 	{0x00160000,
 	 "PMU4: TxDqDly Passing Regions (EyeLeft EyeRight -> EyeCenter) Units=1/32 UI\n"
@@ -142,7 +142,7 @@ const static struct phy_msg messages_1d[] = {
 	 "PMU3: Precharge all open banks\n"
 	},
 	{0x002b0002,
-	 "PMU: Error: Dbyte %d nibble %d found mutliple working coarse delay setting for MRD/MWD\n"
+	 "PMU: Error: Dbyte %d nibble %d found multiple working coarse delay setting for MRD/MWD\n"
 	},
 	{0x002c0000,
 	 "PMU4: MRD Passing Regions (coarseVal, fineLeft fineRight -> fineCenter)\n"
@@ -151,7 +151,7 @@ const static struct phy_msg messages_1d[] = {
 	 "PMU4: MWD Passing Regions (coarseVal, fineLeft fineRight -> fineCenter)\n"
 	},
 	{0x002e0004,
-	 "PMU10: Warning: DB %d nibble %d has multiple working coarse delays, %d and %d, choosing the smaller delay\n"
+	 "PMU10: Warning: DB %d nibble %d has multiple working coarse positions, %d and %d, choosing the smaller delay\n"
 	},
 	{0x002f0003,
 	 "PMU: Error: Dbyte %d nibble %d MRD/MWD passing region is too small (width = %d)\n"
@@ -259,7 +259,7 @@ const static struct phy_msg messages_1d[] = {
 	 "PMU: Error: Wrong PMU image loaded. message Block DramType = 0x%02x, but image built for D4LR Type\n"
 	},
 	{0x00520000,
-	 "PMU: Error: Both 2t timing mode and ddr4 geardown mode specified in the messageblock's PhyCfg and MR3 fields. Only one can be enabled\n"
+	 "PMU: Error: Both 2t timing mode and ddr4 geardown mode specifed in the messageblock's PhyCfg and MR3 fields. Only one can be enabled\n"
 	},
 	{0x00530003,
 	 "PMU10: PHY TOTALS - NUM_DBYTES %d NUM_NIBBLES %d NUM_ANIBS %d\n"
@@ -334,10 +334,10 @@ const static struct phy_msg messages_1d[] = {
 	 "PMU3: Searching for DDR3/LPDDR3/LPDDR4 read preamble\n"
 	},
 	{0x006b0009,
-	 "PMU3: dtsm fails Even Nibbles : %2x %2x %2x %2x %2x %2x %2x %2x %2x\n"
+	 "PMU3: dtsm fails Even Nibbles : %02x %02x %02x %02x %02x %02x %02x %02x %02x\n"
 	},
 	{0x006c0009,
-	 "PMU3: dtsm fails Odd  Nibbles : %2x %2x %2x %2x %2x %2x %2x %2x %2x\n"
+	 "PMU3: dtsm fails Odd  Nibbles : %02x %02x %02x %02x %02x %02x %02x %02x %02x\n"
 	},
 	{0x006d0002,
 	 "PMU3: Preamble search pass=%d anyfail=%d\n"
@@ -385,22 +385,22 @@ const static struct phy_msg messages_1d[] = {
 	 "PMU3: Training DIMM %d CSn %d\n"
 	},
 	{0x007c0001,
-	 "PMU3: exitCAtrain_lp3 cs 0x%x\n"
+	 "PMU3: exitCAtrain_lp3 cs 0x%04x\n"
 	},
 	{0x007d0001,
-	 "PMU3: enterCAtrain_lp3 cs 0x%x\n"
+	 "PMU3: enterCAtrain_lp3 cs 0x%04x\n"
 	},
 	{0x007e0001,
-	 "PMU3: CAtrain_switchmsb_lp3 cs 0x%x\n"
+	 "PMU3: CAtrain_switchmsb_lp3 cs 0x%04x\n"
 	},
 	{0x007f0001,
-	 "PMU3: CATrain_rdwr_lp3 looking for pattern %x\n"
+	 "PMU3: CATrain_rdwr_lp3 looking for pattern %04x\n"
 	},
 	{0x00800000,
 	 "PMU3: exitCAtrain_lp4\n"
 	},
 	{0x00810001,
-	 "PMU3: DEBUG enterCAtrain_lp4 1: cs 0x%x\n"
+	 "PMU3: DEBUG enterCAtrain_lp4 1: cs 0x%04x\n"
 	},
 	{0x00820001,
 	 "PMU3: DEBUG enterCAtrain_lp4 3: Put dbyte %d in async mode\n"
@@ -409,34 +409,34 @@ const static struct phy_msg messages_1d[] = {
 	 "PMU3: DEBUG enterCAtrain_lp4 5: Send MR13 to turn on CA training\n"
 	},
 	{0x00840003,
-	 "PMU3: DEBUG enterCAtrain_lp4 7: idx = %d vref = %x mr12 = %x\n"
+	 "PMU3: DEBUG enterCAtrain_lp4 7: idx = %d vref = %04x mr12 = %04x \n"
 	},
 	{0x00850001,
-	 "PMU3: CATrain_rdwr_lp4 looking for pattern %x\n"
+	 "PMU3: CATrain_rdwr_lp4 looking for pattern %04x\n"
 	},
 	{0x00860004,
-	 "PMU3: Phase %d CAreadbackA db:%d %x xo:%x\n"
+	 "PMU3: Phase %d CAreadbackA db:%d %04x xo:%04x\n"
 	},
 	{0x00870005,
-	 "PMU3: DEBUG lp4SetCatrVref 1: cs=%d chan=%d mr12=%x vref=%d.%d%%\n"
+	 "PMU3: DEBUG lp4SetCatrVref 1: cs=%d chan=%d mr12=%04x vref=%d.%d%%\n"
 	},
 	{0x00880003,
-	 "PMU3: DEBUG lp4SetCatrVref 3: mr12 = %x send vref= %x to db=%d\n"
+	 "PMU3: DEBUG lp4SetCatrVref 3: mr12 = %04x send vref= %04x to db=%d\n"
 	},
 	{0x00890000,
 	 "PMU10:Optimizing vref\n"
 	},
 	{0x008a0004,
-	 "PMU4:mr12:%2x cs:%d chan %d r:%4x\n"
+	 "PMU4:mr12:%02x cs:%d chan %d r:%04x\n"
 	},
 	{0x008b0005,
 	 "PMU3: i:%2d bstr:%2d bsto:%2d st:%d r:%d\n"
 	},
 	{0x008c0002,
-	 "Failed to find sufficient CA Vref Passing Region for CS %d ch. %d\n"
+	"Failed to find sufficient CA Vref Passing Region for CS %d channel %d\n"
 	},
 	{0x008d0005,
-	 "PMU3:Found %d.%d%% MR12:%x for cs:%d chan %d\n"
+	 "PMU3:Found %d.%d%% MR12:%04x for cs:%d chan %d\n"
 	},
 	{0x008e0002,
 	 "PMU3:Calculated %d for AtxImpedence from acx %d.\n"
@@ -445,7 +445,7 @@ const static struct phy_msg messages_1d[] = {
 	 "PMU3:CA Odt impedence ==0.  Use default vref.\n"
 	},
 	{0x00900003,
-	 "PMU3:Calculated %d.%d%% for Vref MR12=0x%x.\n"
+	 "PMU3:Calculated %d.%d%% for Vref MR12=0x%04x.\n"
 	},
 	{0x00910000,
 	 "PMU3: CAtrain_lp\n"
@@ -457,39 +457,49 @@ const static struct phy_msg messages_1d[] = {
 	 "PMU3: CAtrain_lp testing dly %d\n"
 	},
 	{0x00940001,
-	 "PMU5: CA bitmap dump for cs %x\n"
+	 "PMU5: CA bitmap dump for cs %04x\n"
 	},
 	{0x00950001,
 	 "PMU5: CAA%d "
 	},
-	{0x00960001, "%02x"
+	{0x00960001,
+	"%02x"
 	},
-	{0x00970000, "\n"
+	{0x00970000,
+	"\n"
 	},
 	{0x00980001,
-	 "PMU5: CAB%d "
+	 "PMU5: CAB%d"
 	},
-	{0x00990001, "%02x"
+	{0x00990001,
+	"%02x"
 	},
-	{0x009a0000, "\n"
+	{0x009a0000,
+	"\n"
 	},
 	{0x009b0003,
 	 "PMU3: anibi=%d, anibichan[anibi]=%d ,chan=%d\n"
 	},
-	{0x009c0001, "%02x"
+	{0x009c0001,
+	"%02x"
 	},
-	{0x009d0001, "\nPMU3:Raw CA setting :%x"
+	{0x009d0001,
+	"\nPMU3:Raw CA setting :%04x"
 	},
-	{0x009e0002, "\nPMU3:ATxDly setting:%x margin:%d\n"
+	{0x009e0002,
+	"\nPMU3:ATxDly setting:%04x margin:%d\n"
 	},
-	{0x009f0002, "\nPMU3:InvClk ATxDly setting:%x margin:%d\n"
+	{0x009f0002,
+	"\nPMU3:InvClk ATxDly setting:%04x margin:%d\n"
 	},
-	{0x00a00000, "\nPMU3:No Range found!\n"
+	{0x00a00000,
+	"\nPMU3:No Range found!\n"
 	},
 	{0x00a10003,
 	 "PMU3: 2 anibi=%d, anibichan[anibi]=%d ,chan=%d"
 	},
-	{0x00a20002, "\nPMU3: no neg clock => CA setting anib=%d, :%d\n"
+	{0x00a20002,
+	"\nPMU3: no neg clock => CA setting anib=%d, :%d\n"
 	},
 	{0x00a30001,
 	 "PMU3:Normal margin:%d\n"
@@ -507,7 +517,7 @@ const static struct phy_msg messages_1d[] = {
 	 "PMU3: 3 anibi=%d, anibichan[anibi]=%d ,chan=%d\n"
 	},
 	{0x00a80002,
-	 "PMU3: Setting ATxDly for anib %x to %x\n"
+	 "PMU3: Setting ATxDly for anib %04x to %04x\n"
 	},
 	{0x00a90000,
 	 "PMU: Error: CA Training Failed.\n"
@@ -633,486 +643,489 @@ const static struct phy_msg messages_1d[] = {
 	 "PMU2: Starting MaxRdLat training\n"
 	},
 	{0x00d20000,
-	 "PMU2: Starting 2d WrDq training for all ranks\n"
-	},
-	{0x00d30000,
 	 "PMU2: Starting 2d RdDqs training for all ranks\n"
 	},
-	{0x00d40002,
-	 "PMU3:read_fifo %x %x\n"
+	{0x00d30000,
+	 "PMU2: Starting 2d WrDq training for all ranks\n"
 	},
-	{0x00d50001,
-	 "PMU: Error: Invalid PhyDrvImpedance of 0x%x specified in message block.\n"
+	{0x00d40000,
+	 "PMU2: Starting 2d RdDqs training for all ranks\n"
+	},
+	{0x00d50002,
+	 "PMU3:read_fifo %04x %04x\n"
 	},
 	{0x00d60001,
-	 "PMU: Error: Invalid PhyOdtImpedance of 0x%x specified in message block.\n"
+	 "PMU: Error: Invalid PhyDrvImpedance of 0x%04x specified in message block.\n"
 	},
 	{0x00d70001,
-	 "PMU: Error: Invalid BPZNResVal of 0x%x specified in message block.\n"
+	 "PMU: Error: Invalid PhyOdtImpedance of 0x%04x specified in message block.\n"
 	},
-	{0x00d80005,
-	 "PMU3: fixRxEnBackOff csn:%d db:%d dn:%d bo:%d dly:%x\n"
+	{0x00d80001,
+	 "PMU: Error: Invalid BPZNResVal of 0x%04x specified in message block.\n"
 	},
-	{0x00d90001,
-	 "PMU3: fixRxEnBackOff dly:%x\n"
+	{0x00d90005,
+	 "PMU3: fixRxEnBackOff csn:%d db:%d dn:%d bo:%d dly:%04x\n"
 	},
-	{0x00da0000,
-	 "PMU3: Entering setupPpt\n"
+	{0x00da0001,
+	 "PMU3: fixRxEnBackOff dly:%04x\n"
 	},
 	{0x00db0000,
+	 "PMU3: Entering setupPpt\n"
+	},
+	{0x00dc0000,
 	 "PMU3: Start lp4PopulateHighLowBytes\n"
 	},
-	{0x00dc0002,
-	 "PMU3:Dbyte Detect: db%d received %x\n"
-	},
 	{0x00dd0002,
-	 "PMU3:getDqs2Dq read %x from dbyte %d\n"
+	 "PMU3:Dbyte Detect: db%d received %04x\n"
 	},
 	{0x00de0002,
-	 "PMU3:getDqs2Dq(2) read %x from dbyte %d\n"
+	 "PMU3:getDqs2Dq read %04x from dbyte %d\n"
 	},
-	{0x00df0001,
+	{0x00df0002,
+	 "PMU3:getDqs2Dq(2) read %04x from dbyte %d\n"
+	},
+	{0x00e00001,
 	 "PMU: Error: Dbyte %d read 0 from the DQS oscillator it is connected to\n"
 	},
-	{0x00e00002,
+	{0x00e10002,
 	 "PMU4: Dbyte %d dqs2dq = %d/32 UI\n"
 	},
-	{0x00e10003,
+	{0x00e20003,
 	 "PMU3:getDqs2Dq set dqs2dq:%d/32 ui (%d ps) from dbyte %d\n"
 	},
-	{0x00e20003,
-	 "PMU3: Setting coarse delay in AtxDly chiplet %d from 0x%02x to 0x%02x\n"
-	},
 	{0x00e30003,
-	 "PMU3: Clearing coarse delay in AtxDly chiplet %d from 0x%02x to 0x%02x\n"
+	 "PMU3: Setting coarse delay in AtxDly chiplet %d from 0x%02x to 0x%02x \n"
 	},
-	{0x00e40000,
-	 "PMU3: Performing DDR4 geardown sync sequence\n"
+	{0x00e40003,
+	 "PMU3: Clearing coarse delay in AtxDly chiplet %d from 0x%02x to 0x%02x \n"
 	},
 	{0x00e50000,
-	 "PMU1: Enter self refresh\n"
+	 "PMU3: Performing DDR4 geardown sync sequence\n"
 	},
 	{0x00e60000,
-	 "PMU1: Exit self refresh\n"
+	 "PMU1: Enter self refresh\n"
 	},
 	{0x00e70000,
-	 "PMU: Error: No dbiEnable with lp4\n"
+	 "PMU1: Exit self refresh\n"
 	},
 	{0x00e80000,
+	 "PMU: Error: No dbiEnable with lp4\n"
+	},
+	{0x00e90000,
 	 "PMU: Error: No dbiDisable with lp4\n"
 	},
-	{0x00e90001,
+	{0x00ea0001,
 	 "PMU1: DDR4 update Rx DBI Setting disable %d\n"
 	},
-	{0x00ea0001,
+	{0x00eb0001,
 	 "PMU1: DDR4 update 2nCk WPre Setting disable %d\n"
 	},
-	{0x00eb0005,
+	{0x00ec0005,
 	 "PMU1: read_delay: db%d lane%d delays[%2d] = 0x%02x (max 0x%02x)\n"
 	},
-	{0x00ec0004,
+	{0x00ed0004,
 	 "PMU1: write_delay: db%d lane%d delays[%2d] = 0x%04x\n"
 	},
-	{0x00ed0001,
+	{0x00ee0001,
 	 "PMU5: ID=%d -- db0  db1  db2  db3  db4  db5  db6  db7  db8  db9 --\n"
 	},
-	{0x00ee000b,
+	{0x00ef000b,
 	 "PMU5: [%d]:0x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x\n"
 	},
-	{0x00ef0003,
+	{0x00f00003,
 	 "PMU2: dump delays - pstate=%d dimm=%d csn=%d\n"
 	},
-	{0x00f00000,
+	{0x00f10000,
 	 "PMU3: Printing Mid-Training Delay Information\n"
 	},
-	{0x00f10001,
+	{0x00f20001,
 	 "PMU5: CS%d <<KEY>> 0 TrainingCntr <<KEY>> coarse(15:10) fine(9:0)\n"
 	},
-	{0x00f20001,
+	{0x00f30001,
 	 "PMU5: CS%d <<KEY>> 0 RxEnDly, 1 RxClkDly <<KEY>> coarse(10:6) fine(5:0)\n"
 	},
-	{0x00f30001,
+	{0x00f40001,
 	 "PMU5: CS%d <<KEY>> 0 TxDqsDly, 1 TxDqDly <<KEY>> coarse(9:6) fine(5:0)\n"
 	},
-	{0x00f40001,
-	 "PMU5: CS%d <<KEY>> 0 RxPBDly <<KEY>> 1 Delay Unit ~= 7ps\n"
-	},
-	{0x00f50000,
-	 "PMU5: all CS <<KEY>> 0 DFIMRL <<KEY>> Units = DFI clocks\n"
+	{0x00f50001,
+	 "PMU5: CS%d <<KEY>> 0 RxPBDly <<KEY>> 1 Delay Unit ~= 7ps \n"
 	},
 	{0x00f60000,
-	 "PMU5: all CS <<KEY>> VrefDACs <<KEY>> DAC(6:0)\n"
+	 "PMU5: all CS <<KEY>> 0 DFIMRL <<KEY>> Units = DFI clocks\n"
 	},
 	{0x00f70000,
-	 "PMU1: Set DMD in MR13 and wrDBI in MR3 for training\n"
+	 "PMU5: all CS <<KEY>> VrefDACs <<KEY>> DAC(6:0)\n"
 	},
 	{0x00f80000,
+	 "PMU1: Set DMD in MR13 and wrDBI in MR3 for training\n"
+	},
+	{0x00f90000,
 	 "PMU: Error: getMaxRxen() failed to find largest rxen nibble delay\n"
 	},
-	{0x00f90003,
+	{0x00fa0003,
 	 "PMU2: getMaxRxen(): maxDly %d maxTg %d maxNib %d\n"
 	},
-	{0x00fa0003,
+	{0x00fb0003,
 	 "PMU2: getRankMaxRxen(): maxDly %d Tg %d maxNib %d\n"
 	},
-	{0x00fb0000,
+	{0x00fc0000,
 	 "PMU1: skipping CDD calculation in 2D image\n"
 	},
-	{0x00fc0001,
+	{0x00fd0001,
 	 "PMU3: Calculating CDDs for pstate %d\n"
 	},
-	{0x00fd0003,
+	{0x00fe0003,
 	 "PMU3: rxFromDly[%d][%d] = %d\n"
 	},
-	{0x00fe0003,
+	{0x00ff0003,
 	 "PMU3: rxToDly  [%d][%d] = %d\n"
 	},
-	{0x00ff0003,
+	{0x01000003,
 	 "PMU3: rxDly    [%d][%d] = %d\n"
 	},
-	{0x01000003,
+	{0x01010003,
 	 "PMU3: txDly    [%d][%d] = %d\n"
 	},
-	{0x01010003,
+	{0x01020003,
 	 "PMU3: allFine CDD_RR_%d_%d = %d\n"
 	},
-	{0x01020003,
+	{0x01030003,
 	 "PMU3: allFine CDD_WW_%d_%d = %d\n"
 	},
-	{0x01030003,
+	{0x01040003,
 	 "PMU3: CDD_RR_%d_%d = %d\n"
 	},
-	{0x01040003,
+	{0x01050003,
 	 "PMU3: CDD_WW_%d_%d = %d\n"
 	},
-	{0x01050003,
+	{0x01060003,
 	 "PMU3: allFine CDD_RW_%d_%d = %d\n"
 	},
-	{0x01060003,
+	{0x01070003,
 	 "PMU3: allFine CDD_WR_%d_%d = %d\n"
 	},
-	{0x01070003,
+	{0x01080003,
 	 "PMU3: CDD_RW_%d_%d = %d\n"
 	},
-	{0x01080003,
+	{0x01090003,
 	 "PMU3: CDD_WR_%d_%d = %d\n"
 	},
-	{0x01090004,
+	{0x010a0004,
 	 "PMU3: F%dBC2x_B%d_D%d = 0x%02x\n"
 	},
-	{0x010a0004,
+	{0x010b0004,
 	 "PMU3: F%dBC3x_B%d_D%d = 0x%02x\n"
 	},
-	{0x010b0004,
+	{0x010c0004,
 	 "PMU3: F%dBC4x_B%d_D%d = 0x%02x\n"
 	},
-	{0x010c0004,
+	{0x010d0004,
 	 "PMU3: F%dBC5x_B%d_D%d = 0x%02x\n"
 	},
-	{0x010d0004,
+	{0x010e0004,
 	 "PMU3: F%dBC8x_B%d_D%d = 0x%02x\n"
 	},
-	{0x010e0004,
+	{0x010f0004,
 	 "PMU3: F%dBC9x_B%d_D%d = 0x%02x\n"
 	},
-	{0x010f0004,
+	{0x01100004,
 	 "PMU3: F%dBCAx_B%d_D%d = 0x%02x\n"
 	},
-	{0x01100004,
+	{0x01110004,
 	 "PMU3: F%dBCBx_B%d_D%d = 0x%02x\n"
 	},
-	{0x01110000,
+	{0x01120000,
 	 "PMU10: Entering context_switch_postamble\n"
 	},
-	{0x01120003,
-	 "PMU10: context_switch_postamble is enabled for DIMM %d, RC0A=0x%x, RC3x=0x%x\n"
+	{0x01130003,
+	 "PMU10: context_switch_postamble is enabled for DIMM %d, RC0A=0x%04x, RC3x=0x%04x\n"
 	},
-	{0x01130000,
+	{0x01140000,
 	 "PMU10: Setting bcw fspace 0\n"
 	},
-	{0x01140001,
-	 "PMU10: Sending BC0A = 0x%x\n"
-	},
 	{0x01150001,
-	 "PMU10: Sending BC6x = 0x%x\n"
+	 "PMU10: Sending BC0A = 0x%04x\n"
 	},
 	{0x01160001,
-	 "PMU10: Sending RC0A = 0x%x\n"
+	 "PMU10: Sending BC6x = 0x%04x\n"
 	},
 	{0x01170001,
-	 "PMU10: Sending RC3x = 0x%x\n"
+	 "PMU10: Sending RC0A = 0x%04x\n"
 	},
 	{0x01180001,
-	 "PMU10: Sending RC0A = 0x%x\n"
+	 "PMU10: Sending RC3x = 0x%04x\n"
 	},
 	{0x01190001,
-	 "PMU1: enter_lp3: DEBUG: pstate = %d\n"
+	 "PMU10: Sending RC0A = 0x%04x\n"
 	},
 	{0x011a0001,
-	 "PMU1: enter_lp3: DEBUG: dfifreqxlat_pstate = %d\n"
+	 "PMU1: enter_lp3: DEBUG: pstate = %d\n"
 	},
 	{0x011b0001,
-	 "PMU1: enter_lp3: DEBUG: pllbypass = %d\n"
+	 "PMU1: enter_lp3: DEBUG: dfifreqxlat_pstate = %d\n"
 	},
 	{0x011c0001,
-	 "PMU1: enter_lp3: DEBUG: forcecal = %d\n"
+	 "PMU1: enter_lp3: DEBUG: pllbypass = %d\n"
 	},
 	{0x011d0001,
-	 "PMU1: enter_lp3: DEBUG: pllmaxrange = 0x%x\n"
+	 "PMU1: enter_lp3: DEBUG: forcecal = %d\n"
 	},
 	{0x011e0001,
-	 "PMU1: enter_lp3: DEBUG: dacval_out = 0x%x\n"
+	 "PMU1: enter_lp3: DEBUG: pllmaxrange = 0x%04x\n"
 	},
 	{0x011f0001,
-	 "PMU1: enter_lp3: DEBUG: pllctrl3 = 0x%x\n"
+	 "PMU1: enter_lp3: DEBUG: dacval_out = 0x%04x\n"
 	},
-	{0x01200000,
+	{0x01200001,
+	 "PMU1: enter_lp3: DEBUG: pllctrl3 = 0x%04x\n"
+	},
+	{0x01210000,
 	 "PMU3: Loading DRAM with BIOS supplied MR values and entering self refresh prior to exiting PMU code.\n"
 	},
-	{0x01210002,
+	{0x01220002,
 	 "PMU3: Setting DataBuffer function space of dimmcs 0x%02x to %d\n"
 	},
-	{0x01220002,
+	{0x01230002,
 	 "PMU4: Setting RCW FxRC%Xx = 0x%02x\n"
 	},
-	{0x01230002,
+	{0x01240002,
 	 "PMU4: Setting RCW FxRC%02x = 0x%02x\n"
 	},
-	{0x01240001,
+	{0x01250001,
 	 "PMU1: DDR4 update Rd Pre Setting disable %d\n"
 	},
-	{0x01250002,
+	{0x01260002,
 	 "PMU2: Setting BCW FxBC%Xx = 0x%02x\n"
 	},
-	{0x01260002,
+	{0x01270002,
 	 "PMU2: Setting BCW BC%02x = 0x%02x\n"
 	},
-	{0x01270002,
+	{0x01280002,
 	 "PMU2: Setting BCW PBA mode FxBC%Xx = 0x%02x\n"
 	},
-	{0x01280002,
+	{0x01290002,
 	 "PMU2: Setting BCW PBA mode BC%02x = 0x%02x\n"
 	},
-	{0x01290003,
+	{0x012a0003,
 	 "PMU4: BCW value for dimm %d, fspace %d, addr 0x%04x\n"
 	},
-	{0x012a0002,
+	{0x012b0002,
 	 "PMU4: DB %d, value 0x%02x\n"
 	},
-	{0x012b0000,
+	{0x012c0000,
 	 "PMU6: WARNING MREP underflow, set to min value -2 coarse, 0 fine\n"
 	},
-	{0x012c0004,
+	{0x012d0004,
 	 "PMU6: LRDIMM Writing final data buffer fine delay value nib %2d, trainDly %3d, fineDly code %2d, new MREP fine %2d\n"
 	},
-	{0x012d0003,
+	{0x012e0003,
 	 "PMU6: LRDIMM Writing final data buffer fine delay value nib %2d, trainDly %3d, fineDly code %2d\n"
 	},
-	{0x012e0003,
+	{0x012f0003,
 	 "PMU6: LRDIMM Writing data buffer fine delay type %d nib %2d, code %2d\n"
 	},
-	{0x012f0002,
+	{0x01300002,
 	 "PMU6: Writing final data buffer coarse delay value dbyte %2d, coarse = 0x%02x\n"
 	},
-	{0x01300003,
-	 "PMU4: data 0x%04x at MB addr 0x%08x saved at CSR addr 0x%08x\n"
-	},
 	{0x01310003,
-	 "PMU4: data 0x%04x at MB addr 0x%08x restored from CSR addr 0x%08x\n"
+	 "PMU4: data 0x%04x at MB addr 0x%08x saved at CSR addr 0x%08x\n"
 	},
 	{0x01320003,
-	 "PMU4: data 0x%04x at MB addr 0x%08x saved at CSR addr 0x%08x\n"
-	},
-	{0x01330003,
 	 "PMU4: data 0x%04x at MB addr 0x%08x restored from CSR addr 0x%08x\n"
 	},
-	{0x01340001,
+	{0x01330003,
+	 "PMU4: data 0x%04x at MB addr 0x%08x saved at CSR addr 0x%08x\n"
+	},
+	{0x01340003,
+	 "PMU4: data 0x%04x at MB addr 0x%08x restored from CSR addr 0x%08x\n"
+	},
+	{0x01350001,
 	 "PMU3: Update BC00, BC01, BC02 for rank-dimm 0x%02x\n"
 	},
-	{0x01350000,
+	{0x01360000,
 	 "PMU3: Writing D4 RDIMM RCD Control words F0RC00 -> F0RC0F\n"
 	},
-	{0x01360000,
+	{0x01370000,
 	 "PMU3: Disable parity in F0RC0E\n"
 	},
-	{0x01370000,
+	{0x01380000,
 	 "PMU3: Writing D4 RDIMM RCD Control words F1RC00 -> F1RC05\n"
 	},
-	{0x01380000,
+	{0x01390000,
 	 "PMU3: Writing D4 RDIMM RCD Control words F1RC1x -> F1RC9x\n"
 	},
-	{0x01390000,
+	{0x013a0000,
 	 "PMU3: Writing D4 Data buffer Control words BC00 -> BC0E\n"
 	},
-	{0x013a0002,
-	 "PMU1: setAltCL Sending MR0 0x%x cl=%d\n"
-	},
 	{0x013b0002,
-	 "PMU1: restoreFromAltCL Sending MR0 0x%x cl=%d\n"
+	 "PMU1: setAltCL Sending MR0 0x%04x cl=%d\n"
 	},
 	{0x013c0002,
-	 "PMU1: restoreAcsmFromAltCL Sending MR0 0x%x cl=%d\n"
+	 "PMU1: restoreFromAltCL Sending MR0 0x%04x cl=%d\n"
 	},
 	{0x013d0002,
+	 "PMU1: restoreAcsmFromAltCL Sending MR0 0x%04x cl=%d\n"
+	},
+	{0x013e0002,
 	 "PMU2: Setting D3R RC%d = 0x%01x\n"
 	},
-	{0x013e0000,
+	{0x013f0000,
 	 "PMU3: Writing D3 RDIMM RCD Control words RC0 -> RC11\n"
 	},
-	{0x013f0002,
+	{0x01400002,
 	 "PMU0: VrefDAC0/1 vddqStart %d dacToVddq %d\n"
 	},
-	{0x01400001,
-	 "PMU: Error: Messageblock phyVref=0x%x is above the limit for TSMC28's attenuated LPDDR4 receivers. Please see the pub databook\n"
-	},
 	{0x01410001,
-	 "PMU: Error: Messageblock phyVref=0x%x is above the limit for TSMC28's attenuated DDR4 receivers. Please see the pub databook\n"
+	 "PMU: Error: Messageblock phyVref=0x%04x is above the limit for TSMC28's attenuated LPDDR4 receivers. Please see the pub databook\n"
 	},
 	{0x01420001,
+	 "PMU: Error: Messageblock phyVref=0x%04x is above the limit for TSMC28's attenuated DDR4 receivers. Please see the pub databook\n"
+	},
+	{0x01430001,
 	 "PMU0: PHY VREF @ (%d/1000) VDDQ\n"
 	},
-	{0x01430002,
-	 "PMU0: initalizing phy vrefDacs to %d ExtVrefRange %x\n"
-	},
 	{0x01440002,
-	 "PMU0: initalizing global vref to %d range %d\n"
+	 "PMU0: initalizing phy vrefDacs to %d ExtVrefRange %04x\n"
 	},
 	{0x01450002,
+	 "PMU0: initalizing global vref to %d range %d\n"
+	},
+	{0x01460002,
 	 "PMU4: Setting initial device vrefDQ for CS%d to MR6 = 0x%04x\n"
 	},
-	{0x01460003,
+	{0x01470003,
 	 "PMU1: In write_level_fine() csn=%d dimm=%d pstate=%d\n"
 	},
-	{0x01470000,
+	{0x01480000,
 	 "PMU3: Fine write leveling hardware search increasing TxDqsDly until full bursts are seen\n"
 	},
-	{0x01480000,
+	{0x01490000,
 	 "PMU4: WL normalized pos   : ........................|........................\n"
 	},
-	{0x01490007,
+	{0x014a0007,
 	 "PMU4: WL margin for nib %2d: %08x%08x%08x%08x%08x%08x\n"
 	},
-	{0x014a0000,
+	{0x014b0000,
 	 "PMU4: WL normalized pos   : ........................|........................\n"
 	},
-	{0x014b0000,
+	{0x014c0000,
 	 "PMU3: Exiting write leveling mode\n"
 	},
-	{0x014c0001,
+	{0x014d0001,
 	 "PMU3: got %d for cl in load_wrlvl_acsm\n"
-	},
-	{0x014d0003,
-	 "PMU1: In write_level_coarse() csn=%d dimm=%d pstate=%d\n"
 	},
 	{0x014e0003,
-	 "PMU3: left eye edge search db:%d ln:%d dly:0x%x\n"
+	 "PMU1: In write_level_coarse() csn=%d dimm=%d pstate=%d\n"
 	},
 	{0x014f0003,
-	 "PMU3: right eye edge search db:%d ln:%d dly:0x%x\n"
+	 "PMU3: left eye edge search db:%d ln:%d dly:0x%04x\n"
 	},
-	{0x01500004,
-	 "PMU3: eye center db:%d ln:%d dly:0x%x (maxdq:%x)\n"
+	{0x01500003,
+	 "PMU3: right eye edge search db:%d ln:%d dly:0x%04x\n"
 	},
-	{0x01510003,
-	 "PMU3: Wrote to TxDqDly db:%d ln:%d dly:0x%x\n"
+	{0x01510004,
+	 "PMU3: eye center db:%d ln:%d dly:0x%04x (maxdq:%04x)\n"
 	},
 	{0x01520003,
-	 "PMU3: Wrote to TxDqDly db:%d ln:%d dly:0x%x\n"
+	 "PMU3: Wrote to TxDqDly db:%d ln:%d dly:0x%04x\n"
 	},
-	{0x01530002,
-	 "PMU3: Coarse write leveling dbyte%2d is still failing for TxDqsDly=0x%04x\n"
+	{0x01530003,
+	 "PMU3: Wrote to TxDqDly db:%d ln:%d dly:0x%04x\n"
 	},
 	{0x01540002,
+	 "PMU3: Coarse write leveling dbyte%2d is still failing for TxDqsDly=0x%04x\n"
+	},
+	{0x01550002,
 	 "PMU4: Coarse write leveling iteration %d saw %d data miscompares across the entire phy\n"
 	},
-	{0x01550000,
+	{0x01560000,
 	 "PMU: Error: Failed write leveling coarse\n"
 	},
-	{0x01560001,
+	{0x01570001,
 	 "PMU3: got %d for cl in load_wrlvl_acsm\n"
 	},
-	{0x01570003,
-	 "PMU3: In write_level_coarse() csn=%d dimm=%d pstate=%d\n"
-	},
 	{0x01580003,
-	 "PMU3: left eye edge search db:%d ln:%d dly:0x%x\n"
+	 "PMU3: In write_level_coarse() csn=%d dimm=%d pstate=%d\n"
 	},
 	{0x01590003,
-	 "PMU3: right eye edge search db: %d ln: %d dly: 0x%x\n"
+	 "PMU3: left eye edge search db:%d ln:%d dly:0x%04x\n"
 	},
-	{0x015a0004,
-	 "PMU3: eye center db: %d ln: %d dly: 0x%x (maxdq: 0x%x)\n"
+	{0x015a0003,
+	 "PMU3: right eye edge search db: %d ln: %d dly: 0x%04x\n"
 	},
-	{0x015b0003,
-	 "PMU3: Wrote to TxDqDly db: %d ln: %d dly: 0x%x\n"
+	{0x015b0004,
+	 "PMU3: eye center db: %d ln: %d dly: 0x%04x (maxdq: 0x%04x)\n"
 	},
 	{0x015c0003,
-	 "PMU3: Wrote to TxDqDly db: %d ln: %d dly: 0x%x\n"
+	 "PMU3: Wrote to TxDqDly db: %d ln: %d dly: 0x%04x\n"
 	},
-	{0x015d0002,
-	 "PMU3: Coarse write leveling nibble%2d is still failing for TxDqsDly=0x%04x\n"
+	{0x015d0003,
+	 "PMU3: Wrote to TxDqDly db: %d ln: %d dly: 0x%04x\n"
 	},
 	{0x015e0002,
-	 "PMU4: Coarse write leveling iteration %d saw %d data miscompares across the entire phy\n"
-	},
-	{0x015f0000,
-	 "PMU: Error: Failed write leveling coarse\n"
-	},
-	{0x01600000,
-	 "PMU4: WL normalized pos   : ................................|................................\n"
-	},
-	{0x01610009,
-	 "PMU4: WL margin for nib %2d: %08x%08x%08x%08x%08x%08x%08x%08x\n"
-	},
-	{0x01620000,
-	 "PMU4: WL normalized pos   : ................................|................................\n"
-	},
-	{0x01630001,
-	 "PMU8: Adjust margin after WL coarse to be larger than %d\n"
-	},
-	{0x01640001,
-	 "PMU: Error: All margin after write leveling coarse are smaller than minMargin %d\n"
-	},
-	{0x01650002,
-	 "PMU8: Decrement nib %d TxDqsDly by %d fine step\n"
-	},
-	{0x01660003,
-	 "PMU3: In write_level_coarse() csn=%d dimm=%d pstate=%d\n"
-	},
-	{0x01670005,
-	 "PMU2: Write level: dbyte %d nib%d dq/dmbi %2d dqsfine 0x%04x dqDly 0x%04x\n"
-	},
-	{0x01680002,
 	 "PMU3: Coarse write leveling nibble%2d is still failing for TxDqsDly=0x%04x\n"
 	},
-	{0x01690002,
+	{0x015f0002,
 	 "PMU4: Coarse write leveling iteration %d saw %d data miscompares across the entire phy\n"
 	},
-	{0x016a0000,
+	{0x01600000,
 	 "PMU: Error: Failed write leveling coarse\n"
 	},
-	{0x016b0001,
+	{0x01610000,
+	 "PMU4: WL normalized pos   : ................................|................................\n"
+	},
+	{0x01620009,
+	 "PMU4: WL margin for nib %2d: %08x%08x%08x%08x%08x%08x%08x%08x\n"
+	},
+	{0x01630000,
+	 "PMU4: WL normalized pos   : ................................|................................\n"
+	},
+	{0x01640001,
+	 "PMU8: Adjust margin after WL coarse to be larger than %d\n"
+	},
+	{0x01650001,
+	 "PMU: Error: All margin after write leveling coarse are smaller than minMargin %d\n"
+	},
+	{0x01660002,
+	 "PMU8: Decrement nib %d TxDqsDly by %d fine step\n"
+	},
+	{0x01670003,
+	 "PMU3: In write_level_coarse() csn=%d dimm=%d pstate=%d\n"
+	},
+	{0x01680005,
+	 "PMU2: Write level: dbyte %d nib%d dq/dmbi %2d dqsfine 0x%04x dqDly 0x%04x\n"
+	},
+	{0x01690002,
+	 "PMU3: Coarse write leveling nibble%2d is still failing for TxDqsDly=0x%04x\n"
+	},
+	{0x016a0002,
+	 "PMU4: Coarse write leveling iteration %d saw %d data miscompares across the entire phy\n"
+	},
+	{0x016b0000,
+	 "PMU: Error: Failed write leveling coarse\n"
+	},
+	{0x016c0001,
 	 "PMU3: DWL delay = %d\n"
 	},
-	{0x016c0003,
+	{0x016d0003,
 	 "PMU3: Errcnt for DWL nib %2d delay = %2d is %d\n"
 	},
-	{0x016d0002,
+	{0x016e0002,
 	 "PMU3: DWL nibble %d sampled a 1 at delay %d\n"
 	},
-	{0x016e0003,
+	{0x016f0003,
 	 "PMU3: DWL nibble %d passed at delay %d. Rising edge was at %d\n"
 	},
-	{0x016f0000,
+	{0x01700000,
 	 "PMU2: DWL did nto find a rising edge of memclk for all nibbles. Failing nibbles assumed to have rising edge close to fine delay 63\n"
 	},
-	{0x01700002,
+	{0x01710002,
 	 "PMU2:  Rising edge found in alias window, setting wrlvlDly for nibble %d = %d\n"
 	},
-	{0x01710002,
+	{0x01720002,
 	 "PMU: Error: Failed DWL for nib %d with %d one\n"
 	},
-	{0x01720003,
+	{0x01730003,
 	 "PMU2:  Rising edge not found in alias window with %d one, leaving wrlvlDly for nibble %d = %d\n"
 	},
 	{0x04000000,
@@ -1134,13 +1147,13 @@ const static struct phy_msg messages_1d[] = {
 	 "PMU0: Write CSR 0x%06x 0x%04x\n"
 	},
 	{0x04060002,
-	 "PMU0: hwt_init_ppgc_prbs(): Polynomial: %x, Deg: %d\n"
+	 "PMU0: hwt_init_ppgc_prbs(): Polynomial: %04x, Deg: %d\n"
 	},
 	{0x04070001,
-	 "PMU: Error: acsm_set_cmd to non existent instruction address %d\n"
+	 "PMU: Error: acsm_set_cmd to non existant instruction adddress %d\n"
 	},
 	{0x04080001,
-	 "PMU: Error: acsm_set_cmd with unknown ddr cmd 0x%x\n"
+	 "PMU: Error: acsm_set_cmd with unknown ddr cmd 0x%04x\n"
 	},
 	{0x0409000c,
 	 "PMU1: acsm_addr %02x, acsm_flgs %04x, ddr_cmd %02x, cmd_dly %02x, ddr_addr %04x, ddr_bnk %02x, ddr_cs %02x, cmd_rcnt %02x, AcsmSeq0/1/2/3 %04x %04x %04x %04x\n"
@@ -1185,7 +1198,7 @@ const static struct phy_msg messages_1d[] = {
 	 "PMU3: Exiting Boot Freq Mode.\n"
 	},
 	{0x04170002,
-	 "PMU3: Writing MR%d OP=%x\n"
+	 "PMU3: Writing MR%d OP=%04x\n"
 	},
 	{0x04180000,
 	 "PMU: Error: Delay too large in slomo\n"
@@ -1257,7 +1270,7 @@ const static struct phy_msg messages_2d[] = {
 	 "PMU0: DAC %d Range %d\n"
 	},
 	{0x00060003,
-	 "PMU0: Range %d, Range_idx %d, vref_idx offset %d\n"
+	 "PMU0: Range %d, Range_idx %d, vref_idx offset %d \n"
 	},
 	{0x00070002,
 	 "PMU0: MR 0x%04x -> VrefIdx %d\n"
@@ -1305,7 +1318,7 @@ const static struct phy_msg messages_2d[] = {
 	 "PMU3: Voltage Range = [%d, %d]\n"
 	},
 	{0x00160004,
-	 "PMU4: -- DB%d L%d -- centers: delay = %d, voltage = %d\n"
+	 "PMU4: -- DB%d L%d -- centers: delay = %d, voltage = %d \n"
 	},
 	{0x00170001,
 	 "PMU5: <<KEY>> 0 TxDqDlyTg%d <<KEY>> coarse(6:6) fine(5:0)\n"
@@ -1326,28 +1339,28 @@ const static struct phy_msg messages_2d[] = {
 	 "PMU3: Sending vref %d,  Mr = 0X%05x, to all devices\n"
 	},
 	{0x001d0004,
-	 "PMU4: -------- %dD Write Scanning TG %d (CS 0x%x) Lanes 0x%03x --------\n"
+	 "PMU4: -------- %dD Write Scanning TG %d (CS 0x%04x) Lanes 0x%03x --------\n"
 	},
 	{0x001e0002,
 	 "PMU0: training lanes 0x%03x using lanes 0x%03x\n"
 	},
 	{0x001f0003,
-	 "PMU4: ------- 2D-DFE Read Scanning TG %d (CS 0x%x) Lanes 0x%03x -------\n"
+	 "PMU4: ------- 2D-DFE Read Scanning TG %d (CS 0x%04x) Lanes 0x%03x -------\n"
 	},
 	{0x00200004,
-	 "PMU4: ------- %dD Read Scanning TG %d (CS 0x%x) Lanes 0x%03x -------\n"
+	 "PMU4: ------- %dD Read Scanning TG %d (CS 0x%04x) Lanes 0x%03x -------\n"
 	},
 	{0x00210003,
-	 "PMU4: TG%d MR1[13,6,5]=0x%x MR6[13,9,8]=0x%x\n"
+	 "PMU4: TG%d MR1[13,6,5]=0x%04x MR6[13,9,8]=0x%04x\n"
 	},
 	{0x00220002,
 	 "PMU0: training lanes 0x%03x using lanes 0x%03x\n"
 	},
 	{0x00230003,
-	 "PMU4: ------- 2D-DFE Read Scanning TG %d (CS 0x%x) Lanes 0x%03x -------\n"
+	 "PMU4: ------- 2D-DFE Read Scanning TG %d (CS 0x%04x) Lanes 0x%03x -------\n"
 	},
 	{0x00240004,
-	 "PMU4: ------- %dD Read Scanning TG %d (CS 0x%x) Lanes 0x%03x -------\n"
+	 "PMU4: ------- %dD Read Scanning TG %d (CS 0x%04x) Lanes 0x%03x -------\n"
 	},
 	{0x00250002,
 	 "PMU0: training lanes 0x%03x using lanes 0x%03x\n"
@@ -1356,7 +1369,7 @@ const static struct phy_msg messages_2d[] = {
 	 "PMU3: Sending vref %d,  Mr = 0X%05x, to all devices\n"
 	},
 	{0x00270004,
-	 "PMU4: -------- %dD Write Scanning TG %d (CS 0x%x) Lanes 0x%03x --------\n"
+	 "PMU4: -------- %dD Write Scanning TG %d (CS 0x%04x) Lanes 0x%03x --------\n"
 	},
 	{0x00280001,
 	 "PMU0: input %d\n"
@@ -1371,13 +1384,13 @@ const static struct phy_msg messages_2d[] = {
 	 "PMU4: Delay Weight = %d, Voltage Weight = %d\n"
 	},
 	{0x002c0003,
-	 "PMU0: raw 0x%x allFine %d incDec %d"
+	 "PMU0: raw 0x%04x allFine %d incDec %d"
 	},
 	{0x002d0008,
-	 "PMU0: db%d l%d, voltage 0x%x (u_r %d) delay 0x%x (u_r %d) - lcdl %d mask 0x%x\n"
+	 "PMU0: db%d l%d, voltage 0x%04x (u_r %d) delay 0x%04x (u_r %d) - lcdl %d mask 0x%04x\n"
 	},
 	{0x002e0005,
-	 "PMU0: DB%d L%d, Eye %d, Seed = (0x%x, 0x%x)\n"
+	 "PMU0: DB%d L%d, Eye %d, Seed = (0x%04x, 0x%04x)\n"
 	},
 	{0x002f0002,
 	 "PMU3: 2D Enables       : %d,                    1,                %d\n"
@@ -1431,1355 +1444,1383 @@ const static struct phy_msg messages_2d[] = {
 	 "PMU0: center (%d,%d) weight = %d\n"
 	},
 	{0x00400003,
-	 "PMU4: Eye argest blob area %d from %d to %d\n"
+	 "PMU4: Eye largest blob area %d from %d to %d\n"
 	},
 	{0x00410002,
 	 "PMU0: Compute centroid min_x %d max_x %d\n"
 	},
 	{0x00420003,
-	 "PMU0: Compute centroid sumLnDlyWidth %d sumLnVrefWidth %d sumLnWidht %d\n"
+	 "PMU0: Compute centroid sumLnDlyWidth %d sumLnVrefWidth %d sumLnWidth %d\n"
 	},
 	{0x00430000,
 	 "PMU: Error: No passing region found for 1 or more lanes. Set hdtCtrl=4 to see passing regions\n"
 	},
 	{0x00440003,
-	 "PMU0: Centroid ( %d, %d ) found with sumLnWidht %d\n"
+	 "PMU0: Centroid ( %d, %d ) found with sumLnWidth %d\n"
 	},
 	{0x00450003,
 	 "PMU0: Optimal allFine Center ( %d + %d ,%d )\n"
 	},
-	{0x00460003,
-	 "PMU3: point %d starting at (%d,%d)\n"
+	{0x00460004,
+	 "PMU0: Compute sumDlyVrefWidth %d sumVrefWidth %d sumVrefDlyWidth %d sumDlyWidth %d\n"
 	},
-	{0x00470002,
-	 "PMU0: picking left (%d > %d)\n"
-	},
-	{0x00480002,
-	 "PMU0: picking right (%d > %d)\n"
-	},
-	{0x00490002,
-	 "PMU0: picking down (%d > %d)\n"
-	},
-	{0x004a0002,
-	 "PMU0: picking up (%d > %d)\n"
-	},
-	{0x004b0009,
-	 "PMU3: new center @ (%3d, %3d). Moved (%2i, %2i) -- L %d, R %d, C %d, U %d, D %d\n"
-	},
-	{0x004c0003,
-	 "PMU3: cordNum %d imporved %d to %d\n"
-	},
-	{0x004d0000,
+	{0x00470000,
 	 "PMU: Error: No passing region found for 1 or more lanes. Set hdtCtrl=4 to see passing regions\n"
 	},
-	{0x004e0004,
+	{0x00480002,
+	 "PMU0: Average center ( %d, %d ) found\n"
+	},
+	{0x00490003,
+	 "PMU0: Optimal allFine Center ( %d + %d ,%d )\n"
+	},
+	{0x004a0003,
+	 "PMU3: point %d starting at (%d,%d)\n"
+	},
+	{0x004b0006,
+	 "PMU3: point %d starting at (%d,%d) with x_step %d y_step %d for %d iterations\n"
+	},
+	{0x004c0002,
+	 "PMU0: picking left (%d > %d)\n"
+	},
+	{0x004d0002,
+	 "PMU0: picking right (%d > %d)\n"
+	},
+	{0x004e0002,
+	 "PMU0: picking down (%d > %d)\n"
+	},
+	{0x004f0002,
+	 "PMU0: picking up (%d > %d)\n"
+	},
+	{0x00500009,
+	 "PMU3: new center @ (%3d, %3d). Moved (%2i, %2i) -- L %d, R %d, C %d, U %d, D %d\n"
+	},
+	{0x00510003,
+	 "PMU3: cordNum %d improved %d to %d\n"
+	},
+	{0x00520000,
+	 "PMU: Error: No passing region found for 1 or more lanes. Set hdtCtrl=4 to see passing regions\n"
+	},
+	{0x00530004,
 	 "PMU0: Optimal allFine Center ( %d + %d ,%d ), found with weight %d.\n"
 	},
-	{0x004f0003,
+	{0x00540003,
 	 "PMU0: merging lanes=%d..%d, centerMerge_t %d\n"
 	},
-	{0x00500001,
+	{0x00550001,
 	 "PMU0: laneVal %d is disable\n"
 	},
-	{0x00510002,
+	{0x00560002,
 	 "PMU0: checking common center %d against current center %d\n"
 	},
-	{0x00520001,
+	{0x00570001,
 	 "PMU: Error: getCompoundEye Called on lane%d eye with non-compatible centers\n"
 	},
-	{0x00530001,
+	{0x00580001,
 	 "PMU0: laneItr %d is disable\n"
 	},
-	{0x00540005,
+	{0x00590005,
 	 "PMU0: lane %d, data_idx %d, offset_idx %d, = [%d..%d]\n"
 	},
-	{0x00550003,
+	{0x005a0003,
 	 "PMU0: lane %d, data_idx %d, offset_idx %d, offset_idx out of range!\n"
 	},
-	{0x00560003,
+	{0x005b0003,
 	 "PMU0: mergeData[%d] = max_v_low %d, min_v_high %d\n"
 	},
-	{0x00570005,
+	{0x005c0005,
 	 "PMU1: writing merged center (%d,%d) back to dataBlock[%d]. doDelay %d, doVoltage %d\n"
 	},
-	{0x00580005,
+	{0x005d0005,
 	 "PMU0: applying relative (%i,%i) back to dataBlock[%d]. doDelay %d, doVoltage %d\n"
 	},
-	{0x00590002,
-	 "PMU0: drvstren %x is idx %d in the table\n"
+	{0x005e0002,
+	 "PMU0: drvstren %04x is idx %d in the table\n"
 	},
-	{0x005a0000,
+	{0x005f0000,
 	 "PMU4: truncating FFE drive strength search range. Out of drive strengths to check.\n"
 	},
-	{0x005b0002,
+	{0x00600002,
 	 "PMU5: Weak 1 changed to pull-up %5d ohms, pull-down %5d ohms\n"
 	},
-	{0x005c0002,
+	{0x00610002,
 	 "PMU5: Weak 0 changed to pull-up %5d ohms, pull-down %5d ohms\n"
 	},
-	{0x005d0003,
+	{0x00620003,
 	 "PMU0: dlyMargin L %02d R %02d, min %02d\n"
 	},
-	{0x005e0003,
+	{0x00630003,
 	 "PMU0: vrefMargin T %02d B %02d, min %02d\n"
 	},
-	{0x005f0002,
+	{0x00640002,
 	 "PMU3: new minimum VrefMargin (%d < %d) recorded\n"
 	},
-	{0x00600002,
+	{0x00650002,
 	 "PMU3: new minimum DlyMargin (%d < %d) recorded\n"
 	},
-	{0x00610000,
+	{0x00660000,
 	 "PMU0: RX finding the per-nibble, per-tg rxClkDly values\n"
 	},
-	{0x00620003,
+	{0x00670003,
 	 "PMU0: Merging collected eyes [%d..%d) and analyzing for nibble %d's optimal rxClkDly\n"
 	},
-	{0x00630002,
-	 "PMU0: -- centers: delay = %d, voltage = %d\n"
+	{0x00680002,
+	 "PMU0: -- centers: delay = %d, voltage = %d \n"
 	},
-	{0x00640003,
-	 "PMU0: dumping optimized eye -- centers: delay = %d (%d), voltage = %d\n"
+	{0x00690003,
+	 "PMU0: dumping optimized eye -- centers: delay = %d (%d), voltage = %d \n"
 	},
-	{0x00650000,
+	{0x006a0000,
 	 "PMU0: TX optimizing txDqDelays\n"
 	},
-	{0x00660001,
+	{0x006b0001,
 	 "PMU3: Analyzing collected eye %d for a lane's optimal TxDqDly\n"
 	},
-	{0x00670001,
+	{0x006c0001,
 	 "PMU0: eye-lane %d is disable\n"
 	},
-	{0x00680000,
+	{0x006d0000,
 	 "PMU0: TX optimizing device voltages\n"
 	},
-	{0x00690002,
+	{0x006e0002,
 	 "PMU0: Merging collected eyes [%d..%d) and analyzing for optimal device txVref\n"
 	},
-	{0x006a0002,
-	 "PMU0: -- centers: delay = %d, voltage = %d\n"
-	},
-	{0x006b0003,
-	 "PMU0: dumping optimized eye -- centers: delay = %d (%d), voltage = %d\n"
-	},
-	{0x006c0000,
-	 "PMU4: VrefDac (compound all TG) Bottom Top -> Center\n"
-	},
-	{0x006d0005,
-	 "PMU4: DB%d L%d   %3d   %3d  ->  %3d (DISCONNECTED)\n"
-	},
-	{0x006e0005,
-	 "PMU4: DB%d L%d   %3d   %3d  ->  %3d\n"
-	},
-	{0x006f0005,
-	 "PMU0: writing rxClkDelay for tg%d db%1d nib%1d to 0x%02x from eye[%02d] (DISCONNECTED)\n"
+	{0x006f0002,
+	 "PMU0: -- centers: delay = %d, voltage = %d \n"
 	},
 	{0x00700003,
-	 "PMU: Error: Dbyte %d nibble %d's optimal rxClkDly of 0x%x is out of bounds\n"
+	 "PMU0: dumping optimized eye -- centers: delay = %d (%d), voltage = %d \n"
 	},
-	{0x00710005,
-	 "PMU0: writing rxClkDelay for tg%d db%1d nib%1d to 0x%02x from eye[%02d]\n"
+	{0x00710000,
+	 "PMU4: VrefDac (compound all TG) Bottom Top -> Center\n"
 	},
 	{0x00720005,
+	 "PMU4: DB%d L%d   %3d   %3d  ->  %3d (DISCONNECTED)\n"
+	},
+	{0x00730005,
+	 "PMU4: DB%d L%d   %3d   %3d  ->  %3d\n"
+	},
+	{0x00740005,
+	 "PMU0: writing rxClkDelay for tg%d db%1d nib%1d to 0x%02x from eye[%02d] (DISCONNECTED)\n"
+	},
+	{0x00750003,
+	 "PMU: Error: Dbyte %d nibble %d's optimal rxClkDly of 0x%04x is out of bounds\n"
+	},
+	{0x00760005,
+	 "PMU0: writing rxClkDelay for tg%d db%1d nib%1d to 0x%02x from eye[%02d]\n"
+	},
+	{0x00770005,
 	 "PMU0: tx voltage for tg%2d nib%2d to %3d (%d) from eye[%02d]\n"
 	},
-	{0x00730001,
+	{0x00780001,
 	 "PMU0: vref Sum = %d\n"
 	},
-	{0x00740004,
+	{0x00790004,
 	 "PMU0: tx voltage total is %d/%d -> %d -> %d\n"
 	},
-	{0x00750007,
+	{0x007a0007,
 	 "PMU0: writing txDqDelay for tg%1d db%1d ln%1d to  0x%02x (%d coarse, %d fine) from eye[%02d] (DISCONNECTED)\n"
 	},
-	{0x00760003,
-	 "PMU: Error: Dbyte %d lane %d's optimal txDqDly of 0x%x is out of bounds\n"
+	{0x007b0003,
+	 "PMU: Error: Dbyte %d lane %d's optimal txDqDly of 0x%04x is out of bounds\n"
 	},
-	{0x00770007,
+	{0x007c0007,
 	 "PMU0: writing txDqDelay for tg%1d db%1d l%1d to  0x%02x (%d coarse, %d fine) from eye[%02d]\n"
 	},
-	{0x00780002,
-	 "PMU0: %d (0=tx, 1=rx) TgMask for this simulation: %x\n"
+	{0x007d0002,
+	 "PMU0: %d (0=tx, 1=rx) TgMask for this simulation: %04x\n"
 	},
-	{0x00790001,
+	{0x007e0001,
 	 "PMU0: eye-byte %d is disable\n"
 	},
-	{0x007a0001,
-	 "PMU0: eye-lane %d is disable\n"
-	},
-	{0x007b0003,
-	 "PMU10: Start d4_2d_lrdimm_rx_dfe dimm %d nbTap %d biasStepMode %d\n"
-	},
-	{0x007c0001,
-	 "PMU10: DB DFE feature not fully supported, F2BCEx value is 0x%02x\n"
-	},
-	{0x007d0001,
-	 "PMU10: DB DFE feature fully supported, F2BCEx value is 0x%02x\n"
-	},
-	{0x007e0002,
-	 "PMU8: Start d4_2d_lrdimm_rx_dfe for tap %d biasStepInc %d\n"
-	},
 	{0x007f0001,
-	 "PMU7: Start d4_2d_lrdimm_rx_dfe tapCoff 0x%0x\n"
+	 "PMU0: eye-lane %d is disable\n"
 	},
 	{0x00800003,
-	 "PMU6: d4_2d_lrdimm_rx_dfe db %d lane %d area %d\n"
+	 "PMU10: Start d4_2d_lrdimm_rx_dfe dimm %d nbTap %d biasStepMode %d\n"
 	},
-	{0x00810004,
-	 "PMU7: d4_2d_lrdimm_rx_dfe db %d lane %d max area %d best bias 0x%0x\n"
+	{0x00810001,
+	 "PMU10: DB DFE feature not fully supported, F2BCEx value is 0x%02x\n"
 	},
 	{0x00820001,
-	 "PMU0: eye-lane %d is disable\n"
+	 "PMU10: DB DFE feature fully supported, F2BCEx value is 0x%02x\n"
 	},
-	{0x00830003,
-	 "PMU5: Setting 0x%x improved rank weight (%4d < %4d)\n"
+	{0x00830002,
+	 "PMU8: Start d4_2d_lrdimm_rx_dfe for tap %d biasStepInc %d\n"
 	},
 	{0x00840001,
-	 "PMU4: Setting 0x%x still optimal\n"
+	 "PMU7: Start d4_2d_lrdimm_rx_dfe tapCoff 0x%0x\n"
 	},
-	{0x00850002,
-	 "PMU5: ---- Training CS%d MR%d DRAM Equalization ----\n"
+	{0x00850003,
+	 "PMU6: d4_2d_lrdimm_rx_dfe db %d lane %d area %d\n"
 	},
-	{0x00860001,
+	{0x00860004,
+	 "PMU7: d4_2d_lrdimm_rx_dfe db %d lane %d max area %d best bias 0x%0x\n"
+	},
+	{0x00870001,
 	 "PMU0: eye-lane %d is disable\n"
 	},
-	{0x00870003,
+	{0x00880003,
+	 "PMU5: Setting 0x%04x improved rank weight (%4d < %4d)\n"
+	},
+	{0x00890001,
+	 "PMU4: Setting 0x%04x still optimal\n"
+	},
+	{0x008a0002,
+	 "PMU5: ---- Training CS%d MR%d DRAM Equalization ----\n"
+	},
+	{0x008b0001,
+	 "PMU0: eye-lane %d is disable\n"
+	},
+	{0x008c0003,
 	 "PMU0: eye %d weight %d allTgWeight %d\n"
 	},
-	{0x00880002,
+	{0x008d0002,
 	 "PMU5: FFE figure of merit improved from %d to %d\n"
 	},
-	{0x00890002,
+	{0x008e0002,
 	 "PMU: Error: LP4 rank %d cannot be mapped on tg %d\n"
 	},
-	{0x008a0000,
+	{0x008f0000,
 	 "PMU4: Adjusting vrefDac0 for just 1->x transitions\n"
 	},
-	{0x008b0000,
+	{0x00900000,
 	 "PMU4: Adjusting vrefDac1 for just 0->x transitions\n"
 	},
-	{0x008c0001,
+	{0x00910001,
 	 "PMU5: Strong 1, pull-up %d ohms\n"
 	},
-	{0x008d0001,
+	{0x00920001,
 	 "PMU5: Strong 0, pull-down %d ohms\n"
 	},
-	{0x008e0000,
+	{0x00930000,
 	 "PMU4: Enabling weak drive strengths (FFE)\n"
 	},
-	{0x008f0000,
+	{0x00940000,
 	 "PMU5: Changing all weak driver strengths\n"
 	},
-	{0x00900000,
+	{0x00950000,
 	 "PMU5: Finalizing weak drive strengths\n"
 	},
-	{0x00910000,
+	{0x00960000,
 	 "PMU4: retraining with optimal drive strength settings\n"
 	},
-	{0x00920002,
-	 "PMU0: targeting CsX = %d and CsY = %d\n"
+	{0x00970002,
+	 "PMU0: targetting CsX = %d and CsY = %d\n"
 	},
-	{0x00930001,
-	 "PMU1:prbsGenCtl:%x\n"
+	{0x00980001,
+	 "PMU1:prbsGenCtl:%04x\n"
 	},
-	{0x00940000,
+	{0x00990000,
 	 "PMU1: loading 2D acsm sequence\n"
 	},
-	{0x00950000,
+	{0x009a0000,
 	 "PMU1: loading 1D acsm sequence\n"
 	},
-	{0x00960002,
+	{0x009b0002,
 	 "PMU3: %d memclocks @ %d to get half of 300ns\n"
 	},
-	{0x00970000,
+	{0x009c0000,
 	 "PMU: Error: User requested MPR read pattern for read DQS training in DDR3 Mode\n"
 	},
-	{0x00980000,
+	{0x009d0000,
 	 "PMU3: Running 1D search for left eye edge\n"
 	},
-	{0x00990001,
+	{0x009e0001,
 	 "PMU1: In Phase Left Edge Search cs %d\n"
 	},
-	{0x009a0001,
+	{0x009f0001,
 	 "PMU1: Out of Phase Left Edge Search cs %d\n"
 	},
-	{0x009b0000,
+	{0x00a00000,
 	 "PMU3: Running 1D search for right eye edge\n"
 	},
-	{0x009c0001,
+	{0x00a10001,
 	 "PMU1: In Phase Right Edge Search cs %d\n"
 	},
-	{0x009d0001,
+	{0x00a20001,
 	 "PMU1: Out of Phase Right Edge Search cs %d\n"
 	},
-	{0x009e0001,
+	{0x00a30001,
 	 "PMU1: mxRdLat training pstate %d\n"
 	},
-	{0x009f0001,
+	{0x00a40001,
 	 "PMU1: mxRdLat search for cs %d\n"
 	},
-	{0x00a00001,
-	 "PMU0: MaxRdLat non consistent DtsmLoThldXingInd 0x%03x\n"
+	{0x00a50001,
+	 "PMU0: MaxRdLat non consistant DtsmLoThldXingInd 0x%03x\n"
 	},
-	{0x00a10003,
-	 "PMU4: CS %d Dbyte %d worked with DFIMRL = %d DFICLKs\n"
+	{0x00a60003,
+	 "PMU4: CS %d Dbyte %d worked with DFIMRL = %d DFICLKs \n"
 	},
-	{0x00a20004,
+	{0x00a70004,
 	 "PMU3: MaxRdLat Read Lane err mask for csn %d, DFIMRL %2d DFIClks, dbyte %d = 0x%03x\n"
 	},
-	{0x00a30003,
+	{0x00a80003,
 	 "PMU3: MaxRdLat Read Lane err mask for csn %d DFIMRL %2d, All dbytes = 0x%03x\n"
 	},
-	{0x00a40001,
+	{0x00a90001,
 	 "PMU: Error: CS%d failed to find a DFIMRL setting that worked for all bytes during MaxRdLat training\n"
 	},
-	{0x00a50002,
+	{0x00aa0002,
 	 "PMU3: Smallest passing DFIMRL for all dbytes in CS%d = %d DFIClks\n"
 	},
-	{0x00a60000,
+	{0x00ab0000,
 	 "PMU: Error: No passing DFIMRL value found for any chip select during MaxRdLat training\n"
 	},
-	{0x00a70003,
+	{0x00ac0003,
 	 "PMU: Error: Dbyte %d lane %d txDqDly passing region is too small (width = %d)\n"
 	},
-	{0x00a80006,
-	 "PMU10: Adjusting rxclkdly db %d nib %d from %d+%d=%d->%d\n"
+	{0x00ad0006,
+	 "PMU4: Adjusting rxclkdly db %d nib %d from %d+%d=%d->%d\n"
 	},
-	{0x00a90000,
+	{0x00ae0000,
 	 "PMU4: TxDqDly Passing Regions (EyeLeft EyeRight -> EyeCenter) Units=1/32 UI\n"
 	},
-	{0x00aa0005,
+	{0x00af0005,
 	 "PMU4: DB %d Lane %d: %3d %3d -> %3d\n"
 	},
-	{0x00ab0002,
+	{0x00b00002,
 	 "PMU2: TXDQ delayLeft[%2d] = %3d (DISCONNECTED)\n"
 	},
-	{0x00ac0004,
+	{0x00b10004,
 	 "PMU2: TXDQ delayLeft[%2d] = %3d oopScaled = %3d selectOop %d\n"
 	},
-	{0x00ad0002,
+	{0x00b20002,
 	 "PMU2: TXDQ delayRight[%2d] = %3d (DISCONNECTED)\n"
 	},
-	{0x00ae0004,
+	{0x00b30004,
 	 "PMU2: TXDQ delayRight[%2d] = %3d oopScaled = %3d selectOop %d\n"
 	},
-	{0x00af0003,
+	{0x00b40003,
 	 "PMU: Error: Dbyte %d lane %d txDqDly passing region is too small (width = %d)\n"
 	},
-	{0x00b00000,
+	{0x00b50000,
 	 "PMU4: TxDqDly Passing Regions (EyeLeft EyeRight -> EyeCenter) Units=1/32 UI\n"
 	},
-	{0x00b10002,
+	{0x00b60002,
 	 "PMU4: DB %d Lane %d: (DISCONNECTED)\n"
 	},
-	{0x00b20005,
+	{0x00b70005,
 	 "PMU4: DB %d Lane %d: %3d %3d -> %3d\n"
 	},
-	{0x00b30002,
+	{0x00b80002,
 	 "PMU3: Running 1D search csn %d for DM Right/NotLeft(%d) eye edge\n"
 	},
-	{0x00b40002,
+	{0x00b90002,
 	 "PMU3: WrDq DM byte%2d with Errcnt %d\n"
 	},
-	{0x00b50002,
+	{0x00ba0002,
 	 "PMU3: WrDq DM byte%2d avgDly 0x%04x\n"
 	},
-	{0x00b60002,
+	{0x00bb0002,
 	 "PMU1: WrDq DM byte%2d with Errcnt %d\n"
 	},
-	{0x00b70001,
+	{0x00bc0001,
 	 "PMU: Error: Dbyte %d txDqDly DM training did not start inside the eye\n"
 	},
-	{0x00b80000,
+	{0x00bd0000,
 	 "PMU4: DM TxDqDly Passing Regions (EyeLeft EyeRight -> EyeCenter) Units=1/32 UI\n"
 	},
-	{0x00b90002,
+	{0x00be0002,
 	 "PMU4: DB %d Lane %d: (DISCONNECTED)\n"
 	},
-	{0x00ba0005,
+	{0x00bf0005,
 	 "PMU4: DB %d Lane %d: %3d %3d -> %3d\n"
 	},
-	{0x00bb0003,
+	{0x00c00003,
 	 "PMU: Error: Dbyte %d lane %d txDqDly DM passing region is too small (width = %d)\n"
 	},
-	{0x00bc0004,
+	{0x00c10004,
 	 "PMU3: Errcnt for MRD/MWD search nib %2d delay = (%d, 0x%02x) = %d\n"
 	},
-	{0x00bd0000,
+	{0x00c20000,
 	 "PMU3: Precharge all open banks\n"
 	},
-	{0x00be0002,
-	 "PMU: Error: Dbyte %d nibble %d found mutliple working coarse delay setting for MRD/MWD\n"
+	{0x00c30002,
+	 "PMU: Error: Dbyte %d nibble %d found multiple working coarse delay setting for MRD/MWD\n"
 	},
-	{0x00bf0000,
+	{0x00c40000,
 	 "PMU4: MRD Passing Regions (coarseVal, fineLeft fineRight -> fineCenter)\n"
 	},
-	{0x00c00000,
+	{0x00c50000,
 	 "PMU4: MWD Passing Regions (coarseVal, fineLeft fineRight -> fineCenter)\n"
 	},
-	{0x00c10004,
-	 "PMU10: Warning: DB %d nibble %d has multiple working coarse delays, %d and %d, choosing the smaller delay\n"
+	{0x00c60004,
+	 "PMU10: Warning: DB %d nibble %d has multiple working coarse positions, %d and %d, choosing the smaller delay\n"
 	},
-	{0x00c20003,
+	{0x00c70003,
 	 "PMU: Error: Dbyte %d nibble %d MRD/MWD passing region is too small (width = %d)\n"
 	},
-	{0x00c30006,
+	{0x00c80006,
 	 "PMU4: DB %d nibble %d: %3d, %3d %3d -> %3d\n"
 	},
-	{0x00c40002,
+	{0x00c90002,
 	 "PMU1: Start MRD/nMWD %d for csn %d\n"
 	},
-	{0x00c50002,
+	{0x00ca0002,
 	 "PMU2: RXDQS delayLeft[%2d] = %3d (DISCONNECTED)\n"
 	},
-	{0x00c60006,
+	{0x00cb0006,
 	 "PMU2: RXDQS delayLeft[%2d] = %3d delayOop[%2d] = %3d OopScaled %4d, selectOop %d\n"
 	},
-	{0x00c70002,
+	{0x00cc0002,
 	 "PMU2: RXDQS delayRight[%2d] = %3d (DISCONNECTED)\n"
 	},
-	{0x00c80006,
+	{0x00cd0006,
 	 "PMU2: RXDQS delayRight[%2d] = %3d delayOop[%2d] = %4d OopScaled %4d, selectOop %d\n"
 	},
-	{0x00c90000,
+	{0x00ce0000,
 	 "PMU4: RxClkDly Passing Regions (EyeLeft EyeRight -> EyeCenter)\n"
 	},
-	{0x00ca0002,
+	{0x00cf0002,
 	 "PMU4: DB %d nibble %d: (DISCONNECTED)\n"
 	},
-	{0x00cb0005,
+	{0x00d00005,
 	 "PMU4: DB %d nibble %d: %3d %3d -> %3d\n"
 	},
-	{0x00cc0003,
+	{0x00d10003,
 	 "PMU: Error: Dbyte %d nibble %d rxClkDly passing region is too small (width = %d)\n"
 	},
-	{0x00cd0002,
+	{0x00d20002,
 	 "PMU0: goodbar = %d for RDWR_BLEN %d\n"
 	},
-	{0x00ce0001,
+	{0x00d30001,
 	 "PMU3: RxClkDly = %d\n"
 	},
-	{0x00cf0005,
+	{0x00d40005,
 	 "PMU0: db %d l %d absLane %d -> bottom %d top %d\n"
 	},
-	{0x00d00009,
+	{0x00d50009,
 	 "PMU3: BYTE %d - %3d %3d %3d %3d %3d %3d %3d %3d\n"
 	},
-	{0x00d10002,
+	{0x00d60002,
 	 "PMU: Error: dbyte %d lane %d's per-lane vrefDAC's had no passing region\n"
 	},
-	{0x00d20004,
+	{0x00d70004,
 	 "PMU0: db%d l%d - %d %d\n"
 	},
-	{0x00d30002,
+	{0x00d80002,
 	 "PMU0: goodbar = %d for RDWR_BLEN %d\n"
 	},
-	{0x00d40004,
+	{0x00d90004,
 	 "PMU3: db%d l%d saw %d issues at rxClkDly %d\n"
 	},
-	{0x00d50003,
+	{0x00da0003,
 	 "PMU3: db%d l%d first saw a pass->fail edge at rxClkDly %d\n"
 	},
-	{0x00d60002,
+	{0x00db0002,
 	 "PMU3: lane %d PBD = %d\n"
 	},
-	{0x00d70003,
+	{0x00dc0003,
 	 "PMU3: db%d l%d first saw a DBI pass->fail edge at rxClkDly %d\n"
 	},
-	{0x00d80003,
+	{0x00dd0003,
 	 "PMU2: db%d l%d already passed rxPBD = %d\n"
 	},
-	{0x00d90003,
+	{0x00de0003,
 	 "PMU0: db%d l%d, PBD = %d\n"
 	},
-	{0x00da0002,
+	{0x00df0002,
 	 "PMU: Error: dbyte %d lane %d failed read deskew\n"
 	},
-	{0x00db0003,
+	{0x00e00003,
 	 "PMU0: db%d l%d, inc PBD = %d\n"
 	},
-	{0x00dc0003,
+	{0x00e10003,
 	 "PMU1: Running lane deskew on pstate %d csn %d rdDBIEn %d\n"
 	},
-	{0x00dd0000,
+	{0x00e20000,
 	 "PMU: Error: Read deskew training has been requested, but csrMajorModeDbyte[2] is set\n"
 	},
-	{0x00de0002,
+	{0x00e30002,
 	 "PMU1: AcsmCsMapCtrl%02d 0x%04x\n"
 	},
-	{0x00df0002,
+	{0x00e40002,
 	 "PMU1: AcsmCsMapCtrl%02d 0x%04x\n"
 	},
-	{0x00e00001,
+	{0x00e50001,
 	 "PMU: Error: Wrong PMU image loaded. message Block DramType = 0x%02x, but image built for D3U Type\n"
 	},
-	{0x00e10001,
+	{0x00e60001,
 	 "PMU: Error: Wrong PMU image loaded. message Block DramType = 0x%02x, but image built for D3R Type\n"
 	},
-	{0x00e20001,
+	{0x00e70001,
 	 "PMU: Error: Wrong PMU image loaded. message Block DramType = 0x%02x, but image built for D4U Type\n"
 	},
-	{0x00e30001,
+	{0x00e80001,
 	 "PMU: Error: Wrong PMU image loaded. message Block DramType = 0x%02x, but image built for D4R Type\n"
 	},
-	{0x00e40001,
+	{0x00e90001,
 	 "PMU: Error: Wrong PMU image loaded. message Block DramType = 0x%02x, but image built for D4LR Type\n"
 	},
-	{0x00e50000,
-	 "PMU: Error: Both 2t timing mode and ddr4 geardown mode specified in the messageblock's PhyCfg and MR3 fields. Only one can be enabled\n"
+	{0x00ea0000,
+	 "PMU: Error: Both 2t timing mode and ddr4 geardown mode specifed in the messageblock's PhyCfg and MR3 fields. Only one can be enabled\n"
 	},
-	{0x00e60003,
+	{0x00eb0003,
 	 "PMU10: PHY TOTALS - NUM_DBYTES %d NUM_NIBBLES %d NUM_ANIBS %d\n"
 	},
-	{0x00e70006,
+	{0x00ec0006,
 	 "PMU10: CSA=0x%02x, CSB=0x%02x, TSTAGES=0x%04x, HDTOUT=%d, MMISC=%d DRAMFreq=%dMT DramType=LPDDR3\n"
 	},
-	{0x00e80006,
+	{0x00ed0006,
 	 "PMU10: CSA=0x%02x, CSB=0x%02x, TSTAGES=0x%04x, HDTOUT=%d, MMISC=%d DRAMFreq=%dMT DramType=LPDDR4\n"
 	},
-	{0x00e90008,
+	{0x00ee0008,
 	 "PMU10: CS=0x%02x, TSTAGES=0x%04x, HDTOUT=%d, 2T=%d, MMISC=%d AddrMirror=%d DRAMFreq=%dMT DramType=%d\n"
 	},
-	{0x00ea0004,
+	{0x00ef0004,
 	 "PMU10: Pstate%d MR0=0x%04x MR1=0x%04x MR2=0x%04x\n"
 	},
-	{0x00eb0008,
+	{0x00f00008,
 	 "PMU10: Pstate%d MRS MR0=0x%04x MR1=0x%04x MR2=0x%04x MR3=0x%04x MR4=0x%04x MR5=0x%04x MR6=0x%04x\n"
 	},
-	{0x00ec0005,
+	{0x00f10005,
 	 "PMU10: Pstate%d MRS MR1_A0=0x%04x MR2_A0=0x%04x MR3_A0=0x%04x MR11_A0=0x%04x\n"
 	},
-	{0x00ed0000,
+	{0x00f20000,
 	 "PMU10: UseBroadcastMR set. All ranks and channels use MRXX_A0 for MR settings.\n"
 	},
-	{0x00ee0005,
+	{0x00f30005,
 	 "PMU10: Pstate%d MRS MR01_A0=0x%02x MR02_A0=0x%02x MR03_A0=0x%02x MR11_A0=0x%02x\n"
 	},
-	{0x00ef0005,
+	{0x00f40005,
 	 "PMU10: Pstate%d MRS MR12_A0=0x%02x MR13_A0=0x%02x MR14_A0=0x%02x MR22_A0=0x%02x\n"
 	},
-	{0x00f00005,
+	{0x00f50005,
 	 "PMU10: Pstate%d MRS MR01_A1=0x%02x MR02_A1=0x%02x MR03_A1=0x%02x MR11_A1=0x%02x\n"
 	},
-	{0x00f10005,
+	{0x00f60005,
 	 "PMU10: Pstate%d MRS MR12_A1=0x%02x MR13_A1=0x%02x MR14_A1=0x%02x MR22_A1=0x%02x\n"
 	},
-	{0x00f20005,
+	{0x00f70005,
 	 "PMU10: Pstate%d MRS MR01_B0=0x%02x MR02_B0=0x%02x MR03_B0=0x%02x MR11_B0=0x%02x\n"
 	},
-	{0x00f30005,
+	{0x00f80005,
 	 "PMU10: Pstate%d MRS MR12_B0=0x%02x MR13_B0=0x%02x MR14_B0=0x%02x MR22_B0=0x%02x\n"
 	},
-	{0x00f40005,
+	{0x00f90005,
 	 "PMU10: Pstate%d MRS MR01_B1=0x%02x MR02_B1=0x%02x MR03_B1=0x%02x MR11_B1=0x%02x\n"
 	},
-	{0x00f50005,
+	{0x00fa0005,
 	 "PMU10: Pstate%d MRS MR12_B1=0x%02x MR13_B1=0x%02x MR14_B1=0x%02x MR22_B1=0x%02x\n"
 	},
-	{0x00f60002,
+	{0x00fb0002,
 	 "PMU1: AcsmOdtCtrl%02d 0x%02x\n"
 	},
-	{0x00f70002,
+	{0x00fc0002,
 	 "PMU1: AcsmCsMapCtrl%02d 0x%04x\n"
 	},
-	{0x00f80002,
+	{0x00fd0002,
 	 "PMU1: AcsmCsMapCtrl%02d 0x%04x\n"
 	},
-	{0x00f90000,
+	{0x00fe0000,
 	 "PMU1: HwtCAMode set\n"
 	},
-	{0x00fa0001,
+	{0x00ff0001,
 	 "PMU3: DDR4 infinite preamble enter/exit mode %d\n"
 	},
-	{0x00fb0002,
+	{0x01000002,
 	 "PMU1: In rxenb_train() csn=%d pstate=%d\n"
 	},
-	{0x00fc0000,
+	{0x01010000,
 	 "PMU3: Finding DQS falling edge\n"
 	},
-	{0x00fd0000,
+	{0x01020000,
 	 "PMU3: Searching for DDR3/LPDDR3/LPDDR4 read preamble\n"
 	},
-	{0x00fe0009,
-	 "PMU3: dtsm fails Even Nibbles : %2x %2x %2x %2x %2x %2x %2x %2x %2x\n"
+	{0x01030009,
+	 "PMU3: dtsm fails Even Nibbles : %02x %02x %02x %02x %02x %02x %02x %02x %02x\n"
 	},
-	{0x00ff0009,
-	 "PMU3: dtsm fails Odd  Nibbles : %2x %2x %2x %2x %2x %2x %2x %2x %2x\n"
+	{0x01040009,
+	 "PMU3: dtsm fails Odd  Nibbles : %02x %02x %02x %02x %02x %02x %02x %02x %02x\n"
 	},
-	{0x01000002,
+	{0x01050002,
 	 "PMU3: Preamble search pass=%d anyfail=%d\n"
 	},
-	{0x01010000,
+	{0x01060000,
 	 "PMU: Error: RxEn training preamble not found\n"
 	},
-	{0x01020000,
+	{0x01070000,
 	 "PMU3: Found DQS pre-amble\n"
 	},
-	{0x01030001,
+	{0x01080001,
 	 "PMU: Error: Dbyte %d couldn't find the rising edge of DQS during RxEn Training\n"
 	},
-	{0x01040000,
+	{0x01090000,
 	 "PMU3: RxEn aligning to first rising edge of burst\n"
 	},
-	{0x01050001,
+	{0x010a0001,
 	 "PMU3: Decreasing RxEn delay by %d fine step to allow full capture of reads\n"
 	},
-	{0x01060001,
+	{0x010b0001,
 	 "PMU3: MREP Delay = %d\n"
 	},
-	{0x01070003,
+	{0x010c0003,
 	 "PMU3: Errcnt for MREP nib %2d delay = %2d is %d\n"
 	},
-	{0x01080002,
+	{0x010d0002,
 	 "PMU3: MREP nibble %d sampled a 1 at data buffer delay %d\n"
 	},
-	{0x01090002,
+	{0x010e0002,
 	 "PMU3: MREP nibble %d saw a 0 to 1 transition at data buffer delay %d\n"
 	},
-	{0x010a0000,
+	{0x010f0000,
 	 "PMU2:  MREP did not find a 0 to 1 transition for all nibbles. Failing nibbles assumed to have rising edge close to fine delay 63\n"
 	},
-	{0x010b0002,
+	{0x01100002,
 	 "PMU2:  Rising edge found in alias window, setting rxDly for nibble %d = %d\n"
 	},
-	{0x010c0002,
+	{0x01110002,
 	 "PMU: Error: Failed MREP for nib %d with %d one\n"
 	},
-	{0x010d0003,
+	{0x01120003,
 	 "PMU2:  Rising edge not found in alias window with %d one, leaving rxDly for nibble %d = %d\n"
 	},
-	{0x010e0002,
+	{0x01130002,
 	 "PMU3: Training DIMM %d CSn %d\n"
 	},
-	{0x010f0001,
-	 "PMU3: exitCAtrain_lp3 cs 0x%x\n"
-	},
-	{0x01100001,
-	 "PMU3: enterCAtrain_lp3 cs 0x%x\n"
-	},
-	{0x01110001,
-	 "PMU3: CAtrain_switchmsb_lp3 cs 0x%x\n"
-	},
-	{0x01120001,
-	 "PMU3: CATrain_rdwr_lp3 looking for pattern %x\n"
-	},
-	{0x01130000,
-	 "PMU3: exitCAtrain_lp4\n"
-	},
 	{0x01140001,
-	 "PMU3: DEBUG enterCAtrain_lp4 1: cs 0x%x\n"
+	 "PMU3: exitCAtrain_lp3 cs 0x%04x\n"
 	},
 	{0x01150001,
+	 "PMU3: enterCAtrain_lp3 cs 0x%04x\n"
+	},
+	{0x01160001,
+	 "PMU3: CAtrain_switchmsb_lp3 cs 0x%04x\n"
+	},
+	{0x01170001,
+	 "PMU3: CATrain_rdwr_lp3 looking for pattern %04x\n"
+	},
+	{0x01180000,
+	 "PMU3: exitCAtrain_lp4\n"
+	},
+	{0x01190001,
+	 "PMU3: DEBUG enterCAtrain_lp4 1: cs 0x%04x\n"
+	},
+	{0x011a0001,
 	 "PMU3: DEBUG enterCAtrain_lp4 3: Put dbyte %d in async mode\n"
 	},
-	{0x01160000,
+	{0x011b0000,
 	 "PMU3: DEBUG enterCAtrain_lp4 5: Send MR13 to turn on CA training\n"
 	},
-	{0x01170003,
-	 "PMU3: DEBUG enterCAtrain_lp4 7: idx = %d vref = %x mr12 = %x\n"
+	{0x011c0003,
+	 "PMU3: DEBUG enterCAtrain_lp4 7: idx = %d vref = %04x mr12 = %04x \n"
 	},
-	{0x01180001,
-	 "PMU3: CATrain_rdwr_lp4 looking for pattern %x\n"
+	{0x011d0001,
+	 "PMU3: CATrain_rdwr_lp4 looking for pattern %04x\n"
 	},
-	{0x01190004,
-	 "PMU3: Phase %d CAreadbackA db:%d %x xo:%x\n"
+	{0x011e0004,
+	 "PMU3: Phase %d CAreadbackA db:%d %04x xo:%04x\n"
 	},
-	{0x011a0005,
-	 "PMU3: DEBUG lp4SetCatrVref 1: cs=%d chan=%d mr12=%x vref=%d.%d%%\n"
+	{0x011f0005,
+	 "PMU3: DEBUG lp4SetCatrVref 1: cs=%d chan=%d mr12=%04x vref=%d.%d%%\n"
 	},
-	{0x011b0003,
-	 "PMU3: DEBUG lp4SetCatrVref 3: mr12 = %x send vref= %x to db=%d\n"
+	{0x01200003,
+	 "PMU3: DEBUG lp4SetCatrVref 3: mr12 = %04x send vref= %04x to db=%d\n"
 	},
-	{0x011c0000,
+	{0x01210000,
 	 "PMU10:Optimizing vref\n"
 	},
-	{0x011d0004,
-	 "PMU4:mr12:%2x cs:%d chan %d r:%4x\n"
+	{0x01220004,
+	 "PMU4:mr12:%02x cs:%d chan %d r:%04x\n"
 	},
-	{0x011e0005,
+	{0x01230005,
 	 "PMU3: i:%2d bstr:%2d bsto:%2d st:%d r:%d\n"
 	},
-	{0x011f0002,
-	 "Failed to find sufficient CA Vref Passing Region for CS %d ch. %d\n"
+	{0x01240002,
+	"Failed to find sufficient CA Vref Passing Region for CS %d channel %d\n"
 	},
-	{0x01200005,
-	 "PMU3:Found %d.%d%% MR12:%x for cs:%d chan %d\n"
+	{0x01250005,
+	 "PMU3:Found %d.%d%% MR12:%04x for cs:%d chan %d\n"
 	},
-	{0x01210002,
+	{0x01260002,
 	 "PMU3:Calculated %d for AtxImpedence from acx %d.\n"
 	},
-	{0x01220000,
+	{0x01270000,
 	 "PMU3:CA Odt impedence ==0.  Use default vref.\n"
 	},
-	{0x01230003,
-	 "PMU3:Calculated %d.%d%% for Vref MR12=0x%x.\n"
+	{0x01280003,
+	 "PMU3:Calculated %d.%d%% for Vref MR12=0x%04x.\n"
 	},
-	{0x01240000,
+	{0x01290000,
 	 "PMU3: CAtrain_lp\n"
 	},
-	{0x01250000,
+	{0x012a0000,
 	 "PMU3: CAtrain Begins.\n"
 	},
-	{0x01260001,
+	{0x012b0001,
 	 "PMU3: CAtrain_lp testing dly %d\n"
 	},
-	{0x01270001,
-	 "PMU5: CA bitmap dump for cs %x\n"
+	{0x012c0001,
+	 "PMU5: CA bitmap dump for cs %04x\n"
 	},
-	{0x01280001,
-	 "PMU5: CAA%d "
+	{0x012d0001,
+	 "PMU5: CAA%d"
 	},
-	{0x01290001, "%02x"
+	{0x012e0001,
+	"%02x"
 	},
-	{0x012a0000, "\n"
+	{0x012f0000,
+	"\n"
 	},
-	{0x012b0001,
-	 "PMU5: CAB%d "
+	{0x01300001,
+	 "PMU5: CAB%d"
 	},
-	{0x012c0001, "%02x"
+	{0x01310001,
+	"%02x"
 	},
-	{0x012d0000, "\n"
+	{0x01320000,
+	"\n"
 	},
-	{0x012e0003,
+	{0x01330003,
 	 "PMU3: anibi=%d, anibichan[anibi]=%d ,chan=%d\n"
 	},
-	{0x012f0001, "%02x"
+	{0x01340001,
+	"%02x"
 	},
-	{0x01300001, "\nPMU3:Raw CA setting :%x"
+	{0x01350001,
+	"\nPMU3:Raw CA setting :%04x"
 	},
-	{0x01310002, "\nPMU3:ATxDly setting:%x margin:%d\n"
+	{0x01360002,
+	"\nPMU3:ATxDly setting:%04x margin:%d\n"
 	},
-	{0x01320002, "\nPMU3:InvClk ATxDly setting:%x margin:%d\n"
-	},
-	{0x01330000, "\nPMU3:No Range found!\n"
-	},
-	{0x01340003,
-	 "PMU3: 2 anibi=%d, anibichan[anibi]=%d ,chan=%d"
-	},
-	{0x01350002, "\nPMU3: no neg clock => CA setting anib=%d, :%d\n"
-	},
-	{0x01360001,
-	 "PMU3:Normal margin:%d\n"
-	},
-	{0x01370001,
-	 "PMU3:Inverted margin:%d\n"
+	{0x01370002,
+	"\nPMU3:InvClk ATxDly setting:%04x margin:%d\n"
 	},
 	{0x01380000,
-	 "PMU3:Using Inverted clock\n"
+	"\nPMU3:No Range found!\n"
 	},
-	{0x01390000,
-	 "PMU3:Using normal clk\n"
+	{0x01390003,
+	 "PMU3: 2 anibi=%d, anibichan[anibi]=%d ,chan=%d"
 	},
-	{0x013a0003,
-	 "PMU3: 3 anibi=%d, anibichan[anibi]=%d ,chan=%d\n"
+	{0x013a0002,
+	"\nPMU3: no neg clock => CA setting anib=%d, :%d\n"
 	},
-	{0x013b0002,
-	 "PMU3: Setting ATxDly for anib %x to %x\n"
+	{0x013b0001,
+	 "PMU3:Normal margin:%d\n"
 	},
-	{0x013c0000,
-	 "PMU: Error: CA Training Failed.\n"
+	{0x013c0001,
+	 "PMU3:Inverted margin:%d\n"
 	},
 	{0x013d0000,
-	 "PMU1: Writing MRs\n"
+	 "PMU3:Using Inverted clock\n"
 	},
 	{0x013e0000,
-	 "PMU4:Using MR12 values from 1D CA VREF training.\n"
+	 "PMU3:Using normal clk\n"
 	},
-	{0x013f0000,
-	 "PMU3:Writing all MRs to fsp 1\n"
+	{0x013f0003,
+	 "PMU3: 3 anibi=%d, anibichan[anibi]=%d ,chan=%d\n"
 	},
-	{0x01400000,
-	 "PMU10:Lp4Quickboot mode.\n"
+	{0x01400002,
+	 "PMU3: Setting ATxDly for anib %04x to %04x\n"
 	},
 	{0x01410000,
-	 "PMU3: Writing MRs\n"
+	 "PMU: Error: CA Training Failed.\n"
 	},
-	{0x01420001,
-	 "PMU10: Setting boot clock divider to %d\n"
+	{0x01420000,
+	 "PMU1: Writing MRs\n"
 	},
 	{0x01430000,
-	 "PMU3: Resetting DRAM\n"
+	 "PMU4:Using MR12 values from 1D CA VREF training.\n"
 	},
 	{0x01440000,
-	 "PMU3: setup for RCD initalization\n"
+	 "PMU3:Writing all MRs to fsp 1\n"
 	},
 	{0x01450000,
-	 "PMU3: pmu_exit_SR from dev_init()\n"
+	 "PMU10:Lp4Quickboot mode.\n"
 	},
 	{0x01460000,
+	 "PMU3: Writing MRs\n"
+	},
+	{0x01470001,
+	 "PMU10: Setting boot clock divider to %d\n"
+	},
+	{0x01480000,
+	 "PMU3: Resetting DRAM\n"
+	},
+	{0x01490000,
+	 "PMU3: setup for RCD initalization\n"
+	},
+	{0x014a0000,
+	 "PMU3: pmu_exit_SR from dev_init()\n"
+	},
+	{0x014b0000,
 	 "PMU3: initializing RCD\n"
 	},
-	{0x01470000,
+	{0x014c0000,
 	 "PMU10: **** Executing 2D Image ****\n"
 	},
-	{0x01480001,
+	{0x014d0001,
 	 "PMU10: **** Start DDR4 Training. PMU Firmware Revision 0x%04x ****\n"
 	},
-	{0x01490001,
+	{0x014e0001,
 	 "PMU10: **** Start DDR3 Training. PMU Firmware Revision 0x%04x ****\n"
 	},
-	{0x014a0001,
+	{0x014f0001,
 	 "PMU10: **** Start LPDDR3 Training. PMU Firmware Revision 0x%04x ****\n"
 	},
-	{0x014b0001,
+	{0x01500001,
 	 "PMU10: **** Start LPDDR4 Training. PMU Firmware Revision 0x%04x ****\n"
 	},
-	{0x014c0000,
+	{0x01510000,
 	 "PMU: Error: Mismatched internal revision between DCCM and ICCM images\n"
 	},
-	{0x014d0001,
+	{0x01520001,
 	 "PMU10: **** Testchip %d Specific Firmware ****\n"
 	},
-	{0x014e0000,
+	{0x01530000,
 	 "PMU1: LRDIMM with EncodedCS mode, one DIMM\n"
 	},
-	{0x014f0000,
+	{0x01540000,
 	 "PMU1: LRDIMM with EncodedCS mode, two DIMMs\n"
 	},
-	{0x01500000,
+	{0x01550000,
 	 "PMU1: RDIMM with EncodedCS mode, one DIMM\n"
 	},
-	{0x01510000,
+	{0x01560000,
 	 "PMU2: Starting LRDIMM MREP training for all ranks\n"
 	},
-	{0x01520000,
+	{0x01570000,
 	 "PMU199: LRDIMM MREP training for all ranks completed\n"
 	},
-	{0x01530000,
+	{0x01580000,
 	 "PMU2: Starting LRDIMM DWL training for all ranks\n"
 	},
-	{0x01540000,
+	{0x01590000,
 	 "PMU199: LRDIMM DWL training for all ranks completed\n"
 	},
-	{0x01550000,
+	{0x015a0000,
 	 "PMU2: Starting LRDIMM MRD training for all ranks\n"
 	},
-	{0x01560000,
+	{0x015b0000,
 	 "PMU199: LRDIMM MRD training for all ranks completed\n"
 	},
-	{0x01570000,
+	{0x015c0000,
 	 "PMU2: Starting RXEN training for all ranks\n"
 	},
-	{0x01580000,
-	 "PMU2: Starting write leveling fine delay training for all ranks\n"
-	},
-	{0x01590000,
-	 "PMU2: Starting LRDIMM MWD training for all ranks\n"
-	},
-	{0x015a0000,
-	 "PMU199: LRDIMM MWD training for all ranks completed\n"
-	},
-	{0x015b0000,
-	 "PMU2: Starting write leveling fine delay training for all ranks\n"
-	},
-	{0x015c0000,
-	 "PMU2: Starting read deskew training\n"
-	},
 	{0x015d0000,
-	 "PMU2: Starting SI friendly 1d RdDqs training for all ranks\n"
+	 "PMU2: Starting write leveling fine delay training for all ranks\n"
 	},
 	{0x015e0000,
-	 "PMU2: Starting write leveling coarse delay training for all ranks\n"
+	 "PMU2: Starting LRDIMM MWD training for all ranks\n"
 	},
 	{0x015f0000,
-	 "PMU2: Starting 1d WrDq training for all ranks\n"
+	 "PMU199: LRDIMM MWD training for all ranks completed\n"
 	},
 	{0x01600000,
-	 "PMU2: Running DQS2DQ Oscillator for all ranks\n"
+	 "PMU2: Starting write leveling fine delay training for all ranks\n"
 	},
 	{0x01610000,
-	 "PMU2: Starting again read deskew training but with PRBS\n"
+	 "PMU2: Starting read deskew training\n"
 	},
 	{0x01620000,
-	 "PMU2: Starting 1d RdDqs training for all ranks\n"
+	 "PMU2: Starting SI friendly 1d RdDqs training for all ranks\n"
 	},
 	{0x01630000,
-	 "PMU2: Starting again 1d WrDq training for all ranks\n"
+	 "PMU2: Starting write leveling coarse delay training for all ranks\n"
 	},
 	{0x01640000,
-	 "PMU2: Starting MaxRdLat training\n"
+	 "PMU2: Starting 1d WrDq training for all ranks\n"
 	},
 	{0x01650000,
-	 "PMU2: Starting 2d WrDq training for all ranks\n"
+	 "PMU2: Running DQS2DQ Oscillator for all ranks\n"
 	},
 	{0x01660000,
+	 "PMU2: Starting again read deskew training but with PRBS\n"
+	},
+	{0x01670000,
+	 "PMU2: Starting 1d RdDqs training for all ranks\n"
+	},
+	{0x01680000,
+	 "PMU2: Starting again 1d WrDq training for all ranks\n"
+	},
+	{0x01690000,
+	 "PMU2: Starting MaxRdLat training\n"
+	},
+	{0x016a0000,
 	 "PMU2: Starting 2d RdDqs training for all ranks\n"
 	},
-	{0x01670002,
-	 "PMU3:read_fifo %x %x\n"
+	{0x016b0000,
+	 "PMU2: Starting 2d WrDq training for all ranks\n"
 	},
-	{0x01680001,
-	 "PMU: Error: Invalid PhyDrvImpedance of 0x%x specified in message block.\n"
+	{0x016c0000,
+	 "PMU2: Starting 2d RdDqs training for all ranks\n"
 	},
-	{0x01690001,
-	 "PMU: Error: Invalid PhyOdtImpedance of 0x%x specified in message block.\n"
+	{0x016d0002,
+	 "PMU3:read_fifo %04x %04x\n"
 	},
-	{0x016a0001,
-	 "PMU: Error: Invalid BPZNResVal of 0x%x specified in message block.\n"
+	{0x016e0001,
+	 "PMU: Error: Invalid PhyDrvImpedance of 0x%04x specified in message block.\n"
 	},
-	{0x016b0005,
-	 "PMU3: fixRxEnBackOff csn:%d db:%d dn:%d bo:%d dly:%x\n"
+	{0x016f0001,
+	 "PMU: Error: Invalid PhyOdtImpedance of 0x%04x specified in message block.\n"
 	},
-	{0x016c0001,
-	 "PMU3: fixRxEnBackOff dly:%x\n"
+	{0x01700001,
+	 "PMU: Error: Invalid BPZNResVal of 0x%04x specified in message block.\n"
 	},
-	{0x016d0000,
-	 "PMU3: Entering setupPpt\n"
-	},
-	{0x016e0000,
-	 "PMU3: Start lp4PopulateHighLowBytes\n"
-	},
-	{0x016f0002,
-	 "PMU3:Dbyte Detect: db%d received %x\n"
-	},
-	{0x01700002,
-	 "PMU3:getDqs2Dq read %x from dbyte %d\n"
-	},
-	{0x01710002,
-	 "PMU3:getDqs2Dq(2) read %x from dbyte %d\n"
+	{0x01710005,
+	 "PMU3: fixRxEnBackOff csn:%d db:%d dn:%d bo:%d dly:%04x\n"
 	},
 	{0x01720001,
+	 "PMU3: fixRxEnBackOff dly:%04x\n"
+	},
+	{0x01730000,
+	 "PMU3: Entering setupPpt\n"
+	},
+	{0x01740000,
+	 "PMU3: Start lp4PopulateHighLowBytes\n"
+	},
+	{0x01750002,
+	 "PMU3:Dbyte Detect: db%d received %04x\n"
+	},
+	{0x01760002,
+	 "PMU3:getDqs2Dq read %04x from dbyte %d\n"
+	},
+	{0x01770002,
+	 "PMU3:getDqs2Dq(2) read %04x from dbyte %d\n"
+	},
+	{0x01780001,
 	 "PMU: Error: Dbyte %d read 0 from the DQS oscillator it is connected to\n"
 	},
-	{0x01730002,
+	{0x01790002,
 	 "PMU4: Dbyte %d dqs2dq = %d/32 UI\n"
 	},
-	{0x01740003,
+	{0x017a0003,
 	 "PMU3:getDqs2Dq set dqs2dq:%d/32 ui (%d ps) from dbyte %d\n"
 	},
-	{0x01750003,
-	 "PMU3: Setting coarse delay in AtxDly chiplet %d from 0x%02x to 0x%02x\n"
+	{0x017b0003,
+	 "PMU3: Setting coarse delay in AtxDly chiplet %d from 0x%02x to 0x%02x \n"
 	},
-	{0x01760003,
-	 "PMU3: Clearing coarse delay in AtxDly chiplet %d from 0x%02x to 0x%02x\n"
+	{0x017c0003,
+	 "PMU3: Clearing coarse delay in AtxDly chiplet %d from 0x%02x to 0x%02x \n"
 	},
-	{0x01770000,
+	{0x017d0000,
 	 "PMU3: Performing DDR4 geardown sync sequence\n"
 	},
-	{0x01780000,
+	{0x017e0000,
 	 "PMU1: Enter self refresh\n"
 	},
-	{0x01790000,
+	{0x017f0000,
 	 "PMU1: Exit self refresh\n"
 	},
-	{0x017a0000,
+	{0x01800000,
 	 "PMU: Error: No dbiEnable with lp4\n"
 	},
-	{0x017b0000,
+	{0x01810000,
 	 "PMU: Error: No dbiDisable with lp4\n"
 	},
-	{0x017c0001,
+	{0x01820001,
 	 "PMU1: DDR4 update Rx DBI Setting disable %d\n"
 	},
-	{0x017d0001,
+	{0x01830001,
 	 "PMU1: DDR4 update 2nCk WPre Setting disable %d\n"
 	},
-	{0x017e0005,
+	{0x01840005,
 	 "PMU1: read_delay: db%d lane%d delays[%2d] = 0x%02x (max 0x%02x)\n"
 	},
-	{0x017f0004,
+	{0x01850004,
 	 "PMU1: write_delay: db%d lane%d delays[%2d] = 0x%04x\n"
 	},
-	{0x01800001,
+	{0x01860001,
 	 "PMU5: ID=%d -- db0  db1  db2  db3  db4  db5  db6  db7  db8  db9 --\n"
 	},
-	{0x0181000b,
+	{0x0187000b,
 	 "PMU5: [%d]:0x %04x %04x %04x %04x %04x %04x %04x %04x %04x %04x\n"
 	},
-	{0x01820003,
+	{0x01880003,
 	 "PMU2: dump delays - pstate=%d dimm=%d csn=%d\n"
 	},
-	{0x01830000,
+	{0x01890000,
 	 "PMU3: Printing Mid-Training Delay Information\n"
 	},
-	{0x01840001,
+	{0x018a0001,
 	 "PMU5: CS%d <<KEY>> 0 TrainingCntr <<KEY>> coarse(15:10) fine(9:0)\n"
 	},
-	{0x01850001,
+	{0x018b0001,
 	 "PMU5: CS%d <<KEY>> 0 RxEnDly, 1 RxClkDly <<KEY>> coarse(10:6) fine(5:0)\n"
 	},
-	{0x01860001,
+	{0x018c0001,
 	 "PMU5: CS%d <<KEY>> 0 TxDqsDly, 1 TxDqDly <<KEY>> coarse(9:6) fine(5:0)\n"
 	},
-	{0x01870001,
-	 "PMU5: CS%d <<KEY>> 0 RxPBDly <<KEY>> 1 Delay Unit ~= 7ps\n"
-	},
-	{0x01880000,
-	 "PMU5: all CS <<KEY>> 0 DFIMRL <<KEY>> Units = DFI clocks\n"
-	},
-	{0x01890000,
-	 "PMU5: all CS <<KEY>> VrefDACs <<KEY>> DAC(6:0)\n"
-	},
-	{0x018a0000,
-	 "PMU1: Set DMD in MR13 and wrDBI in MR3 for training\n"
-	},
-	{0x018b0000,
-	 "PMU: Error: getMaxRxen() failed to find largest rxen nibble delay\n"
-	},
-	{0x018c0003,
-	 "PMU2: getMaxRxen(): maxDly %d maxTg %d maxNib %d\n"
-	},
-	{0x018d0003,
-	 "PMU2: getRankMaxRxen(): maxDly %d Tg %d maxNib %d\n"
+	{0x018d0001,
+	 "PMU5: CS%d <<KEY>> 0 RxPBDly <<KEY>> 1 Delay Unit ~= 7ps \n"
 	},
 	{0x018e0000,
-	 "PMU1: skipping CDD calculation in 2D image\n"
+	 "PMU5: all CS <<KEY>> 0 DFIMRL <<KEY>> Units = DFI clocks\n"
 	},
-	{0x018f0001,
-	 "PMU3: Calculating CDDs for pstate %d\n"
+	{0x018f0000,
+	 "PMU5: all CS <<KEY>> VrefDACs <<KEY>> DAC(6:0)\n"
 	},
-	{0x01900003,
-	 "PMU3: rxFromDly[%d][%d] = %d\n"
+	{0x01900000,
+	 "PMU1: Set DMD in MR13 and wrDBI in MR3 for training\n"
 	},
-	{0x01910003,
-	 "PMU3: rxToDly  [%d][%d] = %d\n"
+	{0x01910000,
+	 "PMU: Error: getMaxRxen() failed to find largest rxen nibble delay\n"
 	},
 	{0x01920003,
-	 "PMU3: rxDly    [%d][%d] = %d\n"
+	 "PMU2: getMaxRxen(): maxDly %d maxTg %d maxNib %d\n"
 	},
 	{0x01930003,
-	 "PMU3: txDly    [%d][%d] = %d\n"
+	 "PMU2: getRankMaxRxen(): maxDly %d Tg %d maxNib %d\n"
 	},
-	{0x01940003,
-	 "PMU3: allFine CDD_RR_%d_%d = %d\n"
+	{0x01940000,
+	 "PMU1: skipping CDD calculation in 2D image\n"
 	},
-	{0x01950003,
-	 "PMU3: allFine CDD_WW_%d_%d = %d\n"
+	{0x01950001,
+	 "PMU3: Calculating CDDs for pstate %d\n"
 	},
 	{0x01960003,
-	 "PMU3: CDD_RR_%d_%d = %d\n"
+	 "PMU3: rxFromDly[%d][%d] = %d\n"
 	},
 	{0x01970003,
-	 "PMU3: CDD_WW_%d_%d = %d\n"
+	 "PMU3: rxToDly  [%d][%d] = %d\n"
 	},
 	{0x01980003,
-	 "PMU3: allFine CDD_RW_%d_%d = %d\n"
+	 "PMU3: rxDly    [%d][%d] = %d\n"
 	},
 	{0x01990003,
-	 "PMU3: allFine CDD_WR_%d_%d = %d\n"
+	 "PMU3: txDly    [%d][%d] = %d\n"
 	},
 	{0x019a0003,
-	 "PMU3: CDD_RW_%d_%d = %d\n"
+	 "PMU3: allFine CDD_RR_%d_%d = %d\n"
 	},
 	{0x019b0003,
+	 "PMU3: allFine CDD_WW_%d_%d = %d\n"
+	},
+	{0x019c0003,
+	 "PMU3: CDD_RR_%d_%d = %d\n"
+	},
+	{0x019d0003,
+	 "PMU3: CDD_WW_%d_%d = %d\n"
+	},
+	{0x019e0003,
+	 "PMU3: allFine CDD_RW_%d_%d = %d\n"
+	},
+	{0x019f0003,
+	 "PMU3: allFine CDD_WR_%d_%d = %d\n"
+	},
+	{0x01a00003,
+	 "PMU3: CDD_RW_%d_%d = %d\n"
+	},
+	{0x01a10003,
 	 "PMU3: CDD_WR_%d_%d = %d\n"
 	},
-	{0x019c0004,
+	{0x01a20004,
 	 "PMU3: F%dBC2x_B%d_D%d = 0x%02x\n"
 	},
-	{0x019d0004,
+	{0x01a30004,
 	 "PMU3: F%dBC3x_B%d_D%d = 0x%02x\n"
 	},
-	{0x019e0004,
+	{0x01a40004,
 	 "PMU3: F%dBC4x_B%d_D%d = 0x%02x\n"
 	},
-	{0x019f0004,
+	{0x01a50004,
 	 "PMU3: F%dBC5x_B%d_D%d = 0x%02x\n"
 	},
-	{0x01a00004,
+	{0x01a60004,
 	 "PMU3: F%dBC8x_B%d_D%d = 0x%02x\n"
 	},
-	{0x01a10004,
+	{0x01a70004,
 	 "PMU3: F%dBC9x_B%d_D%d = 0x%02x\n"
 	},
-	{0x01a20004,
+	{0x01a80004,
 	 "PMU3: F%dBCAx_B%d_D%d = 0x%02x\n"
 	},
-	{0x01a30004,
+	{0x01a90004,
 	 "PMU3: F%dBCBx_B%d_D%d = 0x%02x\n"
 	},
-	{0x01a40000,
+	{0x01aa0000,
 	 "PMU10: Entering context_switch_postamble\n"
 	},
-	{0x01a50003,
-	 "PMU10: context_switch_postamble is enabled for DIMM %d, RC0A=0x%x, RC3x=0x%x\n"
+	{0x01ab0003,
+	 "PMU10: context_switch_postamble is enabled for DIMM %d, RC0A=0x%04x, RC3x=0x%04x\n"
 	},
-	{0x01a60000,
+	{0x01ac0000,
 	 "PMU10: Setting bcw fspace 0\n"
 	},
-	{0x01a70001,
-	 "PMU10: Sending BC0A = 0x%x\n"
-	},
-	{0x01a80001,
-	 "PMU10: Sending BC6x = 0x%x\n"
-	},
-	{0x01a90001,
-	 "PMU10: Sending RC0A = 0x%x\n"
-	},
-	{0x01aa0001,
-	 "PMU10: Sending RC3x = 0x%x\n"
-	},
-	{0x01ab0001,
-	 "PMU10: Sending RC0A = 0x%x\n"
-	},
-	{0x01ac0001,
-	 "PMU1: enter_lp3: DEBUG: pstate = %d\n"
-	},
 	{0x01ad0001,
-	 "PMU1: enter_lp3: DEBUG: dfifreqxlat_pstate = %d\n"
+	 "PMU10: Sending BC0A = 0x%04x\n"
 	},
 	{0x01ae0001,
-	 "PMU1: enter_lp3: DEBUG: pllbypass = %d\n"
+	 "PMU10: Sending BC6x = 0x%04x\n"
 	},
 	{0x01af0001,
-	 "PMU1: enter_lp3: DEBUG: forcecal = %d\n"
+	 "PMU10: Sending RC0A = 0x%04x\n"
 	},
 	{0x01b00001,
-	 "PMU1: enter_lp3: DEBUG: pllmaxrange = 0x%x\n"
+	 "PMU10: Sending RC3x = 0x%04x\n"
 	},
 	{0x01b10001,
-	 "PMU1: enter_lp3: DEBUG: dacval_out = 0x%x\n"
+	 "PMU10: Sending RC0A = 0x%04x\n"
 	},
 	{0x01b20001,
-	 "PMU1: enter_lp3: DEBUG: pllctrl3 = 0x%x\n"
+	 "PMU1: enter_lp3: DEBUG: pstate = %d\n"
 	},
-	{0x01b30000,
-	 "PMU3: Loading DRAM with BIOS supplied MR values and entering self refresh prior to exiting PMU code.\n"
+	{0x01b30001,
+	 "PMU1: enter_lp3: DEBUG: dfifreqxlat_pstate = %d\n"
 	},
-	{0x01b40002,
-	 "PMU3: Setting DataBuffer function space of dimmcs 0x%02x to %d\n"
+	{0x01b40001,
+	 "PMU1: enter_lp3: DEBUG: pllbypass = %d\n"
 	},
-	{0x01b50002,
-	 "PMU4: Setting RCW FxRC%Xx = 0x%02x\n"
+	{0x01b50001,
+	 "PMU1: enter_lp3: DEBUG: forcecal = %d\n"
 	},
-	{0x01b60002,
-	 "PMU4: Setting RCW FxRC%02x = 0x%02x\n"
+	{0x01b60001,
+	 "PMU1: enter_lp3: DEBUG: pllmaxrange = 0x%04x\n"
 	},
 	{0x01b70001,
-	 "PMU1: DDR4 update Rd Pre Setting disable %d\n"
+	 "PMU1: enter_lp3: DEBUG: dacval_out = 0x%04x\n"
 	},
-	{0x01b80002,
-	 "PMU2: Setting BCW FxBC%Xx = 0x%02x\n"
+	{0x01b80001,
+	 "PMU1: enter_lp3: DEBUG: pllctrl3 = 0x%04x\n"
 	},
-	{0x01b90002,
-	 "PMU2: Setting BCW BC%02x = 0x%02x\n"
+	{0x01b90000,
+	 "PMU3: Loading DRAM with BIOS supplied MR values and entering self refresh prior to exiting PMU code.\n"
 	},
 	{0x01ba0002,
-	 "PMU2: Setting BCW PBA mode FxBC%Xx = 0x%02x\n"
+	 "PMU3: Setting DataBuffer function space of dimmcs 0x%02x to %d\n"
 	},
 	{0x01bb0002,
+	 "PMU4: Setting RCW FxRC%Xx = 0x%02x\n"
+	},
+	{0x01bc0002,
+	 "PMU4: Setting RCW FxRC%02x = 0x%02x\n"
+	},
+	{0x01bd0001,
+	 "PMU1: DDR4 update Rd Pre Setting disable %d\n"
+	},
+	{0x01be0002,
+	 "PMU2: Setting BCW FxBC%Xx = 0x%02x\n"
+	},
+	{0x01bf0002,
+	 "PMU2: Setting BCW BC%02x = 0x%02x\n"
+	},
+	{0x01c00002,
+	 "PMU2: Setting BCW PBA mode FxBC%Xx = 0x%02x\n"
+	},
+	{0x01c10002,
 	 "PMU2: Setting BCW PBA mode BC%02x = 0x%02x\n"
 	},
-	{0x01bc0003,
+	{0x01c20003,
 	 "PMU4: BCW value for dimm %d, fspace %d, addr 0x%04x\n"
 	},
-	{0x01bd0002,
+	{0x01c30002,
 	 "PMU4: DB %d, value 0x%02x\n"
 	},
-	{0x01be0000,
+	{0x01c40000,
 	 "PMU6: WARNING MREP underflow, set to min value -2 coarse, 0 fine\n"
 	},
-	{0x01bf0004,
+	{0x01c50004,
 	 "PMU6: LRDIMM Writing final data buffer fine delay value nib %2d, trainDly %3d, fineDly code %2d, new MREP fine %2d\n"
 	},
-	{0x01c00003,
+	{0x01c60003,
 	 "PMU6: LRDIMM Writing final data buffer fine delay value nib %2d, trainDly %3d, fineDly code %2d\n"
 	},
-	{0x01c10003,
+	{0x01c70003,
 	 "PMU6: LRDIMM Writing data buffer fine delay type %d nib %2d, code %2d\n"
 	},
-	{0x01c20002,
+	{0x01c80002,
 	 "PMU6: Writing final data buffer coarse delay value dbyte %2d, coarse = 0x%02x\n"
 	},
-	{0x01c30003,
+	{0x01c90003,
 	 "PMU4: data 0x%04x at MB addr 0x%08x saved at CSR addr 0x%08x\n"
 	},
-	{0x01c40003,
+	{0x01ca0003,
 	 "PMU4: data 0x%04x at MB addr 0x%08x restored from CSR addr 0x%08x\n"
 	},
-	{0x01c50003,
+	{0x01cb0003,
 	 "PMU4: data 0x%04x at MB addr 0x%08x saved at CSR addr 0x%08x\n"
 	},
-	{0x01c60003,
+	{0x01cc0003,
 	 "PMU4: data 0x%04x at MB addr 0x%08x restored from CSR addr 0x%08x\n"
 	},
-	{0x01c70001,
+	{0x01cd0001,
 	 "PMU3: Update BC00, BC01, BC02 for rank-dimm 0x%02x\n"
 	},
-	{0x01c80000,
+	{0x01ce0000,
 	 "PMU3: Writing D4 RDIMM RCD Control words F0RC00 -> F0RC0F\n"
 	},
-	{0x01c90000,
+	{0x01cf0000,
 	 "PMU3: Disable parity in F0RC0E\n"
 	},
-	{0x01ca0000,
+	{0x01d00000,
 	 "PMU3: Writing D4 RDIMM RCD Control words F1RC00 -> F1RC05\n"
 	},
-	{0x01cb0000,
+	{0x01d10000,
 	 "PMU3: Writing D4 RDIMM RCD Control words F1RC1x -> F1RC9x\n"
 	},
-	{0x01cc0000,
+	{0x01d20000,
 	 "PMU3: Writing D4 Data buffer Control words BC00 -> BC0E\n"
 	},
-	{0x01cd0002,
-	 "PMU1: setAltCL Sending MR0 0x%x cl=%d\n"
+	{0x01d30002,
+	 "PMU1: setAltCL Sending MR0 0x%04x cl=%d\n"
 	},
-	{0x01ce0002,
-	 "PMU1: restoreFromAltCL Sending MR0 0x%x cl=%d\n"
+	{0x01d40002,
+	 "PMU1: restoreFromAltCL Sending MR0 0x%04x cl=%d\n"
 	},
-	{0x01cf0002,
-	 "PMU1: restoreAcsmFromAltCL Sending MR0 0x%x cl=%d\n"
-	},
-	{0x01d00002,
-	 "PMU2: Setting D3R RC%d = 0x%01x\n"
-	},
-	{0x01d10000,
-	 "PMU3: Writing D3 RDIMM RCD Control words RC0 -> RC11\n"
-	},
-	{0x01d20002,
-	 "PMU0: VrefDAC0/1 vddqStart %d dacToVddq %d\n"
-	},
-	{0x01d30001,
-	 "PMU: Error: Messageblock phyVref=0x%x is above the limit for TSMC28's attenuated LPDDR4 receivers. Please see the pub databook\n"
-	},
-	{0x01d40001,
-	 "PMU: Error: Messageblock phyVref=0x%x is above the limit for TSMC28's attenuated DDR4 receivers. Please see the pub databook\n"
-	},
-	{0x01d50001,
-	 "PMU0: PHY VREF @ (%d/1000) VDDQ\n"
+	{0x01d50002,
+	 "PMU1: restoreAcsmFromAltCL Sending MR0 0x%04x cl=%d\n"
 	},
 	{0x01d60002,
-	 "PMU0: initalizing phy vrefDacs to %d ExtVrefRange %x\n"
+	 "PMU2: Setting D3R RC%d = 0x%01x\n"
 	},
-	{0x01d70002,
-	 "PMU0: initalizing global vref to %d range %d\n"
+	{0x01d70000,
+	 "PMU3: Writing D3 RDIMM RCD Control words RC0 -> RC11\n"
 	},
 	{0x01d80002,
+	 "PMU0: VrefDAC0/1 vddqStart %d dacToVddq %d\n"
+	},
+	{0x01d90001,
+	 "PMU: Error: Messageblock phyVref=0x%04x is above the limit for TSMC28's attenuated LPDDR4 receivers. Please see the pub databook\n"
+	},
+	{0x01da0001,
+	 "PMU: Error: Messageblock phyVref=0x%04x is above the limit for TSMC28's attenuated DDR4 receivers. Please see the pub databook\n"
+	},
+	{0x01db0001,
+	 "PMU0: PHY VREF @ (%d/1000) VDDQ\n"
+	},
+	{0x01dc0002,
+	 "PMU0: initalizing phy vrefDacs to %d ExtVrefRange %04x\n"
+	},
+	{0x01dd0002,
+	 "PMU0: initalizing global vref to %d range %d\n"
+	},
+	{0x01de0002,
 	 "PMU4: Setting initial device vrefDQ for CS%d to MR6 = 0x%04x\n"
 	},
-	{0x01d90003,
+	{0x01df0003,
 	 "PMU1: In write_level_fine() csn=%d dimm=%d pstate=%d\n"
 	},
-	{0x01da0000,
+	{0x01e00000,
 	 "PMU3: Fine write leveling hardware search increasing TxDqsDly until full bursts are seen\n"
 	},
-	{0x01db0000,
+	{0x01e10000,
 	 "PMU4: WL normalized pos   : ........................|........................\n"
 	},
-	{0x01dc0007,
+	{0x01e20007,
 	 "PMU4: WL margin for nib %2d: %08x%08x%08x%08x%08x%08x\n"
 	},
-	{0x01dd0000,
+	{0x01e30000,
 	 "PMU4: WL normalized pos   : ........................|........................\n"
 	},
-	{0x01de0000,
+	{0x01e40000,
 	 "PMU3: Exiting write leveling mode\n"
 	},
-	{0x01df0001,
+	{0x01e50001,
 	 "PMU3: got %d for cl in load_wrlvl_acsm\n"
 	},
-	{0x01e00003,
+	{0x01e60003,
 	 "PMU1: In write_level_coarse() csn=%d dimm=%d pstate=%d\n"
 	},
-	{0x01e10003,
-	 "PMU3: left eye edge search db:%d ln:%d dly:0x%x\n"
+	{0x01e70003,
+	 "PMU3: left eye edge search db:%d ln:%d dly:0x%04x\n"
 	},
-	{0x01e20003,
-	 "PMU3: right eye edge search db:%d ln:%d dly:0x%x\n"
+	{0x01e80003,
+	 "PMU3: right eye edge search db:%d ln:%d dly:0x%04x\n"
 	},
-	{0x01e30004,
-	 "PMU3: eye center db:%d ln:%d dly:0x%x (maxdq:%x)\n"
-	},
-	{0x01e40003,
-	 "PMU3: Wrote to TxDqDly db:%d ln:%d dly:0x%x\n"
-	},
-	{0x01e50003,
-	 "PMU3: Wrote to TxDqDly db:%d ln:%d dly:0x%x\n"
-	},
-	{0x01e60002,
-	 "PMU3: Coarse write leveling dbyte%2d is still failing for TxDqsDly=0x%04x\n"
-	},
-	{0x01e70002,
-	 "PMU4: Coarse write leveling iteration %d saw %d data miscompares across the entire phy\n"
-	},
-	{0x01e80000,
-	 "PMU: Error: Failed write leveling coarse\n"
-	},
-	{0x01e90001,
-	 "PMU3: got %d for cl in load_wrlvl_acsm\n"
+	{0x01e90004,
+	 "PMU3: eye center db:%d ln:%d dly:0x%04x (maxdq:%04x)\n"
 	},
 	{0x01ea0003,
-	 "PMU3: In write_level_coarse() csn=%d dimm=%d pstate=%d\n"
+	 "PMU3: Wrote to TxDqDly db:%d ln:%d dly:0x%04x\n"
 	},
 	{0x01eb0003,
-	 "PMU3: left eye edge search db:%d ln:%d dly:0x%x\n"
+	 "PMU3: Wrote to TxDqDly db:%d ln:%d dly:0x%04x\n"
 	},
-	{0x01ec0003,
-	 "PMU3: right eye edge search db: %d ln: %d dly: 0x%x\n"
+	{0x01ec0002,
+	 "PMU3: Coarse write leveling dbyte%2d is still failing for TxDqsDly=0x%04x\n"
 	},
-	{0x01ed0004,
-	 "PMU3: eye center db: %d ln: %d dly: 0x%x (maxdq: 0x%x)\n"
-	},
-	{0x01ee0003,
-	 "PMU3: Wrote to TxDqDly db: %d ln: %d dly: 0x%x\n"
-	},
-	{0x01ef0003,
-	 "PMU3: Wrote to TxDqDly db: %d ln: %d dly: 0x%x\n"
-	},
-	{0x01f00002,
-	 "PMU3: Coarse write leveling nibble%2d is still failing for TxDqsDly=0x%04x\n"
-	},
-	{0x01f10002,
+	{0x01ed0002,
 	 "PMU4: Coarse write leveling iteration %d saw %d data miscompares across the entire phy\n"
 	},
-	{0x01f20000,
+	{0x01ee0000,
 	 "PMU: Error: Failed write leveling coarse\n"
 	},
-	{0x01f30000,
-	 "PMU4: WL normalized pos   : ................................|................................\n"
+	{0x01ef0001,
+	 "PMU3: got %d for cl in load_wrlvl_acsm\n"
 	},
-	{0x01f40009,
-	 "PMU4: WL margin for nib %2d: %08x%08x%08x%08x%08x%08x%08x%08x\n"
-	},
-	{0x01f50000,
-	 "PMU4: WL normalized pos   : ................................|................................\n"
-	},
-	{0x01f60001,
-	 "PMU8: Adjust margin after WL coarse to be larger than %d\n"
-	},
-	{0x01f70001,
-	 "PMU: Error: All margin after write leveling coarse are smaller than minMargin %d\n"
-	},
-	{0x01f80002,
-	 "PMU8: Decrement nib %d TxDqsDly by %d fine step\n"
-	},
-	{0x01f90003,
+	{0x01f00003,
 	 "PMU3: In write_level_coarse() csn=%d dimm=%d pstate=%d\n"
 	},
-	{0x01fa0005,
-	 "PMU2: Write level: dbyte %d nib%d dq/dmbi %2d dqsfine 0x%04x dqDly 0x%04x\n"
+	{0x01f10003,
+	 "PMU3: left eye edge search db:%d ln:%d dly:0x%04x\n"
 	},
-	{0x01fb0002,
+	{0x01f20003,
+	 "PMU3: right eye edge search db: %d ln: %d dly: 0x%04x\n"
+	},
+	{0x01f30004,
+	 "PMU3: eye center db: %d ln: %d dly: 0x%04x (maxdq: 0x%04x)\n"
+	},
+	{0x01f40003,
+	 "PMU3: Wrote to TxDqDly db: %d ln: %d dly: 0x%04x\n"
+	},
+	{0x01f50003,
+	 "PMU3: Wrote to TxDqDly db: %d ln: %d dly: 0x%04x\n"
+	},
+	{0x01f60002,
 	 "PMU3: Coarse write leveling nibble%2d is still failing for TxDqsDly=0x%04x\n"
 	},
-	{0x01fc0002,
+	{0x01f70002,
 	 "PMU4: Coarse write leveling iteration %d saw %d data miscompares across the entire phy\n"
 	},
-	{0x01fd0000,
+	{0x01f80000,
 	 "PMU: Error: Failed write leveling coarse\n"
 	},
-	{0x01fe0001,
-	 "PMU3: DWL delay = %d\n"
+	{0x01f90000,
+	 "PMU4: WL normalized pos   : ................................|................................\n"
+	},
+	{0x01fa0009,
+	 "PMU4: WL margin for nib %2d: %08x%08x%08x%08x%08x%08x%08x%08x\n"
+	},
+	{0x01fb0000,
+	 "PMU4: WL normalized pos   : ................................|................................\n"
+	},
+	{0x01fc0001,
+	 "PMU8: Adjust margin after WL coarse to be larger than %d\n"
+	},
+	{0x01fd0001,
+	 "PMU: Error: All margin after write leveling coarse are smaller than minMargin %d\n"
+	},
+	{0x01fe0002,
+	 "PMU8: Decrement nib %d TxDqsDly by %d fine step\n"
 	},
 	{0x01ff0003,
-	 "PMU3: Errcnt for DWL nib %2d delay = %2d is %d\n"
+	 "PMU3: In write_level_coarse() csn=%d dimm=%d pstate=%d\n"
 	},
-	{0x02000002,
-	 "PMU3: DWL nibble %d sampled a 1 at delay %d\n"
+	{0x02000005,
+	 "PMU2: Write level: dbyte %d nib%d dq/dmbi %2d dqsfine 0x%04x dqDly 0x%04x\n"
 	},
-	{0x02010003,
-	 "PMU3: DWL nibble %d passed at delay %d. Rising edge was at %d\n"
+	{0x02010002,
+	 "PMU3: Coarse write leveling nibble%2d is still failing for TxDqsDly=0x%04x\n"
 	},
-	{0x02020000,
-	 "PMU2: DWL did nto find a rising edge of memclk for all nibbles. Failing nibbles assumed to have rising edge close to fine delay 63\n"
+	{0x02020002,
+	 "PMU4: Coarse write leveling iteration %d saw %d data miscompares across the entire phy\n"
 	},
-	{0x02030002,
-	 "PMU2:  Rising edge found in alias window, setting wrlvlDly for nibble %d = %d\n"
+	{0x02030000,
+	 "PMU: Error: Failed write leveling coarse\n"
 	},
-	{0x02040002,
-	 "PMU: Error: Failed DWL for nib %d with %d one\n"
+	{0x02040001,
+	 "PMU3: DWL delay = %d\n"
 	},
 	{0x02050003,
+	 "PMU3: Errcnt for DWL nib %2d delay = %2d is %d\n"
+	},
+	{0x02060002,
+	 "PMU3: DWL nibble %d sampled a 1 at delay %d\n"
+	},
+	{0x02070003,
+	 "PMU3: DWL nibble %d passed at delay %d. Rising edge was at %d\n"
+	},
+	{0x02080000,
+	 "PMU2: DWL did nto find a rising edge of memclk for all nibbles. Failing nibbles assumed to have rising edge close to fine delay 63\n"
+	},
+	{0x02090002,
+	 "PMU2:  Rising edge found in alias window, setting wrlvlDly for nibble %d = %d\n"
+	},
+	{0x020a0002,
+	 "PMU: Error: Failed DWL for nib %d with %d one\n"
+	},
+	{0x020b0003,
 	 "PMU2:  Rising edge not found in alias window with %d one, leaving wrlvlDly for nibble %d = %d\n"
 	},
 	{0x04000000,
@@ -2801,13 +2842,13 @@ const static struct phy_msg messages_2d[] = {
 	 "PMU0: Write CSR 0x%06x 0x%04x\n"
 	},
 	{0x04060002,
-	 "PMU0: hwt_init_ppgc_prbs(): Polynomial: %x, Deg: %d\n"
+	 "PMU0: hwt_init_ppgc_prbs(): Polynomial: %04x, Deg: %d\n"
 	},
 	{0x04070001,
-	 "PMU: Error: acsm_set_cmd to non existent instruction address %d\n"
+	 "PMU: Error: acsm_set_cmd to non existant instruction adddress %d\n"
 	},
 	{0x04080001,
-	 "PMU: Error: acsm_set_cmd with unknown ddr cmd 0x%x\n"
+	 "PMU: Error: acsm_set_cmd with unknown ddr cmd 0x%04x\n"
 	},
 	{0x0409000c,
 	 "PMU1: acsm_addr %02x, acsm_flgs %04x, ddr_cmd %02x, cmd_dly %02x, ddr_addr %04x, ddr_bnk %02x, ddr_cs %02x, cmd_rcnt %02x, AcsmSeq0/1/2/3 %04x %04x %04x %04x\n"
@@ -2852,7 +2893,7 @@ const static struct phy_msg messages_2d[] = {
 	 "PMU3: Exiting Boot Freq Mode.\n"
 	},
 	{0x04170002,
-	 "PMU3: Writing MR%d OP=%x\n"
+	 "PMU3: Writing MR%d OP=%04x\n"
 	},
 	{0x04180000,
 	 "PMU: Error: Delay too large in slomo\n"
