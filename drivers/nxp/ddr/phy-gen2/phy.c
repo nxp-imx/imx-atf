@@ -25,9 +25,7 @@
 #ifdef DDR_PHY_DEBUG
 #include "messages.h"
 #endif
-#ifdef NXP_WARM_BOOT
 #include "phy.h"
-#endif
 #include "pie.h"
 
 #define TIMEOUTDEFAULT 500
