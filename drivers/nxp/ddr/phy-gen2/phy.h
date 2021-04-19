@@ -6,6 +6,11 @@
 #if !defined(PHY_H) && defined(NXP_WARM_BOOT)
 #define PHY_H
 
+struct ddrphy_fw_ver_tbl {
+    uint32_t pmu_fwversion;
+    const char *fwverstr;
+};
+
 /* To store sector size to be erase on flash*/
 #define PHY_ERASE_SIZE F_SECTOR_ERASE_SZ
 

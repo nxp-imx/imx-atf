@@ -75,6 +75,7 @@
 #define csr_pll_ctrl1_addr			0xc7
 #define csr_pll_test_mode_addr			0xca
 #define csr_pll_ctrl4_addr			0xcc
+#define csr_pubrev                  0xee
 #define csr_dfi_freq_xlat0_addr			0xf0
 #define csr_acsm_ctrl0_addr			0xf0
 #define csr_dfi_freq_ratio_addr			0xfa
