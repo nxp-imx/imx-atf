@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 NXP
+ * Copyright 2018-2021 NXP
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -949,8 +949,8 @@ static int phy_gen2_msg_init(void *msg_1d,
 		msg_blk_2d->rx2d_train_opt	= 0;
 		msg_blk_2d->tx2d_train_opt	= 0;
 		msg_blk_2d->share2dvref_result	= 1;
-		msg_blk_2d->delay_weight2d	= 0x20;
-		msg_blk_2d->voltage_weight2d	= 0x80;
+		msg_blk_2d->delay_weight2d      = 0x80;
+		msg_blk_2d->voltage_weight2d    = 0x20;
 		debug("rx2d_train_opt %d, tx2d_train_opt %d\n",
 				msg_blk_2d->rx2d_train_opt,
 				msg_blk_2d->tx2d_train_opt);
