@@ -803,7 +803,7 @@ static int phy_gen2_msg_init(void *msg_1d,
 	}
 	msg_blk->pstate			= 0;
 
-	/*Disable quickRd2D during the 1D training*/
+	/* Disable quickRd2D during the 1D training. */
 	msg_blk->reserved00             = 0x0;
 
 	/*Enable High-Effort WrDQ1D.*/
@@ -1945,8 +1945,7 @@ const struct ddrphy_fw_ver_tbl ddrphyfw_tbl[] = {
     {0xFFFFFFFF, "UNKNOWN"},
 };
 
-#define DDRPHY_FW_VERSION_TABLE_SIZE  \
-        (ARRAY_SIZE(ddrphyfw_tbl) / sizeof(struct ddrphy_fw_ver_tbl))
+#define DDRPHY_FW_VERSION_TABLE_SIZE (ARRAY_SIZE(ddrphyfw_tbl))
 
 #define FW_VER_MSGID_4_1D 0x00b50001
 #define MAX_ARGS 32
