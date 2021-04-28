@@ -162,7 +162,11 @@ int ddr_board_options(struct ddr_info *priv)
 	return 0;
 }
 
+#ifdef NXP_WARM_BOOT
+long long init_ddr(uint32_t wrm_bt_flg)
+#else
 long long init_ddr(void)
+#endif
 {
 	int spd_addr[] = { 0x51, 0x52, 0x53, 0x54 };
 	struct ddr_info info;
@@ -196,6 +200,13 @@ long long init_ddr(void)
 	info.dimm_on_ctlr = DDRC_NUM_DIMM;
 
 	info.warm_boot_flag = DDR_WRM_BOOT_NT_SUPPORTED;
+#ifdef NXP_WARM_BOOT
+	if (wrm_bt_flg) {
+		info.warm_boot_flag = DDR_WARM_BOOT;
+	} else if (wrm_bt_flg == 0x0) {
+		info.warm_boot_flag = DDR_COLD_BOOT;
+	}
+#endif
 
 	dram_size = dram_init(&info
 #if defined(NXP_HAS_CCN504) || defined(NXP_HAS_CCN508)
