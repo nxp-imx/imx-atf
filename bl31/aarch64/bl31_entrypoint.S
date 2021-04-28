@@ -23,6 +23,25 @@
 	 */
 
 func bl31_entrypoint
+#if (defined COCKPIT_A53) || (defined COCKPIT_A72)
+	/*
+	 * running on cluster Cortex-A53:
+	 * => proceed to bl31 with errata
+	 */
+	mrs	x20, mpidr_el1
+	ands	x20, x20, #MPIDR_CLUSTER_MASK	/* Test Affinity 1 */
+	beq	bl31_entrypoint_proceed_errata
+
+	/*
+	 * running on cluster Cortex-A72:
+	 * => trampoline to 0xC00000xx
+	 * where bl31 version for A72 stands
+	 */
+	mov	x20, #0xC0000000
+	add	x20, x20, #bl31_entrypoint_proceed - bl31_entrypoint
+	br	x20
+bl31_entrypoint_proceed_errata:
+#endif
 #ifdef PLAT_imx8qm
 	ldr    x21, stm
 	ldr    w20, =0x80000000
@@ -58,6 +77,9 @@ func bl31_entrypoint
 	str    w20, [x21]
 	str    w20, [x21]
 	str    w20, [x21] /* 32 */
+#endif
+#if (defined COCKPIT_A53) || (defined COCKPIT_A72)
+bl31_entrypoint_proceed:
 #endif
 	/* ---------------------------------------------------------------
 	 * Stash the previous bootloader arguments x0 - x3 for later use.
@@ -164,7 +186,9 @@ func bl31_entrypoint
 endfunc bl31_entrypoint
 
 .ltorg
+.align	3
 stm:
+	/* A53: the MU_SR register address in MU0A */
 	.quad 0x5D1B0020
 
 	/* --------------------------------------------------------------------
