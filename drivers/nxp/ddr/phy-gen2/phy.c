@@ -1942,6 +1942,7 @@ const struct ddrphy_fw_ver_tbl ddrphyfw_tbl[] = {
     {0x1001, "2019.04"},
     {0x1003, "2019.11"},
     {0x1007, "2020.06"},
+    {0x100d, "2020.06-SP1"},
     {0xFFFFFFFF, "UNKNOWN"},
 };
 
