@@ -139,7 +139,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	imx_csu_init(csu_cfg);
 
 	/* config the ocram memory range for secure access */
-	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, 0xc1);
+	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, 0x4c1);
 
 	imx8m_caam_init();
 
