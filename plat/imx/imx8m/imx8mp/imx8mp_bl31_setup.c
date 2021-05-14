@@ -34,7 +34,7 @@
 static const mmap_region_t imx_mmap[] = {
 	GIC_MAP, AIPS_MAP, OCRAM_S_MAP, DDRC_MAP,
 	NOC_MAP, CAAM_RAM_MAP, NS_OCRAM_MAP,
-	ROM_MAP, DRAM_MAP, VPU_BLK_CTL_MAP,
+	ROM_MAP, DRAM_MAP, VPU_BLK_CTL_MAP, TCM_MAP,
 	{0},
 };
 
@@ -53,6 +53,7 @@ static const struct imx_rdc_cfg rdc[] = {
 	/* peripherals domain permission */
 	RDC_PDAPn(RDC_PDAP_UART2, D0R | D0W),
 	RDC_PDAPn(RDC_PDAP_WDOG1, D0R | D0W),
+	RDC_PDAPn(RDC_PDAP_RDC, D0R | D0W | D1R),
 
 	/* memory region */
 

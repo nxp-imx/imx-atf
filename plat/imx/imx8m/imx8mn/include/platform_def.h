@@ -101,6 +101,10 @@
 #define IMX_CAAM_RAM_SIZE		U(0x10000)
 #define IMX_DRAM_BASE			U(0x40000000)
 #define IMX_DRAM_SIZE			U(0xc0000000)
+#define IMX_TCM_BASE			U(0x7E0000)
+#define IMX_TCM_SIZE			U(0x40000)
+#define IMX8M_MCU_RDC_START_CONFIG_ADDR U(0x186000)
+#define IMX8M_MCU_RDC_STOP_CONFIG_ADDR  U(0x187000)
 
 #define IMX_GIC_BASE			PLAT_GICD_BASE
 #define IMX_GIC_SIZE			U(0x200000)
@@ -172,5 +176,6 @@
  * for explanation of this mapping scheme.
  */
 #define DRAM_MAP	MAP_REGION_FLAT(IMX_DRAM_BASE, IMX_DRAM_SIZE, MT_MEMORY | MT_RW | MT_NS) /* DRAM */
+#define TCM_MAP		MAP_REGION_FLAT(IMX_TCM_BASE, IMX_TCM_SIZE, MT_MEMORY | MT_RW | MT_NS) /* TCM */
 
 #endif /* platform_def.h */
