@@ -19,6 +19,7 @@
 #include <imx8m_psci.h>
 #include <imx_sip_svc.h>
 #include <plat_imx8.h>
+#include <imx_rdc.h>
 
 #define MAX_PLL_NUM	U(10)
 
@@ -336,6 +337,10 @@ int imx_gpc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_regist
 	return 0;
 }
 
+#if defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
+#define MCU_RDC_MAGIC "mcu_rdc"
+#endif
+
 #pragma weak imx_src_handler
 /* imx8mq/imx8mm need to verrride below function */
 int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
@@ -345,9 +350,17 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 	uint64_t timeout;
 	int ret1 = 0, ret2 = 0;
 	uint32_t offset;
+#if defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
+	uint64_t len = (strlen(MCU_RDC_MAGIC) + 3) & ~(3);
+#endif
 
 	switch(x1) {
 	case IMX_SIP_SRC_M4_START:
+		/* Setup RDC config for MCU */
+#if defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
+		if (!memcmp((void *)IMX8M_MCU_RDC_START_CONFIG_ADDR, MCU_RDC_MAGIC, strlen(MCU_RDC_MAGIC)))
+			imx_rdc_init((struct imx_rdc_cfg *)(IMX8M_MCU_RDC_START_CONFIG_ADDR + len));
+#endif
 		mmio_clrbits_32(IMX_IOMUX_GPR_BASE + 0x58, 0x1);
 		break;
 	case IMX_SIP_SRC_M4_STARTED:
@@ -369,6 +382,12 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 		 * h)	Set GPR.INITVTOR
 		 * i)	Set GPR.CPUWAIT=0,  M7 starting running
 		 */
+		/* Restore rdc config for mcu */
+#if defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
+		if (!memcmp((void *)IMX8M_MCU_RDC_START_CONFIG_ADDR, MCU_RDC_MAGIC, strlen(MCU_RDC_MAGIC)))
+			imx_rdc_init((struct imx_rdc_cfg *)(IMX8M_MCU_RDC_STOP_CONFIG_ADDR + len));
+#endif
+
 		offset = LPS_CPU1;
 		val = mmio_read_32(IMX_GPC_BASE + offset);
 		/* Not in stop/wait mode */

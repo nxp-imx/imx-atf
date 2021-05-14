@@ -36,7 +36,7 @@
 
 static const mmap_region_t imx_mmap[] = {
 	GIC_MAP, AIPS_MAP, OCRAM_S_MAP, DDRC_MAP,
-	CAAM_RAM_MAP, NS_OCRAM_MAP, ROM_MAP, DRAM_MAP,
+	CAAM_RAM_MAP, NS_OCRAM_MAP, ROM_MAP, DRAM_MAP, TCM_MAP,
 	{0},
 };
 
@@ -57,6 +57,7 @@ static struct imx_rdc_cfg rdc[] = {
 	RDC_PDAPn(RDC_PDAP_UART2, D0R | D0W),
 	RDC_PDAPn(RDC_PDAP_UART3, D0R | D0W | D1R | D1W | D2R | D2W | D3R | D3W),
 	RDC_PDAPn(RDC_PDAP_UART4, D1R | D1W),
+	RDC_PDAPn(RDC_PDAP_RDC, D0R | D0W | D1R),
 
 	/* memory region */
 	RDC_MEM_REGIONn(16, 0x0, 0x0, 0xff),
