@@ -502,7 +502,9 @@ int add_boot_ptr_cmd(FILE *fp_rcw_pbi_op)
 		}
 	}
 
-	printf("\nBoot Location Pointer= %x\n", BYTE_SWAP_32(pblimg.ep));
+	printf("\nBoot Location Pointer= 0x%x\n",
+	       pblimg.chassis == CHASSIS_2 ? BYTE_SWAP_32(pblimg.ep) :
+	       pblimg.ep);
 	ret = SUCCESS;
 
 bootptr_err:

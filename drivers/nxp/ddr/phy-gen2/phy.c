@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 NXP
+ * Copyright 2018-2021 NXP
  * SPDX-License-Identifier: BSD-3-Clause
  *
  */
@@ -25,9 +25,7 @@
 #ifdef DDR_PHY_DEBUG
 #include "messages.h"
 #endif
-#ifdef NXP_WARM_BOOT
 #include "phy.h"
-#endif
 #include "pie.h"
 
 #define TIMEOUTDEFAULT 500
@@ -646,7 +644,7 @@ static void prog_seq0bdly0(uint16_t *phy,
 
 #ifdef DDR_PLL_FIX
 	soc_info = get_soc_info();
-	if (soc_info->maj_ver == 1) {
+	if (soc_info->svr_reg.bf.maj_ver == 1) {
 		ps_count[0] = 0x520; /* seq0bdly0 */
 		ps_count[1] = 0xa41; /* seq0bdly1 */
 		ps_count[2] = 0x668a; /* seq0bdly2 */
@@ -805,8 +803,8 @@ static int phy_gen2_msg_init(void *msg_1d,
 	}
 	msg_blk->pstate			= 0;
 
-	/*Enable quickRd2D, a substage of read deskew, to 1D training.*/
-	msg_blk->reserved00             = 0x20;
+	/* Disable quickRd2D during the 1D training. */
+	msg_blk->reserved00             = 0x0;
 
 	/*Enable High-Effort WrDQ1D.*/
 	msg_blk->reserved00             |= 0x40;
@@ -822,7 +820,7 @@ static int phy_gen2_msg_init(void *msg_1d,
 #ifdef DDR_PHY_DEBUG
 	msg_blk->hdt_ctrl		= 0x5;
 #else
-	msg_blk->hdt_ctrl		= 0xc9;
+	msg_blk->hdt_ctrl		= 0x0a;
 #endif
 	msg_blk->msg_misc		= 0x0;
 	msg_blk->dfimrlmargin		= 0x1;
@@ -951,8 +949,8 @@ static int phy_gen2_msg_init(void *msg_1d,
 		msg_blk_2d->rx2d_train_opt	= 0;
 		msg_blk_2d->tx2d_train_opt	= 0;
 		msg_blk_2d->share2dvref_result	= 1;
-		msg_blk_2d->delay_weight2d	= 0x20;
-		msg_blk_2d->voltage_weight2d	= 0x80;
+		msg_blk_2d->delay_weight2d      = 0x80;
+		msg_blk_2d->voltage_weight2d    = 0x20;
 		debug("rx2d_train_opt %d, tx2d_train_opt %d\n",
 				msg_blk_2d->rx2d_train_opt,
 				msg_blk_2d->tx2d_train_opt);
@@ -1056,8 +1054,8 @@ static void prog_dfi_rd_data_cs_dest_map(uint16_t *phy,
 
 #ifdef ERRATA_DDR_A011396
 	/* Only apply to DDRC 5.05.00 */
-	soc_info = get_soc_info(NXP_DCFG_ADDR);
-	if ((soc_info->maj_ver == 1) && (ip_rev == 0x50500)) {
+	soc_info = get_soc_info();
+	if ((soc_info->svr_reg.bf.maj_ver == 1) && (ip_rev == 0x50500)) {
 		phy_io_write16(phy,
 				t_master | csr_dfi_rd_data_cs_dest_map_addr,
 				0);
@@ -1836,8 +1834,8 @@ static int c_init_phy_config(uint16_t **phy_ptr,
 		prog_pll_ctrl2(phy, input);
 #ifdef DDR_PLL_FIX
 		soc_info = get_soc_info();
-		debug("SOC_SI_REV = %x\n", soc_info->maj_ver);
-		if (soc_info->maj_ver == 1) {
+		debug("SOC_SI_REV = %x\n", soc_info->svr_reg.bf.maj_ver);
+		if (soc_info->svr_reg.bf.maj_ver == 1) {
 			prog_pll_pwr_dn(phy, input);
 
 			/*Enable FFE aka TxEqualizationMode for rev1 SI*/
@@ -1939,6 +1937,18 @@ static const char *lookup_msg(uint32_t index, int train2d)
 }
 #endif
 
+const struct ddrphy_fw_ver_tbl ddrphyfw_tbl[] = {
+    {0x1000, "2018.10"},
+    {0x1001, "2019.04"},
+    {0x1003, "2019.11"},
+    {0x1007, "2020.06"},
+    {0x100d, "2020.06-SP1"},
+    {0xFFFFFFFF, "UNKNOWN"},
+};
+
+#define DDRPHY_FW_VERSION_TABLE_SIZE (ARRAY_SIZE(ddrphyfw_tbl))
+
+#define FW_VER_MSGID_4_1D 0x00b50001
 #define MAX_ARGS 32
 static void decode_stream_message(uint16_t *phy, int train2d)
 {
@@ -1947,26 +1957,41 @@ static void decode_stream_message(uint16_t *phy, int train2d)
 	__unused const char *format;
 	__unused uint32_t args[MAX_ARGS];
 	__unused int i;
+    __unused static uint32_t fwver_found = 0;
 
-#ifdef DDR_PHY_DEBUG
 	index = get_mail(phy, 1);
 	if ((index & 0xffff) > MAX_ARGS)	/* up to MAX_ARGS args so far */
-		printf("Program error in %s\n", __func__);
+		ERROR("index (%x) > MAX_ARGS in %s\n",index, __func__);
+
 	for (i = 0; i < (index & 0xffff) && i < MAX_ARGS; i++)
 		args[i] = get_mail(phy, 1);
 
-	format = lookup_msg(index, train2d);
-	if (format) {
-		printf("0x%08x: ", index);
-		printf(format, args[0], args[1], args[2], args[3], args[4],
-		       args[5], args[6], args[7], args[8], args[9], args[10],
-		       args[11], args[12], args[13], args[14], args[15],
-		       args[16], args[17], args[18], args[19], args[20],
-		       args[21], args[22], args[23], args[24], args[25],
-		       args[26], args[27], args[28], args[29], args[30],
-		       args[31]);
-	}
-#endif
+    if (!fwver_found && (FW_VER_MSGID_4_1D == index)) {
+        fwver_found = 1; /* 0-NO, 1-YES */
+        for (i = 0; i < (DDRPHY_FW_VERSION_TABLE_SIZE-1); i++) {
+            if (args[0] == ddrphyfw_tbl[i].pmu_fwversion) {
+                break;
+            }
+        }
+
+        NOTICE("DDR PMU Firmware vision-0x%x (vA-%s)\n",
+                args[0], ddrphyfw_tbl[i].fwverstr);
+    }
+#ifdef DDR_PHY_DEBUG
+    else {
+        format = lookup_msg(index, train2d);
+        if (format) {
+            printf("0x%08x: ", index);
+            printf(format, args[0], args[1], args[2], args[3], args[4],
+                    args[5], args[6], args[7], args[8], args[9], args[10],
+                    args[11], args[12], args[13], args[14], args[15],
+                    args[16], args[17], args[18], args[19], args[20],
+                    args[21], args[22], args[23], args[24], args[25],
+                    args[26], args[27], args[28], args[29], args[30],
+                    args[31]);
+        }
+    }
+#endif /* DDR_PHY_DEBUG */
 }
 
 static int wait_fw_done(uint16_t *phy, int train2d)
@@ -2491,6 +2516,15 @@ int compute_ddr_phy(struct ddr_info *priv)
 		ERROR("Init PHY failed (error code %d)\n", ret);
 		return ret;
 	}
+
+    /* get phy fw version */
+    phy_io_write16(priv->phy[0], t_apbonly | csr_micro_cont_mux_sel_addr, 0);
+
+    NOTICE("DDR PMU Hardware version-0x%x\n",
+            phy_io_read16(priv->phy[0], t_drtub | csr_pubrev));
+
+    phy_io_write16(priv->phy[0], t_apbonly | csr_micro_cont_mux_sel_addr, 1);
+
 #ifdef NXP_WARM_BOOT
 	debug("Warm boot flag value %0x\n", priv->warm_boot_flag);
 	if (priv->warm_boot_flag == DDR_WARM_BOOT) {
@@ -2522,8 +2556,8 @@ int compute_ddr_phy(struct ddr_info *priv)
 			ERROR("Execution FW failed (error code %d)\n", ret);
 
 #ifdef NXP_APPLY_MAX_CDD
-		soc_info = get_soc_info(NXP_DCFG_ADDR);
-		if (soc_info->maj_ver == 2) {
+		soc_info = get_soc_info();
+		if (soc_info->svr_reg.bf.maj_ver == 2) {
 			tcfg0 = regs->timing_cfg[0];
 			tcfg4 = regs->timing_cfg[4];
 			rank = findrank(conf->cs_in_use);

@@ -3,9 +3,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <flash_info.h>
-#if !defined(PHY_H) && defined(NXP_WARM_BOOT)
+#if !defined(PHY_H)
 #define PHY_H
 
+struct ddrphy_fw_ver_tbl {
+    uint32_t pmu_fwversion;
+    const char *fwverstr;
+};
+
+#ifdef NXP_WARM_BOOT
 /* To store sector size to be erase on flash*/
 #define PHY_ERASE_SIZE F_SECTOR_ERASE_SZ
 
@@ -300,5 +306,5 @@ struct phy_training_values training_2D_values[] = {
 {0x10830, 0},	{0x11830, 0},	{0x12830, 0},	{0x13830, 0},	{0x14830, 0},
 	{0x15830, 0},	{0x16830, 0},	{0x17830, 0},	{0x18830, 0}
 };
-
+#endif /* NXP_WARM_BOOT */
 #endif

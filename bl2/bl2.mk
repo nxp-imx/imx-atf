@@ -29,5 +29,5 @@ ifeq (${ARCH},aarch64)
 BL2_SOURCES		+=	lib/cpus/aarch64/dsu_helpers.S
 endif
 
-BL2_LINKERFILE		:=	bl2/bl2_el3.ld.S
+BL2_LINKERFILE		?=	bl2/bl2_el3.ld.S
 endif

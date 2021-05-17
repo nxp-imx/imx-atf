@@ -11,9 +11,8 @@
 #include <common/debug.h>
 #include <csu.h>
 #include <lib/mmio.h>
-#include <ns_access.h>
 
-static void enable_devices_ns_access(struct csu_ns_dev_st *csu_ns_dev,
+void enable_layerscape_ns_access(struct csu_ns_dev_st *csu_ns_dev,
 				     uint32_t num, uintptr_t nxp_csu_addr)
 {
 	uint32_t *base = (uint32_t *)nxp_csu_addr;
@@ -33,9 +32,4 @@ static void enable_devices_ns_access(struct csu_ns_dev_st *csu_ns_dev,
 		}
 		mmio_write_32((uintptr_t)reg, htobe32(val));
 	}
-}
-
-void enable_layerscape_ns_access(uintptr_t nxp_csu_addr)
-{
-	enable_devices_ns_access(ns_dev, ARRAY_SIZE(ns_dev), nxp_csu_addr);
 }

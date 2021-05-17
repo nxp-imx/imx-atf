@@ -15,7 +15,7 @@
 /* Job ring 3 is reserved for usage by sec firmware */
 #define DEFAULT_JR	3
 
-#if defined(CONFIG_CHASSIS_3_2) || defined(CONFIG_CHASSIS_2)
+#if defined(CONFIG_CHASSIS_3_2) || defined(CONFIG_CHASSIS_3) || defined(CONFIG_CHASSIS_2)
 #define CAAM_JR0_OFFSET			0x10000
 #define CAAM_JR1_OFFSET			0x20000
 #define CAAM_JR2_OFFSET			0x30000
