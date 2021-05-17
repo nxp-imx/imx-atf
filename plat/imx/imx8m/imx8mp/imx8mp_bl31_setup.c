@@ -51,9 +51,9 @@ static const struct imx_rdc_cfg rdc[] = {
 	/* Master domain assignment */
 	RDC_MDAn(RDC_MDA_M7, DID1),
 
-	RDC_MDAn(RDC_MDA_LCDIF1, DID3),
-	RDC_MDAn(RDC_MDA_LCDIF2, DID3),
-	RDC_MDAn(RDC_MDA_HDMI_TX, DID3),
+	RDC_MDAn(RDC_MDA_LCDIF1, DID2),
+	RDC_MDAn(RDC_MDA_LCDIF2, DID2),
+	RDC_MDAn(RDC_MDA_HDMI_TX, DID2),
 	RDC_MDAn(RDC_MDA_GPU2D, DID2),
 
 
