@@ -881,7 +881,8 @@ _soc_sys_prep_pwrdn:
  * uses x0, x1, x2, x3, x4, x5, x6, x7, x8
  */
 _soc_sys_pwrdn_wfi:
-	mov	x8, x30
+	/* Save LR to stack */
+	stp	x18, x30, [sp, #-16]!
 
 	/* Poll PCPW20SR for all secondary cores to be placed in PW20 */
 	bl	get_tot_num_cores
@@ -1262,8 +1263,6 @@ _soc_sys_pwrdn_wfi:
 	ldr	x5, =IPSTPCR4_VALUE
 	mov	x6, DDR_CNTRL_BASE_ADDR
 	mov	x7, #NXP_PMU_ADDR
-	/* save x8 for return addr */
-	stp	x7, x8, [sp, #-16]!
 	mov	x8, #NXP_DCFG_ADDR
 	mov	x10, #PMU_IPSTPCR4_OFFSET
 	mov	x11, #PMU_IPSTPACK4_OFFSET
@@ -1275,8 +1274,6 @@ _soc_sys_pwrdn_wfi:
 	ldr	x23, =NXP_EPU_ADDR
 	mov	x9, #CORE_RESTARTABLE
 	bl	final_pwrdown
-	/* restore return addr */
-	ldp	x7, x8, [sp], #16
 
 	/*
 	 * disable the WakeRequest signal on cpu 0-7
@@ -1379,7 +1376,8 @@ _soc_sys_pwrdn_wfi:
 	str	w2, [x3, #EPU_EPIMCR10_OFFSET]
 
 	isb
-	mov	x30, x8
+	/* Restor LR */
+	ldp	x18, x30, [sp], #16
 	ret
 
 /*
