@@ -1219,7 +1219,7 @@ initSecMon:
  * uses x0, x1, x2, x3, x4, x5, x6, x7, x8
  */
 release_disabled:
-	mov  x8, x30
+	stp  x18, x30, [sp, #-16]!
 
 	/*
 	 * Get the number of cpus on this device
@@ -1273,7 +1273,7 @@ release_disabled:
 	/* Continue */
 	b     2b
 3:
-	mov  x30, x8
+	ldp  x18, x30, [sp], #16
 	ret
 
 /*
