@@ -257,14 +257,99 @@ int ddr_board_options(struct ddr_info *priv)
 	struct memctl_opt *popts = &priv->opt;
 	const struct ddr_conf *conf = &priv->conf;
 
+	/* vref_dimm: value of this this field is reflected in sdram_mode[9]
+	 * in upper 16 bits. This value is also the part of phy register MR6
+	 * This is used for range selection and its corresponding value.
+	 */
 	popts->vref_dimm = U(0x24);		/* range 1, 83.4% */
+
+	/* rtt_override: allows to override the cs.odt_rtt_norm, cs.odt_rtt_wr
+	 *
+	 * cs.odt_rtt_norm is reflected in sdram_mode 0[24..26] and the same
+	 * value is reflected as phy MR1 value also. This is 3 bit value.
+	 * Overriden value must be given as popts->rtt_override_value.
+	 * Valid set of values:
+	 * 	DDR4_RTT_OFF            0
+	 * 	DDR4_RTT_60_OHM         1
+	 *	DDR4_RTT_120_OHM        2
+	 *	DDR4_RTT_40_OHM         3
+	 *	DDR4_RTT_240_OHM        4
+	 *	DDR4_RTT_48_OHM         5
+	 *	DDR4_RTT_80_OHM         6
+	 *	DDR4_RTT_34_OHM         7
+	 */
 	popts->rtt_override = 0;
+
+	/* Dram driver strength: Is defined in the MR1 phy register bit[1..2]
+	 * and sdram_mode 0[17..18]. This is a 2 bit value meaning as below:
+	 *
+	 * 00 (full 34 ohm)
+	 * 01 (half 48 ohm)
+	 *
+	 * Default value is set to 0. To change it to 1 use below two options
+	 * (whichever is true.)
+	 * Set quad_rank_present or output_driver_impedance to 1
+	 * popts->quad_rank_present = 1 or popts->output_driver_impedance = 1
+	 */
+	popts->output_driver_impedance = 0;
+
+	/* rtt_park: the value of rtt_park is set in sdram_mode 8[6..8]. And the
+	 * same value is used in MR5[A8:A6]. Below are valid values (in ohm):
+	 * 0x0 -disable
+	 * 0x1 -60
+	 * 0x2 -120
+	 * 0x3 -40
+	 * 0x4 -240
+	 * 0x5 -48
+	 * 0x6 -80
+	 * 0x7 -34
+	 * Note: If the value is not defined then the default 0x4 is considered
+	 * by SW.
+	 */
 	popts->rtt_park = U(240);
+
 	popts->otf_burst_chop_en = 0;
 	popts->burst_length = U(DDR_BL8);
-	popts->trwt_override = U(1);
 	popts->bstopre = U(0);			/* auto precharge */
 	popts->addr_hash = 1;
+
+	/* trwt_override is used to override the turnaround timing values.
+	 * It overrides following timing parameters
+	 * trwt - read - write turnaround timing
+	 * twrt - write - read turnaround timing
+	 * trrt - read - read turnaround timing
+	 * twwt - write - write turnaround timing
+	 *
+	 * Values are progrmamed using respective parameters:
+	 * popts->trwt, popts->twrt, popts->trrt, popts->twwt
+	 * These values are programmed in below switch case.
+	 */
+	popts->trwt_override = U(1);
+
+	/*
+	 * Various other phy parameters are also defined in this file
+	 * such as:
+	 * PHY Data bus driver impedance: value is defined in popts->tx_impedance
+	 * 	If not defined default is 28 ohm
+	 * 	Valid values (in ohm): 000001 - 480.0, 240.0, 160.0, 120.0,
+	 * 	96.0, 80.0, 68.6, 60.0, 53.3, 48.0, 43.6, 40.0, 36.9, 34.3,
+	 * 	32.0, 30.0, 28.2
+	 * PHY C/A bus driver impedance: value is defined in popts->atx_impedance
+	 * 	If not defined default is 30 ohm
+	 * 	Valid values (in ohm): 120.0, 60.0, 40.0, 30.0, 24.0, 20.0 Ohm
+	 * PHY ODT: value is defined in popts->odt
+	 * 	If not defined default is 60 ohm
+	 * 	Valid values (in ohm): 000001 - 480.0, 240.0, 160.0, 120.0,
+	 * 	96.0, 80.0, 68.6, 60.0, 53.3, 48.0, 43.6, 40.0, 36.9, 34.3,
+	 * 	32.0, 30.0, 28.2
+	 * PHY Vref: value is defined in popts->vref_phy
+	 *	if not defined default value is 0x61
+	 *	Value programmed in register is calculated as:
+	 *	(input_value * 1000 - 345 * 128 + 320) / (5 * 128);
+	 *
+	 * Above mentioned settings are set in the below code, user can change
+	 * according to their board/DRAM configuration needs.
+	 */
 
 	/* Set ODT impedance on PHY side */
 	switch (conf->cs_on_dimm[1]) {
