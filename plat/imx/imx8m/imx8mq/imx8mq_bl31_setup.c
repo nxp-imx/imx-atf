@@ -149,7 +149,9 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 			u_register_t arg2, u_register_t arg3)
 {
 	int i;
+#ifndef SPD_trusty
 	unsigned int val;
+#endif
 
 	/* enable CSU NS access permission */
 	for (i = 0; i < 64; i++) {
@@ -196,8 +198,10 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 #endif
 #endif
 
+#ifndef SPD_trusty
 	val = mmio_read_32(IMX_SNVS_BASE + SNVS_HPCOMR);
 	mmio_write_32(IMX_SNVS_BASE + SNVS_HPCOMR, val | SNVS_NPSWA_EN);
+#endif
 
 	bl31_tzc380_setup();
 
