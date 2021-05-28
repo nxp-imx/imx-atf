@@ -1,0 +1,45 @@
+#
+# Copyright 2021 NXP
+#
+# SPDX-License-Identifier: BSD-3-Clause
+#
+
+# Translation tables library
+include lib/xlat_tables_v2/xlat_tables.mk
+
+# Include GICv3 driver files
+include drivers/arm/gic/v3/gicv3.mk
+
+PLAT_INCLUDES		:=	-Iplat/imx/imx8ulp/include		\
+				-Iplat/imx/common/include		\
+				-Iplat/imx/imx8ulp/upower
+
+IMX_GIC_SOURCES		:=	${GICV3_SOURCES}			\
+				plat/common/plat_gicv3.c		\
+				plat/common/plat_psci_common.c		\
+				plat/imx/common/plat_imx8_gic.c
+
+BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
+				plat/imx/common/imx8_helpers.S		\
+				plat/imx/imx8ulp/imx8ulp_bl31_setup.c	\
+				plat/imx/imx8ulp/imx8ulp_psci.c		\
+				plat/imx/common/imx8_topology.c		\
+				plat/imx/common/imx_sip_svc.c		\
+				plat/imx/common/imx_sip_handler.c	\
+				plat/common/plat_psci_common.c		\
+				lib/cpus/aarch64/cortex_a35.S		\
+				drivers/delay_timer/delay_timer.c	\
+				drivers/delay_timer/generic_delay_timer.c \
+				plat/imx/imx8ulp/xrdc/mrc.c		\
+				plat/imx/imx8ulp/scmi/scmi.c		\
+				plat/imx/imx8ulp/scmi/scmi_pd.c		\
+				plat/imx/imx8ulp/scmi/scmi_perf.c	\
+				plat/imx/imx8ulp/scmi/scmi_sensor.c	\
+				plat/imx/imx8ulp/scmi/clk_hal.c		\
+				plat/imx/imx8ulp/upower/upower_api.c	\
+				plat/imx/imx8ulp/upower/upower_hal.c	\
+				${XLAT_TABLES_LIB_SRCS}			\
+				${IMX_GIC_SOURCES}
+
+USE_COHERENT_MEM	:=	1
+RESET_TO_BL31		:=	1
