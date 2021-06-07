@@ -12,17 +12,15 @@
  *
  * $Log: upower_defs.h.rca $
  * 
- *  Revision: 1.197 Mon Nov  9 14:39:19 2020 nxf42682
- *  powersys_fw_048.011.010.005
+ *  Revision: 1.221 Fri Apr 30 06:27:06 2021 nxa10721
+ *  powersys_fw_048.011.012.006
  * 
- *  Revision: 1.62 Mon Nov  9 08:09:16 2020 nxa11511
- *  *** empty comment string ***
- * 
- *  Revision: 1.61 Wed Nov  4 15:38:26 2020 nxa11511
- *  start response message now returns major, minor and fixes version numbers, no longer soc.
- *  Adds vfixes to typedef upwr_code_vers_t;
- *  Init message soc field reduced to 7 bits, major increased to 5.
- *  Init message now has explict field for fixes number.
+ *  Revision: 1.66 Tue Apr 27 12:48:48 2021 nxa11511
+ *  Adds new pwm function number UPWR_PWM_REGCFG for new service upwr_pwm_reg_config
+ *  (same value as UPWR_PWM_DEVMOD, deprecated).
+ *  Adds struct upwr_reg_config_t, only a stub for now.
+ *  Replaces typedef upwr_pwm_devmode_msg with upwr_pwm_regcfg_msg.
+ *  upwr_pwm_msg.devmode replaced with upwr_pwm_msg.regcfg
  * 
  *  Revision: 1.60 Fri Oct 23 11:49:56 2020 nxa11511
  *  Deleted the GPL license statements, leaving only BSD, as it is compatible with Linux and good for closed ROM/firmware code.
@@ -267,7 +265,7 @@ typedef union {
  ***************************************************************************/
 
 typedef enum {             /* Exception Functions */
-	UPWR_XCP_INIT,     /* 0 = init msg (not a service request itself) */
+	UPWR_XCP_INIT,     /*  0 = init msg (not a service request itself) */
 	UPWR_XCP_PING = UPWR_XCP_INIT,
 			   /*  0 = also ping request, since its response is
 				   an init msg */
@@ -275,8 +273,8 @@ typedef enum {             /* Exception Functions */
                             *      (not a service request itself) */
 	UPWR_XCP_SHUTDOWN, /*  2 = service shutdown: upwr_xcp_shutdown */
 	UPWR_XCP_CONFIG,   /*  3 = uPower configuration: upwr_xcp_config */
-	UPWR_XCP_SW_ALARM, /*  4 = uPower soft alarm: upwr_xcp_sw_alarm */
-	UPWR_XCP_SPARE_5,  /*  5 = spare */
+	UPWR_XCP_SW_ALARM, /*  4 = uPower software alarm: upwr_xcp_sw_alarm */
+	UPWR_XCP_I2C,      /*  5 = I2C access: upwr_xcp_i2c_access */
 	UPWR_XCP_SPARE_6,  /*  6 = spare */
 	UPWR_XCP_SPARE_7,  /*  7 = spare */
 	UPWR_XCP_SPARE_8,  /*  8 = spare */
@@ -297,6 +295,15 @@ typedef upwr_boot_start_msg upwr_xcp_boot_start_msg;
 typedef upwr_start_msg      upwr_xcp_start_msg;
 typedef upwr_down_2w_msg    upwr_xcp_config_msg;
 typedef upwr_down_1w_msg    upwr_xcp_swalarm_msg;
+typedef upwr_pointer_msg    upwr_xcp_i2c_msg;
+
+typedef struct { /* structure pointed by message upwr_xcp_i2c_msg */
+	uint16_t         addr;
+	int8_t           data_size;
+	uint8_t          subaddr_size;
+	uint32_t         subaddr;
+	uint32_t         data;
+} upwr_i2c_access;
 
 /* Exception all messages */
 
@@ -308,14 +315,16 @@ typedef union {
 	upwr_xcp_boot_start_msg   bootstart; /* boot start */
 	upwr_xcp_config_msg       config;    /* uPower configuration */
 	upwr_xcp_swalarm_msg      swalarm;   /* software alarm */
+	upwr_xcp_i2c_msg          i2c;       /* I2C access */
 } upwr_xcp_msg;
 
 /* *************************************************************************
- * Service Group POWER MAMANGEMENT - downstream
+ * Service Group POWER MANAGEMENT - downstream
  ***************************************************************************/
 
 typedef enum {            /* Power Management Functions */
-	UPWR_PWM_DEVMODE, /* 0 = device mode change/config */
+	UPWR_PWM_REGCFG,  /* 0 = regulator config: upwr_pwm_reg_config */
+	UPWR_PWM_DEVMODE = UPWR_PWM_REGCFG, /* deprecated, for old compile */
 	UPWR_PWM_VOLT   , /* 1 = voltage change: upwr_pwm_chng_reg_voltage */
 	UPWR_PWM_SWITCH , /* 2 = switch control: upwr_pwm_chng_switch_mem */
 	UPWR_PWM_PWR_ON,  /* 3 = switch/RAM/ROM power on: upwr_pwm_power_on  */
@@ -323,7 +332,8 @@ typedef enum {            /* Power Management Functions */
 	UPWR_PWM_RETAIN,  /* 5 = retain memory array: upwr_pwm_mem_retain */
 	UPWR_PWM_DOM_BIAS,/* 6 = Domain bias control: upwr_pwm_chng_dom_bias */
 	UPWR_PWM_MEM_BIAS,/* 7 = Memory bias control: upwr_pwm_chng_mem_bias */
-	UPWR_PWM_PMICMOD, /* 8 = PMIC mode pins control */
+	UPWR_PWM_PMICCFG, /* 8 = PMIC configuration:  upwr_pwm_pmic_config */
+	UPWR_PWM_PMICMOD = UPWR_PWM_PMICCFG, /* deprecated, for old compile */
 	UPWR_PWM_PES,     /* 9 = Power Event Sequencer */
 	UPWR_PWM_CONFIG , /* 10= apply power mode defined configuration */
 	UPWR_PWM_CFGPTR,  /* 11= configuration pointer */
@@ -333,6 +343,10 @@ typedef enum {            /* Power Management Functions */
 	UPWR_PWM_PARAM,    /* 15 = power management parameters */
 	UPWR_PWM_F_COUNT
 } upwr_pwm_f_t;
+
+struct upwr_reg_config_t {
+	uint32_t reg;   // TODO: real config
+};
 
 struct upwr_switch_board_t { /* set of 32 switches */
 	uint32_t on;   /* Switch on state,   1 bit per instance */
@@ -356,36 +370,37 @@ typedef upwr_down_1w_msg upwr_pwm_boot_start_msg; /* boot start      message */
 typedef upwr_pointer_msg upwr_pwm_retain_msg;
 typedef upwr_pointer_msg upwr_pwm_pmode_cfg_msg;
 
-#define UPWR_DOMBIAS_MODE_BITS    (4)
-#define UPWR_DOMBIAS_RBB_BITS     ((UPWR_ARG_BITS - UPWR_DOMBIAS_MODE_BITS)/2)
-#if   ((UPWR_ARG_BITS - UPWR_DOMBIAS_MODE_BITS) & 1) != 0
-#error "UPWR_ARG_BITS - UPWR_DOMBIAS_MODE_BITS must be an even number"
+#if    ( UPWR_ARG_BITS       < UPWR_DOMBIAS_ARG_BITS)
+#if    ((UPWR_ARG_BITS + 32) < UPWR_DOMBIAS_ARG_BITS)
+#error "too few message bits for domain bias argument"
+#endif
 #endif
 
 typedef union {
-	struct upwr_msg_hdr       hdr;       /* message header */
+	struct upwr_msg_hdr           hdr;       /* message header */
 	struct {
-		uint32_t rsv :UPWR_HEADER_BITS;
-		uint32_t mode:UPWR_DOMBIAS_MODE_BITS;
-		uint32_t rbbn:UPWR_DOMBIAS_RBB_BITS;/* rev. back bias N-well */
-		uint32_t rbbp:UPWR_DOMBIAS_RBB_BITS;/* rev. back bias P-well */
+		upwr_pwm_dom_bias_args  B;
 	} args;
 } upwr_pwm_dom_bias_msg;
 
-typedef upwr_down_1w_msg upwr_pwm_mem_bias_msg;
+/* upwr_pwm_dom_bias_args
+   is an SoC-dependent message, defined in upower_soc_defs.h */
+
+typedef union {
+	struct upwr_msg_hdr           hdr;       /* message header */
+	struct {
+		upwr_pwm_mem_bias_args  B;
+	} args;
+} upwr_pwm_mem_bias_msg;
+
+/* upwr_pwm_mem_bias_args
+   is an SoC-dependent message, defined in upower_soc_defs.h */
 
 typedef upwr_pointer_msg upwr_pwm_pes_seq_msg;
 
-/* upwr_pwm_devmode-specific message format */
+/* upwr_pwm_reg_config-specific message format */
 
-typedef union {
-	struct upwr_msg_hdr hdr;
-	struct {
-		uint32_t rsv :UPWR_HEADER_BITS;
-		uint32_t dev :UPWR_HALF_ARG_BITS;  /* device id */
-		uint32_t mode:UPWR_HALF_ARG_BITS;  /* mode */
-	} args;
-} upwr_pwm_devmode_msg ;
+typedef upwr_pointer_msg upwr_pwm_regcfg_msg ;
 
 /* upwr_pwm_volt-specific message format */
 
@@ -411,16 +426,9 @@ typedef union {
 
 typedef upwr_down_2w_msg upwr_pwm_param_msg;
 
-/* upwr_pwm_pmicmod-specific message format */
+/* upwr_pwm_pmiccfg-specific message format */
 
-typedef union {
-	struct upwr_msg_hdr hdr;
-	struct {
-		uint32_t rsv:UPWR_HEADER_BITS;
-		uint32_t value:UPWR_HALF_ARG_BITS;  /* value  */
-		uint32_t mask:UPWR_HALF_ARG_BITS;   /* pin mask */
-	} args;
-} upwr_pwm_pmicmod_msg;
+typedef upwr_pointer_msg upwr_pwm_pmiccfg_msg;
 
 /* functions that pass a pointer use message format upwr_pointer_msg */
 
@@ -442,10 +450,10 @@ typedef union {
 	upwr_pwm_mem_bias_msg   mem_bias; /* memory bias message */
 	upwr_pwm_pes_seq_msg    pes;      /* PE seq. message */
 	upwr_pwm_pmode_cfg_msg  pmode;    /* power mode config message */
-	upwr_pwm_devmode_msg    devmode;  /* define mode message */
+	upwr_pwm_regcfg_msg     regcfg;   /* regulator config message */
 	upwr_pwm_volt_msg       volt;     /* set voltage message */
 	upwr_pwm_freq_msg       freq;     /* set frequency message */
-	upwr_pwm_pmicmod_msg    pmicmod;  /* PMIC mode message */
+	upwr_pwm_pmiccfg_msg    pmiccfg;  /* PMIC configuration message */
 	upwr_pwm_switch_msg     switches; /* switch control message */
 	upwr_pwm_pwron_msg      pwron;    /* switch/RAM/ROM power on  message */
 	upwr_pwm_pwroff_msg     pwroff;   /* switch/RAM/ROM power off message */
@@ -457,80 +465,8 @@ typedef union {
 
 typedef upwr_down_2w_msg upwr_down_max_msg; /* longest downstream msg */
 
-/* Domain Bias config (one per domain) */
-
-struct upwr_dom_bias_cfg_t {
-	uint32_t mode; /* Domain bias mode config */
-	uint32_t rbbn; /* reverse back bias N well */
-	uint32_t rbbp; /* reverse back bias P well */
-};
-
-/* AVD mode and voltage level */
-
-typedef union {
-	uint32_t                  R;
-	struct {
-		uint32_t                  mode      : 8;    /* Dom bias mode */
-		uint32_t                  rsrv_1    : 8;
-		uint32_t                  avd_mode  : 8;    /* AVD bias mode */
-		uint32_t                  rsrv_2    : 8;
-	}                         B;
-} dom_bias_mode_cfg_t;
-
-typedef union {
-	uint32_t                  R;
-	struct {
-		uint32_t                  lvl       : 8;    /* Dom bias level */
-		uint32_t                  rsrv_1    : 8;
-		uint32_t                  avd_lvl   : 8;    /* AVD bias level */
-		uint32_t                  rsrv_2    : 8;
-	}                         B;
-} dom_bias_lvl_cfg_t;
-
-/* Extract AVD bias config from a domain bias config */
-static inline struct upwr_dom_bias_cfg_t *get_avd_dom_bias_cfg(
-	struct upwr_dom_bias_cfg_t *dom_bias_cfg, 
-	struct upwr_dom_bias_cfg_t *avd_bias_cfg
-)
-{
-	dom_bias_mode_cfg_t       dom_bias_mode;
-	dom_bias_lvl_cfg_t        dom_bias_lvl;
-	dom_bias_mode.R = dom_bias_cfg->mode;
-	avd_bias_cfg->mode = dom_bias_mode.B.avd_mode;
-	dom_bias_lvl.R  = dom_bias_cfg->rbbn;
-	avd_bias_cfg->rbbn = dom_bias_lvl.B.avd_lvl;
-	dom_bias_lvl.R  = dom_bias_cfg->rbbp;
-	avd_bias_cfg->rbbp = dom_bias_lvl.B.avd_lvl;
-	return avd_bias_cfg;
-}
-
-/* Memory Bias config */
-
-struct upwr_mem_bias_cfg_t {
-	uint32_t en; /* Memory bias enable config */
-};
-
-/* all configs in Power Management services */
-
-typedef union {
-	struct upwr_switch_board_t     switch_board;
-	struct upwr_mem_switches_t     mem_switches;
-	struct upwr_dom_bias_cfg_t     dom_bias;
-	struct upwr_mem_bias_cfg_t     mem_bias;
-} upwr_pwm_srv_cfg_t;
-
-/* Split different Bias */
-
-struct upwr_pmc_bias_cfg_t {
-	struct upwr_dom_bias_cfg_t dombias_cfg; /* Domain Bias config */
-	struct upwr_mem_bias_cfg_t membias_cfg; /* Memory Bias config */
-};
-
-/* PowerSys low power config */
-
-struct upwr_powersys_cfg_t {
-	uint32_t lpm_mode; /* Powersys low power mode */
-};
+/* upwr_dom_bias_cfg_t and upwr_mem_bias_cfg_t
+   are SoC-dependent structs, defined in upower_soc_defs.h */
 
 /* Power and mem switches */
 typedef struct {
