@@ -11,50 +11,49 @@
  * VERSION DATE        AUTHOR                  DESCRIPTION
  *
  * $Log: upower_api.c.rca $
- * 
- *  Revision: 1.191 Mon Nov  9 14:39:19 2020 nxf42682
- *  powersys_fw_048.011.010.005
- * 
- *  Revision: 1.55 Wed Nov  4 15:33:37 2020 nxa11511
- *  upwr_start and its callback now handles major, minor and fixes version numbers, no longer soc.
- *  Handling of new field vfixes in init message.
- *  upwr_rom_version now returns vfixes
- *  upwr_rom_version now returns major, minor and fixes version numbers, no longer soc.
- * 
+ *
+ *  Revision: 1.215 Fri Apr 30 06:27:06 2021 nxa10721
+ *  powersys_fw_048.011.012.006
+ *
+ *  Revision: 1.62 Tue Apr 27 12:43:01 2021 nxa11511
+ *  Spec review fixes.
+ *  Fixes uninitialized variable in upwr_pwm_power_on, upwr_pwm_power_off, upwr_pwm_chng_switch_mem.
+ *  Adds new service upwr_pwm_reg_config.
+ *
  *  Revision: 1.54 Fri Oct 23 13:19:58 2020 nxa11511
  *  Deleted the GPL license statements, leaving only BSD, as it is compatible with Linux and good for closed ROM/firmware code.
- * 
+ *
  *  Revision: 1.53 Thu Sep 24 16:42:38 2020 nxa11511
  *  Fixes API buffer base setting.
- * 
+ *
  *  Revision: 1.51 Wed Sep 16 15:58:44 2020 nxa11511
  *  Fixes the APD/RTD API buffer overlap issue using new #defines and tupedefs in upower_soc_defs.h
- * 
+ *
  *  Revision: 1.39 Sun Jun 21 14:34:54 2020 nxa11511
  *  Fixes compilation outside block-level testbench.
- * 
+ *
  *  Revision: 1.25 Tue Mar 10 06:23:23 2020 nxa11511
  *  Fixes copying of argument structs to shared memory.
  *  Fixes shared memory argument buffer size, fixing TKT0534585.
- * 
+ *
  *  Revision: 1.24 Mon Mar  2 12:25:32 2020 nxa11511
  *  Updates comments to the new version 20200222.
  *  upwr_start callback now checks start error, doesn't change API state in case.
  *  Adds same-domain checks in calls with domain argument.
  *  Updates upwr_start to the new definition.
- * 
+ *
  *  Revision: 1.17 Mon Jan 27 20:18:07 2020 nxa10721
  *  powersys_fw_021.002.000.004
- * 
+ *
  *  Revision: 1.19 Mon Jan 27 15:29:03 2020 nxa11511
  *  Adds memcpy, under #ifdef NO_MEMCPY.
- * 
+ *
  *  Revision: 1.13 Fri Sep 27 10:54:30 2019 nxa13158
  *  added if NULL condition to check if user_callback exists
- * 
+ *
  *  Revision: 1.12 Mon Sep  9 23:54:18 2019 nxa16953
  *  Updated based on latest register structs.
- * 
+ *
  *  Revision: 1.11 Fri Aug 23 17:51:07 2019 nxa11511
  *  Adds macros to simplify service request implementation.
  *  Adds shutdown support.
@@ -64,36 +63,36 @@
  *  Adds Exception service requests.
  *  Adds bias setting functions and Diagnostic mode function.
  *  full implementation of the API spec in shared review (version 20190818).
- * 
+ *
  *  Revision: 1.8 Wed Aug 14 13:45:13 2019 nxa11511
  *  Fixes compilation for simulation.
- * 
+ *
  *  Revision: 1.7 Wed Aug 14 07:10:53 2019 nxa11511
  *  Partial editing only, not compiled, not tested:
  *  - updates upwr_init to the latest spec, including new argument waitinit.
  *  - bug fixes.
  *  - Rx and Tx interrupts treated in the same ISR.
- * 
+ *
  *  Revision: 1.3 Sat Aug 10 09:04:32 2019 nxa11511
  *  No longer gets UPWR_NAMESPACE.
  *  Fixes some strict compiling errors.
- * 
+ *
  *  Revision: 1.1 Fri Aug  2 14:28:58 2019 nxa11511
  *  mvfile on Fri Aug  2 14:28:58 2019 by user nxa11511.
  *  Originated from sync://sync-15088:15088/Projects/common_blocks/da_ip_ahb_upower_subsys_ln28fdsoi_tb/vectors/firmware/stimulus/src/drvapi/vers0/upower_api.cc;1.8
- * 
+ *
  *  Revision: 1.8 Fri Aug  2 14:28:40 2019 nxa11511
  *  Adapted to Linux coding guidelines.
  *  Converted to C (no longer using C++ features).
- * 
+ *
  *  Revision: 1.7 Wed Jun 12 15:44:39 2019 nxa11511
  *  Number of MUs now #defined by UPWR_MU_INSTANCES.
  *  Adds optional namespace definition with #define UPWR_NAMESPACE.
  *  No longer disables interrupt at the ISR start (automatically done by CAPI).
- * 
+ *
  *  Revision: 1.5 Wed Apr 10 14:43:35 2019 nxa11511
  *  Several bug fixes.
- * 
+ *
  * -----------------------------------------------------------------------------
  * KEYWORDS: micro-power uPower driver API
  * -----------------------------------------------------------------------------
@@ -108,10 +107,12 @@
 
 #include "upower_soc_defs.h"
 #include "upower_api.h"
+#include "upmu.h"
 
 #ifdef  UPWR_BLOCK_LEVEL
 
 #include "capi_wrapper.h"
+#include "CAPI_RAM.hh"
 
 #define UPWR_API_ASSERT(c) do { if (!(c)) { ERROR("upower_api.c", "assert failed @line " UPWR_API_STRING(__LINE__)); }} while (0)
 
@@ -195,6 +196,7 @@ soc_domain_t __UPWR_API_DATA__ pwr_domain; /* CPU/power domain */
 
 upwr_code_vers_t __UPWR_API_DATA__ fw_rom_version;
 upwr_code_vers_t __UPWR_API_DATA__ fw_ram_version;
+uint32_t         __UPWR_API_DATA__ fw_launch_option;
 
 /* shared memory buffers */
 
@@ -256,9 +258,10 @@ UPWR_TX_CALLB_FUNC_T __UPWR_API_DATA__ mu_tx_callb; /* Tx callback */
 UPWR_RX_CALLB_FUNC_T __UPWR_API_DATA__ mu_rx_callb; /* Rx callback */
 
 typedef enum {
-	INIT_WAIT,        /* waiting for firmware initialization */
-	START_WAIT,       /* waiting for start services */
-	READY             /* ready to receive service requests */
+	UPWR_API_INIT_WAIT,        /* waiting for ROM firmware initialization */
+	UPWR_API_INITLZED,         /* ROM firmware initialized */
+	UPWR_API_START_WAIT,       /* waiting for start services */
+	UPWR_API_READY             /* ready to receive service requests */
 } upwr_api_state_t;
 
 volatile upwr_api_state_t __UPWR_API_DATA__ api_state;
@@ -289,7 +292,7 @@ static void* ptr2phys(const void* ptr) {
  *                     buffer belongs;
  *                     The 3rd argument is the size of structure to be copied.
  *                     The 4th argument is an offset to apply to the copy
- *                     destination address. 
+ *                     destination address.
  *                     The 5th argument is ptr before the conversion to physical
  *                     address.
  *                     2nd, 3rd. 4th and 5th arguments are not used if the
@@ -337,7 +340,7 @@ void __UPWR_API_CODE__ upwr_exp_isr(void)
 }
 
 /* upwr_copy2tr prototype; function definition in auxiliary function section */
-void upwr_copy2tr(const uint32_t* msg, unsigned int size);
+void upwr_copy2tr(struct MU_tag* mu, const uint32_t* msg, unsigned int size);
 
 #define UPWR_MU_TSR_EMPTY ((uint32_t)((1 << UPWR_MU_MSG_SIZE) -1))
 
@@ -391,10 +394,10 @@ void upwr_next_req(void)
 	if (upwr_tx((uint32_t*)&sg_req_msg[sg],
 		     sg_req_siz[sg],
 		     upwr_next_req) < 0) {
-		/* TBD what to do with this error */
+		UPWR_API_ASSERT(0);
 		return; /* leave the Tx pending */
 	}
-		
+
 }
 
 /**
@@ -416,7 +419,7 @@ void upwr_mu_int_callback(void)
 	unsigned int           size;     /* in words */
 
 	if (upwr_rx((uint32_t*)&rxmsg, &size) < 0) {
-		/* TBD what to do with this error */
+		UPWR_API_ASSERT(0);
 		return;
 	}
 
@@ -429,7 +432,7 @@ void upwr_mu_int_callback(void)
 	/* clear the service group busy status */
 	sg_busy &= ~(1 << sg);	/* no lock needed here, we're in the MU ISR */
 
-        if ((sg_callb = sgrp_callback[sg]) == NULL) {
+	if ((sg_callb = sgrp_callback[sg]) == NULL) {
 		upwr_callb user_callb = user_callback[sg];
 
 		/* no service group callback; call the user callback if any */
@@ -445,12 +448,14 @@ void upwr_mu_int_callback(void)
 	}
 
 	sg_callb();                    /* finally make the group callback */
+	/* don't uninstall the group callback, it's permanent */
 
 done:
 	if (rxmsg.hdr.errcode == UPWR_RESP_SHUTDOWN) { /* shutdown error: */
-		api_state = START_WAIT; /* change the API state automatically
-					 * so new requests are rejected by
-					 * the API immediately */
+		api_state = UPWR_API_INITLZED;
+					 /* change the API state automatically
+					  * so new requests are rejected by
+					  * the API immediately */
 	}
 }
 
@@ -476,11 +481,14 @@ void upwr_srv_req(upwr_sg_t     sg,
 		  uint32_t*     msg,
 		  unsigned int  size)
 {
+	int rc;
+
 	upwr_lock(1);
 	sg_busy |= 1 << sg;
 	upwr_lock(0);
 
-	if (upwr_tx(msg, size, upwr_next_req) < 0) {
+	if ((rc = upwr_tx(msg, size, upwr_next_req)) < 0) {
+		UPWR_API_ASSERT(rc == -1);
 		/* queue full, make the transmission pending */
 		msg_copy((uint32_t*)&sg_req_msg[sg], msg, size);
 		sg_req_siz[sg] = size;
@@ -496,14 +504,14 @@ void upwr_srv_req(upwr_sg_t     sg,
  * INITIALIZATION, CONFIGURATION
  *
  * A reference uPower initialization sequence goes as follows:
- * 
+ *
  * 1. host CPU calls upwr_init.
  * 2. (optional) host checks the ROM version and SoC code calling upwr_vers(...)
  *    and optionally performs any configuration or workaround accordingly.
  * 3. host CPU calls upwr_start to start the uPower services, passing a
  *    service option number.
  *    If no RAM code is loaded or it has no service options, the launch option
- *    number passed is 0, which will start the services available in ROM.
+ *    number passed must be 0, which will start the services available in ROM.
  *    upwr_start also receives a pointer to a callback called by the API
  *    when the firmware is ready to receive service requests.
  *    The callback may be replaced by polling, calling upwr_req_status in a loop
@@ -538,7 +546,7 @@ void upwr_srv_req(upwr_sg_t     sg,
 void upwr_start_callb(void)
 {
 	switch (api_state) {
-		case START_WAIT:
+		case UPWR_API_START_WAIT:
 		{
 			upwr_rdy_callb start_callb = (upwr_rdy_callb)
 						  user_callback[UPWR_SG_EXCEPT];
@@ -557,21 +565,28 @@ void upwr_start_callb(void)
 			fw_ram_version.vfixes = msg->args.vfixes;
 
 			/* vmajor == vminor == vfixes == 0 indicates start error
-			   in this case, keep in the START_WAIT state */
+			   in this case, go back to the INITLZED state */
 
 			if ((fw_ram_version.vmajor != 0) ||
 			    (fw_ram_version.vminor != 0) ||
 			    (fw_ram_version.vfixes != 0)) {
 
-				api_state = READY;
+				api_state = UPWR_API_READY;
 
 				/* initialization is over:
-				   unregister the callbacks
-				   before start callback is made, so the
-				   user callback can make a service call */
-				user_callback[UPWR_SG_EXCEPT] = NULL;
+				   uninstall the callbacks just in case */
+				UPWR_USR_CALLB(UPWR_SG_EXCEPT, NULL);
 				sgrp_callback[UPWR_SG_EXCEPT] = NULL;
+
+				if (fw_launch_option == 0) {
+					/* launched ROM firmware:
+					 * RAM fw versions must be all 0s */
+					fw_ram_version.vmajor =
+					fw_ram_version.vminor =
+					fw_ram_version.vfixes = 0;
+				}
 			}
+			else api_state = UPWR_API_INITLZED;
 
 			start_callb(msg->args.vmajor,
 			            msg->args.vminor,
@@ -579,7 +594,8 @@ void upwr_start_callb(void)
 		}
 		break;
 
-		default: /* TBD - should never be here */
+		default:
+			UPWR_API_ASSERT(0);
 			break;
 	}
 }
@@ -613,7 +629,7 @@ void upwr_start_callb(void)
  *        -1 if failed to allocate memory, or use some other resource.
  *        -2 if any argument is invalid.
  *        -3 if failed to send the ping message.
- *        -4 if failed to receive the initialization message, or was invalid 
+ *        -4 if failed to receive the initialization message, or was invalid
  */
 
 int upwr_init(	soc_domain_t               domain,
@@ -641,7 +657,7 @@ int upwr_init(	soc_domain_t               domain,
 	os_ptr2phy  = (phyadrptr == (upwr_phyadr_ptr_t)NULL)? ptr2phys :
                                                               phyadrptr;
         os_lock     = lockptr;
-	api_state   = INIT_WAIT;
+	api_state   = UPWR_API_INIT_WAIT;
         sg_busy     = 0;
 	pwr_domain  = domain;
 
@@ -668,8 +684,8 @@ int upwr_init(	soc_domain_t               domain,
 	UPWR_API_ASSERT((UPWR_DRAM_SHARED_ENDPLUS - UPWR_API_BUFFER_BASE) >=
 			(UPWR_API_BUFFER_SIZE*2));
 
-	sh_buffer[UPWR_SG_EXCEPT ] = (void*)(unsigned long) dom_buffer_base;
-	sh_buffer[UPWR_SG_PWRMGMT] = (void*)(dom_buffer_base+
+	sh_buffer[UPWR_SG_EXCEPT ] = (void*)(unsigned long)dom_buffer_base;
+	sh_buffer[UPWR_SG_PWRMGMT] = (void*)(unsigned long)(dom_buffer_base+
 					     sizeof(upwr_xcp_union_t));
 	sh_buffer[UPWR_SG_DELAYM ] = NULL;
 	sh_buffer[UPWR_SG_VOLTM  ] = NULL;
@@ -697,7 +713,7 @@ int upwr_init(	soc_domain_t               domain,
 		ping_msg.hdr.domain   = pwr_domain;
 		ping_msg.hdr.srvgrp   = UPWR_SG_EXCEPT;
 		ping_msg.hdr.function = UPWR_XCP_PING;
-		
+
 		if (mu->RSR.B.RF0) { /* first clean any Rx message left over */
 			upwr_rx((uint32_t*)msg, &size);
 		}
@@ -714,7 +730,7 @@ int upwr_init(	soc_domain_t               domain,
 		   just write to the MU TR register(s)
 		 */
 		mu->FCR.B.F0 = 1; /* flag urgency status */
-		upwr_copy2tr((uint32_t*)&ping_msg, sizeof(ping_msg)/4);
+		upwr_copy2tr(mu, (uint32_t*)&ping_msg, sizeof(ping_msg)/4);
 	}
 
 	do {
@@ -757,7 +773,8 @@ int upwr_init(	soc_domain_t               domain,
 	fw_rom_version.vfixes = msg->args.vfixes;
 
         if (upwr_rx_callback(upwr_mu_int_callback) < 0) {
-		/* TBD - catastrophic error, but is it possible to happen? */
+		/* catastrophic error, but is it possible to happen? */
+		UPWR_API_ASSERT(0);
 		return -1;
 	}
 
@@ -769,7 +786,7 @@ int upwr_init(	soc_domain_t               domain,
 
 	mu->RCR.R = 1;    /* enable only RR[0] receive interrupt */
 
-        api_state = START_WAIT;
+        api_state = UPWR_API_INITLZED;
 	return 0;
 } /* upwr_init */
 
@@ -784,10 +801,11 @@ int upwr_init(	soc_domain_t               domain,
  * no services are started, and the callback returns error (see below).
  * @rdycallb: pointer to the callback to be called when the uPower is ready
  * to receive service requests. NULL if no callback needed.
- * The callback receives as arguments the SoC and RAM firmware version numbers.
- * SoC and Firmware version numbers will be the same as ROM if launchopt = 0,
- * selecting the ROM services. If all 3 numbers (soc, vmajor, vminor) are 0,
- * that means the service launching failed.
+ * The callback receives as arguments the RAM firmware version numbers.
+ * If all 3 numbers (vmajor, vminor, vfixes) are 0, that means the
+ * service launching failed.
+ * Firmware version numbers will be the same as ROM if launchopt = 0,
+ * selecting the ROM services.
  *
  * upwr_start can be called by any domain even if the services are already
  * started: it has no effect, returning success, if the launch option is the
@@ -798,7 +816,7 @@ int upwr_init(	soc_domain_t               domain,
  * of the request response from the uPower firmware, telling if it succeeded or
  * not.
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_EXCEPT as the service group argument.
  *
  * Context: no sleep, no locks taken/released.
@@ -813,18 +831,21 @@ int upwr_start(	uint32_t                launchopt,
 {
 	upwr_start_msg txmsg;
 
-	if (api_state != START_WAIT) return -3;
+	if (api_state != UPWR_API_INITLZED) return -3;
 
 	UPWR_USR_CALLB(UPWR_SG_EXCEPT, (upwr_callb)rdycallb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_EXCEPT, UPWR_XCP_START);
 
-	txmsg.hdr.arg = launchopt;
+	txmsg.hdr.arg = fw_launch_option = launchopt;
 
 	if (upwr_tx((uint32_t*)&txmsg, sizeof(txmsg)/4, NULL) < 0) {
-		/* TBD - catastrophic error, but is it possible to happen? */
+		/* catastrophic error, but is it possible to happen? */
+		UPWR_API_ASSERT(0);
 		return -1;
-	}	
+	}
+
+	api_state = UPWR_API_START_WAIT;
 	return 0;
 } /* upwr_start */
 
@@ -840,7 +861,7 @@ int upwr_start(	uint32_t                launchopt,
  * argument ret, or can be pointed by argument retptr in the upwr_req_status and
  * upwr_poll_req_status calls, casted to upwr_xcp_config_t.
  * @callb: pointer to the callback to be called when the uPower has finished
- * the shutdown, or NULL if no callback needed (polling used instead).
+ * the configuration, or NULL if no callback needed (polling used instead).
  *
  * Some configurations are targeted for a specific domain (see the struct
  * upwr_xcp_config_t definition in upower_soc_defs.h); this call has implicit
@@ -854,11 +875,8 @@ int upwr_start(	uint32_t                launchopt,
  * of the request response from the uPower firmware, telling if it succeeded or
  * not.
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_EXCEPT as the service group argument.
- *
- * At the callback the uPower/API is back to initialization/start-up phase,
- * so service request calls return error.
  *
  * Context: no sleep, no locks taken/released.
  * Return: 0 if ok,
@@ -870,7 +888,7 @@ int upwr_xcp_config(const upwr_xcp_config_t* config, const upwr_callb callb)
 {
 	upwr_xcp_config_msg    txmsg;
 
-	if (api_state != READY)           return -3;
+	if (api_state != UPWR_API_READY)  return -3;
         if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
@@ -896,7 +914,7 @@ int upwr_xcp_config(const upwr_xcp_config_t* config, const upwr_callb callb)
  * @code: alarm code. Defined by SoC-dependent type upwr_alarm_t found in
  * upower_soc_defs.h.
  * @callb: pointer to the callback to be called when the uPower has finished
- * the shutdown, or NULL if no callback needed (polling used instead).
+ * the alarm, or NULL if no callback needed (polling used instead).
  *
  * The function requests the uPower to issue an alarm of the given code as if
  * it had originated internally. This service is useful mainly to test the
@@ -910,11 +928,8 @@ int upwr_xcp_config(const upwr_xcp_config_t* config, const upwr_callb callb)
  * of the request response from the uPower firmware, telling if it succeeded or
  * not.
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_EXCEPT as the service group argument.
- *
- * At the callback the uPower/API is back to initialization/start-up phase,
- * so service request calls return error.
  *
  * Context: no sleep, no locks taken/released.
  * Return: 0 if ok,
@@ -928,7 +943,7 @@ int upwr_xcp_sw_alarm(soc_domain_t     domain,
 {
 	upwr_xcp_swalarm_msg    txmsg;
 
-	if (api_state != READY)           return -3;
+	if (api_state != UPWR_API_READY)  return -3;
 	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
@@ -943,7 +958,7 @@ int upwr_xcp_sw_alarm(soc_domain_t     domain,
 }
 
 /**
- * upwr_xcp_shutdown() - Shuts down all uPower services.
+ * upwr_xcp_shutdown() - Shuts down all uPower services and power mode tasks.
  * @callb: pointer to the callback to be called when the uPower has finished
  * the shutdown, or NULL if no callback needed
  * (polling used instead).
@@ -952,7 +967,7 @@ int upwr_xcp_sw_alarm(soc_domain_t     domain,
  * of the request response from the uPower firmware, telling if it succeeded or
  * not.
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_EXCEPT as the service group argument.
  *
  * At the callback the uPower/API is back to initialization/start-up phase,
@@ -968,12 +983,112 @@ int upwr_xcp_shutdown(const upwr_callb callb)
 {
 	upwr_xcp_shutdown_msg    txmsg;
 
-	if (api_state != READY)           return -3;
+	if (api_state != UPWR_API_READY)  return -3;
         if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_EXCEPT, UPWR_XCP_SHUTDOWN);
+
+	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+
+	return 0;
+}
+
+/**
+ * upwr_xcp_i2c_access() - Performs an access through the uPower I2C interface.
+ * @addr: I2C slave address, up to 10 bits.
+ * @data_size: determines the access direction and data size in bytes, up to 4;
+ * negetive data_size determines a read  access with size -data_size;
+ * positive data_size determines a write access with size  data_size;
+ * data_size=0 is invalid, making the service return error UPWR_RESP_BAD_REQ.
+ * @subaddr_size: size of the sub-address in bytes, up to 4; if subaddr_size=0,
+ * no subaddress is used.
+ * @subaddr: sub-address, only used if subaddr_size > 0.
+ * @wdata: write data, up to 4 bytes; ignored if data_size < 0 (read)
+ * @callb: pointer to the callback to be called when the uPower has finished
+ * the access, or NULL if no callback needed
+ * (polling used instead).
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded or
+ * not.
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_EXCEPT as the service group argument.
+ *
+ * The service performs a read (data_size < 0) or a write (data_size > 0) of
+ * up to 4 bytes on the uPower I2C interface. The data read from I2C comes via
+ * the callback argument ret, or written to the variable pointed by retptr,
+ * if polling is used (calls upwr_req_status or upwr_poll_req_status).
+ * ret (or *retptr) also returns the data written on writes.
+ *
+ * Sub-addressing is supported, with sub-address size determined by the argument
+ * subaddr_size, up to 4 bytes. Sub-addressing is not used if subaddr_size=0.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ */
+
+#ifdef UPWR_BLOCK_LEVEL
+/* emulated struct equivalent to upwr_i2c_access in upower_defs.h
+   (simulation only)
+ */
+
+struct upwr_i2c_access_emul {
+	CapiRamHalf      addr;
+	CapiRamByte      data_size;
+	CapiRamByte      subaddr_size;
+	CapiRamWord      subaddr;
+	CapiRamWord      data;
+
+	upwr_i2c_access_emul(unsigned int address)
+	{
+		addr.setAddress        (address);
+		data_size.setAddress   (address+2);
+		subaddr_size.setAddress(address+3);
+		subaddr.setAddress     (address+4);
+		data.setAddress        (address+8);
+	}
+};
+#endif
+
+int upwr_xcp_i2c_access(uint16_t         addr,
+			int8_t           data_size,
+			uint8_t          subaddr_size,
+			uint32_t         subaddr,
+			uint32_t         wdata,
+			const upwr_callb callb)
+{
+	uint64_t              ptrval      = (uint64_t)sh_buffer[UPWR_SG_EXCEPT];
+	#ifdef UPWR_BLOCK_LEVEL
+	upwr_i2c_access_emul  i2c_acc((unsigned int)ptrval);
+	upwr_i2c_access_emul* i2c_acc_ptr = &i2c_acc;
+	#else
+	upwr_i2c_access*      i2c_acc_ptr = (upwr_i2c_access*)ptrval;
+	#endif
+	upwr_pwm_pmiccfg_msg  txmsg;
+
+	if (api_state != UPWR_API_READY)  return -3;
+	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) return -1;
+
+	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
+
+	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_EXCEPT, UPWR_XCP_I2C);
+
+	i2c_acc_ptr->addr         = addr       ;
+	i2c_acc_ptr->subaddr      = subaddr    ;
+	i2c_acc_ptr->subaddr_size = subaddr_size;
+	i2c_acc_ptr->data         = wdata      ;
+	i2c_acc_ptr->data_size    = data_size  ;
+
+	txmsg.ptr = upwr_ptr2offset(ptrval,
+				    UPWR_SG_EXCEPT,
+				    (size_t)sizeof(upwr_i2c_access),
+				    0,
+				    i2c_acc_ptr);
 
 	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
 
@@ -999,7 +1114,7 @@ int upwr_xcp_shutdown(const upwr_callb callb)
  * of the request response from the uPower firmware, telling if it succeeded or
  * not.
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
  *
  * Context: no sleep, no locks taken/released.
@@ -1016,7 +1131,7 @@ int upwr_pwm_dom_power_on(soc_domain_t      domain,
 	upwr_pwm_dom_pwron_msg txmsg;
 
 	if (pwr_domain == domain)          return -2;
-	if (api_state  != READY)           return -3;
+	if (api_state != UPWR_API_READY)   return -3;
 	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, (upwr_callb)pwroncallb);
@@ -1043,12 +1158,12 @@ int upwr_pwm_dom_power_on(soc_domain_t      domain,
  * of the request response from the uPower firmware, telling if it succeeded or
  * not.
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
  *
  * The callback calling doesn't mean the CPUs boots have finished:
  * it only indicates that uPower released the CPUs resets, and can receive
- * other exception service group requests.
+ * other power management service group requests.
  *
  * Context: no sleep, no locks taken/released.
  * Return: 0 if ok,
@@ -1062,7 +1177,7 @@ int upwr_pwm_boot_start(soc_domain_t domain, const upwr_callb  bootcallb)
 	upwr_pwm_boot_start_msg txmsg;
 
 	if (pwr_domain == domain)          return -2;
-	if (api_state  != READY)           return -3;
+	if (api_state != UPWR_API_READY)   return -3;
 	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, (upwr_callb)bootcallb);
@@ -1096,7 +1211,7 @@ int upwr_pwm_boot_start(soc_domain_t domain, const upwr_callb  bootcallb)
  * of the request response from the uPower firmware, telling if it succeeded or
  * not.
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
  *
  * Context: no sleep, no locks taken/released.
@@ -1109,7 +1224,7 @@ int upwr_pwm_param(upwr_pwm_param_t* param, const upwr_callb  callb)
 {
 	upwr_pwm_param_msg txmsg;
 
-	if (api_state != READY)            return -3;
+	if (api_state != UPWR_API_READY)   return -3;
         if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
@@ -1132,8 +1247,9 @@ int upwr_pwm_param(upwr_pwm_param_t* param, const upwr_callb  callb)
 /**
  * upwr_pwm_chng_reg_voltage() - Changes the voltage at a given regulator.
  * @reg: regulator id.
- * @volt: voltage value; value unit is SoC-dependent, converted from mV
- * by the macro UPWR_VOLT_MILIV in upower_soc_defs.h
+ * @volt: voltage value; value unit is SoC-dependent, converted from mV by the
+ * macro UPWR_VOLT_MILIV, or from micro-Volts by the macro UPWR_VOLT_MICROV,
+ * both macros in upower_soc_defs.h
  * @callb: response callback pointer; NULL if no callback needed.
  *
  * The function requests uPower to change the voltage of the given regulator.
@@ -1146,7 +1262,7 @@ int upwr_pwm_param(upwr_pwm_param_t* param, const upwr_callb  callb)
  * or not.
  *
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
  *
  * Context: no sleep, no locks taken/released.
@@ -1161,7 +1277,7 @@ int upwr_pwm_chng_reg_voltage(uint32_t reg, uint32_t volt, upwr_callb callb)
 {
 	upwr_pwm_volt_msg txmsg;
 
-	if (api_state != READY)            return -3;
+	if (api_state != UPWR_API_READY)   return -3;
         if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
@@ -1189,12 +1305,12 @@ int upwr_pwm_chng_reg_voltage(uint32_t reg, uint32_t volt, upwr_callb callb)
  * if uPower can measure the current frequency by itself.
  * @callb: response callback pointer; NULL if no callback needed.
  *
- * The function informs uPower that the given domain frequency will change to
- * the given value. uPower firmware will then adjust voltage and bias to cope
- * with the new frequency (if decreasing) or prepare for it (if increasing).
- * The function must be called after decreasing the frequency, and before
- * increasing it. The actual increase in frequency must not occur before the
- * service returns its response.
+ * The function informs uPower that the given domain frequency has changed or
+ * will change to the given value. uPower firmware will then adjust voltage and
+ * bias to cope with the new frequency (if decreasing) or prepare for it
+ * (if increasing). The function must be called after decreasing the frequency,
+ * and before increasing it. The actual increase in frequency must not occur
+ * before the service returns its response.
  *
  * The request is executed if arguments are within range.
  *
@@ -1203,7 +1319,7 @@ int upwr_pwm_chng_reg_voltage(uint32_t reg, uint32_t volt, upwr_callb callb)
  * or not.
  *
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
  *
  * Context: no sleep, no locks taken/released.
@@ -1219,7 +1335,7 @@ int upwr_pwm_freq_setup(soc_domain_t domain, uint32_t nextfq, uint32_t currfq,
 {
 	upwr_pwm_freq_msg txmsg;
 
-	if (api_state != READY)            return -3;
+	if (api_state != UPWR_API_READY)   return -3;
         if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
@@ -1268,7 +1384,7 @@ int upwr_pwm_freq_setup(soc_domain_t domain, uint32_t nextfq, uint32_t currfq,
  * or not.
  *
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
  *
  * Callback or polling may return error if the service contends for a resource
@@ -1289,9 +1405,9 @@ int upwr_pwm_power_on(const uint32_t swton[],
 {
 	upwr_pwm_pwron_msg         txmsg;
 	uint64_t                   ptrval; /* needed for X86, ARM64 */
-	size_t                     stsize;
+	size_t                     stsize = 0;
 
-	if (api_state != READY)            return -3;
+	if (api_state != UPWR_API_READY)   return -3;
         if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
@@ -1350,7 +1466,7 @@ int upwr_pwm_power_on(const uint32_t swton[],
  * or not.
  *
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
  *
  * Callback or polling may return error if the service contends for a resource
@@ -1371,9 +1487,9 @@ int upwr_pwm_power_off(const uint32_t swtoff[],
 {
 	upwr_pwm_pwroff_msg        txmsg;
 	uint64_t                   ptrval; /* needed for X86, ARM64 */
-	size_t                     stsize;
+	size_t                     stsize = 0;
 
-	if (api_state != READY)            return -3;
+	if (api_state != UPWR_API_READY)   return -3;
         if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
@@ -1414,20 +1530,16 @@ int upwr_pwm_power_off(const uint32_t swtoff[],
  * @callb: pointer to the callback called when configurations are applyed.
  * NULL if no callback is required.
  *
- * The function requests uPower to turn off the memory peripheral and turn on
- * its array, as specified above.
- * The request is executed if arguments are within range, with no protections
- * regarding the adequate memory power state related to overall system state.
- *
- * If a memory is requested to retain, but the power switch that feeds that
- * memory is not on, the power switch will be turned on automatically.
+ * The function requests uPower to turn off the memory peripheral and leave
+ * its array on, as specified above.
+ * The request is executed if arguments are within range.
  *
  * A callback can be optionally registered, and will be called upon the arrival
  * of the request response from the uPower firmware, telling if it succeeded
  * or not.
  *
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
  *
  * Callback or polling may return error if the service contends for a resource
@@ -1447,7 +1559,7 @@ int upwr_pwm_mem_retain(const uint32_t mem[], upwr_callb callb)
 	upwr_pwm_retain_msg        txmsg;
 	uint64_t                   ptrval; /* needed for X86, ARM64 */
 
-	if (api_state != READY)            return -3;
+	if (api_state != UPWR_API_READY)   return -3;
         if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
@@ -1510,7 +1622,7 @@ int upwr_pwm_mem_retain(const uint32_t mem[], upwr_callb callb)
  * or not.
  *
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
  *
  * Callback or polling may return error if the service contends for a resource
@@ -1531,9 +1643,9 @@ int upwr_pwm_chng_switch_mem(const struct upwr_switch_board_t  swt[],
 {
 	upwr_pwm_switch_msg        txmsg;
 	uint64_t                   ptrval; /* needed for X86, ARM64 */
-	size_t                     stsize;
+	size_t                     stsize = 0;
 
-	if (api_state != READY)            return -3;
+	if (api_state != UPWR_API_READY)   return -3;
         if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
@@ -1587,7 +1699,7 @@ int upwr_pwm_chng_switch_mem(const struct upwr_switch_board_t  swt[],
  * or not.
  *
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
  *
  * Context: no sleep, no locks taken/released.
@@ -1606,7 +1718,7 @@ int upwr_pwm_pmode_config(soc_domain_t   domain,
 	upwr_pwm_pmode_cfg_msg     txmsg;
 	uint64_t                   ptrval; /* needed for X86, ARM64 */
 
-	if (api_state != READY)            return -3;
+	if (api_state != UPWR_API_READY)   return -3;
 	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
@@ -1629,10 +1741,118 @@ int upwr_pwm_pmode_config(soc_domain_t   domain,
 }
 
 /**
+ * upwr_pwm_pmic_config() - Configures the SoC PMIC (Power Management IC).
+ * @config: pointer to a PMIC-dependent struct defining the PMIC configuration.
+ * @size:   size of the struct pointed by config, in bytes.
+ * @callb: pointer to the callback called when configurations are applied.
+ * NULL if no callback is required.
+ *
+ * The function requests uPower to change/define the PMIC configuration.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok, -1 if service group is busy,
+ *        -2 if the pointer conversion to physical address failed,
+ *        -3 if called in an invalid API state.
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+
+int upwr_pwm_pmic_config(const void* config, uint32_t size, upwr_callb callb)
+{
+	upwr_pwm_pmiccfg_msg     txmsg;
+	uint64_t                 ptrval; /* needed for X86, ARM64 */
+
+	if (api_state != UPWR_API_READY)   return -3;
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+
+	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
+
+	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_PWRMGMT, UPWR_PWM_PMICCFG);
+
+	if ((ptrval = (uint64_t)os_ptr2phy(config)) == 0)
+		return -2; /* pointer conversion failed */
+
+	txmsg.ptr = upwr_ptr2offset(ptrval,
+				    UPWR_SG_PWRMGMT,
+				    (size_t)size,
+				    0,
+				    config);
+
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+
+	return 0;
+}
+
+/**
+ * upwr_pwm_reg_config() - Configures the uPower internal regulators.
+ * @config: pointer to the struct defining the regulator configuration;
+ * the struct upwr_reg_config_t is defined in the file upower_defs.h.
+ * @callb: pointer to the callback called when configurations are applied.
+ * NULL if no callback is required.
+ *
+ * The function requests uPower to change/define the configurations of the
+ * internal regulators.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
+ *
+ * The service may fail with error UPWR_RESP_RESOURCE if a power mode transition
+ * or the same service (called from another domain) is executing simultaneously.
+ * This error should be interpreted as a "try later" response, as the service
+ * will succeed once those concurrent executions are done, and no other is
+ * started.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok, -1 if service group is busy,
+ *        -2 if the pointer conversion to physical address failed,
+ *        -3 if called in an invalid API state.
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+
+int upwr_pwm_reg_config(const struct upwr_reg_config_t* config,
+			upwr_callb   callb)
+{
+	upwr_pwm_regcfg_msg      txmsg;
+	uint64_t                 ptrval; /* needed for X86, ARM64 */
+
+	if (api_state != UPWR_API_READY)   return -3;
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+
+	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
+
+	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_PWRMGMT, UPWR_PWM_REGCFG);
+
+	if ((ptrval = (uint64_t)os_ptr2phy(config)) == 0)
+		return -2; /* pointer conversion failed */
+
+	txmsg.ptr = upwr_ptr2offset(ptrval,
+				    UPWR_SG_PWRMGMT,
+				    sizeof(struct upwr_reg_config_t),
+				    0,
+				    config);
+
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+
+	return 0;
+}
+
+/**
  * upwr_pwm_chng_dom_bias() - Changes the domain bias.
- * @domain: identifier of the domain upon which the bias is applied.
- * Defined by SoC-dependent type soc_domain_t found in upower_soc_defs.h.
- * @bias: pointer to a domain bias configuration struct (see upower_defs.h).
+ * @bias: pointer to a domain bias configuration struct (see upower_soc_defs.h).
  * @callb: pointer to the callback called when configurations are applied.
  * NULL if no callback is required.
  *
@@ -1646,7 +1866,7 @@ int upwr_pwm_pmode_config(soc_domain_t   domain,
  * or not.
  *
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
  *
  * Context: no sleep, no locks taken/released.
@@ -1656,23 +1876,20 @@ int upwr_pwm_pmode_config(soc_domain_t   domain,
  * it only tells if the request was successfully sent to the uPower.
  */
 
-int upwr_pwm_chng_dom_bias(soc_domain_t                      domain,
-			   const struct upwr_dom_bias_cfg_t* bias,
+int upwr_pwm_chng_dom_bias(const struct upwr_dom_bias_cfg_t* bias,
 			   upwr_callb                        callb)
 {
 	upwr_pwm_dom_bias_msg      txmsg;
 
-	if (api_state != READY)            return -3;
+	if (api_state != UPWR_API_READY)   return -3;
 	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_PWRMGMT, UPWR_PWM_DOM_BIAS);
 
-	txmsg.hdr.domain = (uint32_t)domain;
-	txmsg.args.mode  = bias->mode;
-	txmsg.args.rbbn  = bias->rbbn;
-	txmsg.args.rbbp  = bias->rbbp;
+	/* SoC-dependent argument filling, defined in upower_soc_defs.h */
+	UPWR_FILL_DOMBIAS_ARGS(txmsg.hdr.domain, bias, txmsg.args);
 
 	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
 
@@ -1683,7 +1900,7 @@ int upwr_pwm_chng_dom_bias(soc_domain_t                      domain,
  * upwr_pwm_chng_mem_bias()- Changes a ROM/RAM power bias.
  * @domain: identifier of the domain upon which the bias is applied.
  * Defined by SoC-dependent type soc_domain_t found in upower_soc_defs.h.
- * @bias: pointer to a memory bias configuration struct (see upower_defs.h).
+ * @bias: pointer to a memory bias configuration struct (see upower_soc_defs.h).
  * @callb: pointer to the callback called when configurations are applied.
  * NULL if no callback is required.
  *
@@ -1697,7 +1914,7 @@ int upwr_pwm_chng_dom_bias(soc_domain_t                      domain,
  * or not.
  *
  * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check a service group response, by calling upwr_req_status or
+ * to be used to check the response, by calling upwr_req_status or
  * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
  *
  * Context: no sleep, no locks taken/released.
@@ -1713,14 +1930,17 @@ int upwr_pwm_chng_mem_bias(soc_domain_t                      domain,
 {
 	upwr_pwm_mem_bias_msg      txmsg;
 
-	if (api_state != READY)            return -3;
+	if (api_state != UPWR_API_READY)   return -3;
 	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_PWRMGMT, UPWR_PWM_MEM_BIAS);
+
 	txmsg.hdr.domain = (uint32_t)domain;
-	txmsg.hdr.arg    = bias->en;
+
+	/* SoC-dependent argument filling, defined in upower_soc_defs.h */
+	UPWR_FILL_MEMBIAS_ARGS(bias, txmsg.args);
 
 	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
 
@@ -1766,7 +1986,7 @@ int upwr_xcp_reg_access(const struct upwr_reg_access_t* access,
 	upwr_xcp_access_msg        txmsg;
 	uint64_t                   ptrval; /* needed for X86, ARM64 */
 
-	if (api_state != READY)                    return -3;
+	if (api_state != UPWR_API_READY)           return -3;
 	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT))          return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
@@ -1796,11 +2016,17 @@ int upwr_xcp_reg_access(const struct upwr_reg_access_t* access,
 /**
  * upwr_dgn_mode() - Sets the diagnostic mode.
  * @mode:  diagnostic mode, which can be:
- *       - UPWR_DGN_NONE:   no diagnostic recorded
- *       - UPWR_DGN_ERROR:  only errors recorded
- *       - UPWR_DGN_WARN:   warnings and errors recorded
- *       - UPWR_DGN_SRVREQ: service request activity recorded
- *       - UPWR_DGN_TRACE:  internal activity recorded
+ *  - UPWR_DGN_NONE:   no diagnostic recorded
+ *  - UPWR_DGN_TRACE:  warnings, errors, service, internal activity recorded
+ *  - UPWR_DGN_SRVREQ: warnings, errors, service activity recorded
+ *  - UPWR_DGN_WARN:   warnings and errors recorded
+ *  - UPWR_DGN_ALL:    trace, service, warnings, errors, task state recorded
+ *  - UPWR_DGN_ERROR:  only errors recorded
+ *  - UPWR_DGN_ALL2ERR: record all until an error occurs,
+ *    freeze recording on error
+ *  - UPWR_DGN_ALL2HLT: record all until an error occurs,
+ *    executes an ebreak on error, which halts the core if enabled through
+ *    the debug interface
  * @callb: pointer to the callback called when mode is changed.
  * NULL if no callback is required.
  *
@@ -1832,7 +2058,7 @@ int upwr_dgn_mode(upwr_dgn_mode_t mode, const upwr_callb callb)
  */
 
 /**
- * upwr_rom_version() - informs the Id of the SoC and ROM firwmware version.
+ * upwr_rom_version() - informs the ROM firwmware version.
  * @vmajor: pointer to the variable to get the firmware major version number.
  * @vminor: pointer to the variable to get the firmware minor version number.
  * @vfixes: pointer to the variable to get the firmware fixes number.
@@ -1855,7 +2081,7 @@ uint32_t upwr_rom_version(uint32_t *vmajor, uint32_t *vminor, uint32_t *vfixes)
 }
 
 /**
- * upwr_ram_version() - informs the Id of the SoC and RAM firwmware version.
+ * upwr_ram_version() - informs the RAM firwmware version.
  * @vminor: pointer to the variable to get the firmware minor version number.
  * @vfixes: pointer to the variable to get the firmware fixes number.
  *
@@ -1880,7 +2106,7 @@ uint32_t upwr_ram_version(uint32_t* vminor, uint32_t* vfixes)
 /**
  * upwr_req_status() - tells the status of the service group request, and
  *                     returns a request return value, if any.
- * @sg: service group of the request 
+ * @sg: service group of the request
  * @sgfptr: pointer to the variable that will hold the function id of
  * the last request completed; can be NULL, in which case it is not used.
  * @errptr: pointer to the variable that will hold the error code;
@@ -1888,6 +2114,8 @@ uint32_t upwr_ram_version(uint32_t* vminor, uint32_t* vfixes)
  * @retptr: pointer to the variable that will hold the value returned
  * by the last request completed (invalid if the last request completed didn't
  * return any value); can be NULL, in which case it is not used.
+ * Note that a request may return a value even if service error is returned
+ * (*errptr != UPWR_RESP_OK): that is dependent on the specific service.
  *
  * This call can be used in a poll loop of a service request completion in case
  * a callback was not registered.
@@ -1920,7 +2148,7 @@ upwr_req_status_t upwr_req_status(upwr_sg_t     sg,
 /**
  * upwr_poll_req_status() - polls the status of the service group request, and
  *                          returns a request return value, if any.
- * @sg: service group of the request 
+ * @sg: service group of the request
  * @sgfptr: pointer to the variable that will hold the function id of
  * the last request completed; can be NULL, in which case it is not used.
  * @errptr: pointer to the variable that will hold the error code;
@@ -1928,6 +2156,8 @@ upwr_req_status_t upwr_req_status(upwr_sg_t     sg,
  * @retptr: pointer to the variable that will hold the value returned
  * by the last request completed (invalid if the last request completed didn't
  * return any value); can be NULL, in which case it is not used.
+ * Note that a request may return a value even if service error is returned
+ * (*errptr != UPWR_RESP_OK): that is dependent on the specific service.
  * @attempts: maximum number of polling attempts; if attempts > 0 and is
  * reached with no service response received, upwr_poll_req_status returns
  * UPWR_REQ_BUSY and variables pointed by sgfptr, retptr and errptr are not
@@ -1982,7 +2212,7 @@ upwr_req_status_t upwr_poll_req_status(upwr_sg_t     sg,
  * Return: alarm code, as defined by the type upwr_alarm_t in upwr_soc_defines.h
  */
 
-upwr_alarm_t upwr_alarm_code(void)
+upwr_alarm_t upwr_alarm_code()
 {
 	return (upwr_alarm_t)(3 & (mu->FSR.R >> 1)); /* FSR[2:1] */
 }
@@ -1999,7 +2229,7 @@ upwr_alarm_t upwr_alarm_code(void)
  * interrupt flag RF[0] will be the last to set, regardless of message size;
  */
 
-void upwr_copy2tr(const uint32_t* msg, unsigned int size)
+void upwr_copy2tr(struct MU_tag* _mu, const uint32_t* msg, unsigned int size)
 {
 	int i;
 
@@ -2034,7 +2264,7 @@ int upwr_tx(const uint32_t*         msg,
 
 	mu_tx_callb = callback;
 
-	upwr_copy2tr(msg, size);
+	upwr_copy2tr(mu, msg, size);
 	mu->TCR.R = 1 << (size - 1);
 
 	mu_tx_pend = 1;
