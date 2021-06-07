@@ -11,6 +11,8 @@
 #include <errno.h>
 #include <lib/mmio.h>
 
+#include <xrdc.h>
+
 #include "upower_soc_defs.h"
 #include "upower_api.h"
 #include "upower_defs.h"
@@ -31,7 +33,7 @@ uint32_t upower_status(int status)
     uint32_t ret = -1;
     switch(status) {
         case 0:
-            NOTICE("%s: finished successfully!\n", __func__);
+            INFO("%s: finished successfully!\n", __func__);
             ret = 0;
             break;
         case -1:
@@ -51,16 +53,16 @@ uint32_t upower_status(int status)
 }
 
 
-void upower_wait_resp()
+static void upower_wait_resp()
 {
 	while(muptr->SR.B.RFP == 0) {
-		NOTICE("%s: poll the mu:%x\n", __func__, muptr->SR.R);
+		INFO("%s: poll the mu:%x\n", __func__, muptr->SR.R);
 		udelay(100);
 	}
 	upwr_txrx_isr();
 }
 
-void user_upwr_rdy_callb(uint32_t soc, uint32_t vmajor, uint32_t vminor)
+static void user_upwr_rdy_callb(uint32_t soc, uint32_t vmajor, uint32_t vminor)
 {
 	NOTICE("%s: soc=%x\n", __func__, soc);
 	NOTICE("%s: RAM version:%d.%d\n", __func__, vmajor, vminor);
@@ -87,66 +89,6 @@ uint32_t upower_init(void)
 	    return status;
         }
 
-	/* Only for test */
-#if 1
-	uint32_t swt;
-	int ret_val, ret;
-
-	swt = BIT_32(1);
-
-	ret = upwr_pwm_power_off(&swt, NULL, NULL);
-	if (ret) {
-		NOTICE("%s failed: ret: %d\n", __func__, ret);
-		return ret;
-	}
-	upower_wait_resp();
-	ret = upwr_poll_req_status(UPWR_SG_PWRMGMT, NULL, NULL, &ret_val, 1000);
-	if (ret != UPWR_REQ_OK) {
-		NOTICE("Faliure %d, %s\n", ret, __func__);
-//		if (ret == UPWR_REQ_BUSY)
-//			return -EBUSY;
-//		else
-//			return -EINVAL;
-	}
-	NOTICE("=== %x\n", mmio_read_32(0x283590f4));
-
-	ret = upwr_pwm_power_on(&swt, NULL, NULL);
-	if (ret) {
-		NOTICE("%s failed: ret: %d\n", __func__, ret);
-		return ret;
-	}
-	upower_wait_resp();
-	ret = upwr_poll_req_status(UPWR_SG_PWRMGMT, NULL, NULL, &ret_val, 1000);
-	if (ret != UPWR_REQ_OK) {
-		NOTICE("Faliure %d, %s\n", ret, __func__);
-//		if (ret == UPWR_REQ_BUSY)
-//			return -EBUSY;
-//		else
-//			return -EINVAL;
-	}
-
-	NOTICE("=== %x\n", mmio_read_32(0x283590f4));
-
-	ret = upwr_pwm_power_off(&swt, NULL, NULL);
-	if (ret) {
-		NOTICE("%s failed: ret: %d\n", __func__, ret);
-		return ret;
-	}
-	upower_wait_resp();
-	ret = upwr_poll_req_status(UPWR_SG_PWRMGMT, NULL, NULL, &ret_val, 1000);
-	if (ret != UPWR_REQ_OK) {
-		NOTICE("Faliure %d, %s\n", ret, __func__);
-//		if (ret == UPWR_REQ_BUSY)
-//			return -EBUSY;
-//		else
-//			return -EINVAL;
-	}
-	NOTICE("=== %x\n", mmio_read_32(0x283590f4));
-#endif
-
-extern int xrdc_config_pdac(uint32_t, uint32_t, uint32_t, uint32_t);
-extern int xrdc_config_mrc6_dma2_ddr(void);
-#if 1
 	xrdc_config_pdac(4, 8, 1, 7); /* DMA1 (DID=1) access to SAI4 regs */
 	xrdc_config_pdac(4, 9, 1, 7); /* DMA1 (DID=1) access to SAI5 regs */
 	xrdc_config_pdac(5, 41, 0, 7); /* (DID=0) access to SAI6 regs */
@@ -156,7 +98,6 @@ extern int xrdc_config_mrc6_dma2_ddr(void);
 	xrdc_config_pdac(5, 42, 7, 7); /* (DID=7) access to SAI7 regs */
 	xrdc_config_pdac(5, 43, 7, 7); /* (DID=7) access to SPDIF regs */
 	xrdc_config_mrc6_dma2_ddr();
-#endif
 
 	return 0;
 }
