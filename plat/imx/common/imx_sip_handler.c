@@ -297,7 +297,6 @@ int imx_hifi_xrdc(uint32_t smc_fid)
 #define mmio_clrbits32(addr, clear)            mmio_write_32(addr, mmio_read_32(addr) & ~(clear))
 	mmio_setbits32(0x2da50008, BIT_32(19) | BIT_32(17) | BIT_32(18));
 	mmio_clrbits32(0x2da50008, BIT_32(16));
-	printf("xxxxxx %x\n", mmio_read_32(0x2da50008));
 	extern int xrdc_config_mrc11_hifi_itcm(void);
 	extern int xrdc_config_mrc11_hifi_dtcm(void);
 	extern int xrdc_config_pdac(uint32_t, uint32_t, uint32_t, uint32_t);
@@ -308,17 +307,6 @@ int imx_hifi_xrdc(uint32_t smc_fid)
 	xrdc_config_mrc11_hifi_dtcm();
 	xrdc_config_mda(9, 2);
 	xrdc_config_mrc7_hifi_ddr();
-
-	printf("mrc7 %x\n", mmio_read_32(0x292f2e00));
-	printf("mrc7 %x\n", mmio_read_32(0x292f2e04));
-	printf("mrc7 %x\n", mmio_read_32(0x292f2e08));
-	printf("mrc7 %x\n", mmio_read_32(0x292f2e0c));
-	printf("mrc7 %x\n", mmio_read_32(0x292f2e10));
-
-	printf("mda0 %x\n", mmio_read_32(0x292f0800));
-	printf("mda0 %x\n", mmio_read_32(0x292f0804));
-	printf("mda9 %x\n", mmio_read_32(0x292f0920));
-	printf("cr %x\n", mmio_read_32(0x292f0000));
 
 	return 0;
 }
