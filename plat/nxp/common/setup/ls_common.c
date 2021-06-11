@@ -238,23 +238,35 @@ const mmap_region_t *plat_ls_get_mmap(void)
 	return plat_ls_mmap;
 }
 
+static uint8_t saved_num_clusters;
+static uint8_t saved_cores_per_cluster;
 
 /* This function get the number of clusters and cores count per cluster in the SoC */
 void get_cluster_info(struct soc_type *soc_list, uint8_t ps_count,
 		uint8_t *num_clusters, uint8_t *cores_per_cluster)
 {
-	const soc_info_t *soc_info = get_soc_info();
-	*num_clusters = NUMBER_OF_CLUSTERS;
-	*cores_per_cluster = CORES_PER_CLUSTER;
 	unsigned int i;
+
+	if (saved_num_clusters && saved_cores_per_cluster) {
+		goto exit;
+	}
+
+	const soc_info_t *soc_info = get_soc_info();
+
+	saved_num_clusters = NUMBER_OF_CLUSTERS;
+	saved_cores_per_cluster = CORES_PER_CLUSTER;
 
 	for (i = 0; i < ps_count; i++) {
 		if (soc_list[i].version == soc_info->svr_reg.bf_ver.version) {
-			*num_clusters = soc_list[i].num_clusters;
-			*cores_per_cluster= soc_list[i].cores_per_cluster;
+			saved_num_clusters = soc_list[i].num_clusters;
+			saved_cores_per_cluster = soc_list[i].cores_per_cluster;
 			break;
 		}
 	}
+
+exit:
+	*num_clusters = saved_num_clusters;
+	*cores_per_cluster = saved_cores_per_cluster;
 
 	VERBOSE("NUM of cluster = 0x%x, Cores per cluster = 0x%x\n",
 			*num_clusters, *cores_per_cluster);
