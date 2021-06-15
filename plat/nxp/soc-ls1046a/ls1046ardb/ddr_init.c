@@ -203,7 +203,7 @@ static const struct rc_timing rce[] = {
 
 static const struct board_timing udimm[] = {
 	{0x04, rce, 0x01020304, 0x06070805},
-	{0x0f, rce, 0x01020304, 0x06070805},
+	{0x1f, rce, 0x01020304, 0x06070805},
 };
 
 int ddr_board_options(struct ddr_info *priv)
