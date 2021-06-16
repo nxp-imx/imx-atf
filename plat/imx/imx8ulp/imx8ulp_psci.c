@@ -72,6 +72,7 @@ void imx_pwr_domain_off(const psci_power_state_t *target_state)
 	/* disable wakeup */
 	mmio_write_32(IMX_SIM1_BASE + 0x3c + 0x4 * cpu, 0);
 
+	/* set core power mode to PD */
 	mmio_write_32(IMX_CMC1_BASE + 0x50 + 0x4 * cpu, 0x3);
 }
 
@@ -82,14 +83,22 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 	if (is_local_state_off(CORE_PWR_STATE(target_state))) {
 		plat_gic_cpuif_disable();
 		imx_pwr_set_cpu_entry(cpu, BL31_BASE);
+		/* core put into power down */
 		mmio_write_32(IMX_CMC1_BASE + 0x50 + 0x4 * cpu, 0x3);
+		/* FIXME config wakeup interrupt in WKPU */
+		mmio_write_32(IMX_SIM1_BASE + 0x3c + 0x4 * cpu, 0x7fffffe3);
 	} else {
+		/* for core standby/retention mode */
+		mmio_write_32(IMX_CMC1_BASE + 0x50 + 0x4 * cpu, 0x1);
+		mmio_write_32(IMX_SIM1_BASE + 0x3c + 0x4 * cpu, 0x7fffffe3);
 		dsb();
 		write_scr_el3(read_scr_el3() | SCR_FIQ_BIT);
 		isb();
 	}
 
 	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state))) {
+		/* TODO imx_set_wakeup() based on GIC config*/
+
 		/*
 		 * just for sleep mode for now, need to update to
 		 * support more mode, same for suspend finish call back.
@@ -98,10 +107,8 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 		mmio_write_32(IMX_CMC1_BASE + 0x20, 0x1);
 	}
 
-		/* TODO */
+	/* TODO, may need to add more system level config here */
 	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
-		imx_pwr_set_cpu_entry(cpu, BL31_BASE);
-		mmio_write_32(IMX_CMC1_BASE + 0x20, 0x1f);
 	}
 }
 
@@ -110,18 +117,22 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 	unsigned int cpu = MPIDR_AFFLVL0_VAL(read_mpidr_el1());
 
 	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
+		/* TODO reverse setting for system level */
 	}
 
-	/* TODO */
 	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state))) {
 		mmio_write_32(IMX_CMC1_BASE + 0x20, 0x0);
 		mmio_write_32(IMX_CMC1_BASE + 0x10, 0x0);
 	}
 
+	/* clear core's LPM setting */
+	mmio_write_32(IMX_CMC1_BASE + 0x50 + 0x4 * cpu, 0x0);
+	mmio_write_32(IMX_SIM1_BASE + 0x3c + 0x4 * cpu, 0x0);
+
 	if (is_local_state_off(CORE_PWR_STATE(target_state))) {
 		plat_gic_cpuif_enable();
-		mmio_write_32(IMX_CMC1_BASE + 0x50 + 0x4 * cpu, 0x0);
 	} else {
+		dsb();
 		write_scr_el3(read_scr_el3() & (~SCR_FIQ_BIT));
 		isb();
 	}
@@ -152,7 +163,6 @@ int imx_validate_power_state(unsigned int power_state,
 {
 	int pwr_lvl = psci_get_pstate_pwrlvl(power_state);
 	int pwr_type = psci_get_pstate_type(power_state);
-	int state_id = psci_get_pstate_id(power_state);
 
 	if (pwr_lvl > PLAT_MAX_PWR_LVL)
 		return PSCI_E_INVALID_PARAMS;
@@ -162,10 +172,9 @@ int imx_validate_power_state(unsigned int power_state,
 		CLUSTER_PWR_STATE(req_state) = PLAT_MAX_RET_STATE;
 	}
 
-	if (pwr_type == PSTATE_TYPE_POWERDOWN && state_id == 0x33) {
-		CORE_PWR_STATE(req_state) = PLAT_MAX_OFF_STATE;
-		CLUSTER_PWR_STATE(req_state) = PLAT_WAIT_RET_STATE;
-	}
+	/* No power down state support */
+	if (pwr_type == PSTATE_TYPE_POWERDOWN)
+		return PSCI_E_INVALID_PARAMS;
 
 	return PSCI_E_SUCCESS;
 }
@@ -175,7 +184,7 @@ void imx_get_sys_suspend_power_state(psci_power_state_t *req_state)
 	unsigned int i;
 
 	for (i = IMX_PWR_LVL0; i <= PLAT_MAX_PWR_LVL; i++)
-		req_state->pwr_domain_state[i] = PLAT_STOP_OFF_STATE;
+		req_state->pwr_domain_state[i] = PLAT_POWER_DOWN_OFF_STATE;
 }
 
 /* TODO */
