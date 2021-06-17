@@ -30,6 +30,7 @@ static const struct rc_timing rce_1[] = {
 static const struct board_timing udimm1[] = {
 	{0x01, rcb_1, 0x01020306, 0x07090A00},
 	{0x04, rce_1, 0x01020407, 0x090A0B05},
+	{0x1f, rce_1, 0x01020306, 0x07080903},
 };
 
 static const struct rc_timing rcb_2[] = {
@@ -45,6 +46,7 @@ static const struct rc_timing rce_2[] = {
 static const struct board_timing udimm2[] = {
 	{0x01, rcb_2, 0xFEFCFD00, 0x00000000},
 	{0x04, rce_2, 0xFEFCFD00, 0x000000FD},
+	{0x1f, rce_2, 0xFEFCFD00, 0x000000FD},
 };
 
 static const struct rc_timing rcb[] = {
