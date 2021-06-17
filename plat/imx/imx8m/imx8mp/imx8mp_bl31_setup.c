@@ -51,7 +51,7 @@ static const struct imx_rdc_cfg rdc[] = {
 	/* Master domain assignment */
 	RDC_MDAn(RDC_MDA_M7, DID1),
 
-	RDC_MDAn(RDC_MDA_LCDIF1, DID2),
+	RDC_MDAn(RDC_MDA_LCDIF, DID2),
 	RDC_MDAn(RDC_MDA_LCDIF2, DID2),
 	RDC_MDAn(RDC_MDA_HDMI_TX, DID2),
 	RDC_MDAn(RDC_MDA_GPU2D, DID2),
@@ -74,7 +74,6 @@ static const struct imx_csu_cfg csu_cfg[] = {
 	/* peripherals csl setting */
 	CSU_CSLx(CSU_CSL_OCRAM, CSU_SEC_LEVEL_2, UNLOCKED),
 	CSU_CSLx(CSU_CSL_OCRAM_S, CSU_SEC_LEVEL_2, UNLOCKED),
-	CSU_CSLx(CSU_CSL_CSU, CSU_SEC_LEVEL_3, LOCKED),
 	CSU_CSLx(CSU_CSL_RDC, CSU_SEC_LEVEL_3, LOCKED),
 	CSU_CSLx(CSU_CSL_TZASC, CSU_SEC_LEVEL_4, LOCKED),
 
