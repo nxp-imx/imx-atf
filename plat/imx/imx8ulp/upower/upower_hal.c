@@ -53,7 +53,7 @@ uint32_t upower_status(int status)
 }
 
 
-static void upower_wait_resp()
+void upower_wait_resp()
 {
 	while(muptr->SR.B.RFP == 0) {
 		INFO("%s: poll the mu:%x\n", __func__, muptr->SR.R);

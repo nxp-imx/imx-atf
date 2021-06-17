@@ -10,6 +10,7 @@
 #include <lib/pmf/pmf.h>
 #include <tools_share/uuid.h>
 #include <imx_sip_svc.h>
+#include <drivers/scmi-msg.h>
 
 static int32_t imx_sip_setup(void)
 {
@@ -30,6 +31,10 @@ static uintptr_t imx_sip_handler(unsigned int smc_fid,
 		SMC_RET1(handle, imx_kernel_entry_handler(smc_fid, x1, x2, x3, x4));
 		break;
 #if defined(PLAT_imx8ulp)
+	case IMX_SIP_SCMI:
+		scmi_smt_fastcall_smc_entry(0);
+		SMC_RET1(handle, 0);
+		break;
 	case IMX_SIP_HIFI_XRDC:
 		SMC_RET1(handle, imx_hifi_xrdc(smc_fid));
 		break;
