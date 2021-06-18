@@ -26,6 +26,8 @@
 #include <upower_soc_defs.h>
 #include <upower_api.h>
 
+#define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
+
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
 
@@ -91,7 +93,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.spsr = get_spsr_for_bl33_entry();
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 
-#if defined(SPD_opteed)
+#if defined(SPD_opteed) || defined(SPD_trusty)
 	/* Populate entry point information for BL32 */
 	SET_PARAM_HEAD(&bl32_image_ep_info, PARAM_EP, VERSION_1, 0);
 	SET_SECURITY_STATE(bl32_image_ep_info.h.attr, SECURE);
@@ -102,10 +104,15 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.args.arg1 = BL32_BASE;
 	bl33_image_ep_info.args.arg2 = BL32_SIZE;
 
+#ifdef SPD_trusty
+	bl32_image_ep_info.args.arg0 = BL32_SIZE;
+	bl32_image_ep_info.args.arg1 = BL32_BASE;
+#else
 	/* Make sure memory is clean */
 	mmio_write_32(BL32_FDT_OVERLAY_ADDR, 0);
 	bl33_image_ep_info.args.arg3 = BL32_FDT_OVERLAY_ADDR;
 	bl32_image_ep_info.args.arg3 = BL32_FDT_OVERLAY_ADDR;
+#endif
 #endif
 }
 
@@ -122,7 +129,7 @@ void bl31_plat_arch_setup(void)
 #endif
 	mmap_add(imx_mmap);
 
-#if defined(SPD_opteed)
+#if defined(SPD_opteed) || defined(SPD_trusty)
 	mmap_add_region(BL32_BASE, BL32_BASE, BL32_SIZE, MT_MEMORY | MT_RW);
 #endif
 
@@ -167,3 +174,11 @@ void bl31_plat_runtime_setup(void)
 {
 	return;
 }
+
+#ifdef SPD_trusty
+void plat_trusty_set_boot_args(aapcs64_params_t *args) {
+	args->arg0 = BL32_SIZE;
+	args->arg1 = BL32_BASE;
+	args->arg2 = TRUSTY_PARAMS_LEN_BYTES;
+}
+#endif
