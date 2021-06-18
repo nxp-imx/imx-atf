@@ -72,4 +72,9 @@
 #define PLAT_NS_IMAGE_OFFSET		0x80200000
 
 #define BL32_FDT_OVERLAY_ADDR		0x9d000000
+
+#ifdef SPD_trusty
+#define IMX_TRUSTY_STACK_SIZE 0x100
+#endif
+
 #endif /* PLATFORM_DEF_H */
