@@ -1,120 +1,69 @@
 /*
- * Copyright 2020 NXP
- *
- * Peng Fan <peng.fan@nxp.com>
+ * Copyright 2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
-#include <stdlib.h>
-#include <scmi.h>
+#include <assert.h>
 #include <stdint.h>
-#include <string.h>
-#include <lib/utils_def.h>
-#include <common/debug.h>
 
-/*
- * TODO:
- *  Fine grained lock
- *  Asyn notification
- *  multiple request
- */
+#include <platform_def.h>
 
-uint8_t scmi_protocol[] = {SCMI_PROTOCOL_POWER_DOMAIN, SCMI_PROTOCOL_SENSOR, SCMI_PROTOCOL_PERF_DOMAIN };
+#include <drivers/scmi-msg.h>
+#include <drivers/scmi.h>
 
-const char *vendor = "NXP";
-const char *sub_vendor = "IMX";
+#define SMT_BUFFER_BASE		0x2201f000
+#define SMT_BUFFER0_BASE	SMT_BUFFER_BASE
+#define SMT_BUFFER1_BASE	(SMT_BUFFER_BASE + 0x200)
 
-int scmi_base_protocol_handler(uint32_t msg_id, void *shmem)
+static struct scmi_msg_channel scmi_channel[] = {
+	[0] = {
+		.shm_addr = SMT_BUFFER0_BASE,
+		.shm_size = SMT_BUF_SLOT_SIZE,
+	},
+};
+
+struct scmi_msg_channel *plat_scmi_get_channel(unsigned int agent_id)
 {
-	struct scmi_shared_mem *mem = (struct scmi_shared_mem *)SMC_SHMEM_BASE;
-	struct response *response = (struct response *)&mem->payload[0];
-	uint32_t num_skip;
-	uint32_t num_protocols;
-	uint8_t *index;
-	int i;
+	assert(agent_id < ARRAY_SIZE(scmi_channel));
 
-	switch (msg_id) {
-	case PROTOCOL_VERSION:
-		response->status = SCMI_RET_SUCCESS;
-		response->data[0] = 0x20000;
-		mem->length = 12;
-		break;
-	case PROTOCOL_ATTRIBUTES:
-		response->status = SCMI_RET_SUCCESS;
-		/* power domain and sensor */
-		response->data[0]= ARRAY_SIZE(scmi_protocol);
-		mem->length = 12;
-		break;
-	case BASE_DISCOVER_VENDOR:
-		response->status = SCMI_RET_SUCCESS;
-		memcpy(&response->data[0], vendor, strlen(vendor) + 1);
-		mem->length = 12;
-		break;
-	case BASE_DISCOVER_SUB_VENDOR:
-		response->status = SCMI_RET_SUCCESS;
-		memcpy(&response->data[0], sub_vendor, strlen(sub_vendor) + 1);
-		mem->length = 12;
-		break;
-	case BASE_DISCOVER_IMPLEMENTATION_VERSION:
-		response->status = SCMI_RET_SUCCESS;
-		/* VERSION 1.00 */
-		response->data[0]= 0x100;
-		mem->length = 12;
-		break;
-	case BASE_DISCOVER_LIST_PROTOCOLS:
-		num_skip = ((uint32_t *)&mem->payload[0])[0];
-		num_protocols = ARRAY_SIZE(scmi_protocol);
-		if (num_skip > 0)
-			response->status = SCMI_RET_NOT_SUPPORTED;
-		else
-			response->status = SCMI_RET_SUCCESS;
-		response->data[0]= num_protocols;
-		index = (uint8_t *)&response->data[1];
-		for (i = 0; i < num_protocols; i++)
-			*index++ = scmi_protocol[i];
-
-		mem->length = 12 + (1 + (num_protocols - 1) / 4) * sizeof(uint32_t);
-		break;
-	default:
-		response->status = SCMI_RET_NOT_SUPPORTED;
-		mem->length = 8;
-		break;
-	}
-
-	mem->status = 1;
-
-	return 0;
+	return &scmi_channel[agent_id];
 }
 
-int scmi_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_register_t x3)
+static const char vendor[] = "NXP";
+static const char sub_vendor[] = "";
+
+const char *plat_scmi_vendor_name(void)
 {
-	NOTICE("%s %x\n", __func__, smc_fid);
+	return vendor;
+}
 
-	unsigned int *shmem = (unsigned int *)SMC_SHMEM_BASE;
-	struct scmi_shared_mem *mem = (struct scmi_shared_mem *)SMC_SHMEM_BASE;
-	struct response *response = (struct response *)&mem->payload[0];
-	uint32_t msg_header;
-	uint32_t msg_id, msg_pro_id;
+const char *plat_scmi_sub_vendor_name(void)
+{
+	return sub_vendor;
+}
 
-	msg_header = mem->header;
-	msg_id = MSG_ID(msg_header);
-	msg_pro_id = MSG_PRO_ID(msg_header);
+/* Currently supporting Clocks and Reset Domains */
+static const uint8_t plat_protocol_list[] = {
+	SCMI_PROTOCOL_ID_POWER_DOMAIN,
+	0U /* Null termination */
+};
 
-	switch(msg_pro_id) {
-	case SCMI_PROTOCOL_BASE:
-		return scmi_base_protocol_handler(msg_id, shmem);
-	case SCMI_PROTOCOL_POWER_DOMAIN:
-		return scmi_power_domain_handler(msg_id, shmem);
-	case SCMI_PROTOCOL_PERF_DOMAIN:
-		return scmi_perf_domain_handler(msg_id, shmem);
-	case SCMI_PROTOCOL_SENSOR:
-		return scmi_sensor_handler(msg_id, shmem);
-	default:
-		mem->status = 1;
-		response->status = SCMI_RET_NOT_SUPPORTED;
-		break;
-	}
+size_t plat_scmi_protocol_count(void)
+{
+	const size_t count = ARRAY_SIZE(plat_protocol_list) - 1U;
 
-	return 0;
+	return count;
+}
+
+const uint8_t *plat_scmi_protocol_list(unsigned int agent_id __unused)
+{
+	return plat_protocol_list;
+}
+
+void imx8ulp_init_scmi_server(void)
+{
+	size_t i;
+
+	for (i = 0U; i < ARRAY_SIZE(scmi_channel); i++)
+		scmi_smt_init_agent_channel(&scmi_channel[i]);
 }

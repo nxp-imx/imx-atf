@@ -31,11 +31,12 @@ BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
 				drivers/delay_timer/delay_timer.c	\
 				drivers/delay_timer/generic_delay_timer.c \
 				plat/imx/imx8ulp/xrdc/mrc.c		\
+				drivers/scmi-msg/base.c			\
+				drivers/scmi-msg/entry.c		\
+				drivers/scmi-msg/smt.c			\
+				drivers/scmi-msg/power_domain.c		\
 				plat/imx/imx8ulp/scmi/scmi.c		\
 				plat/imx/imx8ulp/scmi/scmi_pd.c		\
-				plat/imx/imx8ulp/scmi/scmi_perf.c	\
-				plat/imx/imx8ulp/scmi/scmi_sensor.c	\
-				plat/imx/imx8ulp/scmi/clk_hal.c		\
 				plat/imx/imx8ulp/upower/upower_api.c	\
 				plat/imx/imx8ulp/upower/upower_hal.c	\
 				${XLAT_TABLES_LIB_SRCS}			\

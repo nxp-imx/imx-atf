@@ -6,10 +6,35 @@
 
 #include <assert.h>
 
-#include <drivers/st/scmi-msg.h>
-#include <drivers/st/scmi.h>
+#include <drivers/scmi-msg.h>
+#include <drivers/scmi.h>
 
 #include "common.h"
+
+#pragma weak scmi_msg_get_clock_handler
+#pragma weak scmi_msg_get_rstd_handler
+#pragma weak scmi_msg_get_pd_handler
+#pragma weak scmi_msg_get_voltage_handler
+
+scmi_msg_handler_t scmi_msg_get_clock_handler(struct scmi_msg *msg __unused)
+{
+	return NULL;
+}
+
+scmi_msg_handler_t scmi_msg_get_rstd_handler(struct scmi_msg *msg __unused)
+{
+	return NULL;
+}
+
+scmi_msg_handler_t scmi_msg_get_pd_handler(struct scmi_msg *msg __unused)
+{
+	return NULL;
+}
+
+scmi_msg_handler_t scmi_msg_get_voltage_handler(struct scmi_msg *msg __unused)
+{
+	return NULL;
+}
 
 void scmi_status_response(struct scmi_msg *msg, int32_t status)
 {
@@ -46,6 +71,9 @@ void scmi_process_message(struct scmi_msg *msg)
 		break;
 	case SCMI_PROTOCOL_ID_RESET_DOMAIN:
 		handler = scmi_msg_get_rstd_handler(msg);
+		break;
+	case SCMI_PROTOCOL_ID_POWER_DOMAIN:
+		handler = scmi_msg_get_pd_handler(msg);
 		break;
 	default:
 		break;
