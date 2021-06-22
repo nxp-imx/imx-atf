@@ -123,7 +123,8 @@ static int configure_jr(int num)
 		reg_base_addr = (void *)(g_nxp_caam_addr + CAAM_JR3_OFFSET);
 		break;
 	default:
-		break;
+		ERROR("Wrong Job Ring number in configure_jr()");
+		return -1;
 	}
 
 	/* Initialize the JR library */

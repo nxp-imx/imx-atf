@@ -507,6 +507,7 @@ void soc_init(void)
 	}
 #endif
 
+	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
 	/*
 	 * Initialize Interconnect for this cluster during cold boot.
 	 * No need for locks as no other CPU is active.
@@ -516,7 +517,6 @@ void soc_init(void)
 	else
 		ccn_init(&plat_ccn_desc);
 
-	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
 	plat_ls_interconnect_enter_coherency(num_clusters);
 
 	/* Set platform security policies */
