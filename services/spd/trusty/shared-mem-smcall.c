@@ -717,7 +717,7 @@ static int trusty_ffa_mem_reclaim(struct trusty_shmem_client_state *client,
 static long trusty_ffa_rxtx_map(struct trusty_shmem_client_state *client,
 				u_register_t tx_address,
 				u_register_t rx_address,
-				u_register_t page_count)
+				uint32_t page_count)
 {
 	int ret;
 	uintptr_t tx_va;
@@ -725,7 +725,7 @@ static long trusty_ffa_rxtx_map(struct trusty_shmem_client_state *client,
 	size_t buf_size = page_count * FFA_PAGE_SIZE;
 
 	if (!buf_size) {
-		NOTICE("%s: invalid page_count %ld\n", __func__, page_count);
+		NOTICE("%s: invalid page_count %u\n", __func__, page_count);
 		return -EINVAL;
 	}
 
@@ -780,7 +780,7 @@ err_map_tx:
  * Return: 0 on success, error code on failure.
  */
 static long trusty_ffa_rxtx_unmap(struct trusty_shmem_client_state *client,
-				  u_register_t id)
+				  uint32_t id)
 {
 	int ret;
 
@@ -845,8 +845,8 @@ static int trusty_ffa_id_get(struct trusty_shmem_client_state *client,
  *
  * Return: 0 on success, error code on failure.
  */
-static int trusty_ffa_version(struct trusty_shmem_client_state *client,
-			      u_register_t version_in, void *smc_handle)
+static long trusty_ffa_version(struct trusty_shmem_client_state *client,
+			       uint32_t version_in, void *smc_handle)
 {
 	if (version_in & (1U << 31)) {
 		goto err_not_suppoprted;
@@ -875,7 +875,7 @@ err_not_suppoprted:
  * Return: 0 on success, error code on failure.
  */
 static int trusty_ffa_features(struct trusty_shmem_client_state *client,
-			       u_register_t func, u_register_t *ret2,
+			       uint32_t func, u_register_t *ret2,
 			       u_register_t *ret3)
 {
 	if (SMC_ENTITY(func) != SMC_ENTITY_SHARED_MEMORY ||
@@ -927,7 +927,7 @@ static int trusty_ffa_features(struct trusty_shmem_client_state *client,
  *
  * Return: FF-A defined error code.
  */
-static int to_spi_err(int ret)
+static int to_spi_err(long ret)
 {
 	switch(ret) {
 	case -ENOMEM:
@@ -957,6 +957,15 @@ uintptr_t spm_mm_smc_handler(uint32_t smc_fid,
 			     u_register_t flags)
 {
 	long ret = -1;
+	/*
+	 * Some arguments to FF-A functions are specified to come from 32 bit
+	 * (w) registers. Create 32 bit copies of the 64 bit arguments that can
+	 * be passed to these functions.
+	 */
+	uint32_t w1 = (uint32_t)x1;
+	uint32_t w2 = (uint32_t)x2;
+	uint32_t w3 = (uint32_t)x3;
+	uint32_t w4 = (uint32_t)x4;
 	u_register_t ret_reg2 = 0;
 	u_register_t ret_reg3 = 0;
 	struct trusty_shmem_client_state *client = &trusty_shmem_client_state[
@@ -972,20 +981,23 @@ uintptr_t spm_mm_smc_handler(uint32_t smc_fid,
 
 	switch (smc_fid) {
 	case SMC_FC_FFA_VERSION:
-		ret = trusty_ffa_version(client, x1, handle);
+		ret = trusty_ffa_version(client, w1, handle);
 		break;
 
 	case SMC_FC_FFA_FEATURES:
-		ret = trusty_ffa_features(client, x1, &ret_reg2, &ret_reg3);
+		ret = trusty_ffa_features(client, w1, &ret_reg2, &ret_reg3);
 		break;
 
 	case SMC_FC_FFA_RXTX_MAP:
+		ret = trusty_ffa_rxtx_map(client, w1, w2, w3);
+		break;
+
 	case SMC_FC64_FFA_RXTX_MAP:
-		ret = trusty_ffa_rxtx_map(client, x1, x2, x3);
+		ret = trusty_ffa_rxtx_map(client, x1, x2, w3);
 		break;
 
 	case SMC_FC_FFA_RXTX_UNMAP:
-		ret = trusty_ffa_rxtx_unmap(client, x1);
+		ret = trusty_ffa_rxtx_unmap(client, w1);
 		break;
 
 	case SMC_FC_FFA_ID_GET:
@@ -993,13 +1005,20 @@ uintptr_t spm_mm_smc_handler(uint32_t smc_fid,
 		break;
 
 	case SMC_FC_FFA_MEM_SHARE:
+		ret = trusty_ffa_mem_share(client, w1, w2, w3, w4, handle);
+		break;
+
 	case SMC_FC64_FFA_MEM_SHARE:
-		ret = trusty_ffa_mem_share(client, x1, x2, x3, x4, handle);
+		ret = trusty_ffa_mem_share(client, w1, w2, x3, w4, handle);
 		break;
 
 	case SMC_FC_FFA_MEM_RETRIEVE_REQ:
+		ret = trusty_ffa_mem_retrieve_req(client, w1, w2, w3, w4,
+						  handle);
+		break;
+
 	case SMC_FC64_FFA_MEM_RETRIEVE_REQ:
-		ret = trusty_ffa_mem_retrieve_req(client, x1, x2, x3, x4,
+		ret = trusty_ffa_mem_retrieve_req(client, w1, w2, x3, w4,
 						  handle);
 		break;
 
@@ -1008,15 +1027,15 @@ uintptr_t spm_mm_smc_handler(uint32_t smc_fid,
 		break;
 
 	case SMC_FC_FFA_MEM_RECLAIM:
-		ret = trusty_ffa_mem_reclaim(client, x1, x2, x3);
+		ret = trusty_ffa_mem_reclaim(client, w1, w2, w3);
 		break;
 
 	case SMC_FC_FFA_MEM_FRAG_RX:
-		ret = trusty_ffa_mem_frag_rx(client, x1, x2, x3, x4, handle);
+		ret = trusty_ffa_mem_frag_rx(client, w1, w2, w3, w4, handle);
 		break;
 
 	case SMC_FC_FFA_MEM_FRAG_TX:
-		ret = trusty_ffa_mem_frag_tx(client, x1, x2, x3, x4, handle);
+		ret = trusty_ffa_mem_frag_tx(client, w1, w2, w3, w4, handle);
 		break;
 
 	default:
