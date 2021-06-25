@@ -278,6 +278,11 @@ static long trusty_ffa_fill_desc(struct trusty_shmem_client_state *client,
 {
 	int ret;
 
+	if (!client->buf_size) {
+		NOTICE("%s: buffer pair not registered\n", __func__);
+		return -EINVAL;
+	}
+
 	if (fragment_length > client->buf_size) {
 		NOTICE("%s: bad fragment size %u > %zu buffer size\n", __func__,
 		       fragment_length, client->buf_size);
@@ -449,6 +454,11 @@ trusty_ffa_mem_retrieve_req(struct trusty_shmem_client_state *client,
 	const struct ffa_mtd *req = client->tx_buf;
 	struct ffa_mtd *resp = client->rx_buf;
 
+	if (!client->buf_size) {
+		NOTICE("%s: buffer pair not registered\n", __func__);
+		return -EINVAL;
+	}
+
 	if (address || page_count) {
 		NOTICE("%s: custom memory region not supported\n", __func__);
 		return -EINVAL;
@@ -550,6 +560,11 @@ static long trusty_ffa_mem_frag_rx(struct trusty_shmem_client_state *client,
 	struct trusty_shmem_obj *obj;
 	uint64_t handle = handle_low | (((uint64_t)handle_high) << 32);
 
+	if (!client->buf_size) {
+		NOTICE("%s: buffer pair not registered\n", __func__);
+		return -EINVAL;
+	}
+
 	if (client->secure && sender_id) {
 		NOTICE("%s: invalid sender_id 0x%x != 0\n",
 		       __func__, sender_id);
@@ -602,6 +617,11 @@ static int trusty_ffa_mem_relinquish(struct trusty_shmem_client_state *client)
 {
 	struct trusty_shmem_obj *obj;
 	const struct ffa_mem_relinquish_descriptor *req = client->tx_buf;
+
+	if (!client->buf_size) {
+		NOTICE("%s: buffer pair not registered\n", __func__);
+		return -EINVAL;
+	}
 
 	if (!client->receiver) {
 		NOTICE("%s: unsupported share direction\n", __func__);
