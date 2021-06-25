@@ -23,6 +23,7 @@ BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
 				plat/imx/common/imx8_helpers.S		\
 				plat/imx/imx8ulp/imx8ulp_bl31_setup.c	\
 				plat/imx/imx8ulp/imx8ulp_psci.c		\
+				plat/imx/imx8ulp/apd_context.c		\
 				plat/imx/common/imx8_topology.c		\
 				plat/imx/common/imx_sip_svc.c		\
 				plat/imx/common/imx_sip_handler.c	\
@@ -32,6 +33,7 @@ BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
 				drivers/delay_timer/generic_delay_timer.c \
 				plat/imx/imx8ulp/xrdc/mrc.c		\
 				plat/imx/imx8ulp/imx8ulp_caam.c         \
+				plat/imx/imx8ulp/dram.c 	        \
 				drivers/scmi-msg/base.c			\
 				drivers/scmi-msg/entry.c		\
 				drivers/scmi-msg/smt.c			\
