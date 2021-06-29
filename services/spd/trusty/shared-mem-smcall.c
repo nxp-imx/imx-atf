@@ -280,7 +280,8 @@ static long trusty_ffa_fill_desc(struct trusty_shmem_client_state *client,
 
 	if (!client->buf_size) {
 		NOTICE("%s: buffer pair not registered\n", __func__);
-		return -EINVAL;
+		ret = -EINVAL;
+		goto err_arg;
 	}
 
 	if (fragment_length > client->buf_size) {
@@ -293,7 +294,8 @@ static long trusty_ffa_fill_desc(struct trusty_shmem_client_state *client,
 	if (fragment_length > obj->desc_size - obj->desc_filled) {
 		NOTICE("%s: bad fragment size %u > %zu remaining\n", __func__,
 		       fragment_length, obj->desc_size - obj->desc_filled);
-		return -EINVAL;
+		ret = -EINVAL;
+		goto err_arg;
 	}
 
 	memcpy((uint8_t *)&obj->desc + obj->desc_filled, client->tx_buf,
@@ -416,6 +418,12 @@ static long trusty_ffa_mem_frag_tx(struct trusty_shmem_client_state *client,
 		NOTICE("%s: invalid sender_id 0x%x != 0x%x\n", __func__,
 		       sender_id, (uint32_t)obj->desc.sender_id << 16);
 		return -ENOENT;
+	}
+
+	if (obj->desc_filled == obj->desc_size) {
+		NOTICE("%s: object desc already filled, %zu\n", __func__,
+		       obj->desc_filled);
+		return -EINVAL;
 	}
 
 	return trusty_ffa_fill_desc(client, obj, fragment_length, smc_handle);
