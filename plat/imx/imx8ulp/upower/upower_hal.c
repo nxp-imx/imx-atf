@@ -55,8 +55,8 @@ uint32_t upower_status(int status)
 
 void upower_wait_resp()
 {
-	while(muptr->SR.B.RFP == 0) {
-		INFO("%s: poll the mu:%x\n", __func__, muptr->SR.R);
+	while(muptr->RSR.B.RF0 == 0) {
+		INFO("%s: poll the mu:%x\n", __func__, muptr->RSR.R);
 		udelay(100);
 	}
 	upwr_txrx_isr();
