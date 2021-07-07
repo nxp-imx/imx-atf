@@ -54,7 +54,6 @@ static const struct imx_rdc_cfg rdc[] = {
 	RDC_MDAn(RDC_MDA_LCDIF, DID2),
 	RDC_MDAn(RDC_MDA_LCDIF2, DID2),
 	RDC_MDAn(RDC_MDA_HDMI_TX, DID2),
-	RDC_MDAn(RDC_MDA_GPU2D, DID2),
 
 
 	/* peripherals domain permission */
