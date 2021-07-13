@@ -1,5 +1,5 @@
 #
-# Copyright 2018-2020 NXP
+# Copyright 2018-2021 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -19,6 +19,10 @@ endif
 
 ifeq (${ERRATA_DDR_A050450}, 1)
 $(eval $(call add_define,ERRATA_DDR_A050450))
+endif
+
+ifeq (${ERRATA_DDR_A050958}, 1)
+$(eval $(call add_define,ERRATA_DDR_A050958))
 endif
 
 endif

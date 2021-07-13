@@ -1619,6 +1619,10 @@ static void prog_dq_dqs_rcv_cntrl(uint16_t *phy,
 	int sel_analog_vref = 1;
 	uint32_t addr;
 
+#ifdef ERRATA_DDR_A050958
+	gain_curr_adj_defval = 0x1f;
+#endif
+
 	dq_dqs_rcv_cntrl = gain_curr_adj_defval << csr_gain_curr_adj_lsb |
 			major_mode_dbyte << csr_major_mode_dbyte_lsb	|
 			dfe_ctrl_defval << csr_dfe_ctrl_lsb		|
