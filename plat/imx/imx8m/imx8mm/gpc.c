@@ -121,7 +121,12 @@ void vpu_sft_reset_deassert(uint32_t domain_id)
 
 void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 {
-	struct imx_pwr_domain *pwr_domain = &pu_domains[domain_id];
+	struct imx_pwr_domain *pwr_domain;
+
+	if (domain_id >= ARRAY_SIZE(pu_domains))
+		return;
+
+	pwr_domain = &pu_domains[domain_id];
 
 	if (on) {
 		pu_domain_status |= (1 << domain_id);

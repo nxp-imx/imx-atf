@@ -44,7 +44,12 @@ static unsigned int pu_domain_status;
 
 void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 {
-	struct imx_pwr_domain *pwr_domain = &pu_domains[domain_id];
+	struct imx_pwr_domain *pwr_domain;
+
+	if (domain_id >= ARRAY_SIZE(pu_domains))
+		return;
+
+	pwr_domain = &pu_domains[domain_id];
 
 	if (on) {
 		if (pwr_domain->need_sync) {

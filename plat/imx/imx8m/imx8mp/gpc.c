@@ -173,8 +173,13 @@ static void imx_noc_qos(unsigned int domain_id)
 
 void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 {
-	struct imx_pwr_domain *pwr_domain = &pu_domains[domain_id];
+	struct imx_pwr_domain *pwr_domain;
 	unsigned int i;
+
+	if (domain_id >= ARRAY_SIZE(pu_domains))
+		return;
+
+	pwr_domain = &pu_domains[domain_id];
 
 	if (domain_id == HSIOMIX) {
 		for (i = 0; i < ARRAY_SIZE(hsiomix_clk); i++) {
