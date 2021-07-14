@@ -2246,7 +2246,7 @@ static int load_fw(uint16_t **phy_ptr,
 
 static void parse_odt(const unsigned int val,
 		       const int read,
-		       const int i,
+		       const unsigned int i,
 		       const unsigned int cs_d0,
 		       const unsigned int cs_d1,
 		       unsigned int *odt)
@@ -2254,7 +2254,7 @@ static void parse_odt(const unsigned int val,
 	int shift = read ? 4 : 0;
 	int j;
 
-	if (i < 0 || i > 3) {
+	if (i > 3) {
 		printf("Error: invalid chip-select value\n");
 		return;
 	}
@@ -2420,7 +2420,7 @@ int compute_ddr_phy(struct ddr_info *priv)
 	static struct input input;
 	static struct ddr4u1d msg_1d;
 	static struct ddr4u2d msg_2d;
-	int i;
+	unsigned int i;
 	unsigned int odt_rd, odt_wr;
 	__unused const soc_info_t *soc_info;
 #ifdef NXP_APPLY_MAX_CDD
