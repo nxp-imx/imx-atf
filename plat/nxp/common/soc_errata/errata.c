@@ -908,4 +908,7 @@ void soc_errata(void)
 #if ERRATA_DDR_A009663
 	INFO("SoC workaround for DDR Errata A009663 was applied\n");
 #endif
+#if ERRATA_DDR_A050958
+	INFO("SoC workaround for DDR Errata A050958 was applied\n");
+#endif
 }

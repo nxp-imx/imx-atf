@@ -1,6 +1,6 @@
 #
 # Copyright (c) 2015, 2016 Freescale Semiconductor, Inc.
-# Copyright 2017-2020 NXP Semiconductors
+# Copyright 2017-2021 NXP Semiconductors
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -99,6 +99,7 @@ ERRATA_SOC_A050426	:= 1
 # DDR Errata
 ERRATA_DDR_A011396	:= 1
 ERRATA_DDR_A050450	:= 1
+ERRATA_DDR_A050958	:= 1
 
 # enable dynamic memory mapping
 PLAT_XLAT_TABLES_DYNAMIC :=	1
