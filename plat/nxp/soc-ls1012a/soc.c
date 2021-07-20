@@ -244,8 +244,8 @@ void soc_init(void)
 {
 	 /* low-level init of the soc */
 	soc_init_lowlevel();
-	soc_init_percpu();
 	_init_global_data();
+	soc_init_percpu();
 	_initialize_psci();
 
 	/*
