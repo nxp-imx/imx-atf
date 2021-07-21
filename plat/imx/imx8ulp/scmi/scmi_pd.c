@@ -83,7 +83,7 @@ static struct psw imx8ulp_psw[] = {
 	[PS7] = { .name = "PS7", .reg = PS7, .power_state = POWER_STATE_OFF },
 	[PS8] = { .name = "PS8", .reg = PS8, .power_state = POWER_STATE_OFF },
 	[PS13] = { .name = "PS13", .reg = PS13, .power_state = POWER_STATE_OFF },
-	[PS14] = { .name = "PS14", .reg = PS14, .power_state = POWER_STATE_OFF },
+	[PS14] = { .name = "PS14", .reg = PS14, .flags = ALWAYS_ON, .power_state = POWER_STATE_OFF },
 	[PS15] = { .name = "PS15", .reg = PS15, .power_state = POWER_STATE_OFF },
 	[PS16] = { .name = "PS16", .reg = PS16, .flags = ALWAYS_ON, .power_state = POWER_STATE_ON },
 };
