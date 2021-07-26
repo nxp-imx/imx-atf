@@ -474,8 +474,8 @@ void soc_init(void)
 
 	/* low-level init of the soc */
 	soc_init_lowlevel();
-	soc_init_percpu();
 	_init_global_data();
+	soc_init_percpu();
 	_initialize_psci();
 
 	if (ccn_get_part0_id(NXP_CCN_ADDR) != CCN_508_PART0_ID) {
@@ -484,12 +484,12 @@ void soc_init(void)
 		panic();
 	}
 
+	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
 	if (num_clusters == 6)
 		ccn_init(&plat_six_cluster_ccn_desc);
 	else
 		ccn_init(&plat_ccn_desc);
 
-	get_cluster_info(soc_list, ARRAY_SIZE(soc_list), &num_clusters, &cores_per_cluster);
 	plat_ls_interconnect_enter_coherency(num_clusters);
 
 	/* Set platform security policies */
