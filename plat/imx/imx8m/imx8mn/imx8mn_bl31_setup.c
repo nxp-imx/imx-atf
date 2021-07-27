@@ -75,7 +75,7 @@ static const struct imx_csu_cfg csu_cfg[] = {
 	/* master HP0~1 */
 
 	/* SA setting */
-//	CSU_SA(CSU_SA_M7, 1, LOCKED), /* uncomment this for SDK 2.10.0 */
+	CSU_SA(CSU_SA_M7, 1, LOCKED),
 	CSU_SA(CSU_SA_SDMA1, 1, LOCKED),
 	CSU_SA(CSU_SA_USB1, 1, LOCKED),
 	CSU_SA(CSU_SA_GPU, 1, LOCKED),
