@@ -803,8 +803,8 @@ static int phy_gen2_msg_init(void *msg_1d,
 	}
 	msg_blk->pstate			= 0;
 
-	/* Disable quickRd2D during the 1D training. */
-	msg_blk->reserved00             = 0x0;
+	/* Enable quickRd2D, a substage of read deskew, to 1D training */
+	msg_blk->reserved00             = 0x20;
 
 	/*Enable High-Effort WrDQ1D.*/
 	msg_blk->reserved00             |= 0x40;

@@ -35,7 +35,7 @@
 
 static const mmap_region_t imx_mmap[] = {
 	GIC_MAP, AIPS_MAP, OCRAM_S_MAP, DDRC_MAP,
-	CAAM_RAM_MAP, NS_OCRAM_MAP, ROM_MAP, DRAM_MAP,
+	CAAM_RAM_MAP, NS_OCRAM_MAP, ROM_MAP, DRAM_MAP, TCM_MAP,
 	{0},
 };
 
@@ -54,6 +54,7 @@ static const struct imx_rdc_cfg rdc[] = {
 	/* peripherals domain permission */
 	RDC_PDAPn(RDC_PDAP_UART4, D1R | D1W),
 	RDC_PDAPn(RDC_PDAP_UART2, D0R | D0W),
+	RDC_PDAPn(RDC_PDAP_RDC, D0R | D0W | D1R),
 
 	/* memory region */
 	RDC_MEM_REGIONn(16, 0x0, 0x0, 0xff),
@@ -162,6 +163,12 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	imx_rdc_init(rdc);
 
 	imx_csu_init(csu_cfg);
+
+	/* Configure the force_incr programmable bit in GPV_5 of PL301_display, which fixes
+	 * partial write issue. The AXI2AHB bridge is used for masters that access the TCM
+	 * through system bus. Please refer to errata ERR050362 for more information.
+	 */
+	mmio_setbits_32((GPV5_BASE_ADDR + FORCE_INCR_OFFSET), FORCE_INCR_BIT_MASK);
 
 	/* config the ocram memory range for secure access */
 	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, 0x4c1);
