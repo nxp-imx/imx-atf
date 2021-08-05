@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /* +FHDR------------------------------------------------------------------------
- * Copyright (c) 2020 NXP Semiconductor N.V.
+ * Copyright 2020-2021 NXP
  * -----------------------------------------------------------------------------
  * FILE NAME      : upower_soc_defs.h
  * DEPARTMENT     : BSTC - Campinas, Brazil
@@ -153,7 +153,7 @@
 /******************************************************************************
  * i.MX8ULP-dependent uPower API Definition
  *
- * Version: 20210430 Copyright (c) 2019-2020 NXP Semiconductor N.V.
+ * Version: 20210430
  *
  * This chapter documents the API definitions that are specific to the
  * i.MX8ULP SoC.
