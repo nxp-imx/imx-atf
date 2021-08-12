@@ -952,14 +952,14 @@ static int to_spi_err(long ret)
 /*
  * trusty_shared_memory_smc - SMC call handler.
  */
-uintptr_t spm_mm_smc_handler(uint32_t smc_fid,
-			     u_register_t x1,
-			     u_register_t x2,
-			     u_register_t x3,
-			     u_register_t x4,
-			     void *cookie,
-			     void *handle,
-			     u_register_t flags)
+uintptr_t spmd_smc_handler(uint32_t smc_fid,
+			   u_register_t x1,
+			   u_register_t x2,
+			   u_register_t x3,
+			   u_register_t x4,
+			   void *cookie,
+			   void *handle,
+			   u_register_t flags)
 {
 	long ret = -1;
 	/*
