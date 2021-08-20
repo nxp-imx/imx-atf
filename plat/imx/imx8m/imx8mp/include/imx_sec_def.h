@@ -293,6 +293,7 @@ enum csu_sa_idx {
 	CSU_SA_LCDIF2 = 21 ,
 	CSU_SA_HDMI_TX = 22 ,
 	CSU_SA_ENET2 = 23 ,
+	CSU_SA_GPU3D = 24 ,
 	CSU_SA_GPU2D = 25 ,
 	CSU_SA_VPU_G1 = 26 ,
 	CSU_SA_VPU_G2 = 27 ,
