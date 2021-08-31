@@ -16,7 +16,6 @@
 #include <lib/libc/errno.h>
 
 #include <gpc.h>
-#include <imx8m_psci.h>
 #include <imx_sip_svc.h>
 #include <plat_imx8.h>
 #include <imx_rdc.h>
@@ -359,7 +358,7 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 		/* Setup RDC config for MCU */
 #if defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
 		if (!memcmp((void *)IMX8M_MCU_RDC_START_CONFIG_ADDR, MCU_RDC_MAGIC, strlen(MCU_RDC_MAGIC)))
-			imx_rdc_init((struct imx_rdc_cfg *)(IMX8M_MCU_RDC_START_CONFIG_ADDR + len));
+			imx_rdc_init((struct imx_rdc_cfg *)(IMX8M_MCU_RDC_START_CONFIG_ADDR + len), 0);
 #endif
 		mmio_clrbits_32(IMX_IOMUX_GPR_BASE + 0x58, 0x1);
 		break;
@@ -385,7 +384,7 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 		/* Restore rdc config for mcu */
 #if defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
 		if (!memcmp((void *)IMX8M_MCU_RDC_START_CONFIG_ADDR, MCU_RDC_MAGIC, strlen(MCU_RDC_MAGIC)))
-			imx_rdc_init((struct imx_rdc_cfg *)(IMX8M_MCU_RDC_STOP_CONFIG_ADDR + len));
+			imx_rdc_init((struct imx_rdc_cfg *)(IMX8M_MCU_RDC_STOP_CONFIG_ADDR + len), 0);
 #endif
 
 		offset = LPS_CPU1;

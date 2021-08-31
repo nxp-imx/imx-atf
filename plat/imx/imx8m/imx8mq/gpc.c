@@ -16,7 +16,6 @@
 #include <lib/smccc.h>
 #include <lib/spinlock.h>
 #include <plat/common/platform.h>
-#include <services/std_svc.h>
 
 #include <gpc.h>
 #include <platform_def.h>
