@@ -206,7 +206,6 @@ void dram_info_init(unsigned long dram_timing_base)
 		}
 		idx = i;
 	}
-	dram_info.num_fsp = i;
 
 	/* only support maximum 3 setpoints */
 	dram_info.num_fsp = (i > MAX_FSP_NUM) ? MAX_FSP_NUM : i;
@@ -297,7 +296,7 @@ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 		SMC_RET1(handle, dram_info.num_fsp);
 	} else if (x1 == IMX_SIP_DDR_DVFS_GET_FREQ_INFO) {
 		return dram_dvfs_get_freq_info(handle, x2);
-	} else if (x1 < 4) {
+	} else if (x1 < 3U) {
 		wait_ddrc_hwffc_done = true;
 		dsb();
 
