@@ -10,7 +10,6 @@
 #include <errno.h>
 
 #include "ddr.h"
-#include "errata.h"
 #include "platform_def.h"
 
 static const struct rc_timing rcb_1[] = {
