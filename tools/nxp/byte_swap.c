@@ -68,7 +68,10 @@ int do_byteswap(FILE *fp)
 			printf("%s: Error reading lower bytes.\n", __func__);
 			goto byteswap_err;
 		}
-		fseek(fp, -8L, SEEK_CUR);
+		if (fseek(fp, -8L, SEEK_CUR)) {
+			printf("%s: Error for set file position.\n", __func__);
+			goto byteswap_err;
+		}
 		upper_byte = BYTE_SWAP_32(upper_byte);
 		lower_byte = BYTE_SWAP_32(lower_byte);
 		if (fwrite(&lower_byte, sizeof(lower_byte), NUM_MEM_BLOCK, fp)
