@@ -8,8 +8,6 @@
 #include <arch.h>
 #include <cci.h>
 #include <plat_arm.h>
-#include <utils.h>
-
 
 /******************************************************************************
  * The following functions are defined as weak to allow a platform to override
