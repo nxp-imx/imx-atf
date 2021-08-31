@@ -8,7 +8,6 @@
 
 #include <arch_helpers.h>
 #include <common/runtime_svc.h>
-#include <lib/mmio.h>
 
 #include <imx_sip_svc.h>
 #include <platform_def.h>

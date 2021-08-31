@@ -16,7 +16,6 @@
 #include <lib/libc/errno.h>
 
 #include <gpc.h>
-#include <imx8m_psci.h>
 #include <imx_sip_svc.h>
 #include <plat_imx8.h>
 #include <imx_rdc.h>
