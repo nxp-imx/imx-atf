@@ -10,8 +10,6 @@
 
 #include <io_block.h>
 #include <io_driver.h>
-#include <io_fip.h>
-#include <io_memmap.h>
 #include <io_storage.h>
 #include <lib/utils.h>
 #include <tools_share/firmware_image_package.h>

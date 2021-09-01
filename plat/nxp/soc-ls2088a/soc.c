@@ -24,7 +24,6 @@
 #include "platform_def.h"
 #include "soc.h"
 #include "pmu.h"
-#include "scfg.h"
 #ifdef I2C_INIT
 #include "i2c.h"
 #endif
