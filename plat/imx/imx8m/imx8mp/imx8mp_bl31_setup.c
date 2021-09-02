@@ -76,6 +76,9 @@ static const struct imx_csu_cfg csu_cfg[] = {
 	CSU_CSLx(CSU_CSL_OCRAM_S, CSU_SEC_LEVEL_2, LOCKED),
 	CSU_CSLx(CSU_CSL_RDC, CSU_SEC_LEVEL_3, LOCKED),
 	CSU_CSLx(CSU_CSL_TZASC, CSU_SEC_LEVEL_4, LOCKED),
+#ifdef SPD_trusty
+	CSU_CSLx(CSU_CSL_VPU, CSU_SEC_LEVEL_5, LOCKED),
+#endif
 
 	/* master HP0~1 */
 

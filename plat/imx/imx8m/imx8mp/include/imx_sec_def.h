@@ -269,6 +269,7 @@ enum csu_csl_idx {
 	CSU_CSL_OCRAM_A = 113,
 	CSU_CSL_OCRAM = 118,
 	CSU_CSL_OCRAM_S = 119,
+	CSU_CSL_VPU = 120,
 };
 
 enum csu_sa_idx {
