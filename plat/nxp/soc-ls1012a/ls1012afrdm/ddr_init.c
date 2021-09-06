@@ -5,15 +5,12 @@
  */
 
 #include <common/debug.h>
-#include <errno.h>
 #include <fsl_mmdc.h>
 #include <plat_common.h>
 #include <platform_def.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
 
 long long init_ddr(void)
 {
