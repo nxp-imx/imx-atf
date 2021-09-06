@@ -15,7 +15,6 @@
 #include <lib/psci/psci.h>
 #include <lib/smccc.h>
 #include <platform_def.h>
-#include <services/std_svc.h>
 
 #include <gpc.h>
 #include <imx_sip_svc.h>
