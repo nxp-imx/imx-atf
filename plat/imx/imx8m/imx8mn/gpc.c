@@ -13,7 +13,6 @@
 #include <drivers/delay_timer.h>
 #include <lib/mmio.h>
 #include <lib/psci/psci.h>
-#include <services/std_svc.h>
 
 #include <gpc.h>
 #include <imx_sip_svc.h>
