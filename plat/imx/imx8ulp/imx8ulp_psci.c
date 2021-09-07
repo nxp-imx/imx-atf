@@ -14,10 +14,49 @@
 #include <lib/psci/psci.h>
 
 #include <plat_imx8.h>
+#include <upower_soc_defs.h>
+#include <upower_api.h>
 
 #define CORE_PWR_STATE(state) ((state)->pwr_domain_state[MPIDR_AFFLVL0])
 #define CLUSTER_PWR_STATE(state) ((state)->pwr_domain_state[MPIDR_AFFLVL1])
 #define SYSTEM_PWR_STATE(state) ((state)->pwr_domain_state[PLAT_MAX_PWR_LVL])
+
+#define PMIC_CFG(v, m, msk)		\
+	{				\
+		.volt = (v),		\
+		.mode = (m), 		\
+		.mode_msk = (msk),	\
+	}
+
+#define PAD_CFG(c, r, t)		\
+	{				\
+		.pad_close = (c),	\
+		.pad_reset = (r),	\
+		.pad_tqsleep = (t)	\
+	}
+
+#define BIAS_CFG(m, n, p, mbias)	\
+	{				\
+		.dombias_cfg = {	\
+			.mode = (m),	\
+			.rbbn = (n),	\
+			.rbbp = (p),	\
+		},			\
+		.membias_cfg = {mbias},	\
+	}
+
+#define SWT_BOARD(swt_on, msk)	\
+	{			\
+		.on = (swt_on),	\
+		.mask = (msk),	\
+	}
+
+#define SWT_MEM(a, p, m)	\
+	{			\
+		.array = (a),	\
+		.perif = (p),	\
+		.mask = (m),	\
+	}
 
 static int imx_pwr_set_cpu_entry(unsigned int cpu, unsigned int entry)
 {
@@ -75,6 +114,54 @@ void imx_pwr_domain_off(const psci_power_state_t *target_state)
 	/* set core power mode to PD */
 	mmio_write_32(IMX_CMC1_BASE + 0x50 + 0x4 * cpu, 0x3);
 }
+/* APD power mode config */
+ps_apd_pwr_mode_cfgs_t apd_pwr_mode_cfgs = {
+	[ADMA_PWR_MODE] = {
+		.swt_board_offs = 0x120,
+		.swt_mem_offs = 0x128,
+		.pmic_cfg = PMIC_CFG(0x23, 0x0, 0x2),
+		.pad_cfg = PAD_CFG(0x0, 0x0, 0x0deb7a00),
+		.bias_cfg = BIAS_CFG(0x0, 0x2, 0x2, 0x0),
+	},
+
+	[ACT_PWR_MODE] = {
+		.swt_board_offs = 0x110,
+		.swt_mem_offs = 0x118,
+		.pmic_cfg = PMIC_CFG(0x23, 0x2, 0x2),
+		.pad_cfg = PAD_CFG(0x0, 0x0, 0x0deb7a00),
+		.bias_cfg = BIAS_CFG(0x0, 0x2, 0x2, 0x0),
+	},
+};
+
+/* APD power switch config */
+ps_apd_swt_cfgs_t apd_swt_cfgs = {
+	[ADMA_PWR_MODE] = {
+		.swt_board[0] = SWT_BOARD(0x74, 0x7c),
+		.swt_mem[0] = SWT_MEM(0x0001fffd, 0x0001fffd, 0x1fffd),
+		.swt_mem[1] = SWT_MEM(0x0, 0x0, 0x0),
+	},
+
+	[ACT_PWR_MODE] = {
+		.swt_board[0] = SWT_BOARD(0x74, 0x7c),
+		.swt_mem[0] = SWT_MEM(0x0001fffd, 0x0001fffd, 0x1fffd),
+		.swt_mem[1] = SWT_MEM(0x0, 0x0, 0x0),
+	},
+};
+
+struct ps_pwr_mode_cfg_t *pwr_sys_cfg = (struct ps_pwr_mode_cfg_t *)UPWR_DRAM_SHARED_BASE_ADDR;
+
+void imx_set_pwr_mode_cfg(abs_pwr_mode_t mode)
+{
+	if ( mode >= NUM_PWR_MODES)
+		return;
+
+	/* apd power mode config */
+	memcpy(&pwr_sys_cfg->ps_apd_pwr_mode_cfg[mode], &apd_pwr_mode_cfgs[mode],
+		 sizeof(struct ps_apd_pwr_mode_cfg_t));
+
+	/* apd power switch config */
+	memcpy(&pwr_sys_cfg->ps_apd_swt_cfg[mode], &apd_swt_cfgs[mode], sizeof(swt_config_t));
+}
 
 void imx_domain_suspend(const psci_power_state_t *target_state)
 {
@@ -109,6 +196,12 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 
 	/* TODO, may need to add more system level config here */
 	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
+		/*
+		 * low power mode config info used by upower
+		 * to do low power mode transition.
+		 */
+		imx_set_pwr_mode_cfg(ADMA_PWR_MODE);
+		imx_set_pwr_mode_cfg(ACT_PWR_MODE);
 	}
 }
 
