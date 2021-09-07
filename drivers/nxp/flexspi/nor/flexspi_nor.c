@@ -8,7 +8,6 @@
 #include <assert.h>
 
 #include <fspi_api.h>
-#include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 
 int flexspi_nor_io_setup(uintptr_t nxp_flexspi_flash_addr,

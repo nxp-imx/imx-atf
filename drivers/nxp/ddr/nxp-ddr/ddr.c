@@ -7,14 +7,10 @@
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include <common/debug.h>
 #include <ddr.h>
-#ifndef CONFIG_DDR_NODIMM
-#include <i2c.h>
-#endif
 #include <nxp_timer.h>
 
 struct dynamic_odt {

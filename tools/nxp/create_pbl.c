@@ -378,7 +378,8 @@ int add_pbi_stop_cmd(FILE *fp_rcw_pbi_op, enum stop_command flag)
 	case CHASSIS_3:
 	case CHASSIS_3_2:
 		/* Chassis 3: CRC is calculated on  PBL cmd only. */
-		fseek(fp_rcw_pbi_op, CHS3_CRC_PAYLOAD_START_OFFSET, SEEK_SET);
+		if (fseek(fp_rcw_pbi_op, CHS3_CRC_PAYLOAD_START_OFFSET, SEEK_SET))
+			printf("%s: failed to set file position\n", __func__);
 		break;
 	case CHASSIS_UNKNOWN:
 	case CHASSIS_MAX:

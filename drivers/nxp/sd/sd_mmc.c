@@ -17,7 +17,6 @@
 #include <drivers/io/io_block.h>
 #include "nxp_timer.h"
 #include "sd_mmc.h"
-#include <utils.h>
 #include <utils_def.h>
 
 

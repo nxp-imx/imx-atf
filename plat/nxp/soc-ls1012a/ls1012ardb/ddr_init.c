@@ -6,11 +6,8 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
 #include <common/debug.h>
-#include <errno.h>
-#include <string.h>
 #include <fsl_mmdc.h>
 #include "plat_common.h"
 #include <platform_def.h>
