@@ -11,6 +11,8 @@
 #include <platform_def.h>
 #include <utils.h>
 
+#include <errata.h>
+
 #ifdef CONFIG_STATIC_DDR
 #error No static value defined
 #endif
