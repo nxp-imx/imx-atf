@@ -100,8 +100,6 @@
 #define AIPSTZ2_BASE			U(0x305f0000)
 #define AIPSTZ3_BASE			U(0x309f0000)
 #define AIPSTZ4_BASE			U(0x32df0000)
-#define IMX_TCM_BASE			U(0x7E0000)
-#define IMX_TCM_SIZE			U(0x40000)
 
 #define GPV_BASE			U(0x32000000)
 #define GPV_SIZE			U(0x800000)
