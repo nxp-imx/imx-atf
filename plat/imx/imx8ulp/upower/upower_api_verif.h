@@ -1,6 +1,7 @@
 /* +FHDR------------------------------------------------------------------------
  * Copyright 2019-2021 NXP
- * NXP Confidential Proprietary
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  * -----------------------------------------------------------------------------
  * FILE NAME      : upower_api_verif.h
  * DEPARTMENT     : BSTC - Campinas, Brazil
