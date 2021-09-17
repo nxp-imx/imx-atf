@@ -93,6 +93,7 @@ int imx_pwr_domain_on(u_register_t mpidr)
 
 void imx_pwr_domain_on_finish(const psci_power_state_t *target_state)
 {
+	imx_pwr_set_cpu_entry(0, IMX_ROM_ENTRY);
 	plat_gic_pcpu_init();
 	plat_gic_cpuif_enable();
 }
@@ -223,6 +224,7 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 	mmio_write_32(IMX_SIM1_BASE + 0x3c + 0x4 * cpu, 0x0);
 
 	if (is_local_state_off(CORE_PWR_STATE(target_state))) {
+		imx_pwr_set_cpu_entry(0, IMX_ROM_ENTRY);
 		plat_gic_cpuif_enable();
 	} else {
 		dsb();
@@ -239,7 +241,7 @@ void __dead2 imx8ulp_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_st
 
 void __dead2 imx8ulp_system_reset(void)
 {
-	imx_pwr_set_cpu_entry(0, 0x1000);
+	imx_pwr_set_cpu_entry(0, IMX_ROM_ENTRY);
 
 	mmio_write_32(IMX_WDOG3_BASE + 0x4, 0xd928c520);
 	while ((mmio_read_32(IMX_WDOG3_BASE) & 0x800) == 0)
