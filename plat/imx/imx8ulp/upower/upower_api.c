@@ -422,6 +422,10 @@ void upwr_mu_int_callback(void)
 	upwr_up_max_msg        rxmsg;
 	unsigned int           size;     /* in words */
 
+	/* shut up the compiler warning about it not being initialized */
+	rxmsg.hdr.srvgrp = 0;
+	rxmsg.hdr.function = 0;
+
 	if (upwr_rx((uint32_t*)&rxmsg, &size) < 0) {
 		UPWR_API_ASSERT(0);
 		return;
