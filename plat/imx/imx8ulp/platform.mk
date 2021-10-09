@@ -36,8 +36,10 @@ BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
 				drivers/scmi-msg/entry.c		\
 				drivers/scmi-msg/smt.c			\
 				drivers/scmi-msg/power_domain.c		\
+				drivers/scmi-msg/sensor.c		\
 				plat/imx/imx8ulp/scmi/scmi.c		\
 				plat/imx/imx8ulp/scmi/scmi_pd.c		\
+				plat/imx/imx8ulp/scmi/scmi_sensor.c	\
 				plat/imx/imx8ulp/upower/upower_api.c	\
 				plat/imx/imx8ulp/upower/upower_hal.c	\
 				${XLAT_TABLES_LIB_SRCS}			\
