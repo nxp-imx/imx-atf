@@ -12,56 +12,57 @@
  *
  * $Log: upower_api.h.rca $
  *
- *  Revision: 1.211 Fri Apr 30 06:27:06 2021 nxa10721
+ *  Revision: 1.216 Fri May 28 06:27:06 2021 nxa55768
  *  powersys_fw_048.011.012.006
- *
+ * 
+ * 
  *  Revision: 1.42 Tue Apr 27 12:45:06 2021 nxa11511
  *  Fixes from the spec shared review -> new spec version 20210430.
  *  Adds new service upwr_pwm_reg_config.
- *
+ * 
  *  Revision: 1.36 Fri Oct 23 13:19:58 2020 nxa11511
  *  Deleted the GPL license statements, leaving only BSD, as it is compatible with Linux and good for closed ROM/firmware code.
- *
+ * 
  *  Revision: 1.35 Mon Sep 14 15:30:50 2020 nxa11511
  *  New upwr_xcp_sw_alarm argument code.
  *  also adds new associated API auxiliary call upwr_alarm_code()
- *
+ * 
  *  Revision: 1.29 Mon Jun  8 06:44:56 2020 nxa11511
  *  Adds #include "upower_api_verif.h" (under #ifdef UPWR_VERIFICATION)
- *
+ * 
  *  Revision: 1.25 Mon Mar 30 14:28:47 2020 nxa11511
  *  Attaching Log message:
  *  API functions upwr_power_on and upwr_boot_start deleted.
  *  API functions upwr_xcp_power_on and upwr_xcp_boot_start moved to the Power Management service group;
  *  renamed to upwr_pwm_dom_power_on and upwr_pwm_boot_start
- *
+ * 
  *  Revision: 1.23 Mon Mar  2 12:23:19 2020 nxa11511
  *  Updates comments to the new version 20200222.
- *
+ * 
  *  Revision: 1.21 Sun Feb 23 15:22:10 2020 nxa10721
  *  Added upwr_pwm_chng_pmc_switch() for backward compatibility
- *
+ * 
  *  Revision: 1.20 Fri Feb 21 18:31:28 2020 nxa11511
  *  Updates version to 20200222.
- *
+ * 
  *  Revision: 1.13 Fri Aug 23 17:52:39 2019 nxa11511
  *  Changes ok/ko response to an error code.
  *  Adds Exception service requests.
  *  Adds bias setting functions and Diagnostic mode function.
  *  Comments formated for spec extraction.
  *  Introdutory text added.
- *
+ * 
  *  Revision: 1.7 Sat Aug 10 09:05:13 2019 nxa11511
  *  No longer gets UPWR_NAMESPACE.
  *  Fixes some strict compiling errors.
- *
+ * 
  *  Revision: 1.5 Wed Jun 12 15:45:07 2019 nxa11511
  *  Number of MUs now #defined by UPWR_MU_INSTANCES.
  *  Adds optional namespace definition with #define UPWR_NAMESPACE.
- *
+ * 
  *  Revision: 1.4 Wed Apr 10 14:44:05 2019 nxa11511
  *  Adds const to upwr_tx argument msg.
- *
+ * 
  * -----------------------------------------------------------------------------
  * KEYWORDS: micro-power uPower driver API
  * -----------------------------------------------------------------------------
@@ -106,7 +107,7 @@ extern "C" {
 /******************************************************************************
  * uPower API Overview and Concepts
  *
- * Version: 20210430
+ * Version: 20210820 Copyright 2019-2021 NXP
  *
  * This API is intended to be used by the OS drivers (Linux, FreeRTOS etc)
  * as well as bare metal drivers to command and use services from the uPower.
@@ -149,15 +150,15 @@ extern "C" {
  *     ~ gathers functions that deal with errors and other processes outside
  *       the functional scope.
  *  - Power Management Service Group - upwr_pwm_*
- *     ~ functions to control switches, configure power modes, set voltage etc
+ *     ~ functions to control switches, configure power modes, set internal voltage etc
  *  - Delay Measurement Service Group - upwr_dlm_*
  *     ~ delay measurements function using the process monitor and delay meter
  *  - Voltage Measurement Service Group - upwr_vtm_*
- *     ~ functions for voltage measurements, comparisons, alarms
+ *     ~ functions for voltage measurements, comparisons, alarms, power meter, set PMIC rail voltage
  *  - Temperature Measurement Service Group - upwr_tpm_*
  *     ~ functions for temperature measurements, comparisons, alarms
  *  - Current Measurement Service Group  - upwr_crm_*
- *     ~ functions for current and charge measurement using the power meter
+ *     ~ functions for current and charge measurement
  *  - Diagnostic Service Group - upwr_dgn_*
  *     ~ functions for log configuration and statistics collecting
  *
@@ -188,7 +189,7 @@ extern "C" {
  * uPower firmware: request to the higher priority Service Group is sent first,
  * even if the call was made later, if there is an MU transmission pending,
  * blocking it. The service priorities in the firmware depend on other factors.
- *
+ * 
  * Services are requested using API functions. A service function returns with
  * no error if a request was successfully made, but it doesn't mean the service
  * was completed. The service is executed asynchronously, and returns a result
@@ -226,7 +227,7 @@ typedef void (*upwr_callb)(upwr_sg_t     sg,
  * INITIALIZATION, CONFIGURATION
  *
  * A reference uPower initialization sequence goes as follows:
- *
+ * 
  * 1. host CPU calls upwr_init.
  * 2. (optional) host checks the ROM version and SoC code calling upwr_vers(...)
  *    and optionally performs any configuration or workaround accordingly.
@@ -287,14 +288,14 @@ typedef void (*upwr_callb)(upwr_sg_t     sg,
  *        -1 if failed to allocate memory, or use some other resource.
  *        -2 if any argument is invalid.
  *        -3 if failed to send the ping message.
- *        -4 if failed to receive the initialization message, or was invalid
+ *        -4 if failed to receive the initialization message, or was invalid 
  */
 
-typedef void  (*upwr_malloc_ptr_t)(long unsigned int); /* malloc function ptr */
+typedef void* (*upwr_malloc_ptr_t)(long unsigned int); /* malloc function ptr */
 typedef void* (*upwr_phyadr_ptr_t)(const void*);   /* pointer->physical address
                                                       conversion function ptr */
 
-/*
+/* 
  * upwr_lock_ptr_t: pointer to a function that prevents MU interrupts
  * (if argrument lock=1) or allows it (if argument lock=0).
  * The API calls this function to make small specific code portions thread safe.
@@ -429,6 +430,68 @@ int upwr_xcp_sw_alarm(soc_domain_t     domain,
 		      const upwr_callb callb);
 
 /**
+ * upwr_xcp_set_ddr_retention() - M33/A35 can use this API to set/clear ddr retention
+ * @domain: identifier of the caller domain.
+ * soc_domain_t found in upower_soc_defs.h.
+ * @enable: true, means that set ddr retention, false clear ddr retention.
+ * @callb: NULL
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_EXCEPT as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ */
+
+int upwr_xcp_set_ddr_retention(soc_domain_t     domain,
+                        uint32_t enable,
+                        const upwr_callb callb);
+
+/**
+ * upwr_xcp_set_rtd_use_ddr() - M33 call this API to inform uPower, M33 is using ddr
+ * @domain: identifier of the caller domain.
+ * soc_domain_t found in upower_soc_defs.h.
+ * @enable: not 0, true, means that RTD is using ddr. 0, false, means that, RTD is not using ddr.
+ * @callb: NULL
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_EXCEPT as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ */
+
+int upwr_xcp_set_rtd_use_ddr(soc_domain_t     domain,
+                        uint32_t enable,
+                        const upwr_callb callb);
+
+/**
+ * upwr_xcp_set_rtd_apd_llwu() - M33/A35 can use this API to set/clear rtd_llwu apd_llwu
+ * @domain: set which domain (RTD_DOMAIN, APD_DOMAIN) LLWU.
+ * soc_domain_t found in upower_soc_defs.h.
+ * @enable: true, means that set rtd_llwu or apd_llwu, false clear rtd_llwu or apd_llwu.
+ * @callb: NULL
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_EXCEPT as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ */
+
+int upwr_xcp_set_rtd_apd_llwu(soc_domain_t     domain,
+                        uint32_t enable,
+                        const upwr_callb callb);
+/**
  * upwr_xcp_shutdown() - Shuts down all uPower services and power mode tasks.
  * @callb: pointer to the callback to be called when the uPower has finished
  * the shutdown, or NULL if no callback needed
@@ -482,7 +545,7 @@ int upwr_xcp_shutdown(const upwr_callb callb);
  *
  * Sub-addressing is supported, with sub-address size determined by the argument
  * subaddr_size, up to 4 bytes. Sub-addressing is not used if subaddr_size=0.
- *
+ * 
  * Context: no sleep, no locks taken/released.
  * Return: 0 if ok,
  *        -1 if service group is busy,
@@ -620,6 +683,463 @@ int upwr_pwm_param(upwr_pwm_param_t* param, const upwr_callb  callb);
  */
 
 int upwr_pwm_chng_reg_voltage(uint32_t reg, uint32_t volt, upwr_callb callb);
+
+/**
+ * upwr_vtm_pmic_cold_reset() -request cold reset the pmic
+ * pmic will power cycle all the regulators
+ * @callb: response callback pointer; NULL if no callback needed.
+ *
+ * The function requests uPower to cold reset the pmic.
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_VOLTM as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+int upwr_vtm_pmic_cold_reset(upwr_callb callb);
+
+/**
+ * upwr_vtm_chng_pmic_voltage() - Changes the voltage of a given rail.
+ * @rail: pmic rail id.
+ * @volt: the target voltage of the given rail, accurate to uV
+ * If pass volt value 0, means that power off this rail.
+ * @callb: response callback pointer; NULL if no callback needed.
+ *
+ * The function requests uPower to change the voltage of the given rail.
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_VOLTM as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+
+int upwr_vtm_chng_pmic_voltage(uint32_t rail, uint32_t volt, upwr_callb callb);
+
+/**
+ * upwr_vtm_get_pmic_voltage() - Get the voltage of a given ral.
+ * @rail: pmic rail id.
+ * @callb: response callback pointer; NULL if no callback needed.
+ * (polling used instead)
+ *
+ * The function requests uPower to get the voltage of the given rail.
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_VOLTM as the service group argument.
+ *
+ * The voltage data read from uPower via
+ * the callback argument ret, or written to the variable pointed by retptr,
+ * if polling is used (calls upwr_req_status or upwr_poll_req_status).
+ * ret (or *retptr) also returns the data written on writes.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+
+int upwr_vtm_get_pmic_voltage(uint32_t rail, upwr_callb callb);
+
+/**
+ * upwr_vtm_dump_dva_info() - Dump dva information to M33/A35
+ * @dump_addr: uPower dump dva information to the given address
+ * @callb: response callback pointer; NULL if no callback needed.
+ * (polling used instead)
+ *
+ * The function requests uPower to dump dva information to the given address
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_VOLTM as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+
+int upwr_vtm_dump_dva_info(uint32_t dump_addr, upwr_callb callb);
+
+/**
+ * upwr_vtm_dva_request() - request uPower to dva an array IDs
+ * @id: id of soc components, such as A35, M33, GPU, SDHC and etc, it is a bit group, extending to two u32 types.
+ * @mode: OD (over drive) mode, ND (normal drive)  mode, LD (lower drive) mode,
+ * type: enum work_mode, defined in upower_defs.h
+ * @callb: response callback pointer; NULL if no callback needed.
+ * (polling used instead)
+ *
+ * The function requests uPower to dva an array IDs to the give work mode.
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_VOLTM as the service group argument.
+ *
+ * M33/A35 need to check the execute result
+ * 0 means success, 1 means hold on(A35 request LD, but GPU request OD), negative value means failure.
+ * upower fw needs support cocurrent request from M33 and A35.
+ * upower fw needs support multiple masters requesting different modes.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+
+int upwr_vtm_dva_request(const uint32_t id[], enum work_mode mode, upwr_callb callb);
+
+/**
+ * upwr_vtm_dva_request_soc() - request uPower to dva the whole SOC to the given work mode
+ * @mode: OD (over drive) mode, ND (normal drive)  mode, LD (lower drive) mode,
+ * type: enum work_mode, defined in upower_defs.h
+ * @callb: response callback pointer; NULL if no callback needed.
+ * (polling used instead)
+ *
+ * The function requests uPower to switch whole SOC to the given work mode.
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_VOLTM as the service group argument.
+ *
+ * M33/A35 need to check the execute result
+ * 0 means success, 1 means hold on(A35 request LD, but GPU request OD), negative value means failure.
+ * upower fw needs support cocurrent request from M33 and A35.
+ * upower fw needs support multiple masters requesting different modes.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+
+int upwr_vtm_dva_request_soc(enum work_mode mode, upwr_callb callb);
+
+/**
+ * upwr_vtm_power_measure() - request uPower to measure power consumption
+ * @ssel: This field determines which power switches will have their currents sampled to be accounted for a
+current/power measurement. Support 0~7
+ * @callb: response callback pointer; NULL if no callback needed.
+ * (polling used instead)
+ *
+ * The function requests uPower to measure power consumption
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_VOLTM as the service group argument.
+ *
+ * The power consumption data read from uPower via
+ * the callback argument ret, or written to the variable pointed by retptr,
+ * if polling is used (calls upwr_req_status or upwr_poll_req_status).
+ * ret (or *retptr) also returns the data written on writes.
+ * upower fw needs support cocurrent request from M33 and A35.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+int upwr_vtm_power_measure(uint32_t ssel, upwr_callb callb);
+
+/**
+ * upwr_vtm_vmeter_measure() - request uPower to measure voltage
+ * @vdetsel: Voltage Detector Selector, support 0~3
+ * 00b - RTD sense point
+   01b - LDO output
+   10b - APD domain sense point
+   11b - AVD domain sense point
+   Refer to upower_defs.h
+ * @callb: response callback pointer; NULL if no callback needed.
+ * (polling used instead)
+ *
+ * The function requests uPower to use vmeter to measure voltage
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_VOLTM as the service group argument.
+ *
+ * The voltage data read from uPower via
+ * the callback argument ret, or written to the variable pointed by retptr,
+ * if polling is used (calls upwr_req_status or upwr_poll_req_status).
+ * ret (or *retptr) also returns the data written on writes.
+ * upower fw needs support cocurrent request from M33 and A35.
+ *
+ * Refer to RM COREREGVL (Core Regulator Voltage Level)
+ * uPower return VDETLVL to user, user can calculate the real voltage:
+ *
+0b000000(0x00) - 0.595833V
+0b100110(0x26) - 1.007498V
+<value> - 0.595833V + <value>x10.8333mV
+0b110010(0x32) - 1.138V
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+int upwr_vtm_vmeter_measure(uint32_t vdetsel, upwr_callb callb);
+
+/**
+ * upwr_tpm_get_temperature() - request uPower to get temperature of one temperature sensor
+ * @sensor_id: temperature sensor ID, support 0~2
+ * @callb: response callback pointer; NULL if no callback needed.
+ * (polling used instead)
+ *
+ * The function requests uPower to measure temperature
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_TEMPM as the service group argument.
+ *
+ * The temperature data read from uPower via
+ * the callback argument ret, or written to the variable pointed by retptr,
+ * if polling is used (calls upwr_req_status or upwr_poll_req_status).
+ * ret (or *retptr) also returns the data written on writes.
+ *
+ * uPower return TSEL to the caller (M33 or A35), caller calculate the real temperature
+ * Tsh = 0.000002673049*TSEL[7:0]^3 + 0.0003734262*TSEL[7:0]^2 +
+0.4487042*TSEL[7:0] - 46.98694
+ *
+ * upower fw needs support cocurrent request from M33 and A35.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+int upwr_tpm_get_temperature(uint32_t sensor_id, upwr_callb callb);
+
+/**
+ * upwr_dlm_get_delay_margin() - request uPower to get delay margin
+ * @path: The critical path
+ * @index: Use whitch delay meter
+ * @callb: response callback pointer; NULL if no callback needed.
+ * (polling used instead)
+ *
+ * The function requests uPower to get delay margin
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_DELAYM as the service group argument.
+ *
+ * The delay margin data read from uPower via
+ * the callback argument ret, or written to the variable pointed by retptr,
+ * if polling is used (calls upwr_req_status or upwr_poll_req_status).
+ * ret (or *retptr) also returns the data written on writes.
+ * upower fw needs support cocurrent request from M33 and A35.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+int upwr_dlm_get_delay_margin(uint32_t path, uint32_t index, upwr_callb callb);
+
+/**
+ * upwr_dlm_set_delay_margin() - request uPower to set delay margin
+ * @path: The critical path
+ * @index: Use whitch delay meter
+ * @delay_margin: the value of delay margin
+ * @callb: response callback pointer; NULL if no callback needed.
+ * (polling used instead)
+ *
+ * The function requests uPower to set delay margin
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_DELAYM as the service group argument.
+ *
+ * The result of the corresponding critical path,  failed or not  read from uPower via
+ * the callback argument ret, or written to the variable pointed by retptr,
+ * if polling is used (calls upwr_req_status or upwr_poll_req_status).
+ * ret (or *retptr) also returns the data written on writes.
+ * upower fw needs support cocurrent request from M33 and A35.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+int upwr_dlm_set_delay_margin(uint32_t path, uint32_t index, uint32_t delay_margin, upwr_callb callb);
+
+/**
+ * upwr_dlm_process_monitor() - request uPower to do process monitor
+ * @chain_sel: Chain Cell Type Selection
+ * Select the chain to be used for the clock signal generation.
+ * Support two types chain cell, 0~1
+0b - P4 type delay cells selected
+1b - P16 type delay cells selected
+ * @callb: response callback pointer; NULL if no callback needed.
+ * (polling used instead)
+ *
+ * The function requests uPower to do process monitor
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_DELAYM as the service group argument.
+ *
+ * The result of process monitor,  failed or not  read from uPower via
+ * the callback argument ret, or written to the variable pointed by retptr,
+ * if polling is used (calls upwr_req_status or upwr_poll_req_status).
+ * ret (or *retptr) also returns the data written on writes.
+ * upower fw needs support cocurrent request from M33 and A35.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+int upwr_dlm_process_monitor(uint32_t chain_sel, upwr_callb callb);
+
+/**
+ * upwr_dva_domain_request() - request uPower to dva one domain to the given work mode
+ * @domain_id: RTD, APD, LPAV, defined in upower_defs.h
+ * @mode: OD (over drive) mode, ND (normal drive)  mode, LD (lower drive) mode,
+ * type: enum work_mode, defined in upower_defs.h
+ * @callb: response callback pointer; NULL if no callback needed.
+ * (polling used instead)
+ *
+ * The function requests uPower to switch one domain to the given work mode.
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_VOLTM as the service group argument.
+ *
+ * M33/A35 need to check the execute result
+ * 0 means success, 1 means hold on(A35 request LD, but GPU request OD), negative value means failure.
+ * upower fw needs support cocurrent request from M33 and A35.
+ * upower fw needs support multiple masters requesting different modes.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+
+int upwr_dva_domain_request(uint32_t domain_id, enum work_mode mode, upwr_callb callb);
 
 /**
  * upwr_pwm_freq_setup() - Determines the next frequency target for a given
@@ -897,8 +1417,9 @@ int upwr_pwm_pmode_config(soc_domain_t   domain,
 			  const void*    config,
 			  upwr_callb     callb);
 
+
 /**
- * upwr_pwm_pmic_config() - Configures the SoC PMIC (Power Management IC).
+ * upwr_vtm_pmic_config() - Configures the SoC PMIC (Power Management IC).
  * @config: pointer to a PMIC-dependent struct defining the PMIC configuration.
  * @size:   size of the struct pointed by config, in bytes.
  * @callb: pointer to the callback called when configurations are applied.
@@ -920,9 +1441,56 @@ int upwr_pwm_pmode_config(soc_domain_t   domain,
  *        -3 if called in an invalid API state.
  * Note that this is not the error response from the request itself:
  * it only tells if the request was successfully sent to the uPower.
- */
+ *
+ * Sample code:
 
-int upwr_pwm_pmic_config(const void* config, uint32_t size, upwr_callb callb);
+// The tag value is fixed 0x706D6963, used by uPower PMIC driver to judge if the config data are valid.
+#define PMIC_CONFIG_TAG 0x706D6963
+
+// used to define reg_addr_data_arry, user can modify this value
+// or you can use variable-length array
+// or zero-length array
+// or other C language technology skills
+#define PMIC_CONFIG_REG_ARRAY_SIZE  8
+
+struct pmic_reg_addr_data
+{
+    uint32_t reg;       // the target configured register of PMIC IC
+    uint32_t data;      // the value of the target configured register
+};
+
+struct pmic_config_struct
+{
+    uint32_t cfg_tag;       // cfg_tag = PMIC_CONFIG_TAG, used to judge if the config data are valid
+    uint32_t cfg_reg_size;  // how many registers shall be configured
+    struct pmic_reg_addr_data reg_addr_data_array[PMIC_CONFIG_REG_ARRAY_SIZE];
+};
+
+
+    struct pmic_config_struct pmic_config_struct_data;
+    pmic_config_struct_data.cfg_tag = PMIC_CONFIG_TAG;
+    pmic_config_struct_data.cfg_reg_size = 3;
+
+    pmic_config_struct_data.reg_addr_data_array[0].reg = 0x31 ;
+    pmic_config_struct_data.reg_addr_data_array[0].data = 0x83;
+    pmic_config_struct_data.reg_addr_data_array[1].reg = 0x36;
+    pmic_config_struct_data.reg_addr_data_array[1].data = 0x03;
+    pmic_config_struct_data.reg_addr_data_array[2].reg = 0x38;
+    pmic_config_struct_data.reg_addr_data_array[2].data = 0x03;
+
+    int size = sizeof(pmic_config_struct_data.cfg_tag) +
+                sizeof(pmic_config_struct_data.cfg_reg_size) +
+                pmic_config_struct_data.cfg_reg_size *  (sizeof(uint32_t) + sizeof(uint32_t));
+
+    upower_pwm_chng_pmic_config((void *)&pmic_config_struct_data, size);
+
+
+
+ *
+ * Please must notice that, it will take very long time to finish,
+ * beause it will send many I2C commands to pmic chip.
+ */
+int upwr_vtm_pmic_config(const void* config, uint32_t size, upwr_callb callb);
 
 /**
  * upwr_pwm_reg_config() - Configures the uPower internal regulators.
@@ -1081,7 +1649,7 @@ uint32_t upwr_ram_version(uint32_t* vminor, uint32_t *vfixes);
 /**
  * upwr_req_status() - tells the status of the service group request, and
  *                     returns a request return value, if any.
- * @sg: service group of the request
+ * @sg: service group of the request 
  * @sgfptr: pointer to the variable that will hold the function id of
  * the last request completed; can be NULL, in which case it is not used.
  * @errptr: pointer to the variable that will hold the error code;
@@ -1115,7 +1683,7 @@ upwr_req_status_t upwr_req_status(upwr_sg_t     sg,
 /**
  * upwr_poll_req_status() - polls the status of the service group request, and
  *                          returns a request return value, if any.
- * @sg: service group of the request
+ * @sg: service group of the request 
  * @sgfptr: pointer to the variable that will hold the function id of
  * the last request completed; can be NULL, in which case it is not used.
  * @errptr: pointer to the variable that will hold the error code;
