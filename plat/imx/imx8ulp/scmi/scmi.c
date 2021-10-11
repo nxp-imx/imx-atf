@@ -45,6 +45,7 @@ const char *plat_scmi_sub_vendor_name(void)
 /* Currently supporting Clocks and Reset Domains */
 static const uint8_t plat_protocol_list[] = {
 	SCMI_PROTOCOL_ID_POWER_DOMAIN,
+	SCMI_PROTOCOL_ID_SENSOR,
 	0U /* Null termination */
 };
 
