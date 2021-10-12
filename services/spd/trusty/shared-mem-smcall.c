@@ -107,6 +107,23 @@ static struct trusty_shmem_obj_state trusty_shmem_obj_state = {
 	.next_handle = 0xffffffc0,
 };
 
+typedef struct trusty_sp_desc {
+	uint16_t sp_id;
+	const uuid_t *uuid;
+	uint32_t ffa_version;
+	uint32_t properties;
+	struct trusty_shmem_client_state *client;
+} trusty_sp_desc_t;
+
+static trusty_sp_desc_t trusty_sp;
+
+typedef struct trusty_ns_client_desc {
+	uint16_t ep_id;
+	struct trusty_shmem_client_state *client;
+} trusty_ns_client_desc_t;
+
+static trusty_ns_client_desc_t trusty_ns_client;
+
 static struct trusty_shmem_client_state trusty_shmem_client_state[2] = {
 	[true].secure = true,
 	[true].identity_mapped = true,
@@ -872,12 +889,11 @@ static long trusty_ffa_rxtx_unmap(struct trusty_shmem_client_state *client,
 
 /**
  * trusty_ffa_id_get - FFA_ID_GET implementation.
- * @client:     Client state.
+ * @flags:      State flags.
  * @idp:        Pointer to store id return value in.
  *
  * Return the ID of the caller. For the non-secure client, use ID 0 as required
- * by FF-A. For the secure side return 0x8000 as Hafnium expects the secure OS
- * to use that ID.
+ * by FF-A.
  *
  * Note that the sender_id check in trusty_ffa_mem_frag_tx and
  * trusty_ffa_mem_frag_rx only works when there is no hypervisor because we use
@@ -885,10 +901,14 @@ static long trusty_ffa_rxtx_unmap(struct trusty_shmem_client_state *client,
  *
  * Return: 0 on success, error code on failure.
  */
-static int trusty_ffa_id_get(struct trusty_shmem_client_state *client,
-			     u_register_t *idp)
+static int trusty_ffa_id_get(u_register_t flags, u_register_t *idp)
 {
-	*idp = client->secure ? 0x8000 : 0;
+	if (is_caller_secure(flags)) {
+		*idp = trusty_sp.sp_id;
+	} else {
+		*idp = trusty_ns_client.ep_id;
+	}
+
 	return 0;
 }
 
@@ -1033,8 +1053,7 @@ uintptr_t spmd_ffa_smc_handler(uint32_t smc_fid,
 	uint32_t w4 = (uint32_t)x4;
 	u_register_t ret_reg2 = 0;
 	u_register_t ret_reg3 = 0;
-	struct trusty_shmem_client_state *client = &trusty_shmem_client_state[
-		is_caller_secure(flags)];
+	struct trusty_shmem_client_state *client;
 
 	if (((smc_fid < SMC_FC32_FFA_MIN) || (smc_fid > SMC_FC32_FFA_MAX)) &&
 	    ((smc_fid < SMC_FC64_FFA_MIN) || (smc_fid > SMC_FC64_FFA_MAX))) {
@@ -1043,6 +1062,12 @@ uintptr_t spmd_ffa_smc_handler(uint32_t smc_fid,
 	}
 
 	spin_lock(&trusty_shmem_obj_state.lock);
+
+	if (is_caller_secure(flags)) {
+		client = trusty_sp.client;
+	} else {
+		client = trusty_ns_client.client;
+	}
 
 	switch (smc_fid) {
 	case FFA_VERSION:
@@ -1066,7 +1091,7 @@ uintptr_t spmd_ffa_smc_handler(uint32_t smc_fid,
 		break;
 
 	case FFA_ID_GET:
-		ret = trusty_ffa_id_get(client, &ret_reg2);
+		ret = trusty_ffa_id_get(flags, &ret_reg2);
 		break;
 
 	case FFA_MEM_LEND_SMC32:
@@ -1139,4 +1164,28 @@ uintptr_t spmd_ffa_smc_handler(uint32_t smc_fid,
 		SMC_RET8(handle, FFA_SUCCESS_SMC32, 0, ret_reg2, ret_reg3, 0,
 			 0, 0, 0);
 	}
+}
+
+/**
+ * trusty_shared_mem_init - Initialize Trusty secure and non-secure endpoints.
+ * @trusty_uuid:    Pointer to Trusty UUID
+ *
+ * Returns: none
+ */
+void trusty_shared_mem_init(const uuid_t *trusty_uuid)
+{
+	/*
+	 * Initialize secure side of Trusty that implements FFA_MEM_ABIs
+	 */
+	trusty_sp.sp_id = FFA_SWLD_ID_BASE;
+	trusty_sp.uuid = trusty_uuid;
+	trusty_sp.properties = 0; /* Doesn't support DIRECT MSG */
+	trusty_sp.ffa_version = MAKE_TRUSTY_FFA_CURRENT_VERSION;
+	trusty_sp.client = &trusty_shmem_client_state[true];
+
+	/*
+	 * Initialize non-secure client endpoint.
+	 */
+	trusty_ns_client.ep_id = FFA_NWLD_ID_BASE;
+	trusty_ns_client.client = &trusty_shmem_client_state[false];
 }
