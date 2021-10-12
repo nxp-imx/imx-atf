@@ -350,7 +350,7 @@ static long trusty_ffa_fill_desc(struct trusty_shmem_client_state *client,
 	uint32_t handle_low = (uint32_t)obj->desc.handle;
 	uint32_t handle_high = obj->desc.handle >> 32;
 	if (obj->desc_filled != obj->desc_size) {
-		SMC_RET8(smc_handle, SMC_FC_FFA_MEM_FRAG_RX, handle_low,
+		SMC_RET8(smc_handle, FFA_MEM_FRAG_RX, handle_low,
 			 handle_high, obj->desc_filled,
 			 (uint32_t)obj->desc.sender_id << 16, 0, 0, 0);
 	}
@@ -360,7 +360,7 @@ static long trusty_ffa_fill_desc(struct trusty_shmem_client_state *client,
 		goto err_share_fail;
 	}
 
-	SMC_RET8(smc_handle, SMC_FC_FFA_SUCCESS, 0, handle_low, handle_high, 0,
+	SMC_RET8(smc_handle, FFA_SUCCESS_SMC32, 0, handle_low, handle_high, 0,
 		 0, 0, 0);
 
 err_share_fail:
@@ -379,7 +379,7 @@ err_arg:
  * @address:            Not supported, must be 0.
  * @page_count:         Not supported, must be 0.
  * @smc_handle:         Handle passed to smc call. Used to return
- *                      SMC_FC_FFA_MEM_FRAG_RX or SMC_FC_FFA_SUCCESS.
+ *                      FFA_MEM_FRAG_RX or FFA_SUCCESS_SMC32.
  *
  * Implements a subset of the FF-A FFA_MEM_SHARE call needed to share memory
  * from non-secure os to secure os (with no stream endpoints).
@@ -424,12 +424,12 @@ static long trusty_ffa_mem_share(struct trusty_shmem_client_state *client,
 /**
  * trusty_ffa_mem_frag_tx - FFA_MEM_FRAG_TX implementation.
  * @client:             Client state.
- * @handle_low:         Handle_low value returned from SMC_FC_FFA_MEM_FRAG_RX.
- * @handle_high:        Handle_high value returned from SMC_FC_FFA_MEM_FRAG_RX.
+ * @handle_low:         Handle_low value returned from FFA_MEM_FRAG_RX.
+ * @handle_high:        Handle_high value returned from FFA_MEM_FRAG_RX.
  * @fragment_length:    Length of fragments transmitted.
  * @sender_id:          Vmid of sender in bits [31:16]
  * @smc_handle:         Handle passed to smc call. Used to return
- *                      SMC_FC_FFA_MEM_FRAG_RX or SMC_FC_FFA_SUCCESS.
+ *                      FFA_MEM_FRAG_RX or FFA_SUCCESS_SMC32.
  *
  * Return: @smc_handle on success, error code on failure.
  */
@@ -482,11 +482,11 @@ static long trusty_ffa_mem_frag_tx(struct trusty_shmem_client_state *client,
  * @address:            Not supported, must be 0.
  * @page_count:         Not supported, must be 0.
  * @smc_handle:         Handle passed to smc call. Used to return
- *                      SMC_FC_FFA_MEM_RETRIEVE_RESP.
+ *                      FFA_MEM_RETRIEVE_RESP.
  *
  * Implements a subset of the FF-A FFA_MEM_RETRIEVE_REQ call.
  * Used by secure os to retrieve memory already shared by non-secure os.
- * If the data does not fit in a single SMC_FC_FFA_MEM_RETRIEVE_RESP message,
+ * If the data does not fit in a single FFA_MEM_RETRIEVE_RESP message,
  * the client must call FFA_MEM_FRAG_RX until the full response has been
  * received.
  *
@@ -590,7 +590,7 @@ trusty_ffa_mem_retrieve_req(struct trusty_shmem_client_state *client,
 		resp->memory_region_attributes &= ~FFA_MEM_ATTR_NONSECURE;
 	}
 
-	SMC_RET8(smc_handle, SMC_FC_FFA_MEM_RETRIEVE_RESP, obj->desc_size,
+	SMC_RET8(smc_handle, FFA_MEM_RETRIEVE_RESP, obj->desc_size,
 		 copy_size, 0, 0, 0, 0, 0);
 }
 
@@ -603,7 +603,7 @@ trusty_ffa_mem_retrieve_req(struct trusty_shmem_client_state *client,
  * @sender_id:          Bit[31:16]: Endpoint id of sender if client is a
  *                      hypervisor. 0 otherwise.
  * @smc_handle:         Handle passed to smc call. Used to return
- *                      SMC_FC_FFA_MEM_FRAG_TX.
+ *                      FFA_MEM_FRAG_TX.
  *
  * Return: @smc_handle on success, error code on failure.
  */
@@ -655,7 +655,7 @@ static long trusty_ffa_mem_frag_rx(struct trusty_shmem_client_state *client,
 
 	memcpy(client->rx_buf, src + fragment_offset, copy_size);
 
-	SMC_RET8(smc_handle, SMC_FC_FFA_MEM_FRAG_TX, handle_low, handle_high,
+	SMC_RET8(smc_handle, FFA_MEM_FRAG_TX, handle_low, handle_high,
 		 copy_size, sender_id, 0, 0, 0);
 }
 
@@ -897,8 +897,8 @@ static int trusty_ffa_id_get(struct trusty_shmem_client_state *client,
  * @client:     Client state.
  * @version_in: Version supported by client.
  * @smc_handle: Handle passed to smc call. Used to return version or error code
- *              directly as this call does not use the FFA_SUCCESS and FFA_ERROR
- *              opcodes that the other calls use.
+ *              directly as this call does not use the FFA_SUCCESS_SMC32 and
+ *              FFA_ERROR opcodes that the other calls use.
  *
  * Return: 0 on success, error code on failure.
  */
@@ -914,8 +914,10 @@ static long trusty_ffa_version(struct trusty_shmem_client_state *client,
 	 * version than ours, return the version we suppoort. Otherwise return
 	 * not-supported.
 	 */
-	if (FFA_VERSION_TO_MAJOR(version_in) >= FFA_CURRENT_VERSION_MAJOR) {
-		SMC_RET8(smc_handle, FFA_CURRENT_VERSION, 0, 0, 0, 0, 0, 0, 0);
+	if (FFA_VERSION_TO_MAJOR(version_in) >=
+	    TRUSTY_FFA_CURRENT_VERSION_MAJOR) {
+		SMC_RET8(smc_handle, MAKE_TRUSTY_FFA_CURRENT_VERSION,
+			 0, 0, 0, 0, 0, 0, 0);
 	}
 
 err_not_suppoprted:
@@ -941,24 +943,24 @@ static int trusty_ffa_features(struct trusty_shmem_client_state *client,
 		return -EINVAL;
 	}
 	switch (func) {
-	case SMC_FC_FFA_ERROR:
-	case SMC_FC_FFA_SUCCESS:
-	case SMC_FC_FFA_VERSION:
-	case SMC_FC_FFA_FEATURES:
-	case SMC_FC_FFA_RXTX_UNMAP:
-	case SMC_FC_FFA_ID_GET:
-	case SMC_FC_FFA_MEM_RETRIEVE_RESP:
-	case SMC_FC_FFA_MEM_FRAG_RX:
-	case SMC_FC_FFA_MEM_FRAG_TX:
+	case FFA_ERROR:
+	case FFA_SUCCESS_SMC32:
+	case FFA_VERSION:
+	case FFA_FEATURES:
+	case FFA_RXTX_UNMAP:
+	case FFA_ID_GET:
+	case FFA_MEM_RETRIEVE_RESP:
+	case FFA_MEM_FRAG_RX:
+	case FFA_MEM_FRAG_TX:
 		return 0;
 
-	case SMC_FC_FFA_RXTX_MAP:
-	case SMC_FC64_FFA_RXTX_MAP:
+	case FFA_RXTX_MAP_SMC32:
+	case FFA_RXTX_MAP_SMC64:
 		*ret2 = FFA_FEATURES2_RXTX_MAP_BUF_SIZE_4K;
 		return 0;
 
-	case SMC_FC_FFA_MEM_RETRIEVE_REQ:
-	case SMC_FC64_FFA_MEM_RETRIEVE_REQ:
+	case FFA_MEM_RETRIEVE_REQ_SMC32:
+	case FFA_MEM_RETRIEVE_REQ_SMC64:
 		/*
 		 * Indicate that object can be retrieved up to 2^64 - 1 times
 		 * (on a 64 bit build). We track the number of times an object
@@ -972,10 +974,10 @@ static int trusty_ffa_features(struct trusty_shmem_client_state *client,
 		}
 		return 0;
 
-	case SMC_FC_FFA_MEM_SHARE:
-	case SMC_FC64_FFA_MEM_SHARE:
-	case SMC_FC_FFA_MEM_RELINQUISH:
-	case SMC_FC_FFA_MEM_RECLAIM:
+	case FFA_MEM_SHARE_SMC32:
+	case FFA_MEM_SHARE_SMC64:
+	case FFA_MEM_RELINQUISH:
+	case FFA_MEM_RECLAIM:
 		*ret2 = 0;
 		return 0;
 
@@ -997,13 +999,13 @@ static int to_spi_err(long ret)
 		return FFA_ERROR_NO_MEMORY;
 	case -EINVAL:
 	case -ENOENT:
-		return FFA_ERROR_INVALID_PARAMETERS;
+		return FFA_ERROR_INVALID_PARAMETER;
 	case -EACCES:
 		return FFA_ERROR_DENIED;
 	case -ENOTSUP:
 		return FFA_ERROR_NOT_SUPPORTED;
 	default:
-		return FFA_ERROR_INVALID_PARAMETERS;
+		return FFA_ERROR_INVALID_PARAMETER;
 	}
 }
 
@@ -1043,77 +1045,77 @@ uintptr_t spmd_ffa_smc_handler(uint32_t smc_fid,
 	spin_lock(&trusty_shmem_obj_state.lock);
 
 	switch (smc_fid) {
-	case SMC_FC_FFA_VERSION:
+	case FFA_VERSION:
 		ret = trusty_ffa_version(client, w1, handle);
 		break;
 
-	case SMC_FC_FFA_FEATURES:
+	case FFA_FEATURES:
 		ret = trusty_ffa_features(client, w1, w2, &ret_reg2, &ret_reg3);
 		break;
 
-	case SMC_FC_FFA_RXTX_MAP:
+	case FFA_RXTX_MAP_SMC32:
 		ret = trusty_ffa_rxtx_map(client, w1, w2, w3);
 		break;
 
-	case SMC_FC64_FFA_RXTX_MAP:
+	case FFA_RXTX_MAP_SMC64:
 		ret = trusty_ffa_rxtx_map(client, x1, x2, w3);
 		break;
 
-	case SMC_FC_FFA_RXTX_UNMAP:
+	case FFA_RXTX_UNMAP:
 		ret = trusty_ffa_rxtx_unmap(client, w1);
 		break;
 
-	case SMC_FC_FFA_ID_GET:
+	case FFA_ID_GET:
 		ret = trusty_ffa_id_get(client, &ret_reg2);
 		break;
 
-	case SMC_FC_FFA_MEM_LEND:
+	case FFA_MEM_LEND_SMC32:
 		ret = trusty_ffa_mem_share(client, w1, w2, w3, w4,
 					   FFA_MTD_FLAG_TYPE_LEND_MEMORY,
 					   handle);
 		break;
 
-	case SMC_FC64_FFA_MEM_LEND:
+	case FFA_MEM_LEND_SMC64:
 		ret = trusty_ffa_mem_share(client, w1, w2, x3, w4,
 					   FFA_MTD_FLAG_TYPE_LEND_MEMORY,
 					   handle);
 		break;
 
-	case SMC_FC_FFA_MEM_SHARE:
+	case FFA_MEM_SHARE_SMC32:
 		ret = trusty_ffa_mem_share(client, w1, w2, w3, w4,
 					   FFA_MTD_FLAG_TYPE_SHARE_MEMORY,
 					   handle);
 		break;
 
-	case SMC_FC64_FFA_MEM_SHARE:
+	case FFA_MEM_SHARE_SMC64:
 		ret = trusty_ffa_mem_share(client, w1, w2, x3, w4,
 					   FFA_MTD_FLAG_TYPE_SHARE_MEMORY,
 					   handle);
 		break;
 
-	case SMC_FC_FFA_MEM_RETRIEVE_REQ:
+	case FFA_MEM_RETRIEVE_REQ_SMC32:
 		ret = trusty_ffa_mem_retrieve_req(client, w1, w2, w3, w4,
 						  handle);
 		break;
 
-	case SMC_FC64_FFA_MEM_RETRIEVE_REQ:
+	case FFA_MEM_RETRIEVE_REQ_SMC64:
 		ret = trusty_ffa_mem_retrieve_req(client, w1, w2, x3, w4,
 						  handle);
 		break;
 
-	case SMC_FC_FFA_MEM_RELINQUISH:
+	case FFA_MEM_RELINQUISH:
 		ret = trusty_ffa_mem_relinquish(client);
 		break;
 
-	case SMC_FC_FFA_MEM_RECLAIM:
+	case FFA_MEM_RECLAIM:
 		ret = trusty_ffa_mem_reclaim(client, w1, w2, w3);
 		break;
 
-	case SMC_FC_FFA_MEM_FRAG_RX:
+	case FFA_MEM_FRAG_RX:
 		ret = trusty_ffa_mem_frag_rx(client, w1, w2, w3, w4, handle);
 		break;
 
-	case SMC_FC_FFA_MEM_FRAG_TX:
+	case FFA_MEM_FRAG_TX:
 		ret = trusty_ffa_mem_frag_tx(client, w1, w2, w3, w4, handle);
 		break;
 
@@ -1131,10 +1133,10 @@ uintptr_t spmd_ffa_smc_handler(uint32_t smc_fid,
 			return ret;
 		}
 		NOTICE("%s(0x%x) failed %ld\n", __func__, smc_fid, ret);
-		SMC_RET8(handle, SMC_FC_FFA_ERROR, 0, to_spi_err(ret), 0, 0, 0,
+		SMC_RET8(handle, FFA_ERROR, 0, to_spi_err(ret), 0, 0, 0,
 			 0, 0);
 	} else {
-		SMC_RET8(handle, SMC_FC_FFA_SUCCESS, 0, ret_reg2, ret_reg3, 0,
+		SMC_RET8(handle, FFA_SUCCESS_SMC32, 0, ret_reg2, ret_reg3, 0,
 			 0, 0, 0);
 	}
 }

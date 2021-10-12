@@ -11,20 +11,20 @@
  * (https://developer.arm.com/docs/den0077/a) needed for shared memory.
  */
 
+#include <services/ffa_svc.h>
 #include "smcall.h"
 
 #ifndef STATIC_ASSERT
 #define STATIC_ASSERT(e) _Static_assert(e, #e)
 #endif
 
-#define FFA_CURRENT_VERSION_MAJOR (1U)
-#define FFA_CURRENT_VERSION_MINOR (0U)
+#define TRUSTY_FFA_CURRENT_VERSION_MAJOR (1U)
+#define TRUSTY_FFA_CURRENT_VERSION_MINOR (0U)
 
-#define FFA_VERSION_TO_MAJOR(version) ((version) >> 16)
-#define FFA_VERSION_TO_MINOR(version) ((version) & (0xffff))
-#define FFA_VERSION(major, minor) (((major) << 16) | (minor))
-#define FFA_CURRENT_VERSION \
-    FFA_VERSION(FFA_CURRENT_VERSION_MAJOR, FFA_CURRENT_VERSION_MINOR)
+#define FFA_VERSION_TO_MAJOR(V) ((V) >> FFA_VERSION_MAJOR_SHIFT)
+#define MAKE_TRUSTY_FFA_CURRENT_VERSION	\
+	MAKE_FFA_VERSION(TRUSTY_FFA_CURRENT_VERSION_MAJOR, \
+			 TRUSTY_FFA_CURRENT_VERSION_MINOR)
 
 #define SMC_ENTITY_SHARED_MEMORY 4
 
@@ -304,368 +304,23 @@ typedef uint32_t ffa_features3_t;
 #define FFA_FEATURES3_MEM_RETRIEVE_REQ_REFCOUNT_MASK 0xffU
 
 /**
- * enum ffa_error - FF-A error code
- * @FFA_ERROR_NOT_SUPPORTED:
- *         Operation is not supported by the current implementation.
- * @FFA_ERROR_INVALID_PARAMETERS:
- *         Invalid parameters. Conditions function specific.
- * @FFA_ERROR_NO_MEMORY:
- *         Not enough memory.
- * @FFA_ERROR_DENIED:
- *         Operation not allowed. Conditions function specific.
- *
- * FF-A 1.0 EAC defines other error codes as well but the current implementation
- * does not use them.
- */
-enum ffa_error {
-    FFA_ERROR_NOT_SUPPORTED = -1,
-    FFA_ERROR_INVALID_PARAMETERS = -2,
-    FFA_ERROR_NO_MEMORY = -3,
-    FFA_ERROR_DENIED = -6,
-};
-
-/**
  * SMC_FC32_FFA_MIN - First 32 bit SMC opcode reserved for FFA
  */
-#define SMC_FC32_FFA_MIN SMC_FASTCALL_NR_SHARED_MEMORY(0x60)
+#define SMC_FC32_FFA_MIN FFA_FID(SMC_32, FFA_FNUM_ERROR)
 
 /**
  * SMC_FC32_FFA_MAX - Last 32 bit SMC opcode reserved for FFA
+ * For FFA version 1.0
  */
-#define SMC_FC32_FFA_MAX SMC_FASTCALL_NR_SHARED_MEMORY(0x7F)
+#define SMC_FC32_FFA_MAX FFA_FID(SMC_32, FFA_FNUM_MEM_FRAG_TX)
 
 /**
  * SMC_FC64_FFA_MIN - First 64 bit SMC opcode reserved for FFA
  */
-#define SMC_FC64_FFA_MIN SMC_FASTCALL64_NR_SHARED_MEMORY(0x60)
+#define SMC_FC64_FFA_MIN FFA_FID(SMC_64, FFA_FNUM_ERROR)
 
 /**
  * SMC_FC64_FFA_MAX - Last 64 bit SMC opcode reserved for FFA
+ * For FFA version 1.0
  */
-#define SMC_FC64_FFA_MAX SMC_FASTCALL64_NR_SHARED_MEMORY(0x7F)
-
-/**
- * SMC_FC_FFA_ERROR - SMC error return opcode
- *
- * Register arguments:
- *
- * * w1:     VMID in [31:16], vCPU in [15:0]
- * * w2:     Error code (&enum ffa_error)
- */
-#define SMC_FC_FFA_ERROR SMC_FASTCALL_NR_SHARED_MEMORY(0x60)
-
-/**
- * SMC_FC_FFA_SUCCESS - 32 bit SMC success return opcode
- *
- * Register arguments:
- *
- * * w1:     VMID in [31:16], vCPU in [15:0]
- * * w2-w7:  Function specific
- */
-#define SMC_FC_FFA_SUCCESS SMC_FASTCALL_NR_SHARED_MEMORY(0x61)
-
-/**
- * SMC_FC64_FFA_SUCCESS - 64 bit SMC success return opcode
- *
- * Register arguments:
- *
- * * w1:             VMID in [31:16], vCPU in [15:0]
- * * w2/x2-w7/x7:    Function specific
- */
-#define SMC_FC64_FFA_SUCCESS SMC_FASTCALL64_NR_SHARED_MEMORY(0x61)
-
-/**
- * SMC_FC_FFA_VERSION - SMC opcode to return supported FF-A version
- *
- * Register arguments:
- *
- * * w1:     Major version bit[30:16] and minor version in bit[15:0] supported
- *           by caller. Bit[31] must be 0.
- *
- * Return:
- * * w0:     &SMC_FC_FFA_SUCCESS
- * * w2:     Major version bit[30:16], minor version in bit[15:0], bit[31] must
- *           be 0.
- *
- * or
- *
- * * w0:     &SMC_FC_FFA_ERROR
- * * w2:     %FFA_ERROR_NOT_SUPPORTED if major version passed in is less than
- *           the minimum major version supported.
- */
-#define SMC_FC_FFA_VERSION SMC_FASTCALL_NR_SHARED_MEMORY(0x63)
-
-/**
- * SMC_FC_FFA_FEATURES - SMC opcode to check optional feature support
- *
- * Register arguments:
- *
- * * w1:     FF-A function ID
- *
- * Return:
- * * w0:     &SMC_FC_FFA_SUCCESS
- * * w2:     &typedef ffa_features2_t
- * * w3:     &typedef ffa_features3_t
- *
- * or
- *
- * * w0:     &SMC_FC_FFA_ERROR
- * * w2:     %FFA_ERROR_NOT_SUPPORTED if function is not implemented, or
- *           %FFA_ERROR_INVALID_PARAMETERS if function id is not valid.
- */
-#define SMC_FC_FFA_FEATURES SMC_FASTCALL_NR_SHARED_MEMORY(0x64)
-
-/**
- * SMC_FC_FFA_RXTX_MAP - 32 bit SMC opcode to map message buffers
- *
- * Register arguments:
- *
- * * w1:     TX address
- * * w2:     RX address
- * * w3:     RX/TX page count in bit[5:0]
- *
- * Return:
- * * w0:     &SMC_FC_FFA_SUCCESS
- */
-#define SMC_FC_FFA_RXTX_MAP SMC_FASTCALL_NR_SHARED_MEMORY(0x66)
-
-/**
- * SMC_FC64_FFA_RXTX_MAP - 64 bit SMC opcode to map message buffers
- *
- * Register arguments:
- *
- * * x1:     TX address
- * * x2:     RX address
- * * x3:     RX/TX page count in bit[5:0]
- *
- * Return:
- * * w0:     &SMC_FC_FFA_SUCCESS
- */
-#define SMC_FC64_FFA_RXTX_MAP SMC_FASTCALL64_NR_SHARED_MEMORY(0x66)
-
-/**
- * SMC_FC_FFA_RXTX_UNMAP - SMC opcode to unmap message buffers
- *
- * Register arguments:
- *
- * * w1:     ID in [31:16]
- *
- * Return:
- * * w0:     &SMC_FC_FFA_SUCCESS
- */
-#define SMC_FC_FFA_RXTX_UNMAP SMC_FASTCALL_NR_SHARED_MEMORY(0x67)
-
-/**
- * SMC_FC_FFA_ID_GET - SMC opcode to get endpoint id of caller
- *
- * Return:
- * * w0:     &SMC_FC_FFA_SUCCESS
- * * w2:     ID in bit[15:0], bit[31:16] must be 0.
- */
-#define SMC_FC_FFA_ID_GET SMC_FASTCALL_NR_SHARED_MEMORY(0x69)
-
-/**
- * SMC_FC_FFA_MEM_DONATE - 32 bit SMC opcode to donate memory
- *
- * Not supported.
- */
-#define SMC_FC_FFA_MEM_DONATE SMC_FASTCALL_NR_SHARED_MEMORY(0x71)
-
-/**
- * SMC_FC_FFA_MEM_LEND - 32 bit SMC opcode to lend memory
- *
- * Register arguments:
- *
- * * w1:     Total length
- * * w2:     Fragment length
- * * w3:     Address
- * * w4:     Page count
- *
- * Return:
- * * w0:     &SMC_FC_FFA_SUCCESS
- * * w2/w3:  Handle
- *
- * or
- *
- * * w0:     &SMC_FC_FFA_MEM_FRAG_RX
- * * w1-:    See &SMC_FC_FFA_MEM_FRAG_RX
- *
- * or
- *
- * * w0:     &SMC_FC_FFA_ERROR
- * * w2:     Error code (&enum ffa_error)
- */
-#define SMC_FC_FFA_MEM_LEND SMC_FASTCALL_NR_SHARED_MEMORY(0x72)
-
-/**
- * SMC_F64C_FFA_MEM_LEND - 64 bit SMC opcode to lend memory
- *
- * Register arguments:
- *
- * * w1:     Total length
- * * w2:     Fragment length
- * * x3:     Address
- * * w4:     Page count
- *
- * Return:
- * * w0:     &SMC_FC_FFA_SUCCESS
- * * w2/w3:  Handle
- *
- * or
- *
- * * w0:     &SMC_FC_FFA_MEM_FRAG_RX
- * * w1-:    See &SMC_FC_FFA_MEM_FRAG_RX
- *
- * or
- *
- * * w0:     &SMC_FC_FFA_ERROR
- * * w2:     Error code (&enum ffa_error)
- */
-#define SMC_FC64_FFA_MEM_LEND SMC_FASTCALL64_NR_SHARED_MEMORY(0x72)
-
-/**
- * SMC_FC_FFA_MEM_SHARE - 32 bit SMC opcode to share memory
- *
- * Register arguments:
- *
- * * w1:     Total length
- * * w2:     Fragment length
- * * w3:     Address
- * * w4:     Page count
- *
- * Return:
- * * w0:     &SMC_FC_FFA_SUCCESS
- * * w2/w3:  Handle
- *
- * or
- *
- * * w0:     &SMC_FC_FFA_MEM_FRAG_RX
- * * w1-:    See &SMC_FC_FFA_MEM_FRAG_RX
- *
- * or
- *
- * * w0:     &SMC_FC_FFA_ERROR
- * * w2:     Error code (&enum ffa_error)
- */
-#define SMC_FC_FFA_MEM_SHARE SMC_FASTCALL_NR_SHARED_MEMORY(0x73)
-
-/**
- * SMC_FC64_FFA_MEM_SHARE - 64 bit SMC opcode to share memory
- *
- * Register arguments:
- *
- * * w1:     Total length
- * * w2:     Fragment length
- * * x3:     Address
- * * w4:     Page count
- *
- * Return:
- * * w0:     &SMC_FC_FFA_SUCCESS
- * * w2/w3:  Handle
- *
- * or
- *
- * * w0:     &SMC_FC_FFA_MEM_FRAG_RX
- * * w1-:    See &SMC_FC_FFA_MEM_FRAG_RX
- *
- * or
- *
- * * w0:     &SMC_FC_FFA_ERROR
- * * w2:     Error code (&enum ffa_error)
- */
-#define SMC_FC64_FFA_MEM_SHARE SMC_FASTCALL64_NR_SHARED_MEMORY(0x73)
-
-/**
- * SMC_FC_FFA_MEM_RETRIEVE_REQ - 32 bit SMC opcode to retrieve shared memory
- *
- * Register arguments:
- *
- * * w1:     Total length
- * * w2:     Fragment length
- * * w3:     Address
- * * w4:     Page count
- *
- * Return:
- * * w0:             &SMC_FC_FFA_MEM_RETRIEVE_RESP
- * * w1/x1-w5/x5:    See &SMC_FC_FFA_MEM_RETRIEVE_RESP
- */
-#define SMC_FC_FFA_MEM_RETRIEVE_REQ SMC_FASTCALL_NR_SHARED_MEMORY(0x74)
-
-/**
- * SMC_FC64_FFA_MEM_RETRIEVE_REQ - 64 bit SMC opcode to retrieve shared memory
- *
- * Register arguments:
- *
- * * w1:     Total length
- * * w2:     Fragment length
- * * x3:     Address
- * * w4:     Page count
- *
- * Return:
- * * w0:             &SMC_FC_FFA_MEM_RETRIEVE_RESP
- * * w1/x1-w5/x5:    See &SMC_FC_FFA_MEM_RETRIEVE_RESP
- */
-#define SMC_FC64_FFA_MEM_RETRIEVE_REQ SMC_FASTCALL64_NR_SHARED_MEMORY(0x74)
-
-/**
- * SMC_FC_FFA_MEM_RETRIEVE_RESP - Retrieve 32 bit SMC return opcode
- *
- * Register arguments:
- *
- * * w1:     Total length
- * * w2:     Fragment length
- */
-#define SMC_FC_FFA_MEM_RETRIEVE_RESP SMC_FASTCALL_NR_SHARED_MEMORY(0x75)
-
-/**
- * SMC_FC_FFA_MEM_RELINQUISH - SMC opcode to relinquish shared memory
- *
- * Input in &struct ffa_mem_relinquish_descriptor format in message buffer.
- *
- * Return:
- * * w0:     &SMC_FC_FFA_SUCCESS
- */
-#define SMC_FC_FFA_MEM_RELINQUISH SMC_FASTCALL_NR_SHARED_MEMORY(0x76)
-
-/**
- * SMC_FC_FFA_MEM_RECLAIM - SMC opcode to reclaim shared memory
- *
- * Register arguments:
- *
- * * w1/w2:  Handle
- * * w3:     Flags
- *
- * Return:
- * * w0:     &SMC_FC_FFA_SUCCESS
- */
-#define SMC_FC_FFA_MEM_RECLAIM SMC_FASTCALL_NR_SHARED_MEMORY(0x77)
-
-/**
- * SMC_FC_FFA_MEM_FRAG_RX - SMC opcode to request next fragment.
- *
- * Register arguments:
- *
- * * w1/w2:  Handle
- * * w3:     Fragment offset.
- * * w4:     Endpoint id ID in [31:16], if client is hypervisor.
- *
- * Return:
- * * w0:             &SMC_FC_FFA_MEM_FRAG_TX
- * * w1/x1-w5/x5:    See &SMC_FC_FFA_MEM_FRAG_TX
- */
-#define SMC_FC_FFA_MEM_FRAG_RX SMC_FASTCALL_NR_SHARED_MEMORY(0x7A)
-
-/**
- * SMC_FC_FFA_MEM_FRAG_TX - SMC opcode to transmit next fragment
- *
- * Register arguments:
- *
- * * w1/w2:  Handle
- * * w3:     Fragment length.
- * * w4:     Sender endpoint id ID in [31:16], if client is hypervisor.
- *
- * Return:
- * * w0:             &SMC_FC_FFA_MEM_FRAG_RX or &SMC_FC_FFA_SUCCESS.
- * * w1/x1-w5/x5:    See opcode in w0.
- */
-#define SMC_FC_FFA_MEM_FRAG_TX SMC_FASTCALL_NR_SHARED_MEMORY(0x7B)
+#define SMC_FC64_FFA_MAX FFA_FID(SMC_64, FFA_FNUM_MEM_FRAG_TX)
