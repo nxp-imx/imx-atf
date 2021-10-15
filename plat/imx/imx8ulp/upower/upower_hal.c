@@ -137,3 +137,24 @@ int upower_pwm(int domain_id, bool pwr_on)
 
 	return 0;
 }
+
+int upower_read_temperature(uint32_t sensor_id, int32_t *temperature)
+{
+	int ret, ret_val;
+	upwr_resp_t err_code;
+	uint64_t t;
+
+	ret = upwr_tpm_get_temperature(sensor_id, NULL);
+	if (ret)
+		return ret;
+
+	upower_wait_resp();
+	ret = upwr_poll_req_status(UPWR_SG_TEMPM, NULL, &err_code, &ret_val, 1000);
+	if (ret > UPWR_REQ_OK)
+		return ret;
+
+	t = ret_val & 0xff;
+	*temperature = (2673049 * t * t * t / 10000000 + 3734262 * t * t / 100000 + 4487042 * t / 100 - 4698694) / 100000;
+
+	return 0;
+}
