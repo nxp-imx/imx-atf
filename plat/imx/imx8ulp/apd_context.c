@@ -252,7 +252,7 @@ void tpm5_restore(void)
 {
 	mmio_write_32(0x29340010, tpm5[0]);
 	mmio_write_32(0x29340018, tpm5[1]);
-	mmio_write_32(0x29340018, tpm5[2]);
+	mmio_write_32(0x29340020, tpm5[2]);
 }
 
 static uint32_t wdog3[2];
