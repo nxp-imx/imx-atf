@@ -584,7 +584,8 @@ _soc_sys_off:
 	 * workaround: MASK RESET REQ RPTOE
 	 */
 	ldr	x0, =NXP_RESET_ADDR
-	ldr	w1, =RSTRQMR_RPTOE_MASK
+	ldr	w1, [x0, #RST_RSTRQMR1_OFFSET]
+	orr	w1, w1, #RSTRQMR_RPTOE_MASK
 	str	w1, [x0, #RST_RSTRQMR1_OFFSET]
 
 	/* disable SEC, QBman spi and qspi */
