@@ -8,7 +8,6 @@
 #define PLAT_DEF_H
 
 #include <arch.h>
-#include <cortex_a72.h>
 #include <policy.h>
 /*
  * Required without TBBR.
