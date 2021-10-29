@@ -416,3 +416,11 @@ void soc_runtime_setup(void)
 
 }
 #endif
+
+/*
+ * This function sets up DTB address to be passed to next boot stage
+ */
+void plat_set_dt_address(entry_point_info_t *image_info)
+{
+	image_info->args.arg3 = BL32_FDT_OVERLAY_ADDR;
+}
