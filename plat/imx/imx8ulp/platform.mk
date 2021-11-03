@@ -47,6 +47,10 @@ BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
 				${XLAT_TABLES_LIB_SRCS}			\
 				${IMX_GIC_SOURCES}
 
+ifeq ($(findstring clang,$(notdir $(CC))),)
+    TF_CFLAGS_aarch64	+=	-fno-strict-aliasing
+endif
+
 USE_COHERENT_MEM	:=	1
 RESET_TO_BL31		:=	1
 BL32_BASE		?=	0x96000000
