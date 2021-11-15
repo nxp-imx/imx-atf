@@ -47,6 +47,11 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
 				${IMX_GIC_SOURCES}				\
 				${XLAT_TABLES_LIB_SRCS}
 
+ifeq (${LPA},ENABLE)
+BL31_SOURCES            +=      plat/imx/imx8m/fsl_sema4.c			\
+                                plat/imx/imx8m/sema4.c
+endif
+
 USE_COHERENT_MEM	:=	1
 RESET_TO_BL31		:=	1
 A53_DISABLE_NON_TEMPORAL_HINT := 0
