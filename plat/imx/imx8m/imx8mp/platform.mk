@@ -172,4 +172,11 @@ endif
 
 ifeq (${IMX_ANDROID_BUILD},true)
 $(eval $(call add_define,IMX_ANDROID_BUILD))
+$(eval $(call add_define,LPA_${LPA}))
+endif
+
+ifeq (${LPA},ENABLE)
+BL31_SOURCES            +=      plat/imx/imx8m/fsl_sema4.c			\
+                                plat/imx/imx8m/sema4.c				\
+                                plat/imx/imx8m/imx8mp/imx8mp_lpa_psci.c
 endif
