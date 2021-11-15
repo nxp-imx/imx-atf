@@ -28,7 +28,8 @@ static uint8_t dram_timing_saved[13 * 1024] __aligned(8);
 
 static volatile uint32_t wfe_done;
 static volatile bool wait_ddrc_hwffc_done = true;
-static unsigned int dev_fsp = 0x1;
+
+unsigned int dev_fsp = 0x1;
 
 static uint32_t fsp_init_reg[3][4] = {
 	{ DDRC_INIT3(0), DDRC_INIT4(0), DDRC_INIT6(0), DDRC_INIT7(0) },
