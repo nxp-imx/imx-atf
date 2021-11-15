@@ -30,6 +30,11 @@
 #include <platform_def.h>
 #include <plat_imx8.h>
 
+#if defined(LPA_ENABLE)
+#include <sema4.h>
+#define CPUCNT  (IMX_SRC_BASE + LPA_STATUS)
+#endif
+
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
 
 static const mmap_region_t imx_mmap[] = {
@@ -284,6 +289,10 @@ void bl31_plat_arch_setup(void)
 
 void bl31_platform_setup(void)
 {
+#if defined(LPA_ENABLE)
+	uint32_t value;
+#endif
+
 	generic_delay_timer_init();
 
 	/* select the CKIL source to 32K OSC */
@@ -300,6 +309,13 @@ void bl31_platform_setup(void)
 	/* Enable and reset M7 */
 	mmio_setbits_32(IMX_SRC_BASE + 0xc,  SRC_SCR_M4_ENABLE_MASK);
 	mmio_clrbits_32(IMX_SRC_BASE + 0xc, SRC_SCR_M4C_NON_SCLR_RST_MASK);
+
+#if defined(LPA_ENABLE)
+	/* CPUCNT bits [15:0] used as flags for LPA, clearing it at boot */
+	value = mmio_read_32(CPUCNT);
+	mmio_write_32(CPUCNT, (value & ~0xFFFF) | 0x01);
+	sema4_init();
+#endif
 }
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(unsigned int type)
