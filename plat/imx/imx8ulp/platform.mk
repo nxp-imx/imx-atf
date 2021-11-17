@@ -53,7 +53,7 @@ endif
 
 USE_COHERENT_MEM	:=	1
 RESET_TO_BL31		:=	1
-BL32_BASE		?=	0x96000000
+BL32_BASE		?=	0xa6000000
 BL32_SIZE		?=	0x2000000
 $(eval $(call add_define,BL32_BASE))
 $(eval $(call add_define,BL32_SIZE))
