@@ -26,6 +26,7 @@
 #include <platform_def.h>
 #include <upower_soc_defs.h>
 #include <upower_api.h>
+#include <xrdc.h>
 
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
 
@@ -156,6 +157,11 @@ void bl31_platform_setup(void)
 
 	imx8ulp_init_scmi_server();
 	upower_init();
+
+	xrdc_apply_apd_config();
+	xrdc_apply_lpav_config();
+	xrdc_enable();
+
 	imx8ulp_caam_init();
 }
 
