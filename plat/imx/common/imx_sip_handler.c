@@ -297,16 +297,9 @@ int imx_hifi_xrdc(uint32_t smc_fid)
 #define mmio_clrbits32(addr, clear)            mmio_write_32(addr, mmio_read_32(addr) & ~(clear))
 	mmio_setbits32(0x2da50008, BIT_32(19) | BIT_32(17) | BIT_32(18));
 	mmio_clrbits32(0x2da50008, BIT_32(16));
-	extern int xrdc_config_mrc11_hifi_itcm(void);
-	extern int xrdc_config_mrc11_hifi_dtcm(void);
-	extern int xrdc_config_pdac(uint32_t, uint32_t, uint32_t, uint32_t);
-	extern int xrdc_config_mrc7_hifi_ddr(void);
-	extern int xrdc_config_mda(uint32_t mda_con, uint32_t dom);
-	xrdc_config_pdac(3, 47, 0, 7);
-	xrdc_config_mrc11_hifi_itcm();
-	xrdc_config_mrc11_hifi_dtcm();
-	xrdc_config_mda(9, 2);
-	xrdc_config_mrc7_hifi_ddr();
+
+	extern int xrdc_apply_hifi_config(void);
+	xrdc_apply_hifi_config();
 
 	return 0;
 }

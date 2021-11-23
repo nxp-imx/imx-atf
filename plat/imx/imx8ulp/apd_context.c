@@ -10,6 +10,7 @@
 #include <lib/mmio.h>
 
 #include <plat_imx8.h>
+#include <xrdc.h>
 
 #define PCC_PR	BIT(31)
 #define PFD_VALID_MASK	U(0x40404040)
@@ -336,7 +337,7 @@ void lpav_ctx_save(void)
 
 	/* PCC5 save */
 	for (i = 0; i < ARRAY_SIZE(pcc5_0); i++)
-		pcc5_0[i] = mmio_read_32(IMX_PCC5_BASE + i * 4); 
+		pcc5_0[i] = mmio_read_32(IMX_PCC5_BASE + i * 4);
 
 	for (i = 0; i < ARRAY_SIZE(pcc5_1); i++)
 		pcc5_1[i][1] = mmio_read_32(pcc5_1[i][0]);
@@ -385,72 +386,6 @@ void lpav_ctx_restore(void)
 
 	/* DDR retention exit */
 	dram_exit_retention();
-}
-
-/* XRDC context */
-void xrdc_init_mda(void)
-{
-	int i;
-
-	for (i = 3; i <= 5; i++) {
-		mmio_write_32(0x292f0000 + 0x800 + i * 0x20, 0x200000a1);
-		mmio_write_32(0x292f0000 + 0x800 + i * 0x20, 0xa00000a1);
-	}
-
-	for (i = 10; i <= 15; i++) {
-		mmio_write_32(0x292f0000 + 0x800 + i * 0x20, 0x200000a3);
-		mmio_write_32(0x292f0000 + 0x800 + i * 0x20, 0xa00000a3);
-	}
-}
-
-int xrdc_config_mrc_dx_perm(uint32_t mrc_con, uint32_t region, uint32_t dom, uint32_t dxsel)
-{
-	uint32_t val = 0;
-
-	val = (mmio_read_32(0x292f0000 + 0x2000 + mrc_con * 0x200 + region * 0x20 + 0x8) & (~(7 << (3 * dom)))) | (dxsel << (3 * dom));
-	mmio_write_32(0x292f0000 + 0x2000 + mrc_con * 0x200 + region * 0x20 + 0x8, val);
-
-	return 0;
-}
-
-int xrdc_config_mrc_w0_w1(uint32_t mrc_con, uint32_t region, uint32_t w0, uint32_t size)
-{
-	if ((size % 32) != 0)
-		return -1;
-
-	mmio_write_32(0x292f0000 + 0x2000 + mrc_con * 0x200 + region * 0x20, w0 & ~0x1f);
-	mmio_write_32(0x292f0000 + 0x2000 + mrc_con * 0x200 + region * 0x20 + 0x4, w0 + size -1);
-
-	return 0;
-}
-
-int xrdc_config_mrc_w3_w4(uint32_t mrc_con, uint32_t region, uint32_t w3, uint32_t w4)
-{
-	mmio_write_32(0x292f0000 + 0x2000 + mrc_con * 0x200 + region * 0x20 + 0xc, w3);
-	mmio_write_32(0x292f0000 + 0x2000 + mrc_con * 0x200 + region * 0x20 + 0xc + 0x4, w4);
-
-        return 0;
-}
-
-void xrdc_init_mrc(void)
-{
-	/* The MRC8 is for SRAM1 */
-	xrdc_config_mrc_w0_w1(8, 0, 0x21000000, 0x10000);
-	/* Allow for all domains: So domain 2/3 (HIFI DSP/LPAV) is ok to access */
-	xrdc_config_mrc_dx_perm(8, 0, 0, 1);
-	xrdc_config_mrc_dx_perm(8, 0, 1, 1);
-	xrdc_config_mrc_dx_perm(8, 0, 2, 1);
-	xrdc_config_mrc_dx_perm(8, 0, 3, 1);
-	xrdc_config_mrc_dx_perm(8, 0, 4, 1);
-	xrdc_config_mrc_dx_perm(8, 0, 5, 1);
-	xrdc_config_mrc_dx_perm(8, 0, 6, 1);
-	xrdc_config_mrc_dx_perm(8, 0, 7, 1);
-	xrdc_config_mrc_w3_w4(8, 0, 0x0, 0x80000FFF);
-	
-	/* The MRC6 is for video modules to ddr */
-	xrdc_config_mrc_w0_w1(6, 0, 0x80000000, 0x80000000);
-	xrdc_config_mrc_dx_perm(6, 0, 3, 1); /* allow for domain 3 video */
-	xrdc_config_mrc_w3_w4(6, 0, 0x0, 0x80000FFF);
 }
 
 void imx_apd_ctx_save(unsigned int proc_num)
@@ -507,8 +442,10 @@ void imx_apd_ctx_save(unsigned int proc_num)
 
 void xrdc_reinit(void)
 {
-	xrdc_init_mda();
-	xrdc_init_mrc();
+	xrdc_apply_apd_config();
+	xrdc_apply_lpav_config();
+
+	xrdc_enable();
 }
 
 void s400_release_caam(void)
@@ -554,7 +491,7 @@ void imx_apd_ctx_restore(unsigned int proc_num)
 
 	tpm5_restore();
 
-//	xrdc_reinit();
+	xrdc_reinit();
 
 	/* restore the gic config */
 	plat_gic_restore(proc_num, &imx_gicv3_ctx);
