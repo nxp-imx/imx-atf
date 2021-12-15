@@ -201,6 +201,12 @@
  * Note: option 0 is also available if the RAM firmware is loaded.
  */
 
+/* service upwr_pwm_set_domain_pmic_rail message argument fields*/
+typedef struct {
+	uint32_t domain: 16U;
+	uint32_t rail: 16U;
+} upwr_pwm_dom_pmic_rail_args;
+
 /* service upwr_pwm_chng_dom_bias message argument fields */
 
 #define UPWR_DOMBIAS_MODE_BITS    (2U)
@@ -752,8 +758,40 @@ struct upwr_dom_bias_cfg_t {
 
 /* bias struct used in power mode config definitions */
 
+/**
+ *
+
+ When write power mode transition program, please read below comments carefully.
+ The structure and logic is complex, There is a lot of extension and reuse.
+
+ First, for mode, extend "uint32_t mode" to a union struct, add support for AVD:
+typedef union {
+  uint32_t                  R;
+  struct {
+    uint32_t                  mode      : 8;    // Dom bias mode
+    uint32_t                  rsrv_1    : 8;
+    uint32_t                  avd_mode  : 8;    // AVD bias mode
+    uint32_t                  rsrv_2    : 8;
+  }                         B;
+} dom_bias_mode_cfg_t;
+
+  Second, if mode is AFBB mode, no need to configure rbbn and rbbp, uPower firmware will configure all SRAM_AFBB_0 or SRAM_AFBB_1 for corresponding domain.
+
+  Third, if mode is RBB mode, extend "uint32_t rbbn" and "uint32_t rbbp" to a union struct, add support for AVD:
+  typedef union {
+  uint32_t                  R;
+  struct {
+    uint32_t                  lvl       : 8;    // Dom bias level
+    uint32_t                  rsrv_1    : 8;
+    uint32_t                  avd_lvl   : 8;    // AVD bias level
+    uint32_t                  rsrv_2    : 8;
+  }                         B;
+} dom_bias_lvl_cfg_t;
+
+ *
+ */
 typedef struct {
-	uint32_t mode; /* Domain bias mode config */
+	uint32_t mode; /* Domain bias mode config, extend to dom_bias_mode_cfg_t to support RTD, APD, AVD */
 	uint32_t rbbn; /* reverse back bias N well */
 	uint32_t rbbp; /* reverse back bias P well */
 } UPWR_DOM_BIAS_CFG_T;

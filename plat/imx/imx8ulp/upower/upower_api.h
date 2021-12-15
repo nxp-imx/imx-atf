@@ -559,130 +559,10 @@ int upwr_xcp_i2c_access(uint16_t         addr,
 			uint32_t         wdata,
 			const upwr_callb callb);
 
+
 /**---------------------------------------------------------------
- * POWER MANAGEMENT SERVICE GROUP
+ * VOLTAGE MANAGEMENT SERVICE GROUP
  */
-
-/**
- * upwr_pwm_dom_power_on() - Commands uPower to power on the platform of other
- * domain (not necessarily its core(s)); does not release the core reset.
- * @domain: identifier of the domain to power on. Defined by SoC-dependent type
- * soc_domain_t found in upower_soc_defs.h.
- * @boot_start: must be 1 to start the domain core(s) boot(s), releasing
- * its (their) resets, or 0 otherwise.
- * @pwroncallb: pointer to the callback to be called when the uPower has
- * finished the power on procedure, or NULL if no callback needed
- * (polling used instead).
- *
- * A callback can be optionally registered, and will be called upon the arrival
- * of the request response from the uPower firmware, telling if it succeeded or
- * not.
- * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check the response, by calling upwr_req_status or
- * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
- *
- * Context: no sleep, no locks taken/released.
- * Return: 0 if ok,
- *        -1 if service group is busy,
- *        -2 if the domain passed is the same as the caller,
- *        -3 if called in an invalid API state
- */
-
-int upwr_pwm_dom_power_on(soc_domain_t      domain,
-                          int               boot_start,
-                          const upwr_callb  pwroncallb);
-
-/**
- * upwr_pwm_boot_start() - Commands uPower to release the reset of other CPU(s),
- * starting their boots.
- * @domain: identifier of the domain to release the reset. Defined by
- * SoC-dependent type soc_domain_t found in upower_soc_defs.h.
- * @bootcallb: pointer to the callback to be called when the uPower has finished
- * the boot start procedure, or NULL if no callback needed
- * (polling used instead).
- *
- * A callback can be optionally registered, and will be called upon the arrival
- * of the request response from the uPower firmware, telling if it succeeded or
- * not.
- * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check the response, by calling upwr_req_status or
- * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
- *
- * The callback calling doesn't mean the CPUs boots have finished:
- * it only indicates that uPower released the CPUs resets, and can receive
- * other power management service group requests.
- *
- * Context: no sleep, no locks taken/released.
- * Return: 0 if ok,
- *        -1 if service group is busy,
- *        -2 if the domain passed is the same as the caller,
- *        -3 if called in an invalid API state
- */
-
-int upwr_pwm_boot_start(soc_domain_t domain, const upwr_callb  bootcallb);
-
-/**
- * upwr_pwm_param() - Changes Power Management parameters.
- * @param: pointer to a parameter structure upwr_pwm_param_t, SoC-dependent,
- * defined in upwr_soc_defines.h. NULL may be passed, meaning
- * a request to read the parameter set, in which case it appears in the callback
- * argument ret, or can be pointed by argument retptr in the upwr_req_status and
- * upwr_poll_req_status calls, casted to upwr_pwm_param_t.
- * @callb: response callback pointer; NULL if no callback needed.
- *
- * The return value is always the current parameter set value, either in a
- * read-only request (param = NULL) or after setting a new parameter
- * (non-NULL param).
- *
- * Some parameters may be targeted for a specific domain (see the struct
- * upwr_pwm_param_t definition in upower_soc_defs.h); this call has implicit
- * domain target (the same domain from which is called).
- *
- * A callback can be optionally registered, and will be called upon the arrival
- * of the request response from the uPower firmware, telling if it succeeded or
- * not.
- * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check the response, by calling upwr_req_status or
- * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
- *
- * Context: no sleep, no locks taken/released.
- * Return: 0 if ok,
- *        -1 if service group is busy,
- *        -3 if called in an invalid API state
- */
-
-int upwr_pwm_param(upwr_pwm_param_t* param, const upwr_callb  callb);
-
-/**
- * upwr_pwm_chng_reg_voltage() - Changes the voltage at a given regulator.
- * @reg: regulator id.
- * @volt: voltage value; value unit is SoC-dependent, converted from mV by the
- * macro UPWR_VOLT_MILIV, or from micro-Volts by the macro UPWR_VOLT_MICROV,
- * both macros in upower_soc_defs.h
- * @callb: response callback pointer; NULL if no callback needed.
- *
- * The function requests uPower to change the voltage of the given regulator.
- * The request is executed if arguments are within range, with no protections
- * regarding the adequate voltage value for the given domain process,
- * temperature and frequency.
- *
- * A callback can be optionally registered, and will be called upon the arrival
- * of the request response from the uPower firmware, telling if it succeeded
- * or not.
- *
- * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check the response, by calling upwr_req_status or
- * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
- *
- * Context: no sleep, no locks taken/released.
- * Return: 0 if ok,
- *        -1 if service group is busy,
- *        -3 if called in an invalid API state
- * Note that this is not the error response from the request itself:
- * it only tells if the request was successfully sent to the uPower.
- */
-
-int upwr_pwm_chng_reg_voltage(uint32_t reg, uint32_t volt, upwr_callb callb);
 
 /**
  * upwr_vtm_pmic_cold_reset() -request cold reset the pmic
@@ -710,6 +590,33 @@ int upwr_pwm_chng_reg_voltage(uint32_t reg, uint32_t volt, upwr_callb callb);
  * it only tells if the request was successfully sent to the uPower.
  */
 int upwr_vtm_pmic_cold_reset(upwr_callb callb);
+
+/**
+ * upwr_vtm_set_pmic_mode() -request uPower set pmic mode
+ * @pmic_mode: the target mode need to be set
+ * @callb: response callback pointer; NULL if no callback needed.
+ *
+ * The function requests uPower to set pmic mode
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_VOLTM as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+int upwr_vtm_set_pmic_mode(uint32_t pmic_mode, upwr_callb callb);
 
 /**
  * upwr_vtm_chng_pmic_voltage() - Changes the voltage of a given rail.
@@ -958,6 +865,84 @@ int upwr_vtm_power_measure(uint32_t ssel, upwr_callb callb);
 int upwr_vtm_vmeter_measure(uint32_t vdetsel, upwr_callb callb);
 
 /**
+ * upwr_vtm_pmic_config() - Configures the SoC PMIC (Power Management IC).
+ * @config: pointer to a PMIC-dependent struct defining the PMIC configuration.
+ * @size:   size of the struct pointed by config, in bytes.
+ * @callb: pointer to the callback called when configurations are applied.
+ * NULL if no callback is required.
+ *
+ * The function requests uPower to change/define the PMIC configuration.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok, -1 if service group is busy,
+ *        -2 if the pointer conversion to physical address failed,
+ *        -3 if called in an invalid API state.
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ *
+ * Sample code:
+
+// The tag value is fixed 0x706D6963, used by uPower PMIC driver to judge if the config data are valid.
+#define PMIC_CONFIG_TAG 0x706D6963
+
+// used to define reg_addr_data_arry, user can modify this value
+// or you can use variable-length array
+// or zero-length array
+// or other C language technology skills
+#define PMIC_CONFIG_REG_ARRAY_SIZE  8
+
+struct pmic_reg_addr_data
+{
+    uint32_t reg;       // the target configured register of PMIC IC
+    uint32_t data;      // the value of the target configured register
+};
+
+struct pmic_config_struct
+{
+    uint32_t cfg_tag;       // cfg_tag = PMIC_CONFIG_TAG, used to judge if the config data are valid
+    uint32_t cfg_reg_size;  // how many registers shall be configured
+    struct pmic_reg_addr_data reg_addr_data_array[PMIC_CONFIG_REG_ARRAY_SIZE];
+};
+
+
+    struct pmic_config_struct pmic_config_struct_data;
+    pmic_config_struct_data.cfg_tag = PMIC_CONFIG_TAG;
+    pmic_config_struct_data.cfg_reg_size = 3;
+
+    pmic_config_struct_data.reg_addr_data_array[0].reg = 0x31 ;
+    pmic_config_struct_data.reg_addr_data_array[0].data = 0x83;
+    pmic_config_struct_data.reg_addr_data_array[1].reg = 0x36;
+    pmic_config_struct_data.reg_addr_data_array[1].data = 0x03;
+    pmic_config_struct_data.reg_addr_data_array[2].reg = 0x38;
+    pmic_config_struct_data.reg_addr_data_array[2].data = 0x03;
+
+    int size = sizeof(pmic_config_struct_data.cfg_tag) +
+                sizeof(pmic_config_struct_data.cfg_reg_size) +
+                pmic_config_struct_data.cfg_reg_size *  (sizeof(uint32_t) + sizeof(uint32_t));
+
+    upower_pwm_chng_pmic_config((void *)&pmic_config_struct_data, size);
+
+
+
+ *
+ * Please must notice that, it will take very long time to finish,
+ * beause it will send many I2C commands to pmic chip.
+ */
+int upwr_vtm_pmic_config(const void* config, uint32_t size, upwr_callb callb);
+
+/**---------------------------------------------------------------
+ * TEMPERATURE MANAGEMENT SERVICE GROUP
+ */
+
+/**
  * upwr_tpm_get_temperature() - request uPower to get temperature of one temperature sensor
  * @sensor_id: temperature sensor ID, support 0~2
  * @callb: response callback pointer; NULL if no callback needed.
@@ -995,6 +980,10 @@ int upwr_vtm_vmeter_measure(uint32_t vdetsel, upwr_callb callb);
  * it only tells if the request was successfully sent to the uPower.
  */
 int upwr_tpm_get_temperature(uint32_t sensor_id, upwr_callb callb);
+
+/**---------------------------------------------------------------
+ * DELAY MANAGEMENT SERVICE GROUP
+ */
 
 /**
  * upwr_dlm_get_delay_margin() - request uPower to get delay margin
@@ -1141,15 +1130,142 @@ int upwr_dlm_process_monitor(uint32_t chain_sel, upwr_callb callb);
 
 int upwr_dva_domain_request(uint32_t domain_id, enum work_mode mode, upwr_callb callb);
 
+/**---------------------------------------------------------------
+ * POWER MANAGEMENT SERVICE GROUP
+ */
+
+/**
+ * upwr_pwm_dom_power_on() - Commands uPower to power on the platform of other
+ * domain (not necessarily its core(s)); does not release the core reset.
+ * @domain: identifier of the domain to power on. Defined by SoC-dependent type
+ * soc_domain_t found in upower_soc_defs.h.
+ * @boot_start: must be 1 to start the domain core(s) boot(s), releasing
+ * its (their) resets, or 0 otherwise.
+ * @pwroncallb: pointer to the callback to be called when the uPower has
+ * finished the power on procedure, or NULL if no callback needed
+ * (polling used instead).
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded or
+ * not.
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -2 if the domain passed is the same as the caller,
+ *        -3 if called in an invalid API state
+ */
+
+int upwr_pwm_dom_power_on(soc_domain_t      domain,
+                          int               boot_start,
+                          const upwr_callb  pwroncallb);
+
+/**
+ * upwr_pwm_boot_start() - Commands uPower to release the reset of other CPU(s),
+ * starting their boots.
+ * @domain: identifier of the domain to release the reset. Defined by
+ * SoC-dependent type soc_domain_t found in upower_soc_defs.h.
+ * @bootcallb: pointer to the callback to be called when the uPower has finished
+ * the boot start procedure, or NULL if no callback needed
+ * (polling used instead).
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded or
+ * not.
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
+ *
+ * The callback calling doesn't mean the CPUs boots have finished:
+ * it only indicates that uPower released the CPUs resets, and can receive
+ * other power management service group requests.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -2 if the domain passed is the same as the caller,
+ *        -3 if called in an invalid API state
+ */
+
+int upwr_pwm_boot_start(soc_domain_t domain, const upwr_callb  bootcallb);
+
+/**
+ * upwr_pwm_param() - Changes Power Management parameters.
+ * @param: pointer to a parameter structure upwr_pwm_param_t, SoC-dependent,
+ * defined in upwr_soc_defines.h. NULL may be passed, meaning
+ * a request to read the parameter set, in which case it appears in the callback
+ * argument ret, or can be pointed by argument retptr in the upwr_req_status and
+ * upwr_poll_req_status calls, casted to upwr_pwm_param_t.
+ * @callb: response callback pointer; NULL if no callback needed.
+ *
+ * The return value is always the current parameter set value, either in a
+ * read-only request (param = NULL) or after setting a new parameter
+ * (non-NULL param).
+ *
+ * Some parameters may be targeted for a specific domain (see the struct
+ * upwr_pwm_param_t definition in upower_soc_defs.h); this call has implicit
+ * domain target (the same domain from which is called).
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded or
+ * not.
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ */
+
+int upwr_pwm_param(upwr_pwm_param_t* param, const upwr_callb  callb);
+
+/**
+ * upwr_pwm_chng_reg_voltage() - Changes the voltage at a given regulator.
+ * @reg: regulator id.
+ * @volt: voltage value; value unit is SoC-dependent, converted from mV by the
+ * macro UPWR_VOLT_MILIV, or from micro-Volts by the macro UPWR_VOLT_MICROV,
+ * both macros in upower_soc_defs.h
+ * @callb: response callback pointer; NULL if no callback needed.
+ *
+ * The function requests uPower to change the voltage of the given regulator.
+ * The request is executed if arguments are within range, with no protections
+ * regarding the adequate voltage value for the given domain process,
+ * temperature and frequency.
+ *
+ * A callback can be optionally registered, and will be called upon the arrival
+ * of the request response from the uPower firmware, telling if it succeeded
+ * or not.
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ * Note that this is not the error response from the request itself:
+ * it only tells if the request was successfully sent to the uPower.
+ */
+
+int upwr_pwm_chng_reg_voltage(uint32_t reg, uint32_t volt, upwr_callb callb);
+
+
 /**
  * upwr_pwm_freq_setup() - Determines the next frequency target for a given
  *                         domain and current frequency.
  * @domain: identifier of the domain to change frequency. Defined by
  * SoC-dependent type soc_domain_t found in upower_soc_defs.h.
- * @nextfq: target frequency; value unit is SoC-dependent, converted from KHz
- * by the macro UPWR_FREQ_KHZ in upower_soc_defs.h
- * @currfq: current frequency value unit is SoC-dependent, converted from KHz
- * by the macro UPWR_FREQ_KHZ in upower_soc_defs.h
+ * @rail: the pmic regulator number for the target domain.
+ * @target_freq: the target adjust frequency, accurate to MHz
+ *
+ * refer to upower_defs.h structure definition upwr_pwm_freq_msg
+ *
  * In some SoC implementations this may not be needed (argument is not used),
  * if uPower can measure the current frequency by itself.
  * @callb: response callback pointer; NULL if no callback needed.
@@ -1179,8 +1295,7 @@ int upwr_dva_domain_request(uint32_t domain_id, enum work_mode mode, upwr_callb 
  * it only tells if the request was successfully sent to the uPower.
  */
 
-int upwr_pwm_freq_setup(soc_domain_t domain, uint32_t nextfq, uint32_t currfq,
-			upwr_callb   callb);
+int upwr_pwm_freq_setup(soc_domain_t domain, uint32_t rail, uint32_t target_freq, upwr_callb   callb);
 
 /**
  * upwr_pwm_power_on()- Powers on (not off) one or more switches and ROM/RAMs.
@@ -1418,79 +1533,6 @@ int upwr_pwm_pmode_config(soc_domain_t   domain,
 			  upwr_callb     callb);
 
 
-/**
- * upwr_vtm_pmic_config() - Configures the SoC PMIC (Power Management IC).
- * @config: pointer to a PMIC-dependent struct defining the PMIC configuration.
- * @size:   size of the struct pointed by config, in bytes.
- * @callb: pointer to the callback called when configurations are applied.
- * NULL if no callback is required.
- *
- * The function requests uPower to change/define the PMIC configuration.
- *
- * A callback can be optionally registered, and will be called upon the arrival
- * of the request response from the uPower firmware, telling if it succeeded
- * or not.
- *
- * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check the response, by calling upwr_req_status or
- * upwr_poll_req_status, using UPWR_SG_PWRMGMT as the service group argument.
- *
- * Context: no sleep, no locks taken/released.
- * Return: 0 if ok, -1 if service group is busy,
- *        -2 if the pointer conversion to physical address failed,
- *        -3 if called in an invalid API state.
- * Note that this is not the error response from the request itself:
- * it only tells if the request was successfully sent to the uPower.
- *
- * Sample code:
-
-// The tag value is fixed 0x706D6963, used by uPower PMIC driver to judge if the config data are valid.
-#define PMIC_CONFIG_TAG 0x706D6963
-
-// used to define reg_addr_data_arry, user can modify this value
-// or you can use variable-length array
-// or zero-length array
-// or other C language technology skills
-#define PMIC_CONFIG_REG_ARRAY_SIZE  8
-
-struct pmic_reg_addr_data
-{
-    uint32_t reg;       // the target configured register of PMIC IC
-    uint32_t data;      // the value of the target configured register
-};
-
-struct pmic_config_struct
-{
-    uint32_t cfg_tag;       // cfg_tag = PMIC_CONFIG_TAG, used to judge if the config data are valid
-    uint32_t cfg_reg_size;  // how many registers shall be configured
-    struct pmic_reg_addr_data reg_addr_data_array[PMIC_CONFIG_REG_ARRAY_SIZE];
-};
-
-
-    struct pmic_config_struct pmic_config_struct_data;
-    pmic_config_struct_data.cfg_tag = PMIC_CONFIG_TAG;
-    pmic_config_struct_data.cfg_reg_size = 3;
-
-    pmic_config_struct_data.reg_addr_data_array[0].reg = 0x31 ;
-    pmic_config_struct_data.reg_addr_data_array[0].data = 0x83;
-    pmic_config_struct_data.reg_addr_data_array[1].reg = 0x36;
-    pmic_config_struct_data.reg_addr_data_array[1].data = 0x03;
-    pmic_config_struct_data.reg_addr_data_array[2].reg = 0x38;
-    pmic_config_struct_data.reg_addr_data_array[2].data = 0x03;
-
-    int size = sizeof(pmic_config_struct_data.cfg_tag) +
-                sizeof(pmic_config_struct_data.cfg_reg_size) +
-                pmic_config_struct_data.cfg_reg_size *  (sizeof(uint32_t) + sizeof(uint32_t));
-
-    upower_pwm_chng_pmic_config((void *)&pmic_config_struct_data, size);
-
-
-
- *
- * Please must notice that, it will take very long time to finish,
- * beause it will send many I2C commands to pmic chip.
- */
-int upwr_vtm_pmic_config(const void* config, uint32_t size, upwr_callb callb);
 
 /**
  * upwr_pwm_reg_config() - Configures the uPower internal regulators.
@@ -1764,8 +1806,7 @@ int upwr_tx(const uint32_t*         msg,
  *         -2 if any argument is invalid (like mu off-range)
  */
 
-int upwr_rx(uint32_t*               msg,
-            unsigned int*           size);
+int upwr_rx(char *msg, unsigned int *size);
 
 /**
  * upwr_rx_callback() - sets up a callback for a message receiving event.
@@ -1794,7 +1835,7 @@ int upwr_rx_callback(UPWR_RX_CALLB_FUNC_T    callback);
  * Return: none (void)
  */
 
-void msg_copy(uint32_t* dest, uint32_t* src, unsigned int size);
+void msg_copy(char* dest, char* src, unsigned int size);
 
 /**
   */

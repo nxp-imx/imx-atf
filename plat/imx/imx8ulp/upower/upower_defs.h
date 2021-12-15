@@ -350,13 +350,12 @@ typedef enum {            /* Power Management Functions */
 	UPWR_PWM_MEM_BIAS,/* 7 = Memory bias control: upwr_pwm_chng_mem_bias */
 	UPWR_PWM_PMICCFG, /* 8 = PMIC configuration:  upwr_pwm_pmic_config */
 	UPWR_PWM_PMICMOD = UPWR_PWM_PMICCFG, /* deprecated, for old compile */
-	UPWR_PWM_CHG_PMIC_VOLT,     /* 9 = Change PMIC rail voltage */
-	UPWR_PWM_PES = UPWR_PWM_CHG_PMIC_VOLT,     /* deprecated, for old compile */
+	UPWR_PWM_PES,      /* 9 so far, no use */
 	UPWR_PWM_CONFIG , /* 10= apply power mode defined configuration */
 	UPWR_PWM_CFGPTR,  /* 11= configuration pointer */
 	UPWR_PWM_DOM_PWRON,/* 12 = domain power on: upwr_pwm_dom_power_on */
 	UPWR_PWM_BOOT,     /* 13 = boot start: upwr_pwm_boot_start */
-        UPWR_PWM_FREQ,     /* 14 = domain frequency setup */
+    UPWR_PWM_FREQ,     /* 14 = domain frequency setup */
 	UPWR_PWM_PARAM,    /* 15 = power management parameters */
 	UPWR_PWM_F_COUNT
 } upwr_pwm_f_t;
@@ -364,17 +363,19 @@ typedef enum {            /* Power Management Functions */
 #define MAX_PMETER_SSEL 7U
 
 typedef enum {            /* Voltage Management Functions */
-	UPWR_VOLT_CHNG_PMIC_RAIL_VOLT,  /* 0 = change pmic rail voltage */
-	UPWR_VOLT_GET_PMIC_RAIL_VOLT, /* 1 = get pmic rail voltage */
-	UPWR_VOLT_PMIC_CONFIG, /* 2 = configure PMIC IC */
-    UPWR_VOLT_DVA_DUMP_INFO, /* 3 = dump dva information */
-    UPWR_VOLT_DVA_REQ_ID, /* 4 = dva request ID array */
-    UPWR_VOLT_DVA_REQ_DOMAIN, /* 5 = dva request domain */
-    UPWR_VOLT_DVA_REQ_SOC, /* 6 = dva request the whole SOC */
-    UPWR_VOLT_PMETER_MEAS, /* 7 = pmeter measure */
-    UPWR_VOLT_VMETER_MEAS, /* 8 = vmeter measure */
-    UPWR_VOLT_PMIC_COLD_RESET, /* 9 = pmic cold reset */
-    UPWR_VOLT_F_COUNT
+	UPWR_VTM_CHNG_PMIC_RAIL_VOLT,  /* 0 = change pmic rail voltage */
+	UPWR_VTM_GET_PMIC_RAIL_VOLT, /* 1 = get pmic rail voltage */
+	UPWR_VTM_PMIC_CONFIG, /* 2 = configure PMIC IC */
+    UPWR_VTM_DVA_DUMP_INFO, /* 3 = dump dva information */
+    UPWR_VTM_DVA_REQ_ID, /* 4 = dva request ID array */
+    UPWR_VTM_DVA_REQ_DOMAIN, /* 5 = dva request domain */
+    UPWR_VTM_DVA_REQ_SOC, /* 6 = dva request the whole SOC */
+    UPWR_VTM_PMETER_MEAS, /* 7 = pmeter measure */
+    UPWR_VTM_VMETER_MEAS, /* 8 = vmeter measure */
+    UPWR_VTM_PMIC_COLD_RESET, /* 9 = pmic cold reset */
+    UPWR_VTM_SET_DVFS_PMIC_RAIL,     /* 10 = set which domain use which pmic rail, for DVFS use */
+    UPWR_VTM_SET_PMIC_MODE,        /* 11 = set pmic mode */
+    UPWR_VTM_F_COUNT
 } upwr_volt_f_t;
 
 #define VMETER_SEL_RTD 0U
@@ -406,6 +407,8 @@ typedef enum {          /* Delay Meter Management Functions */
 } upwr_dmeter_f_t;
 
 typedef upwr_down_1w_msg    upwr_volt_pmeter_meas_msg;
+
+typedef upwr_down_1w_msg    upwr_volt_pmic_set_mode_msg;
 
 typedef upwr_down_1w_msg    upwr_volt_vmeter_meas_msg;
 
@@ -470,6 +473,15 @@ typedef upwr_pointer_msg upwr_pwm_regcfg_msg ;
 /* upwr_volt_pmic_volt-specific message format */
 
 typedef union {
+	struct upwr_msg_hdr           hdr;       /* message header */
+	struct {
+		uint32_t rsv:UPWR_HEADER_BITS;
+        uint32_t domain: 8U;
+        uint32_t rail: 8U;
+	} args;
+} upwr_volt_dom_pmic_rail_msg;
+
+typedef union {
 	struct upwr_msg_hdr hdr;
 	struct {
 		uint32_t rsv:UPWR_HEADER_BITS;
@@ -528,12 +540,22 @@ typedef union {
 
 /* upwr_pwm_freq_setup-specific message format */
 
+/**
+ * This message structure is used for DVFS feature
+ * 1. Because user may use different PMIC or different board,
+ * the pmic regulator of RTD/APD may change,
+ * so, user need to tell uPower the regulator number.
+ * The number must be matched with PMIC IC and board.
+ * use 4 bits for pmic regulator, support to 16 regulator.
+ *
+ * use 12 bits for target frequency, accurate to MHz, support to 4096 MHz
+ */
 typedef union {
 	struct upwr_msg_hdr hdr;
 	struct {
-		uint32_t rsv:UPWR_HEADER_BITS;
-		uint32_t nextfq:UPWR_HALF_ARG_BITS; /* next    frequency  */
-		uint32_t currfq:UPWR_HALF_ARG_BITS; /* current frequency */
+		uint32_t rsv: UPWR_HEADER_BITS;
+		uint32_t rail: 4; /* pmic regulator  */
+		uint32_t target_freq: 12; /* target frequency */
 	} args;
 } upwr_pwm_freq_msg;
 
@@ -579,7 +601,9 @@ typedef union {
 	struct upwr_msg_hdr     hdr;      /* message header */
 	upwr_volt_pmic_set_volt_msg  set_pmic_volt;     /* set pmic voltage message */
 	upwr_volt_pmic_get_volt_msg  get_pmic_volt;     /* set pmic voltage message */
+	upwr_volt_pmic_set_mode_msg  set_pmic_mode;     /* set pmic mode message */
 	upwr_volt_pmiccfg_msg    pmiccfg;  /* PMIC configuration message */
+	upwr_volt_dom_pmic_rail_msg   dom_pmic_rail; /* domain bias message */
 	upwr_volt_dva_dump_info_msg    dva_dump_info;  /* dump dva info message */
 	upwr_volt_dva_req_id_msg    dva_req_id;  /* dump dva request id array message */
 	upwr_volt_dva_req_domain_msg    dva_req_domain;  /* dump dva request domain message */
