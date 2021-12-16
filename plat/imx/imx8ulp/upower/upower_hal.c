@@ -89,16 +89,6 @@ uint32_t upower_init(void)
 	    return status;
         }
 
-	xrdc_config_pdac(4, 8, 1, 7); /* DMA1 (DID=1) access to SAI4 regs */
-	xrdc_config_pdac(4, 9, 1, 7); /* DMA1 (DID=1) access to SAI5 regs */
-	xrdc_config_pdac(5, 41, 0, 7); /* (DID=0) access to SAI6 regs */
-	xrdc_config_pdac(5, 42, 0, 7); /* (DID=0) access to SAI7 regs */
-	xrdc_config_pdac(5, 43, 0, 7); /* (DID=0) access to SPDIF regs */
-	xrdc_config_pdac(5, 41, 7, 7); /* (DID=7) access to SAI6 regs */
-	xrdc_config_pdac(5, 42, 7, 7); /* (DID=7) access to SAI7 regs */
-	xrdc_config_pdac(5, 43, 7, 7); /* (DID=7) access to SPDIF regs */
-	xrdc_config_mrc6_dma2_ddr();
-
 	return 0;
 }
 
