@@ -57,6 +57,36 @@ void imx8mq_dram_timing_copy(struct dram_timing_info *from)
 }
 #endif
 
+static uint32_t lpddr4_mr_read(unsigned int mr_rank, unsigned int mr_addr)
+{
+        unsigned int tmp, tmp1;
+
+        tmp = mmio_read_32(DRC_PERF_MON_MRR0_DAT(0));
+        mmio_write_32(DRC_PERF_MON_MRR0_DAT(0), tmp | 0x1);
+        do {
+                tmp = mmio_read_32(DDRC_MRSTAT(0));
+        } while (tmp & 0x1);
+
+        mmio_write_32(DDRC_MRCTRL0(0), (mr_rank << 4) | 0x1);
+        mmio_write_32(DDRC_MRCTRL1(0), (mr_addr << 8));
+        mmio_write_32(DDRC_MRCTRL0(0), (mr_rank << 4) | ((uint32_t)0x1<<31) | 0x1 );
+
+        // Workaround for SNPS STAR 9001549457
+        do{
+                tmp = mmio_read_32(DDRC_MRSTAT(0));
+        } while (tmp & 0x1);
+
+        do {
+                tmp = mmio_read_32(DRC_PERF_MON_MRR0_DAT(0));
+        } while ((tmp & 0x8) == 0);
+        tmp = mmio_read_32(DRC_PERF_MON_MRR1_DAT(0));
+
+        tmp1 = (mmio_read_32(DDRC_DERATEEN(0))>>4)&0xff;
+        tmp = (tmp>>(tmp1*8)) & 0xff;
+        mmio_write_32(DRC_PERF_MON_MRR0_DAT(0), 0x4);
+        return tmp;
+}
+
 static void get_mr_values(uint32_t (*mr_value)[8])
 {
 	uint32_t init_val;
@@ -67,6 +97,11 @@ static void get_mr_values(uint32_t (*mr_value)[8])
 			init_val = mmio_read_32(fsp_init_reg[fsp_index][i]);
 			mr_value[fsp_index][2*i] = init_val >> 16;
 			mr_value[fsp_index][2*i + 1] = init_val & 0xFFFF;
+		}
+
+		if (dram_info.dram_type == DDRC_LPDDR4) {
+			mr_value[fsp_index][5] = lpddr4_mr_read(1, 12); /* read MR12 from DRAM */
+			mr_value[fsp_index][7] = lpddr4_mr_read(1, 14); /* read MR14 from DRAM */
 		}
 	}
 }
