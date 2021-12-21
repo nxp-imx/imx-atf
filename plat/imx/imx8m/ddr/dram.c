@@ -57,6 +57,7 @@ void imx8mq_dram_timing_copy(struct dram_timing_info *from)
 }
 #endif
 
+#if defined(PLAT_imx8mp)
 static uint32_t lpddr4_mr_read(unsigned int mr_rank, unsigned int mr_addr)
 {
         unsigned int tmp, tmp1;
@@ -86,6 +87,7 @@ static uint32_t lpddr4_mr_read(unsigned int mr_rank, unsigned int mr_addr)
         mmio_write_32(DRC_PERF_MON_MRR0_DAT(0), 0x4);
         return tmp;
 }
+#endif
 
 static void get_mr_values(uint32_t (*mr_value)[8])
 {
@@ -99,10 +101,12 @@ static void get_mr_values(uint32_t (*mr_value)[8])
 			mr_value[fsp_index][2*i + 1] = init_val & 0xFFFF;
 		}
 
+#if defined(PLAT_imx8mp)
 		if (dram_info.dram_type == DDRC_LPDDR4) {
 			mr_value[fsp_index][5] = lpddr4_mr_read(1, 12); /* read MR12 from DRAM */
 			mr_value[fsp_index][7] = lpddr4_mr_read(1, 14); /* read MR14 from DRAM */
 		}
+#endif
 	}
 }
 
