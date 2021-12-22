@@ -95,6 +95,7 @@ struct power_domain {
 	uint32_t sram_parent;
 	uint64_t bits;
 	uint32_t power_state;
+	bool lpav; /* belong to lpav domain */
 };
 
 /* The Rich OS need flow the macro */
@@ -132,6 +133,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS6,
 		.bits = SRAM_DMA1,
 		.power_state = POWER_STATE_OFF,
+		.lpav = false,
 	},
 	{
 		.name = "FLEXSPI2",
@@ -140,6 +142,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS6,
 		.bits = SRAM_FLEXSPI2,
 		.power_state = POWER_STATE_OFF,
+		.lpav = false,
 	},
 	{
 		.name = "USB0",
@@ -148,6 +151,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS6,
 		.bits = SRAM_USB0,
 		.power_state = POWER_STATE_OFF,
+		.lpav = false,
 	},
 	{
 		.name = "USDHC0",
@@ -156,6 +160,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS6,
 		.bits = SRAM_USDHC0,
 		.power_state = POWER_STATE_OFF,
+		.lpav = false,
 	},
 	{
 		.name = "USDHC1",
@@ -164,6 +169,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS6,
 		.bits = SRAM_USDHC1,
 		.power_state = POWER_STATE_OFF,
+		.lpav = false,
 	},
 	{
 		.name = "USDHC2_USB1",
@@ -172,6 +178,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS6,
 		.bits = SRAM_USDHC2_USB1,
 		.power_state = POWER_STATE_OFF,
+		.lpav = false,
 	},
 	{
 		.name = "DCNano",
@@ -180,6 +187,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS16,
 		.bits = SRAM_DCNANO,
 		.power_state = POWER_STATE_OFF,
+		.lpav = true,
 	},
 	{
 		.name = "EPDC",
@@ -188,6 +196,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS13,
 		.bits = SRAM_EPDC,
 		.power_state = POWER_STATE_OFF,
+		.lpav = true,
 	},
 	{
 		.name = "DMA2",
@@ -196,6 +205,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS16,
 		.bits = SRAM_DMA2,
 		.power_state = POWER_STATE_OFF,
+		.lpav = true,
 	},
 	{
 		.name = "GPU2D",
@@ -204,6 +214,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS16,
 		.bits = SRAM_GPU2D,
 		.power_state = POWER_STATE_OFF,
+		.lpav = true,
 	},
 	{
 		.name = "GPU3D",
@@ -212,6 +223,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS7,
 		.bits = SRAM_GPU3D,
 		.power_state = POWER_STATE_OFF,
+		.lpav = true,
 	},
 	{
 		.name = "HIFI4",
@@ -220,6 +232,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS8,
 		.bits = SRAM_HIFI4,
 		.power_state = POWER_STATE_OFF,
+		.lpav = true,
 	},
 	{
 		.name = "ISI",
@@ -228,6 +241,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS16,
 		.bits = SRAM_ISI_BUFFER,
 		.power_state = POWER_STATE_OFF,
+		.lpav = true,
 	},
 	{
 		.name = "MIPI_CSI",
@@ -236,6 +250,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS16,
 		.bits = SRAM_MIPI_CSI_FIFO,
 		.power_state = POWER_STATE_OFF,
+		.lpav = true,
 	},
 	{
 		.name = "MIPI_DSI",
@@ -244,6 +259,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS16,
 		.bits = SRAM_MIPI_DSI_FIFO,
 		.power_state = POWER_STATE_OFF,
+		.lpav = true,
 	},
 	{
 		.name = "PXP",
@@ -252,6 +268,7 @@ static struct power_domain scmi_power_domains[] = {
 		.sram_parent = PS13,
 		.bits = SRAM_PXP,
 		.power_state = POWER_STATE_OFF,
+		.lpav = true,
 	},
 };
 
@@ -309,8 +326,8 @@ int upwr_pwm_power(const uint32_t swton[], const uint32_t memon[], bool on)
 
 int32_t plat_scmi_pd_psw(unsigned int index, unsigned int state)
 {
-	uint32_t psw_parent = scmi_power_domains[index].psw_parent;	
-	uint32_t sram_parent = scmi_power_domains[index].sram_parent;	
+	uint32_t psw_parent = scmi_power_domains[index].psw_parent;
+	uint32_t sram_parent = scmi_power_domains[index].sram_parent;
 	uint64_t swt;
 	bool on;
 	int ret = 0;
@@ -365,6 +382,17 @@ int32_t plat_scmi_pd_psw(unsigned int index, unsigned int state)
 	return ret;
 }
 
+extern bool is_lpav_owned_by_apd(void);
+bool pd_allow_power_off(unsigned int pd_id)
+{
+	if (scmi_power_domains[pd_id].lpav) {
+		if (!is_lpav_owned_by_apd())
+			return false;
+	}
+
+	return true;
+}
+
 int32_t plat_scmi_pd_set_state(unsigned int agent_id __unused,
 			       unsigned int flags,
 			       unsigned int pd_id,
@@ -402,6 +430,9 @@ int32_t plat_scmi_pd_set_state(unsigned int agent_id __unused,
 		if (ret)
 			return SCMI_DENIED;
 	} else {
+		if (!pd_allow_power_off(i))
+			return SCMI_DENIED;
+
 		ret = upwr_pwm_power(NULL, (const uint32_t *)&mem, on);
 		if (ret)
 			return SCMI_DENIED;
