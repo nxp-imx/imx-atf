@@ -7,6 +7,7 @@
 #include <common/debug.h>
 #include <common/runtime_svc.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <lib/object_pool.h>
 #include <lib/spinlock.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
@@ -409,8 +410,8 @@ static long trusty_ffa_mem_frag_tx(struct trusty_shmem_client_state *client,
 
 	obj = trusty_shmem_obj_lookup(&trusty_shmem_obj_state, handle);
 	if (!obj) {
-		NOTICE("%s: invalid handle, 0x%llx, not a valid handle\n",
-		       __func__, handle);
+		NOTICE("%s: invalid handle, 0x%" PRIx64
+		       ", not a valid handle\n", __func__, handle);
 		return -ENOENT;
 	}
 
@@ -509,7 +510,7 @@ trusty_ffa_mem_retrieve_req(struct trusty_shmem_client_state *client,
 	}
 
 	if (req->emad_count && req->tag != obj->desc.tag) {
-		NOTICE("%s: wrong tag 0x%llx != 0x%llx\n",
+		NOTICE("%s: wrong tag 0x%" PRIx64 " != 0x%" PRIx64 "\n",
 		       __func__, req->tag, obj->desc.tag);
 		return -EINVAL;
 	}
@@ -581,8 +582,8 @@ static long trusty_ffa_mem_frag_rx(struct trusty_shmem_client_state *client,
 
 	obj = trusty_shmem_obj_lookup(&trusty_shmem_obj_state, handle);
 	if (!obj) {
-		NOTICE("%s: invalid handle, 0x%llx, not a valid handle\n",
-		       __func__, handle);
+		NOTICE("%s: invalid handle, 0x%" PRIx64
+		       ", not a valid handle\n", __func__, handle);
 		return -ENOENT;
 	}
 
