@@ -91,6 +91,11 @@ static uintptr_t imx_sip_handler(unsigned int smc_fid,
 #endif
 	case  IMX_SIP_BUILDINFO:
 		SMC_RET1(handle, imx_buildinfo_handler(smc_fid, x1, x2, x3, x4));
+#if defined(PLAT_imx93)
+	case IMX_SIP_SRC:
+		SMC_RET1(handle, imx_src_handler(smc_fid, x1, x2, x3, handle));
+		break;
+#endif
 	default:
 		WARN("Unimplemented i.MX SiP Service Call: 0x%x\n", smc_fid);
 		SMC_RET1(handle, SMC_UNK);
