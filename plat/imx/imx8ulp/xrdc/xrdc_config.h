@@ -65,13 +65,13 @@ struct xrdc_mrc_config imx8ulp_mrc[] = {
 	{ 5, 0, DRAM_MEM_0_START, DRAM_MEM_0_SIZE, {0, 1, 0, 0, 0, 0, 0, 0}, {0xfff, 0} }, /* DRAM for NIC_PER */
 	{ 5, 1, DRAM_MEM_1_START, DRAM_MEM_1_SIZE, {0, 1, 0, 0, 0, 0, 0, 0}, {0xfc0, 0} }, /* TEE DRAM for NIC_PER */
 	{ 5, 2, DRAM_MEM_2_START, DRAM_MEM_2_SIZE, {0, 1, 0, 0, 0, 0, 0, 0}, {0xfff, 0} }, /* DRAM for NIC_PER */
-	{ 6, 0, DRAM_MEM_0_START, DRAM_MEM_0_SIZE, {1, 0, 0, 1, 1, 0, 1, 0}, {0xfff, 0} }, /* DRAM for LPAV and RTD*/
-	{ 6, 1, DRAM_MEM_1_START, DRAM_MEM_1_SIZE, {1, 0, 0, 1, 1, 0, 1, 0}, {0xfc0, 0} }, /* TEE DRAM for LPAV and RTD*/
-	{ 6, 2, DRAM_MEM_2_START, DRAM_MEM_2_SIZE, {1, 0, 0, 1, 1, 0, 1, 0}, {0xfff, 0} }, /* DRAM for LPAV and RTD*/
+	{ 6, 0, DRAM_MEM_0_START, DRAM_MEM_0_SIZE, {1, 1, 0, 1, 1, 0, 1, 0}, {0xfff, 0} }, /* DRAM for LPAV and RTD*/
+	{ 6, 1, DRAM_MEM_1_START, DRAM_MEM_1_SIZE, {1, 1, 0, 1, 1, 0, 1, 0}, {0xfc0, 0} }, /* TEE DRAM for LPAV and RTD*/
+	{ 6, 2, DRAM_MEM_2_START, DRAM_MEM_2_SIZE, {1, 1, 0, 1, 1, 0, 1, 0}, {0xfff, 0} }, /* DRAM for LPAV and RTD*/
 #else
 	{ 4, 0, 0x80000000, 0x80000000, {0, 1, 0, 0, 0, 0, 0, 1}, {0xfff, 0} }, /* DRAM for A35, DMA1, USDHC0*/
 	{ 5, 0, 0x80000000, 0x80000000, {0, 1, 0, 0, 0, 0, 0, 0}, {0xfff, 0} }, /* DRAM for NIC_PER */
-	{ 6, 0, 0x80000000, 0x80000000, {1, 0, 0, 1, 1, 0, 1, 0}, {0xfff, 0} }, /* DRAM for LPAV and RTD*/
+	{ 6, 0, 0x80000000, 0x80000000, {1, 1, 0, 1, 1, 0, 1, 0}, {0xfff, 0} }, /* DRAM for LPAV and RTD*/
 #endif
 	{ 7, 0, 0x80000000, 0x10000000, {0, 0, 1, 0, 0, 0, 0, 0}, {0xfff, 0} }, /* DRAM for HIFI4 */
 	{ 7, 1, 0x90000000, 0x10000000, {0, 0, 1, 0, 0, 0, 0, 0}, {0xfff, 0} }, /* DRAM for HIFI4 */
@@ -90,7 +90,7 @@ struct xrdc_pac_msc_config imx8ulp_pdac[] = {
 	{ 0, 47, {0, 0, 0, 0, 7, 0, 0, 7} }, /* PAC0 slot 47 for XRDC MGR*/
 	{ 1, PAC_SLOT_ALL, {0, 7, 0, 0, 0, 0, 0, 7} }, /* PAC1 */
 	{ 1, 9,  {0, 7, 7, 7, 0, 0, 0, 7} }, /* SAI5 for HIFI4 and eDMA2 */
-	{ 2, PAC_SLOT_ALL, {7, 0, 7, 7, 0, 0, 7, 7} }, /* PAC2 */
+	{ 2, PAC_SLOT_ALL, {7, 7, 7, 7, 0, 0, 7, 7} }, /* PAC2 */
 };
 
 struct xrdc_pac_msc_config imx8ulp_msc[] = {
