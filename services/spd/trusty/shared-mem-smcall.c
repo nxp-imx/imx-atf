@@ -46,7 +46,7 @@ struct trusty_shmem_obj {
  * @lock:           Lock protecting all state in this file.
  */
 struct trusty_shmem_obj_state {
-	uint8_t data[TRUSTY_SHARED_MEMORY_OBJ_SIZE];
+	uint8_t *data;
 	size_t allocated;
 	uint64_t next_handle;
 	struct spinlock lock;
@@ -71,7 +71,11 @@ struct trusty_shmem_client_state {
 	const bool receiver;
 };
 
+__aligned(8) static uint8_t
+	trusty_shmem_objs_data[TRUSTY_SHARED_MEMORY_OBJ_SIZE];
 static struct trusty_shmem_obj_state trusty_shmem_obj_state = {
+	/* initializing data this way keeps the bulk of the state in .bss */
+	.data = trusty_shmem_objs_data,
 	/* Set start value for handle so top 32 bits are needed quickly */
 	.next_handle = 0xffffffc0,
 };
@@ -108,7 +112,7 @@ static struct trusty_shmem_obj *
 trusty_shmem_obj_alloc(struct trusty_shmem_obj_state *state, size_t desc_size)
 {
 	struct trusty_shmem_obj *obj;
-	size_t free = sizeof(state->data) - state->allocated;
+	size_t free = sizeof(trusty_shmem_objs_data) - state->allocated;
 	if (trusty_shmem_obj_size(desc_size) > free) {
 		NOTICE("%s(0x%zx) failed, free 0x%zx\n",
 		       __func__, desc_size, free);
