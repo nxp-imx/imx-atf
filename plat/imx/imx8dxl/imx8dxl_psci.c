@@ -18,6 +18,8 @@
 
 #include "../../common/sci/imx8_mu.h"
 
+#define IRQSTR_PLAT_OS_MU_IRQ	119
+
 static const int ap_core_index[PLATFORM_CORE_COUNT] = {
 	SC_R_A35_0, SC_R_A35_1
 };
@@ -40,12 +42,6 @@ static void imx_enable_irqstr_wakeup(void)
 		irq_mask = dist_ctx->gicd_isenabler[i];
 		mmio_write_32(IMX_WUP_IRQSTR_BASE + 0x2c - 0x4 * i, irq_mask);
 	}
-
-	/* set IRQSTR low power mode */
-	if (imx_is_wakeup_src_irqsteer())
-		sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_STBY);
-	else
-		sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_OFF);
 }
 
 static void imx_disable_irqstr_wakeup(void)
@@ -128,6 +124,11 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 		sc_pm_req_low_power_mode(ipc_handle, SC_R_A35, SC_PM_PW_MODE_OFF);
 
 	if (is_local_state_retn(target_state->pwr_domain_state[PLAT_MAX_PWR_LVL])) {
+		uint32_t irqstr_mu_reg = (IRQSTR_PLAT_OS_MU_IRQ / 32) - 1;
+		uint32_t irqstr_mu_mask = (1 << (IRQSTR_PLAT_OS_MU_IRQ % 32));
+		uint32_t irqstr_mu_status, reg;
+		bool irqstr_mu_wakeup = false;
+
 		plat_gic_cpuif_disable();
 
 		/* save gic context */
@@ -152,12 +153,32 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 		/* Put GIC in OFF mode. */
 		sc_pm_set_resource_power_mode(ipc_handle, SC_R_GIC, SC_PM_PW_MODE_OFF);
 		sc_pm_set_cpu_resume(ipc_handle, ap_core_index[cpu_id], true, BL31_BASE);
-		if (imx_is_wakeup_src_irqsteer())
-			sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id],
-				SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_IRQSTEER);
-		else
+
+		if (!imx_is_wakeup_src_irqsteer())
 			sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id],
 				SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_SCU);
+		/*
+		 * Check to see if the MU interrupt is pending in the IRQSTR_SCU2
+		 * If interrupt is pending it implies the wakeup interrupt triggered
+		 * during suspend process and we should wakeup. Changing the wakeup src
+		 * to SC_PM_WAKE_SRC_IRQSTEER will ensure the AP core wakes up as soon
+		 * as WFI is executed.
+		 */
+		reg = mmio_read_32(IMX_WUP_IRQSTR_BASE + 0x2c - 4 * irqstr_mu_reg);
+		mmio_write_32(IMX_WUP_IRQSTR_BASE + 0x2c - 4 * irqstr_mu_reg, reg | irqstr_mu_mask);
+		irqstr_mu_status = mmio_read_32(IMX_WUP_IRQSTR_BASE + 0x8c - 4 * irqstr_mu_reg);
+		if (irqstr_mu_status & irqstr_mu_mask)
+			irqstr_mu_wakeup = true;
+		else
+			mmio_write_32(IMX_WUP_IRQSTR_BASE + 0x2c - 4 * irqstr_mu_reg, reg);
+
+		/* set IRQSTR low power mode. IRQSTR is already in ON state at this point*/
+		if (imx_is_wakeup_src_irqsteer() || irqstr_mu_wakeup) {
+			sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_STBY);
+			sc_pm_req_cpu_low_power_mode(ipc_handle, ap_core_index[cpu_id],
+				SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_IRQSTEER);
+		} else
+			sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_OFF);
 	}
 }
 
