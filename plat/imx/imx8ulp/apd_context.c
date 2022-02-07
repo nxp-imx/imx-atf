@@ -8,6 +8,7 @@
 #include <stdbool.h>
 
 #include <lib/mmio.h>
+#include <drivers/delay_timer.h>
 
 #include <plat_imx8.h>
 #include <xrdc.h>
@@ -543,8 +544,17 @@ void imx_apd_ctx_restore(unsigned int proc_num)
 void usb_wakeup_enable(bool enable)
 {
 	if (enable) {
-		mmio_write_32(IMX_SIM1_BASE + USB_WAKEUP, USB1_PHY_DPD_WAKEUP_EN | USB0_PHY_DPD_WAKEUP_EN |
-			USB1_PHY_WAKEUP_ISO_DISABLE | USB0_PHY_WAKEUP_ISO_DISABLE);
+		mmio_setbits_32(IMX_SIM1_BASE + USB_WAKEUP, USB1_PHY_WAKEUP_ISO_DISABLE | USB0_PHY_WAKEUP_ISO_DISABLE);
+		mmio_setbits_32(IMX_SIM1_BASE + DGO_CTRL1, BIT(0));
+		while (!(mmio_read_32(IMX_SIM1_BASE + DGO_CTRL1) & BIT(1)))
+			;
+		mmio_clrbits_32(IMX_SIM1_BASE + DGO_CTRL1, BIT(0));
+		mmio_write_32(IMX_SIM1_BASE + DGO_CTRL1, BIT(1));
+
+		/* Need to delay for a while to make sure the wakeup logic can work */
+		udelay(500);
+
+		mmio_setbits_32(IMX_SIM1_BASE + USB_WAKEUP, USB1_PHY_DPD_WAKEUP_EN | USB0_PHY_DPD_WAKEUP_EN);
 		mmio_setbits_32(IMX_SIM1_BASE + DGO_CTRL1, BIT(0));
 		while (!(mmio_read_32(IMX_SIM1_BASE + DGO_CTRL1) & BIT(1)))
 			;
