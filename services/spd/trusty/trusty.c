@@ -81,6 +81,10 @@ struct smc_args trusty_context_switch_helper(void **sp, void *smc_params);
 
 static uint32_t current_vmid;
 
+static bool trusty_ctx_valid(struct trusty_cpu_ctx *ctx) {
+	return !!ctx->saved_sp;
+}
+
 static struct trusty_cpu_ctx *get_trusty_ctx(void)
 {
 	return &trusty_cpu_ctx[plat_my_core_pos()];
@@ -99,6 +103,20 @@ static struct smc_args trusty_context_switch(uint32_t security_state, uint64_t r
 	struct smc_args args, ret_args;
 	struct trusty_cpu_ctx *ctx = get_trusty_ctx();
 	struct trusty_cpu_ctx *ctx_smc;
+
+	if (!trusty_ctx_valid(ctx)) {
+		INFO("trusty: Cannot context switch, Trusty not yet running on"
+		     " core %d\n", plat_my_core_pos());
+		ret_args.r0 = SMC_UNK;
+		ret_args.r1 = 0;
+		ret_args.r2 = 0;
+		ret_args.r3 = 0;
+		ret_args.r4 = 0;
+		ret_args.r5 = 0;
+		ret_args.r6 = 0;
+		ret_args.r7 = 0;
+		return ret_args;
+	}
 
 	assert(ctx->saved_security_state != security_state);
 
@@ -325,6 +343,12 @@ static int32_t trusty_cpu_init(void)
 			       CTX_SPSR_EL3));
 
 	if (!trusty_initialized) {
+		/*
+		 * The primary CPU has not been booted, don't try to bring up
+		 * a secondary CPU.
+		 */
+		INFO("trusty: secondary cpu %d brought online before Trusty.\n",
+		     cpu);
 		return -1;
 	}
 
@@ -439,7 +463,7 @@ static void trusty_cpu_on_finish_handler(u_register_t max_off_lvl)
 {
 	struct trusty_cpu_ctx *ctx = get_trusty_ctx();
 
-	if (ctx->saved_sp == NULL) {
+	if (!trusty_ctx_valid(ctx)) {
 		(void)trusty_cpu_init();
 	} else {
 		trusty_cpu_resume(max_off_lvl);
