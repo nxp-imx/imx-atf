@@ -313,7 +313,9 @@ static uintptr_t trusty_smc_handler(uint32_t smc_fid,
 	}
 }
 
-static int32_t trusty_init(void)
+static bool trusty_initialized = false;
+
+static int32_t trusty_cpu_init(void)
 {
 	entry_point_info_t *ep_info;
 	struct smc_args zero_args = {0};
@@ -321,6 +323,10 @@ static int32_t trusty_init(void)
 	uint32_t cpu = plat_my_core_pos();
 	uint64_t reg_width = GET_RW(read_ctx_reg(get_el3state_ctx(&ctx->cpu_ctx),
 			       CTX_SPSR_EL3));
+
+	if (!trusty_initialized) {
+		return -1;
+	}
 
 	/*
 	 * Get information about the Trusty image. Its absence is a critical
@@ -361,6 +367,45 @@ static int32_t trusty_init(void)
 	return 1;
 }
 
+void plat_trusty_set_boot_args(aapcs64_params_t *args);
+
+#if !defined(TSP_SEC_MEM_SIZE) && defined(BL32_MEM_SIZE)
+#define TSP_SEC_MEM_SIZE BL32_MEM_SIZE
+#endif
+
+#ifdef TSP_SEC_MEM_SIZE
+#pragma weak plat_trusty_set_boot_args
+void plat_trusty_set_boot_args(aapcs64_params_t *args)
+{
+	args->arg0 = TSP_SEC_MEM_SIZE;
+}
+#endif
+
+static int32_t trusty_init(void)
+{
+	entry_point_info_t *ep_info;
+	uint32_t core;
+
+	NOTICE("trusty_init\n");
+	if (trusty_initialized) {
+		WARN("trusty: Tried to initialise more than once\n");
+		return -1;
+	}
+
+	core = plat_my_core_pos();
+	if (core != 0) {
+		WARN("trusty: Tried to initialize on core %d\n", core);
+		return -1;
+	}
+
+	ep_info = bl31_plat_get_next_image_ep_info(SECURE);
+	plat_trusty_set_boot_args(&ep_info->args);
+
+	trusty_initialized = true;
+	return trusty_cpu_init();
+}
+
+
 static void trusty_cpu_suspend(uint32_t off)
 {
 	struct smc_args ret;
@@ -395,7 +440,7 @@ static void trusty_cpu_on_finish_handler(u_register_t max_off_lvl)
 	struct trusty_cpu_ctx *ctx = get_trusty_ctx();
 
 	if (ctx->saved_sp == NULL) {
-		(void)trusty_init();
+		(void)trusty_cpu_init();
 	} else {
 		trusty_cpu_resume(max_off_lvl);
 	}
@@ -426,20 +471,6 @@ static const spd_pm_ops_t trusty_pm = {
 	.svc_on_finish = trusty_cpu_on_finish_handler,
 	.svc_suspend_finish = trusty_cpu_suspend_finish_handler,
 };
-
-void plat_trusty_set_boot_args(aapcs64_params_t *args);
-
-#if !defined(TSP_SEC_MEM_SIZE) && defined(BL32_MEM_SIZE)
-#define TSP_SEC_MEM_SIZE BL32_MEM_SIZE
-#endif
-
-#ifdef TSP_SEC_MEM_SIZE
-#pragma weak plat_trusty_set_boot_args
-void plat_trusty_set_boot_args(aapcs64_params_t *args)
-{
-	args->arg0 = TSP_SEC_MEM_SIZE;
-}
-#endif
 
 static int32_t trusty_setup(void)
 {
@@ -500,7 +531,6 @@ static int32_t trusty_setup(void)
 					    DAIF_IRQ_BIT |
 					    DAIF_ABT_BIT);
 	(void)memset(&ep_info->args, 0, sizeof(ep_info->args));
-	plat_trusty_set_boot_args(&ep_info->args);
 
 	/* register init handler */
 	bl31_register_bl32_init(trusty_init);
