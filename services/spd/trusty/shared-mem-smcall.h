@@ -101,6 +101,8 @@ STATIC_ASSERT(sizeof(struct ffa_comp_mrd) == 16);
  *     Outer Shareable. Combine with FFA_MEM_ATTR_NORMAL_MEMORY_*.
  * * @FFA_MEM_ATTR_INNER_SHAREABLE
  *     Inner Shareable. Combine with FFA_MEM_ATTR_NORMAL_MEMORY_*.
+ * * @FFA_MEM_ATTR_NONSECURE
+ *     Set on retrieve if memory is nonsecure and client requested it be set.
  */
 typedef uint8_t ffa_mem_attr8_t;
 #define FFA_MEM_ATTR_DEVICE_NGNRNE ((1U << 4) | (0x0U << 2))
@@ -112,6 +114,7 @@ typedef uint8_t ffa_mem_attr8_t;
 #define FFA_MEM_ATTR_NON_SHAREABLE (0x0U << 0)
 #define FFA_MEM_ATTR_OUTER_SHAREABLE (0x2U << 0)
 #define FFA_MEM_ATTR_INNER_SHAREABLE (0x3U << 0)
+#define FFA_MEM_ATTR_NONSECURE (1U << 6)
 
 /**
  * typedef ffa_mem_perm8_t - Memory access permissions
@@ -268,6 +271,8 @@ STATIC_ASSERT(sizeof(struct ffa_mem_relinquish_descriptor) == 16);
  *     For RXTX_MAP: min buffer size and alignment boundary is 16K.
  * * @FFA_FEATURES2_MEM_DYNAMIC_BUFFER
  *     Supports custom buffers for memory transactions.
+ * * @FFA_FEATURES2_MEM_RETRIEVE_REQ_NS_BIT
+ *     Supports setting the NS bit on retrieved descriptors.
  *
  * For all other bits and commands: must be 0.
  */
@@ -277,6 +282,7 @@ typedef uint32_t ffa_features2_t;
 #define FFA_FEATURES2_RXTX_MAP_BUF_SIZE_64K 0x1U
 #define FFA_FEATURES2_RXTX_MAP_BUF_SIZE_16K 0x2U
 #define FFA_FEATURES2_MEM_DYNAMIC_BUFFER 0x1U
+#define FFA_FEATURES2_MEM_RETRIEVE_REQ_NS_BIT 0x2U
 
 /**
  * typedef ffa_features3_t - FFA_FEATURES values returned in w3
