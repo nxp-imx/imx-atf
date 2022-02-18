@@ -730,6 +730,9 @@ subsections:
           - title: QSPI
             scope: nxp-qspi
 
+          - title: NXP Crypto
+            scope: nxp-crypto
+
       - title: Renesas
         scope: renesas-drivers
 
