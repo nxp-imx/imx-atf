@@ -391,3 +391,11 @@ unsigned int plat_get_syscnt_freq2(void)
 
 	return counter_base_frequency;
 }
+
+/*
+ * This function sets up DTB address to be passed to next boot stage
+ */
+void plat_set_dt_address(entry_point_info_t *image_info)
+{
+	image_info->args.arg3 = BL32_FDT_OVERLAY_ADDR;
+}
