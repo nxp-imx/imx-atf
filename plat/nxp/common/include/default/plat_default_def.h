@@ -187,6 +187,4 @@
 #define BL32_IRQ_SEC_PHY_TIMER	29
 #endif
 
-#define BL32_FDT_OVERLAY_ADDR	0xa0000000
-
 #endif	/*	__PLAT_DEFAULT_DEF_H__	*/
