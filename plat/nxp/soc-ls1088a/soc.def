@@ -26,7 +26,6 @@ TZC_ID			:=	TZC400
 CONSOLE			:=	NS16550
 
 # Platform ERRATUM to be enabled
-ERRATA_SOC_A008850	:=	1
 
 # ARM Erratum
 ERRATA_A53_855873	:=	1
