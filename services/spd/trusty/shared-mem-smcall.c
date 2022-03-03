@@ -93,6 +93,11 @@ struct trusty_shmem_client_state {
 	bool use_ns_bit;
 };
 
+/*
+ * This is given its own name so that it can be pulled out of .bss by
+ * a linker script and put in a different section if desired.
+ */
+__section(".bss.trusty.shmem.objs_data")
 __aligned(8) static uint8_t
 	trusty_shmem_objs_data[TRUSTY_SHARED_MEMORY_OBJ_SIZE];
 static struct trusty_shmem_obj_state trusty_shmem_obj_state = {
