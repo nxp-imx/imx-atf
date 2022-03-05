@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <trusty/plat/boot_args.h>
+
 #include <assert.h>
 #include <inttypes.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
@@ -390,8 +392,6 @@ static int32_t trusty_cpu_init(void)
 
 	return 1;
 }
-
-void plat_trusty_set_boot_args(aapcs64_params_t *args);
 
 #if !defined(TSP_SEC_MEM_SIZE) && defined(BL32_MEM_SIZE)
 #define TSP_SEC_MEM_SIZE BL32_MEM_SIZE
