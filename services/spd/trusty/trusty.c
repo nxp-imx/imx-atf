@@ -22,12 +22,11 @@
 #include <lib/smccc.h>
 #include <plat/common/platform.h>
 #include <tools_share/uuid.h>
+#include <trusty/smcall.h>
+#include <trusty/sm_err.h>
 #if defined(PLAT_imx8mq) || defined(PLAT_imx8mm) || defined(PLAT_imx8mn) ||defined(PLAT_imx8mp)
 #include <drivers/arm/tzc380.h>
 #endif
-
-#include "sm_err.h"
-#include "smcall.h"
 
 /* Trusty UID: RFC-4122 compliant UUID version 4 */
 DEFINE_SVC_UUID2(trusty_uuid,
