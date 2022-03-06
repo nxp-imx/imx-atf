@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include "smcall.h"
+#include <trusty/smcall.h>
 
 #define	SMC_ENTITY_PLATFORM_MONITOR	61
 
