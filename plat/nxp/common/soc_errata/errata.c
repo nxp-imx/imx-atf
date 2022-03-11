@@ -19,6 +19,12 @@ static void erratum_a050426(void)
 {
 	uint32_t i, val3, val4;
 
+	/* Part of this Errata is implemented in RCW and SCRATCHRW5
+	 * register is updated to hold Errata number.
+	 * Validate whether RCW has already included required changes */
+	if (mmio_read_32(0x01e00210) != 0x00050426)
+	        ERROR("%s: Invalid RCW : ERR050426 not implemented\n", __func__);
+
 	/* Enable BIST to access internal memory locations */
 	val3 = mmio_read_32(0x700117E60);
 	mmio_write_32(0x700117E60, (val3 | 0x80000001));
