@@ -153,6 +153,8 @@
 
 #define SNVS_LPCR			U(0x38)
 #define SNVS_LPCR_SRTC_ENV		BIT(0)
+#define SNVS_LPCR_LPTA_EN		BIT(1)
+#define SNVS_LPCR_LPWUI_EN		BIT(3)
 #define SNVS_LPCR_DP_EN			BIT(5)
 #define SNVS_LPCR_TOP			BIT(6)
 
