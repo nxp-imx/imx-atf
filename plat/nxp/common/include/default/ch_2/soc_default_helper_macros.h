@@ -50,6 +50,7 @@
 #endif
 
 #ifdef NXP_RCPM_ADDR
+#define NXP_DCSR_RCPM2_ADDR		(NXP_DCSR_ADDR + 0x170000)
 /* RCPM Register Offsets */
 #define RCPM_PCPH20SETR_OFFSET		0x0D4
 #define RCPM_PCPH20CLRR_OFFSET		0x0D8
