@@ -203,7 +203,7 @@ void __dead2 imx_system_reset(void)
 void __dead2 imx_system_off(void)
 {
 	mmio_write_32(IMX_SNVS_BASE + SNVS_LPCR, SNVS_LPCR_SRTC_ENV |
-			SNVS_LPCR_DP_EN | SNVS_LPCR_TOP);
+			SNVS_LPCR_DP_EN | SNVS_LPCR_TOP | SNVS_LPCR_LPTA_EN | SNVS_LPCR_LPWUI_EN);
 
 	while (1)
 		;
