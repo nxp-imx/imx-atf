@@ -22,19 +22,36 @@
 #define PLATFORM_CLUSTER0_CORE_COUNT	U(4)
 #define PLATFORM_CLUSTER1_CORE_COUNT	U(0)
 
+#define IMX_PWR_LVL0			MPIDR_AFFLVL0
 #define PWR_DOMAIN_AT_MAX_LVL           U(1)
 #define PLAT_MAX_PWR_LVL                U(2)
 #define PLAT_MAX_OFF_STATE              U(2)
 #define PLAT_MAX_RET_STATE              U(1)
 
+#define PLAT_MU_SR_OFF			0x20
+#define PLAT_MU_COLD_BOOT_FLG_MSK	0x40000000
+#define PLAT_BOOT_MU_BASE		0x5D1B0000
+
 #define BL31_BASE			0x80000000
 #define BL31_LIMIT			0x80020000
+
+#define OCRAM_BASE		0x100000
+#define OCRAM_ALIAS_SIZE 0x18000 /* The lower 96KB is in OCRAM alias from 0x0 */
+
+#define BL32_SHM_SIZE			0x00400000
+#ifdef SPD_trusty
+#define BL32_LIMIT			(BL32_BASE + BL32_SIZE)
+#else
+#define BL32_LIMIT			(BL32_BASE + BL32_SIZE - BL32_SHM_SIZE)
+#endif
+#define BL32_FDT_OVERLAY_ADDR		0x9d000000
+
 
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 32)
 #define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 32)
 
 #define MAX_XLAT_TABLES			8
-#define MAX_MMAP_REGIONS		8
+#define MAX_MMAP_REGIONS		9
 
 #define PLAT_GICD_BASE			0x51a00000
 #define PLAT_GICR_BASE			0x51b00000
@@ -63,6 +80,14 @@
 
 /* non-secure u-boot base */
 #define PLAT_NS_IMAGE_OFFSET		0x80020000
+
+/* enable it to make debug message to SC console */
+#define SC_CONSOLE			0
+
+#ifdef SPD_trusty
+#define DEBUG_CONSOLE_A35		1
+#else
 #define DEBUG_CONSOLE_A35		DEBUG_CONSOLE
+#endif
 
 #endif /* PLATFORM_DEF_H */

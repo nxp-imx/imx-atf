@@ -9,21 +9,49 @@
 #include <arch.h>
 #include <arch_helpers.h>
 #include <common/debug.h>
+#include <common/runtime_svc.h>
 #include <lib/mmio.h>
 #include <lib/psci/psci.h>
+#include <drivers/delay_timer.h>
+#include <lib/libc/errno.h>
 
 #include <gpc.h>
-#include <imx8m_psci.h>
+#include <imx_sip_svc.h>
 #include <plat_imx8.h>
+#include <imx_rdc.h>
 
 static uint32_t gpc_imr_offset[] = { IMR1_CORE0_A53, IMR1_CORE1_A53, IMR1_CORE2_A53, IMR1_CORE3_A53, };
 
 DEFINE_BAKERY_LOCK(gpc_lock);
 
+#define FSL_SIP_CONFIG_GPC_PM_DOMAIN		0x03
+
+#define M4_LPA_ACTIVE	0x5555
+#define DSP_LPA_ACTIVE	0xD
+#define	DSP_LPA_DRAM_ACTIVE 0x1D
+#define M4_LPA_IDLE	0x0
+
+struct plat_gic_ctx imx_gicv3_ctx;
+
 #pragma weak imx_set_cpu_pwr_off
 #pragma weak imx_set_cpu_pwr_on
 #pragma weak imx_set_cpu_lpm
 #pragma weak imx_set_cluster_powerdown
+
+bool imx_m4_lpa_active(void)
+{
+	uint32_t lpa_status;
+
+	lpa_status = mmio_read_32(IMX_SRC_BASE + LPA_STATUS);
+
+	return (lpa_status == M4_LPA_ACTIVE || lpa_status == DSP_LPA_ACTIVE ||
+		lpa_status == DSP_LPA_DRAM_ACTIVE);
+}
+
+bool imx_is_m4_enabled(void)
+{
+	return !(mmio_read_32(IMX_M4_STATUS) & IMX_M4_ENABLED_MASK);
+}
 
 void imx_set_cpu_secure_entry(unsigned int core_id, uintptr_t sec_entrypoint)
 {
@@ -176,6 +204,7 @@ static unsigned int gicd_read_isenabler(uintptr_t base, unsigned int id)
 	return mmio_read_32(base + GICD_ISENABLER + (n << 2));
 }
 
+#pragma weak imx_set_sys_wakeup
 /*
  * gic's clock will be gated in system suspend, so gic has no ability to
  * to wakeup the system, we need to config the imr based on the irq
@@ -204,36 +233,41 @@ void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
 		mmio_write_32(IMX_GPC_BASE + gpc_imr_offset[last_core] + i * 4,
 			      irq_mask);
 	}
+
+	/* enable the MU wakeup */
+	if (imx_is_m4_enabled())
+		mmio_clrbits_32(IMX_GPC_BASE + gpc_imr_offset[last_core] + 0x8, BIT(24));
 }
 
-#pragma weak imx_noc_slot_config
-/*
- * this function only need to be override by platform
- * that support noc power down, for example: imx8mm.
- *  otherwize, keep it empty.
- */
 void imx_noc_slot_config(bool pdn)
 {
-
+	if (pdn) {
+		mmio_setbits_32(IMX_GPC_BASE + SLTx_CFG(1), NOC_PDN_SLT_CTRL);
+		mmio_setbits_32(IMX_GPC_BASE + SLTx_CFG(2), NOC_PUP_SLT_CTRL);
+		/* clear a53's PDN ack, use NOC's PDN ack */
+		mmio_clrsetbits_32(IMX_GPC_BASE + PGC_ACK_SEL_A53, A53_PLAT_PDN_ACK, NOC_PGC_PDN_ACK);
+		mmio_setbits_32(IMX_GPC_BASE + NOC_PGC_PCR, 0x1);
+	} else {
+		mmio_clrbits_32(IMX_GPC_BASE + SLTx_CFG(1), NOC_PDN_SLT_CTRL);
+		mmio_clrbits_32(IMX_GPC_BASE + SLTx_CFG(2), NOC_PUP_SLT_CTRL);
+		mmio_write_32(IMX_GPC_BASE + PGC_ACK_SEL_A53, A53_DUMMY_PUP_ACK | A53_DUMMY_PDN_ACK);
+		mmio_clrbits_32(IMX_GPC_BASE + NOC_PGC_PCR, 0x1);
+	}
 }
 
 /* this is common for all imx8m soc */
 void imx_set_sys_lpm(unsigned int last_core, bool retention)
 {
-	uint32_t val;
-
-	val = mmio_read_32(IMX_GPC_BASE + SLPCR);
-	val &= ~(SLPCR_EN_DSM | SLPCR_VSTBY | SLPCR_SBYOS |
-		 SLPCR_BYPASS_PMIC_READY | SLPCR_A53_FASTWUP_STOP_MODE);
-
 	if (retention)
-		val |= (SLPCR_EN_DSM | SLPCR_VSTBY | SLPCR_SBYOS |
-			SLPCR_BYPASS_PMIC_READY | SLPCR_A53_FASTWUP_STOP_MODE);
+		mmio_clrsetbits_32(IMX_GPC_BASE + SLPCR, SLPCR_A53_FASTWUP_STOP_MODE,
+			SLPCR_EN_DSM | SLPCR_VSTBY | SLPCR_SBYOS | SLPCR_BYPASS_PMIC_READY);
+	else
+		mmio_clrsetbits_32(IMX_GPC_BASE + SLPCR, SLPCR_EN_DSM | SLPCR_VSTBY |
+			 SLPCR_SBYOS | SLPCR_BYPASS_PMIC_READY, SLPCR_A53_FASTWUP_STOP_MODE);
 
-	mmio_write_32(IMX_GPC_BASE + SLPCR, val);
-
-	/* config the noc power down */
-	imx_noc_slot_config(retention);
+	/* mask M4 DSM trigger if M4 is NOT enabled */
+	if (!imx_is_m4_enabled())
+		mmio_setbits_32(IMX_GPC_BASE + LPCR_M4, BIT(31));
 
 	/* config wakeup irqs' mask in gpc */
 	imx_set_sys_wakeup(last_core, retention);
@@ -249,4 +283,141 @@ void imx_clear_rbc_count(void)
 {
 	mmio_clrbits_32(IMX_GPC_BASE + SLPCR, SLPCR_RBC_EN |
 		(0x3f << SLPCR_RBC_COUNT_SHIFT));
+}
+
+#define MAX_PLL_NUM	10
+
+struct pll_override pll[MAX_PLL_NUM] = {
+	{.reg = 0x0, .override_mask = (1 << 12) | (1 << 8), },
+	{.reg = 0x14, .override_mask = (1 << 12) | (1 << 8), },
+	{.reg = 0x28, .override_mask = (1 << 12) | (1 << 8), },
+	{.reg = 0x50, .override_mask = (1 << 12) | (1 << 8), },
+	{.reg = 0x64, .override_mask = (1 << 10) | (1 << 8), },
+	{.reg = 0x74, .override_mask = (1 << 10) | (1 << 8), },
+	{.reg = 0x84, .override_mask = (1 << 10) | (1 << 8), },
+	{.reg = 0x94, .override_mask = 0x5555500, },
+	{.reg = 0x104, .override_mask = 0x5555500, },
+	{.reg = 0x114, .override_mask = 0x500, },
+};
+
+#define PLL_BYPASS	BIT(4)
+
+#pragma weak imx_anamix_override
+void imx_anamix_override(bool enter)
+{
+	int i;
+
+	/*
+	 * bypass all the plls & enable the override bit before
+	 * entering DSM mode.
+	 */
+	for (i = 0; i < MAX_PLL_NUM; i++) {
+		if (enter) {
+			mmio_setbits_32(IMX_ANAMIX_BASE + pll[i].reg, PLL_BYPASS);
+			mmio_setbits_32(IMX_ANAMIX_BASE + pll[i].reg, pll[i].override_mask);
+		} else {
+			mmio_clrbits_32(IMX_ANAMIX_BASE + pll[i].reg, PLL_BYPASS);
+			mmio_clrbits_32(IMX_ANAMIX_BASE + pll[i].reg, pll[i].override_mask);
+		}
+	}
+}
+
+#pragma weak imx_gpc_handler
+int imx_gpc_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2, u_register_t x3)
+{
+	switch(x1) {
+	case FSL_SIP_CONFIG_GPC_PM_DOMAIN:
+		imx_gpc_pm_domain_enable(x2, x3);
+		break;
+	default:
+		return SMC_UNK;
+	}
+
+	return 0;
+}
+
+#if defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
+#define MCU_RDC_MAGIC "mcu_rdc"
+#endif
+
+#pragma weak imx_src_handler
+/* imx8mq/imx8mm need to verrride below function */
+int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
+		    u_register_t x3, void *handle)
+{
+	uint32_t val;
+	uint64_t timeout;
+	int ret1 = 0, ret2 = 0;
+	uint32_t offset;
+#if defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
+	uint64_t len = (strlen(MCU_RDC_MAGIC) + 3) & ~(3);
+#endif
+
+	switch(x1) {
+	case IMX_SIP_SRC_M4_START:
+		/* Setup RDC config for MCU */
+#if defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
+		if (!memcmp((void *)IMX8M_MCU_RDC_START_CONFIG_ADDR, MCU_RDC_MAGIC, strlen(MCU_RDC_MAGIC)))
+			imx_rdc_init((struct imx_rdc_cfg *)(IMX8M_MCU_RDC_START_CONFIG_ADDR + len));
+#endif
+		mmio_clrbits_32(IMX_IOMUX_GPR_BASE + 0x58, 0x1);
+		break;
+	case IMX_SIP_SRC_M4_STARTED:
+		val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x58);
+		return !(val & 0x1);
+	case IMX_SIP_SRC_M4_STOP:
+		/*
+		 * Safe stop
+		 *    If M4 already in WFI,  perform below steps.
+		 * a)	Set [0x303A_002C].0=0   [ request SLEEPHOLDREQn ]
+		 * b)	Wait  [0x303A_00EC].1 = 0  [ wait SLEEPHOLDACKn ]
+		 * c)	Set  GPR.CPUWAIT=1
+		 * d)	Set [0x303A_002C].0=1  [ de-assert SLEEPHOLDREQn ]
+		 * e)	Set SRC_M7_RCR[3:0] = 0xE0   [ reset M7 core/plat ]
+		 * f)	Wait SRC_M7_RCR[3:0] = 0x8
+		 * The following steps move to start part.
+		 * g/h is actually no needed here.
+		 * g)	Init TCM or DDR
+		 * h)	Set GPR.INITVTOR
+		 * i)	Set GPR.CPUWAIT=0,  M7 starting running
+		 */
+		/* Restore rdc config for mcu */
+#if defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
+		if (!memcmp((void *)IMX8M_MCU_RDC_START_CONFIG_ADDR, MCU_RDC_MAGIC, strlen(MCU_RDC_MAGIC)))
+			imx_rdc_init((struct imx_rdc_cfg *)(IMX8M_MCU_RDC_STOP_CONFIG_ADDR + len));
+#endif
+
+		offset = LPS_CPU1;
+		val = mmio_read_32(IMX_GPC_BASE + offset);
+		/* Not in stop/wait mode */
+		if (!(val & (0x3 << 24))) {
+			mmio_clrbits_32(IMX_GPC_BASE + 0x2C, 0x1);
+
+			timeout = timeout_init_us(10000);
+			while((mmio_read_32(IMX_GPC_BASE + offset) & 0x2)) {
+				if (timeout_elapsed(timeout)) {
+					ret1 = -ETIMEDOUT;
+					break;
+				}
+			}
+		}
+		mmio_setbits_32(IMX_IOMUX_GPR_BASE + 0x58, 0x1);
+		mmio_setbits_32(IMX_GPC_BASE + 0x2C, 0x1);
+		mmio_setbits_32(IMX_SRC_BASE + 0xC, 0xE);
+		timeout = timeout_init_us(10000);
+		while ((mmio_read_32(IMX_SRC_BASE + 0xC) & 0xF) != 8) {
+			if (timeout_elapsed(timeout)) {
+				ret2 = -ETIMEDOUT;
+				break;
+			}
+		}
+		SMC_SET_GP(handle, CTX_GPREG_X1, ret1);
+		SMC_SET_GP(handle, CTX_GPREG_X2, ret2);
+		break;
+	default:
+		return SMC_UNK;
+
+	};
+
+	return 0;
 }

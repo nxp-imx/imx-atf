@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
+ * Copyright 2017-2019 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,8 +10,8 @@
  * Header file for the IPC implementation.
  */
 
-#ifndef SCI_IPC_H
-#define SCI_IPC_H
+#ifndef SC_IPC_H
+#define SC_IPC_H
 
 /* Includes */
 
@@ -60,7 +62,7 @@ void sc_ipc_read(sc_ipc_t ipc, void *data);
  *
  * This function will block if the outgoing buffer is full.
  */
-void sc_ipc_write(sc_ipc_t ipc, void *data);
+void sc_ipc_write(sc_ipc_t ipc, const void *data);
 
 extern sc_ipc_t ipc_handle;
 

@@ -6,6 +6,7 @@
 
 #include <arch.h>
 #include <common/tbbr/tbbr_img_def.h>
+#include <lib/utils_def.h>
 
 #define PLATFORM_LINKER_FORMAT		"elf64-littleaarch64"
 #define PLATFORM_LINKER_ARCH		aarch64
@@ -59,6 +60,8 @@
 #define PLAT_NS_IMAGE_OFFSET		U(0x40200000)
 #define PLAT_NS_IMAGE_SIZE		U(0x00200000)
 
+#define BL32_FDT_OVERLAY_ADDR		(PLAT_NS_IMAGE_OFFSET + 0x3000000)
+
 /* GICv3 base address */
 #define PLAT_GICD_BASE			U(0x38800000)
 #define PLAT_GICR_BASE			U(0x38880000)
@@ -83,7 +86,7 @@
 #define IMX_AIPSTZ4			U(0x32df0000)
 
 #define IMX_AIPS_BASE			U(0x30000000)
-#define IMX_AIPS_SIZE			U(0xC00000)
+#define IMX_AIPS_SIZE			U(0x3000000)
 #define IMX_GPV_BASE			U(0x32000000)
 #define IMX_GPV_SIZE			U(0x800000)
 #define IMX_AIPS1_BASE			U(0x30200000)
@@ -103,7 +106,17 @@
 #define IMX_DDRC_BASE			U(0x3d400000)
 #define IMX_DDRPHY_BASE			U(0x3c000000)
 #define IMX_DDR_IPS_BASE		U(0x3d000000)
+#define IMX_DDR_IPS_SIZE		U(0x1800000)
 #define IMX_ROM_BASE			U(0x0)
+#define IMX_ROM_SIZE			U(0x40000)
+#define IMX_VPUMIX_BASE			U(0x38330000)
+#define IMX_VPUMIX_SIZE			U(0x100000)
+#define IMX_NS_OCRAM_BASE		U(0x900000)
+#define IMX_NS_OCRAM_SIZE		U(0x20000)
+#define IMX_CAAM_RAM_BASE		U(0x100000)
+#define IMX_CAAM_RAM_SIZE		U(0x10000)
+#define IMX_DRAM_BASE			U(0x40000000)
+#define IMX_DRAM_SIZE			U(0xc0000000)
 
 #define GPV_BASE			U(0x32000000)
 #define GPV_SIZE			U(0x800000)
@@ -122,14 +135,23 @@
 
 #define SRC_A53RCR0			U(0x4)
 #define SRC_A53RCR1			U(0x8)
+#define SRC_M4RCR			U(0xc)
 #define SRC_OTG1PHY_SCR			U(0x20)
 #define SRC_OTG2PHY_SCR			U(0x24)
 #define SRC_GPR1_OFFSET			U(0x74)
 #define SRC_GPR10_OFFSET		U(0x98)
 #define SRC_GPR10_PERSIST_SECONDARY_BOOT	BIT(30)
 
+#define SRC_SCR_M4_ENABLE_MASK		BIT(3)
+#define SRC_SCR_M4C_NON_SCLR_RST_MASK  	BIT(0)
+#define IMX_M4_STATUS			(IMX_SRC_BASE + SRC_M4RCR)
+#define IMX_M4_ENABLED_MASK		SRC_SCR_M4C_NON_SCLR_RST_MASK
+#define LPA_STATUS			U(0x94)
+
 #define SNVS_LPCR			U(0x38)
 #define SNVS_LPCR_SRTC_ENV		BIT(0)
+#define SNVS_LPCR_LPTA_EN		BIT(1)
+#define SNVS_LPCR_LPWUI_EN		BIT(3)
 #define SNVS_LPCR_DP_EN			BIT(5)
 #define SNVS_LPCR_TOP			BIT(6)
 
@@ -138,12 +160,14 @@
 #define GPR_TZASC_EN_LOCK		BIT(16)
 
 #define ANAMIX_MISC_CTL			U(0x124)
+#define DRAM_PLL_CTRL			(IMX_ANAMIX_BASE + 0x50)
 
 #define MAX_CSU_NUM			U(64)
 
 #define OCRAM_S_BASE			U(0x00180000)
 #define OCRAM_S_SIZE			U(0x8000)
 #define OCRAM_S_LIMIT			(OCRAM_S_BASE + OCRAM_S_SIZE)
+#define SAVED_DRAM_TIMING_BASE		OCRAM_S_BASE
 
 #define COUNTER_FREQUENCY		8000000 /* 8MHz */
 

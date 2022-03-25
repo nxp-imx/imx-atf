@@ -10,6 +10,7 @@
 #include <arch_helpers.h>
 #include <common/debug.h>
 #include <common/interrupt_props.h>
+#include <drivers/arm/arm_gicv3_common.h>
 #include <drivers/arm/gic_common.h>
 
 #include "../common/gic_common_private.h"
@@ -26,6 +27,19 @@ void gicv3_rdistif_mark_core_awake(uintptr_t gicr_base)
 	 * only when WAKER_CA_BIT is 1.
 	 */
 	assert((gicr_read_waker(gicr_base) & WAKER_CA_BIT) != 0U);
+
+	/*
+	 * ProcessorSleep bit can ONLY be set to zero when
+	 * Quiescent bit and Sleep bit are both zero, so
+	 * need to make sure Quiescent bit and Sleep bit
+	 * are zero before clearing ProcessorSleep bit.
+	 */
+	if (gicr_read_waker(gicr_base) & WAKER_QSC_BIT) {
+		gicr_write_waker(gicr_base, gicr_read_waker(gicr_base) & ~WAKER_SL_BIT);
+		/* Wait till the WAKER_QSC_BIT changes to 0 */
+		while ((gicr_read_waker(gicr_base) & WAKER_QSC_BIT) != 0U)
+			;
+	}
 
 	/* Mark the connected core as awake */
 	gicr_write_waker(gicr_base, gicr_read_waker(gicr_base) & ~WAKER_PS_BIT);
@@ -248,6 +262,35 @@ unsigned int gicv3_secure_spis_config_props(uintptr_t gicd_base,
 	}
 
 	return ctlr_enable;
+}
+
+/*******************************************************************************
+ * Helper function to clear all SPI interrupts of a cluster
+ ******************************************************************************/
+void gicv3_clear_spi_cluster(uintptr_t gicd_base)
+{
+	unsigned int irq_num, num_ints;
+	unsigned long long cpu_aff, irq_aff;	/* the irouter affinity values */
+	unsigned int mpidr = read_mpidr();
+
+	num_ints = gicd_read_typer(gicd_base);
+	num_ints &= TYPER_IT_LINES_NO_MASK;
+	num_ints = (num_ints + 1) << 5;
+
+	cpu_aff = gicd_irouter_val_from_mpidr(mpidr, 0);
+
+	/* browse all SPIs */
+	for (irq_num = MIN_SPI_ID; irq_num < num_ints; irq_num++) {
+		irq_aff = gicd_read_irouter(gicd_base, irq_num);
+		if ((irq_aff & MPIDR_CLUSTER_MASK) == (cpu_aff & MPIDR_CLUSTER_MASK)) {
+			/* if affinity matches cluster, clear INT */
+			/* remove pending state */
+			gicd_set_icpendr(gicd_base, irq_num);
+			/* disable INT */
+			gicd_set_icenabler(gicd_base, irq_num);
+			while (gicd_read_ctlr(gicd_base) & GICD_CTLR_RWP_BIT);
+		}
+	}
 }
 
 /*******************************************************************************

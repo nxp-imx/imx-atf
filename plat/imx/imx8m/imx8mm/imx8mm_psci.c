@@ -9,7 +9,6 @@
 #include <arch.h>
 #include <arch_helpers.h>
 #include <common/debug.h>
-#include <lib/mmio.h>
 #include <lib/psci/psci.h>
 
 #include <gpc.h>

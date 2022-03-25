@@ -8,13 +8,188 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <arch_helpers.h>
 #include <common/debug.h>
+#include <common/runtime_svc.h>
+#include <drivers/delay_timer.h>
 #include <lib/mmio.h>
 #include <lib/psci/psci.h>
+#include <lib/spinlock.h>
 #include <platform_def.h>
-#include <services/std_svc.h>
+#include <plat/common/platform.h>
 
 #include <gpc.h>
+
+#define FSL_SIP_CONFIG_GPC_MASK		0x00
+#define FSL_SIP_CONFIG_GPC_UNMASK	0x01
+#define FSL_SIP_CONFIG_GPC_SET_WAKE	0x02
+#define FSL_SIP_CONFIG_GPC_PM_DOMAIN	0x03
+#define FSL_SIP_CONFIG_GPC_SET_AFF	0x04
+#define FSL_SIP_CONFIG_GPC_CORE_WAKE	0x05
+
+static uint32_t gpc_saved_imrs[16];
+static uint32_t gpc_wake_irqs[4];
+static uint32_t gpc_imr_offset[] = {
+	IMX_GPC_BASE + IMR1_CORE0_A53,
+	IMX_GPC_BASE + IMR1_CORE1_A53,
+	IMX_GPC_BASE + IMR1_CORE2_A53,
+	IMX_GPC_BASE + IMR1_CORE3_A53,
+	IMX_GPC_BASE + IMR1_CORE0_M4,
+};
+
+spinlock_t gpc_imr_lock[4];
+
+static bool is_pcie1_power_down = true;
+static uint32_t gpc_pu_m_core_offset[11] = {
+	0xc00, 0xc40, 0xc80, 0xcc0,
+	0xdc0, 0xe00, 0xe40, 0xe80,
+	0xec0, 0xf00, 0xf40,
+};
+
+static void gpc_imr_core_spin_lock(unsigned int core_id)
+{
+	spin_lock(&gpc_imr_lock[core_id]);
+}
+
+static void gpc_imr_core_spin_unlock(unsigned int core_id)
+{
+	spin_unlock(&gpc_imr_lock[core_id]);
+}
+
+static void gpc_save_imr_lpm(unsigned int core_id, unsigned int imr_idx)
+{
+	uint32_t reg = gpc_imr_offset[core_id] + imr_idx * 4;
+
+	gpc_imr_core_spin_lock(core_id);
+
+	gpc_saved_imrs[core_id + imr_idx * 4] = mmio_read_32(reg);
+	mmio_write_32(reg, ~gpc_wake_irqs[imr_idx]);
+
+	gpc_imr_core_spin_unlock(core_id);
+}
+
+static void gpc_restore_imr_lpm(unsigned int core_id, unsigned int imr_idx)
+{
+	uint32_t reg = gpc_imr_offset[core_id] + imr_idx * 4;
+	uint32_t val = gpc_saved_imrs[core_id + imr_idx * 4];
+
+	gpc_imr_core_spin_lock(core_id);
+
+	mmio_write_32(reg, val);
+
+	gpc_imr_core_spin_unlock(core_id);
+}
+
+/*
+ * On i.MX8MQ, only in system suspend mode, the A53 cluster can
+ * enter LPM mode and shutdown the A53 PLAT power domain. So LPM
+ * wakeup only used for system suspend. when system enter suspend,
+ * any A53 CORE can be the last core to suspend the system, But
+ * the LPM wakeup can only use the C0's IMR to wakeup A53 cluster
+ * from LPM, so save C0's IMRs before suspend, restore back after
+ * resume.
+ */
+void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
+{
+	unsigned int imr, core;
+
+	if (pdn)
+		for (imr = 0; imr < 4; imr++)
+			for (core = 0; core < 4; core++)
+				gpc_save_imr_lpm(core, imr);
+	else
+		for (imr = 0; imr < 4; imr++)
+			for (core = 0; core < 4; core++)
+				gpc_restore_imr_lpm(core, imr);
+}
+
+static void imx_gpc_hwirq_mask(unsigned int hwirq)
+{
+	uintptr_t reg;
+	unsigned int val;
+
+	gpc_imr_core_spin_lock(0);
+	reg = gpc_imr_offset[0] + (hwirq / 32) * 4;
+	val = mmio_read_32(reg);
+	val |= 1 << hwirq % 32;
+	mmio_write_32(reg, val);
+	gpc_imr_core_spin_unlock(0);
+}
+
+static void imx_gpc_hwirq_unmask(unsigned int hwirq)
+{
+	uintptr_t reg;
+	unsigned int val;
+
+	gpc_imr_core_spin_lock(0);
+	reg = gpc_imr_offset[0] + (hwirq / 32) * 4;
+	val = mmio_read_32(reg);
+	val &= ~(1 << hwirq % 32);
+	mmio_write_32(reg, val);
+	gpc_imr_core_spin_unlock(0);
+}
+
+static void imx_gpc_set_wake(uint32_t hwirq, unsigned int on)
+{
+	uint32_t mask, idx;
+
+	mask = 1 << hwirq % 32;
+	idx = hwirq / 32;
+	gpc_wake_irqs[idx] = on ? gpc_wake_irqs[idx] | mask :
+				 gpc_wake_irqs[idx] & ~mask;
+}
+
+static void imx_gpc_mask_irq0(uint32_t core_id, uint32_t mask)
+{
+	gpc_imr_core_spin_lock(core_id);
+	if (mask)
+		mmio_setbits_32(gpc_imr_offset[core_id], 1);
+	else
+		mmio_clrbits_32(gpc_imr_offset[core_id], 1);
+	dsb();
+	gpc_imr_core_spin_unlock(core_id);
+}
+
+void imx_gpc_core_wake(uint32_t cpumask)
+{
+	for (int i = 0; i < 4; i++)
+		if (cpumask & (1 << i))
+			imx_gpc_mask_irq0(i, false);
+}
+
+void imx_gpc_set_a53_core_awake(uint32_t core_id)
+{
+	imx_gpc_mask_irq0(core_id, true);
+}
+
+static void imx_gpc_set_affinity(uint32_t hwirq, unsigned cpu_idx)
+{
+	uintptr_t reg;
+	unsigned int val;
+
+	/*
+	 * using the mask/unmask bit as affinity function.unmask the
+	 * IMR bit to enable IRQ wakeup for this core.
+	 */
+	gpc_imr_core_spin_lock(cpu_idx);
+	reg = gpc_imr_offset[cpu_idx] + (hwirq / 32) * 4;
+	val = mmio_read_32(reg);
+	val &= ~(1 << hwirq % 32);
+	mmio_write_32(reg, val);
+	gpc_imr_core_spin_unlock(cpu_idx);
+
+	/* clear affinity of other core */
+	for (int i = 0; i < 4; i++) {
+		if (cpu_idx != i) {
+			gpc_imr_core_spin_lock(i);
+			reg = gpc_imr_offset[i] + (hwirq / 32) * 4;
+			val = mmio_read_32(reg);
+			val |= (1 << hwirq % 32);
+			mmio_write_32(reg, val);
+			gpc_imr_core_spin_unlock(i);
+		}
+	}
+}
 
 /* use wfi power down the core */
 void imx_set_cpu_pwr_off(unsigned int core_id)
@@ -64,7 +239,7 @@ void imx_pup_pdn_slot_config(int last_core, bool pdn)
 		mmio_setbits_32(IMX_GPC_BASE + SLTx_CFG(2), SLT_COREx_PUP(last_core));
 		/* ACK setting: PLAT ACK for PDN, CORE ACK for PUP */
 		mmio_clrsetbits_32(IMX_GPC_BASE + PGC_ACK_SEL_A53, 0xFFFFFFFF,
-			A53_PLAT_PDN_ACK | A53_PLAT_PUP_ACK);
+			A53_PLAT_PDN_ACK | SLT_COREx_PUP_ACK(last_core));
 	} else {
 		mmio_clrbits_32(IMX_GPC_BASE + SLTx_CFG(0), 0xFFFFFFFF);
 		mmio_clrbits_32(IMX_GPC_BASE + SLTx_CFG(1), 0xFFFFFFFF);
@@ -123,26 +298,148 @@ void imx_set_cluster_powerdown(unsigned int last_core, uint8_t power_state)
 	}
 }
 
+#define MAX_PLL_NUM	12
+
+struct pll_override imx8mq_pll[MAX_PLL_NUM] = {
+	{.reg = 0x0, .override_mask = 0x140000, },
+	{.reg = 0x8, .override_mask = 0x140000, },
+	{.reg = 0x10, .override_mask = 0x140000, },
+	{.reg = 0x18, .override_mask = 0x140000, },
+	{.reg = 0x20, .override_mask = 0x140000, },
+	{.reg = 0x28, .override_mask = 0x140000, },
+	{.reg = 0x30, .override_mask = 0x1555540, },
+	{.reg = 0x3c, .override_mask = 0x1555540, },
+	{.reg = 0x48, .override_mask = 0x140, },
+	{.reg = 0x54, .override_mask = 0x140, },
+	{.reg = 0x60, .override_mask = 0x140, },
+	{.reg = 0x70, .override_mask = 0xa, },
+};
+
+void imx_anamix_override(bool enter)
+{
+	int i;
+
+	/* enable the pll override bit before entering DSM mode */
+	for (i = 0; i < MAX_PLL_NUM; i++) {
+		if (enter)
+			mmio_setbits_32(IMX_ANAMIX_BASE + imx8mq_pll[i].reg, imx8mq_pll[i].override_mask);
+		else
+			mmio_clrbits_32(IMX_ANAMIX_BASE + imx8mq_pll[i].reg, imx8mq_pll[i].override_mask);
+	}
+}
+
+void imx_gpc_set_m_core_pgc(unsigned int offset, bool pdn)
+{
+	uintptr_t val;
+
+	val = mmio_read_32(IMX_GPC_BASE + offset);
+	val &= BIT(0);
+
+	if(pdn)
+		val |= BIT(0);
+	mmio_write_32(IMX_GPC_BASE + offset, val);
+}
+
+void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
+{
+	uint32_t val;
+	uintptr_t reg;
+
+	/*
+	 * PCIE1 and PCIE2 share the same reset signal, if we power down
+	 * PCIE2, PCIE1 will be hold in reset too.
+	 * 1. when we want to power up PCIE1, the PCIE2 power domain also
+	 *    need to be power on;
+	 * 2. when we want to power down PCIE2 power domain, we should make
+	 *    sure PCIE1 is already power down.
+	*/
+	if (domain_id == 1 && !on) {
+		is_pcie1_power_down = true;
+	} else if (domain_id == 1 && on) {
+		imx_gpc_pm_domain_enable(10, true);
+		is_pcie1_power_down = false;
+	}
+
+	if (domain_id == 10 && !on && !is_pcie1_power_down)
+		return;
+
+	/* need to handle GPC_PU_PWRHSK */
+	/* GPU */
+	if (domain_id == 4 && !on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) & ~0x40);
+	if (domain_id == 4 && on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) | 0x40);
+	/* VPU */
+	if (domain_id == 5 && !on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) & ~0x20);
+	if (domain_id == 5 && on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) | 0x20);
+	/* DISPLAY */
+	if (domain_id == 7 && !on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) & ~0x10);
+	if (domain_id == 7 && on)
+		mmio_write_32(0x303a01fc, mmio_read_32(0x303a01fc) | 0x10);
+
+	imx_gpc_set_m_core_pgc(gpc_pu_m_core_offset[domain_id], true);
+
+	reg = IMX_GPC_BASE + (on ? 0xf8 : 0x104);
+	val = 1 << (domain_id > 3 ? (domain_id + 3) : domain_id);
+	mmio_write_32(reg, val);
+	while(mmio_read_32(reg) & val)
+		;
+	imx_gpc_set_m_core_pgc(gpc_pu_m_core_offset[domain_id], false);
+}
+
+int imx_gpc_handler(uint32_t smc_fid,
+			  u_register_t x1,
+			  u_register_t x2,
+			  u_register_t x3)
+{
+	switch(x1) {
+	case FSL_SIP_CONFIG_GPC_PM_DOMAIN:
+		imx_gpc_pm_domain_enable(x2, x3);
+		break;
+	case FSL_SIP_CONFIG_GPC_CORE_WAKE:
+		imx_gpc_core_wake(x2);
+		break;
+	case FSL_SIP_CONFIG_GPC_SET_WAKE:
+		imx_gpc_set_wake(x2, x3);
+		break;
+	case FSL_SIP_CONFIG_GPC_MASK:
+		imx_gpc_hwirq_mask(x2);
+		break;
+	case FSL_SIP_CONFIG_GPC_UNMASK:
+		imx_gpc_hwirq_unmask(x2);
+		break;
+	case FSL_SIP_CONFIG_GPC_SET_AFF:
+		imx_gpc_set_affinity(x2, x3);
+		break;
+	default:
+		return SMC_UNK;
+	}
+
+	return 0;
+}
+
 void imx_gpc_init(void)
 {
 	uint32_t val;
-	int i;
+	int i, j;
+
 	/* mask all the interrupt by default */
-	for (i = 0; i < 4; i++) {
-		mmio_write_32(IMX_GPC_BASE + IMR1_CORE0_A53 + i * 4, ~0x0);
-		mmio_write_32(IMX_GPC_BASE + IMR1_CORE1_A53 + i * 4, ~0x0);
-		mmio_write_32(IMX_GPC_BASE + IMR1_CORE2_A53 + i * 4, ~0x0);
-		mmio_write_32(IMX_GPC_BASE + IMR1_CORE3_A53 + i * 4, ~0x0);
-		mmio_write_32(IMX_GPC_BASE + IMR1_CORE0_M4 + i * 4, ~0x0);
-	}
+	for (i = 0; i < 4; i++)
+		for (j = 0; j < 5; j++)
+			mmio_write_32(gpc_imr_offset[j] + i * 4, ~0x0);
+
 	/* Due to the hardware design requirement, need to make
 	 * sure GPR interrupt(#32) is unmasked during RUN mode to
 	 * avoid entering DSM mode by mistake.
 	 */
-	mmio_write_32(IMX_GPC_BASE + IMR1_CORE0_A53, 0xFFFFFFFE);
-	mmio_write_32(IMX_GPC_BASE + IMR1_CORE1_A53, 0xFFFFFFFE);
-	mmio_write_32(IMX_GPC_BASE + IMR1_CORE2_A53, 0xFFFFFFFE);
-	mmio_write_32(IMX_GPC_BASE + IMR1_CORE3_A53, 0xFFFFFFFE);
+	for (i = 0; i < 4; i++)
+		mmio_write_32(gpc_imr_offset[i], ~0x1);
+
+	/* leave the IOMUX_GPC bit 12 on for core wakeup */
+	mmio_setbits_32(IMX_IOMUX_GPR_BASE + 0x4, 1 << 12);
 
 	/* use external IRQs to wakeup C0~C3 from LPM */
 	val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
@@ -176,6 +473,12 @@ void imx_gpc_init(void)
 	mmio_clrbits_32(IMX_SRC_BASE + SRC_OTG1PHY_SCR, 0x1);
 	mmio_clrbits_32(IMX_SRC_BASE + SRC_OTG2PHY_SCR, 0x1);
 
-	/* enable all the power domain by default */
-	mmio_write_32(IMX_GPC_BASE + PU_PGC_UP_TRG, 0x3fcf);
+	/* for USB OTG, the limitation are:
+	 * 1. before system clock config, the IPG clock run at 12.5MHz, delay time
+	 *    should be longer than 82us.
+	 * 2. after system clock config, ipg clock run at 66.5MHz, delay time
+	 *    be longer that 15.3 us.
+	 *    Add 100us to make sure the USB OTG SRC is clear safely.
+	 */
+	udelay(100);
 }

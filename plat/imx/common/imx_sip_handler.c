@@ -13,15 +13,22 @@
 #include <common/debug.h>
 #include <common/runtime_svc.h>
 #include <imx_sip_svc.h>
+#include <lib/mmio.h>
 #include <lib/el3_runtime/context_mgmt.h>
 #include <lib/mmio.h>
 #include <sci/sci.h>
 
-#if defined(PLAT_imx8qm) || defined(PLAT_imx8qx)
+#if defined(PLAT_imx8qm) || defined(PLAT_imx8qx) || defined(PLAT_imx8dx) || defined(PLAT_imx8dxl)
 
 #ifdef PLAT_imx8qm
 const static int ap_cluster_index[PLATFORM_CLUSTER_COUNT] = {
+#if (defined COCKPIT_A53)
+	SC_R_A53,
+#elif (defined COCKPIT_A72)
+	SC_R_A72,
+#else
 	SC_R_A53, SC_R_A72,
+#endif
 };
 #endif
 
@@ -35,6 +42,20 @@ static int imx_srtc_set_time(uint32_t year_mon,
 		min_sec >> 16, min_sec & 0xffff);
 }
 
+static int imx_srtc_set_wdog_action(uint32_t x2)
+{
+	sc_rm_pt_t secure_part;
+	sc_err_t err;
+
+	err = sc_rm_get_partition(ipc_handle, &secure_part);
+	if (err)
+		return err;
+
+	err = sc_timer_set_wdog_action(ipc_handle, secure_part, x2);
+
+	return err;
+}
+
 int imx_srtc_handler(uint32_t smc_fid,
 		    void *handle,
 		    u_register_t x1,
@@ -43,11 +64,34 @@ int imx_srtc_handler(uint32_t smc_fid,
 		    u_register_t x4)
 {
 	int ret;
+	sc_timer_wdog_time_t timeout, max_timeout, remaining;
 
 	switch (x1) {
 	case IMX_SIP_SRTC_SET_TIME:
 		ret = imx_srtc_set_time(x2, x3, x4);
 		break;
+	case IMX_SIP_SRTC_START_WDOG:
+		ret = sc_timer_start_wdog(ipc_handle, !!x2);
+		break;
+	case IMX_SIP_SRTC_STOP_WDOG:
+		ret = sc_timer_stop_wdog(ipc_handle);
+		break;
+	case IMX_SIP_SRTC_SET_WDOG_ACT:
+		ret = imx_srtc_set_wdog_action(x2);
+		break;
+	case IMX_SIP_SRTC_PING_WDOG:
+		ret = sc_timer_ping_wdog(ipc_handle);
+		break;
+	case IMX_SIP_SRTC_SET_TIMEOUT_WDOG:
+		ret = sc_timer_set_wdog_timeout(ipc_handle, x2);
+		break;
+	case IMX_SIP_SRTC_SET_PRETIME_WDOG:
+		ret = sc_timer_set_wdog_pre_timeout(ipc_handle, x2);
+		break;
+	case IMX_SIP_SRTC_GET_WDOG_STAT:
+		ret = sc_timer_get_wdog_status(ipc_handle, &timeout,
+						&max_timeout, &remaining);
+		SMC_RET4(handle, ret, timeout, max_timeout, remaining);
 	default:
 		ret = SMC_UNK;
 	}
@@ -62,7 +106,7 @@ static void imx_cpufreq_set_target(uint32_t cluster_id, unsigned long freq)
 #ifdef PLAT_imx8qm
 	sc_pm_set_clock_rate(ipc_handle, ap_cluster_index[cluster_id], SC_PM_CLK_CPU, &rate);
 #endif
-#ifdef PLAT_imx8qx
+#if defined(PLAT_imx8qx) || defined(PLAT_imx8dx) || defined(PLAT_imx8dxl)
 	sc_pm_set_clock_rate(ipc_handle, SC_R_A35, SC_PM_CLK_CPU, &rate);
 #endif
 }
@@ -144,38 +188,24 @@ int imx_misc_set_temp_handler(uint32_t smc_fid,
 	return sc_misc_set_temp(ipc_handle, x1, x2, x3, x4);
 }
 
-#endif /* defined(PLAT_imx8qm) || defined(PLAT_imx8qx) */
-
-#if defined(PLAT_imx8mm) || defined(PLAT_imx8mq)
-int imx_src_handler(uint32_t smc_fid,
-		    u_register_t x1,
-		    u_register_t x2,
-		    u_register_t x3,
-		    void *handle)
+int imx_get_cpu_rev(uint32_t *cpu_id, uint32_t *cpu_rev)
 {
-	uint32_t val;
+	uint32_t id;
+	sc_err_t err;
 
-	switch (x1) {
-	case IMX_SIP_SRC_SET_SECONDARY_BOOT:
-		if (x2 != 0U) {
-			mmio_setbits_32(IMX_SRC_BASE + SRC_GPR10_OFFSET,
-					SRC_GPR10_PERSIST_SECONDARY_BOOT);
-		} else {
-			mmio_clrbits_32(IMX_SRC_BASE + SRC_GPR10_OFFSET,
-					SRC_GPR10_PERSIST_SECONDARY_BOOT);
-		}
-		break;
-	case IMX_SIP_SRC_IS_SECONDARY_BOOT:
-		val = mmio_read_32(IMX_SRC_BASE + SRC_GPR10_OFFSET);
-		return !!(val & SRC_GPR10_PERSIST_SECONDARY_BOOT);
-	default:
-		return SMC_UNK;
+	if (!cpu_id || !cpu_rev)
+		return -1;
 
-	};
+	err = sc_misc_get_control(ipc_handle, SC_R_SYSTEM, SC_C_ID, &id);
+	if (err != SC_ERR_NONE)
+		return err;
+
+	*cpu_rev = (id >> 5)  & 0xf;
+	*cpu_id = id & 0x1f;
 
 	return 0;
 }
-#endif /* defined(PLAT_imx8mm) || defined(PLAT_imx8mq) */
+#endif /* defined(PLAT_imx8qm) || defined(PLAT_imx8qx) || defined(PLAT_imx8dx) || defined(PLAT_imx8qm) || defined(PLAT_imx8dxl) */
 
 static uint64_t imx_get_commit_hash(u_register_t x2,
 		    u_register_t x3,
@@ -192,11 +222,17 @@ static uint64_t imx_get_commit_hash(u_register_t x2,
 			if (*(parse) == 'g') {
 				/* Default is 7 hexadecimal digits */
 				memcpy((void *)&hash, (void *)(parse + 1), 7);
-				break;
+				return hash;
 			}
 		}
 
 	} while (parse != NULL);
+
+	/* When no tag, the build string only contains commit and dirty */
+	parse = strchr(version_string, ':');
+	if (parse && *(parse + 1) != '\0') {
+		memcpy((void *)&hash, (void *)(parse + 1), 7);
+	}
 
 	return hash;
 }
@@ -253,3 +289,28 @@ int imx_kernel_entry_handler(uint32_t smc_fid,
 
 	return 0;
 }
+
+#if defined(PLAT_imx8ulp)
+int imx_hifi_xrdc(uint32_t smc_fid)
+{
+#define mmio_setbits32(addr, set)              mmio_write_32(addr, mmio_read_32(addr) | (set))
+#define mmio_clrbits32(addr, clear)            mmio_write_32(addr, mmio_read_32(addr) & ~(clear))
+	mmio_setbits32(0x2da50008, BIT_32(19) | BIT_32(17) | BIT_32(18));
+	mmio_clrbits32(0x2da50008, BIT_32(16));
+
+	extern int xrdc_apply_hifi_config(void);
+	xrdc_apply_hifi_config();
+
+	return 0;
+}
+#endif
+
+#if SC_CONSOLE
+int putchar(int c)
+{
+	if (ipc_handle)
+		sc_misc_debug_out(ipc_handle, (unsigned char)c);
+
+	return c;
+}
+#endif

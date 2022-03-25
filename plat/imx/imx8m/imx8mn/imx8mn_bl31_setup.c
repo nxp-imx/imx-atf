@@ -19,16 +19,22 @@
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/common/platform.h>
 
+#include <dram.h>
 #include <gpc.h>
 #include <imx_aipstz.h>
 #include <imx_uart.h>
 #include <imx_rdc.h>
 #include <imx8m_caam.h>
+#include <imx8m_csu.h>
 #include <platform_def.h>
 #include <plat_imx8.h>
 
+#define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
+
 static const mmap_region_t imx_mmap[] = {
-	GIC_MAP, AIPS_MAP, OCRAM_S_MAP, DDRC_MAP, {0},
+	GIC_MAP, AIPS_MAP, OCRAM_S_MAP, DDRC_MAP,
+	CAAM_RAM_MAP, NS_OCRAM_MAP, ROM_MAP, DRAM_MAP, TCM_MAP,
+	{0},
 };
 
 static const struct aipstz_cfg aipstz[] = {
@@ -41,9 +47,12 @@ static const struct aipstz_cfg aipstz[] = {
 
 static const struct imx_rdc_cfg rdc[] = {
 	/* Master domain assignment */
-	RDC_MDAn(0x1, DID1),
+	RDC_MDAn(RDC_MDA_M7, DID1),
 
 	/* peripherals domain permission */
+	RDC_PDAPn(RDC_PDAP_UART4, D1R | D1W),
+	RDC_PDAPn(RDC_PDAP_UART2, D0R | D0W),
+	RDC_PDAPn(RDC_PDAP_RDC, D0R | D0W | D1R),
 
 	/* memory region */
 	RDC_MEM_REGIONn(16, 0x0, 0x0, 0xff),
@@ -54,8 +63,27 @@ static const struct imx_rdc_cfg rdc[] = {
 	{0},
 };
 
+static const struct imx_csu_cfg csu_cfg[] = {
+	/* peripherals csl setting */
+	CSU_CSLx(CSU_CSL_OCRAM, CSU_SEC_LEVEL_2, UNLOCKED),
+	CSU_CSLx(CSU_CSL_OCRAM_S, CSU_SEC_LEVEL_2, UNLOCKED),
+
+	/* master HP0~1 */
+
+	/* SA setting */
+
+	/* HP control setting */
+
+	/* Sentinel */
+	{0}
+};
+
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
+
+#if defined (CSU_RDC_TEST)
+static void csu_rdc_test(void);
+#endif
 
 /* get SPSR for BL33 entry */
 static uint32_t get_spsr_for_bl33_entry(void)
@@ -91,13 +119,14 @@ static void bl31_tzc380_setup(void)
 
 	/* Enable 1G-5G S/NS RW */
 	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G) |
-		TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
+				TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
 }
 
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		u_register_t arg2, u_register_t arg3)
 {
 	static console_t console;
+	unsigned int val;
 	int i;
 
 	/* Enable CSU NS access permission */
@@ -108,6 +137,19 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	imx_aipstz_init(aipstz);
 
 	imx_rdc_init(rdc);
+
+	imx_csu_init(csu_cfg);
+
+	/* Configure the force_incr programmable bit in GPV_5 of PL301_display, which fixes
+	 * partial write issue. The AXI2AHB bridge is used for masters that access the TCM
+	 * through system bus. Please refer to errata ERR050362 for more information.
+	 */
+	mmio_setbits_32((GPV5_BASE_ADDR + FORCE_INCR_OFFSET), FORCE_INCR_BIT_MASK);
+
+	/* config the ocram memory range for secure access */
+	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, 0x4c1);
+	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x2c);
+	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, val | 0x3DFF0000);
 
 	imx8m_caam_init();
 
@@ -124,7 +166,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.spsr = get_spsr_for_bl33_entry();
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 
-#ifdef SPD_opteed
+#if defined(SPD_opteed) || defined(SPD_trusty)
 	/* Populate entry point information for BL32 */
 	SET_PARAM_HEAD(&bl32_image_ep_info, PARAM_EP, VERSION_1, 0);
 	SET_SECURITY_STATE(bl32_image_ep_info.h.attr, SECURE);
@@ -134,9 +176,23 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	/* Pass TEE base and size to bl33 */
 	bl33_image_ep_info.args.arg1 = BL32_BASE;
 	bl33_image_ep_info.args.arg2 = BL32_SIZE;
+
+#ifdef SPD_trusty
+	bl32_image_ep_info.args.arg0 = BL32_SIZE;
+	bl32_image_ep_info.args.arg1 = BL32_BASE;
+#else
+	/* Make sure memory is clean */
+	mmio_write_32(BL32_FDT_OVERLAY_ADDR, 0);
+	bl33_image_ep_info.args.arg3 = BL32_FDT_OVERLAY_ADDR;
+	bl32_image_ep_info.args.arg3 = BL32_FDT_OVERLAY_ADDR;
+#endif
 #endif
 
 	bl31_tzc380_setup();
+
+#if defined (CSU_RDC_TEST)
+	csu_rdc_test();
+#endif
 }
 
 void bl31_plat_arch_setup(void)
@@ -150,6 +206,9 @@ void bl31_plat_arch_setup(void)
 		(BL_COHERENT_RAM_END - BL_COHERENT_RAM_BASE),
 		MT_DEVICE | MT_RW | MT_SECURE);
 #endif
+	// Map TEE memory
+	mmap_add_region(BL32_BASE, BL32_BASE, BL32_SIZE, MT_MEMORY | MT_RW);
+
 	mmap_add(imx_mmap);
 
 	init_xlat_tables();
@@ -164,10 +223,17 @@ void bl31_platform_setup(void)
 	/* select the CKIL source to 32K OSC */
 	mmio_write_32(IMX_ANAMIX_BASE + ANAMIX_MISC_CTL, 0x1);
 
+	/* Init the dram info */
+	dram_info_init(SAVED_DRAM_TIMING_BASE);
+
 	plat_gic_driver_init();
 	plat_gic_init();
 
 	imx_gpc_init();
+
+	/* Enable and reset M7 */
+	mmio_setbits_32(IMX_SRC_BASE + 0xc,  SRC_SCR_M4_ENABLE_MASK);
+	mmio_clrbits_32(IMX_SRC_BASE + 0xc, SRC_SCR_M4C_NON_SCLR_RST_MASK);
 }
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(unsigned int type)
@@ -184,3 +250,46 @@ unsigned int plat_get_syscnt_freq2(void)
 {
 	return COUNTER_FREQUENCY;
 }
+
+#ifdef SPD_trusty
+void plat_trusty_set_boot_args(aapcs64_params_t *args) {
+	args->arg0 = BL32_SIZE;
+	args->arg1 = BL32_BASE;
+	args->arg2 = TRUSTY_PARAMS_LEN_BYTES;
+}
+#endif
+
+#if defined (CSU_RDC_TEST)
+static const struct imx_rdc_cfg rdc_for_test[] = {
+	/* Master domain assignment */
+
+	/* peripherals domain permission */
+
+	RDC_PDAPn(RDC_PDAP_CSU, D2R | D2W),
+
+	/* memory region */
+
+	/* Sentinel */
+	{0},
+};
+
+static const struct imx_csu_cfg csu_cfg_for_test[] = {
+	/* peripherals csl setting */
+	CSU_CSLx(CSU_CSL_RDC, CSU_SEC_LEVEL_4, LOCKED),
+	CSU_CSLx(CSU_CSL_CSU, CSU_SEC_LEVEL_4, LOCKED),
+	/* master HP0~1 */
+
+	/* SA setting */
+
+	/* HP control setting */
+
+	/* Sentinel */
+	{0}
+};
+
+static void csu_rdc_test(void)
+{
+	imx_csu_init(csu_cfg_for_test);
+	imx_rdc_init(rdc_for_test);
+}
+#endif

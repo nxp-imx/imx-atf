@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef SCI_SCFW_H
-#define SCI_SCFW_H
+#ifndef _SC_SCFW_H
+#define _SC_SCFW_H
 
 /* Includes */
 
@@ -33,4 +33,5 @@ typedef uint64_t sc_ipc_t;
 typedef uint64_t sc_ipc_id_t;
 
 
-#endif /* SCI_SCFW_H */
+#endif /* _SC_SCFW_H */
+

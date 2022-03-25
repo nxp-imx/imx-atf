@@ -9,16 +9,16 @@
 #include <stdlib.h>
 
 #include <common/debug.h>
+#include <drivers/arm/tzc380.h>
 #include <drivers/delay_timer.h>
 #include <lib/mmio.h>
 #include <lib/psci/psci.h>
-#include <lib/smccc.h>
-#include <services/std_svc.h>
 
 #include <gpc.h>
 #include <imx_aipstz.h>
 #include <imx_sip_svc.h>
 #include <platform_def.h>
+#include <plat_imx8.h>
 
 #define CCGR(x)		(0x4000 + (x) * 0x10)
 #define IMR_NUM		U(5)
@@ -103,7 +103,7 @@ static struct imx_noc_setting noc_setting[] = {
 	{HDMIMIX, 0x700, 0x700, 0x80000505, 0x0, 0x0},
 	{HSIOMIX, 0x780, 0x900, 0x80000303, 0x0, 0x0},
 	{MEDIAMIX, 0x980, 0xb80, 0x80000202, 0x0, 0x1},
-	{MEDIAMIX_ISPDWP, 0xc00, 0xd00, 0x80000505, 0x0, 0x0},
+	{MEDIAMIX_ISPDWP, 0xc00, 0xd00, 0x80000707, 0x0, 0x0},
 	{VPU_G1, 0xd80, 0xd80, 0x80000303, 0x0, 0x0},
 	{VPU_G2, 0xe00, 0xe00, 0x80000303, 0x0, 0x0},
 	{VPU_H1, 0xe80, 0xe80, 0x80000303, 0x0, 0x0}
@@ -169,10 +169,15 @@ static void imx_noc_qos(unsigned int domain_id)
 	}
 }
 
-static void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
+void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 {
-	struct imx_pwr_domain *pwr_domain = &pu_domains[domain_id];
+	struct imx_pwr_domain *pwr_domain;
 	unsigned int i;
+
+	if (domain_id >= ARRAY_SIZE(pu_domains))
+		return;
+
+	pwr_domain = &pu_domains[domain_id];
 
 	if (domain_id == HSIOMIX) {
 		for (i = 0; i < ARRAY_SIZE(hsiomix_clk); i++) {
@@ -194,6 +199,9 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 			mmio_write_32(IMX_HDMI_CTL_BASE + RTX_CLK_CTL0, 0xFFFFFFFF);
 			mmio_write_32(IMX_HDMI_CTL_BASE + RTX_CLK_CTL1, 0x7ffff87e);
 		}
+
+		if (domain_id == VPU_H1)
+			mmio_clrbits_32(IMX_VPU_BLK_BASE + 0x4, BIT(2));
 
 		/* clear the PGC bit */
 		mmio_clrbits_32(IMX_GPC_BASE + pwr_domain->pgc_offset, 0x1);
@@ -224,6 +232,9 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 			mmio_write_32(IMX_HSIOMIX_CTL_BASE, 0x2);
 		}
 
+		if (domain_id == VPU_H1)
+			mmio_setbits_32(IMX_VPU_BLK_BASE + 0x4, BIT(2));
+
 		/* handle the ADB400 sync */
 		if (pwr_domain->need_sync) {
 			/* clear adb power down request */
@@ -245,8 +256,15 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 			return;
 		}
 
+		if (imx_m4_lpa_active() && domain_id == AUDIOMIX)
+			return;
+ 
 		if (pwr_domain->need_sync) {
 			pu_domain_status &= ~(1 << domain_id);
+		}
+
+		if (domain_id == HDMIMIX) {
+			mmio_setbits_32(0x32fc0040, 0xc02);
 		}
 
 		/* handle the ADB400 sync */
@@ -261,23 +279,6 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 
 		/* set the PGC bit */
 		mmio_setbits_32(IMX_GPC_BASE + pwr_domain->pgc_offset, 0x1);
-
-		/*
-		 * leave the G1, G2, H1 power domain on until VPUMIX power off,
-		 * otherwise system will hang due to VPUMIX ACK
-		 */
-		if (domain_id == VPU_H1 || domain_id == VPU_G1 || domain_id == VPU_G2) {
-			return;
-		}
-
-		if (domain_id == VPUMIX) {
-			mmio_write_32(IMX_GPC_BASE + PU_PGC_DN_TRG, VPU_G1_PWR_REQ |
-				 VPU_G2_PWR_REQ | VPU_H1_PWR_REQ);
-
-			while (mmio_read_32(IMX_GPC_BASE + PU_PGC_DN_TRG) & (VPU_G1_PWR_REQ |
-					VPU_G2_PWR_REQ | VPU_H1_PWR_REQ))
-				;
-		}
 
 		/* power down the domain */
 		mmio_setbits_32(IMX_GPC_BASE + PU_PGC_DN_TRG, pwr_domain->pwr_req);
@@ -299,6 +300,75 @@ static void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 		}
 	}
 }
+
+static void imx8mm_tz380_init(void)
+{
+	unsigned int val;
+
+	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x28);
+	if ((val & GPR_TZASC_EN) != GPR_TZASC_EN)
+		return;
+
+	tzc380_init(IMX_TZASC_BASE);
+
+	/* Enable 1G-5G S/NS RW */
+	tzc380_configure_region(0, 0x00000000, TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_4G)
+		| TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_ALL);
+}
+
+void imx_noc_wrapper_pre_suspend(unsigned int proc_num)
+{
+	/* enable MASTER1 & MASTER2 power down in A53 LPM mode */
+	mmio_clrbits_32(IMX_GPC_BASE + LPCR_A53_BSC, MASTER1_LPM_HSK | MASTER2_LPM_HSK);
+	mmio_setbits_32(IMX_GPC_BASE+ MST_CPU_MAPPING, MASTER1_MAPPING | MASTER2_MAPPING);
+
+	/* noc can only be power down when all the pu domain is off */
+	if (!pu_domain_status) {
+		/* enable noc power down */
+		imx_noc_slot_config(true);
+	}
+	/*
+	 * gic redistributor context save must be called when
+	 * the GIC CPU interface is disabled and before distributor save.
+	 */
+	plat_gic_save(proc_num, &imx_gicv3_ctx);
+}
+
+void imx_noc_wrapper_post_resume(unsigned int proc_num)
+{
+	/* disable MASTER1 & MASTER2 power down in A53 LPM mode */
+	mmio_setbits_32(IMX_GPC_BASE + LPCR_A53_BSC, MASTER1_LPM_HSK | MASTER2_LPM_HSK);
+	mmio_clrbits_32(IMX_GPC_BASE + MST_CPU_MAPPING, MASTER1_MAPPING | MASTER2_MAPPING);
+
+	/* noc can only be power down when all the pu domain is off */
+	if (!pu_domain_status) {
+		/* re-init the tz380 if resume from noc power down */
+		imx8mm_tz380_init();
+		/* disable noc power down */
+		imx_noc_slot_config(false);
+
+		/* config main NoC */
+		//A53
+		mmio_write_32 (0x32700008, 0x80000303);
+		mmio_write_32 (0x3270000c, 0x0);
+		//SUPERMIX
+		mmio_write_32 (0x32700088, 0x80000303);
+		mmio_write_32 (0x3270008c, 0x0);
+		//GIC
+		mmio_write_32 (0x32700108, 0x80000303);
+		mmio_write_32 (0x3270010c, 0x0);
+	}
+
+	/* restore gic context */
+	plat_gic_restore(proc_num, &imx_gicv3_ctx);
+}
+
+uint32_t pd_init_on[] = {
+	/* hsio ss */
+	HSIOMIX,
+	USB1_PHY,
+	USB2_PHY,
+};
 
 void imx_gpc_init(void)
 {
@@ -373,7 +443,17 @@ void imx_gpc_init(void)
 		mmio_write_32(IMX_CCM_BASE + CCGR(i), 0x3);
 	}
 
-	for (i = 0; i < 20; i++) {
-		imx_gpc_pm_domain_enable(i, true);
-	}
+	for (i = 0; i < ARRAY_SIZE(pd_init_on); i++)
+		imx_gpc_pm_domain_enable(pd_init_on[i], true);
+
+	/* config main NoC */
+	//A53
+	mmio_write_32 (0x32700008, 0x80000303);
+	mmio_write_32 (0x3270000c, 0x0);
+	//SUPERMIX
+	mmio_write_32 (0x32700088, 0x80000303);
+	mmio_write_32 (0x3270008c, 0x0);
+	//GIC
+	mmio_write_32 (0x32700108, 0x80000303);
+	mmio_write_32 (0x3270010c, 0x0);
 }
