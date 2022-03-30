@@ -120,6 +120,8 @@
 #define IMX_CAAM_RAM_SIZE		U(0x10000)
 #define IMX_DRAM_BASE			U(0x40000000)
 #define IMX_DRAM_SIZE			U(0xc0000000)
+#define IMX_TCM_BASE			U(0x7E0000)
+#define IMX_TCM_SIZE			U(0x40000)
 
 #define GPV_BASE			U(0x32000000)
 #define GPV_SIZE			U(0x800000)
