@@ -106,9 +106,7 @@
 
 #define BL32_FDT_OVERLAY_ADDR		0x9d000000
 
-#ifdef SPD_trusty
 #define IMX_TRUSTY_STACK_SIZE 0x100
-#endif
 
 /* system memory map define */
 #define DEVICE0_MAP	MAP_REGION_FLAT(DEVICE0_BASE, DEVICE0_SIZE, MT_DEVICE | MT_RW)

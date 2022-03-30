@@ -41,7 +41,7 @@ DEFINE_SVC_UUID2(trusty_uuid,
 #define TRUSTY_PARAMS_LEN_BYTES	(4096U * 2)
 
 struct trusty_stack {
-	uint8_t space[PLATFORM_STACK_SIZE] __aligned(16);
+	uint8_t space[IMX_TRUSTY_STACK_SIZE] __aligned(16);
 	uint32_t end;
 };
 
