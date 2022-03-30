@@ -46,8 +46,14 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
 				drivers/arm/tzc/tzc380.c			\
 				drivers/delay_timer/delay_timer.c		\
 				drivers/delay_timer/generic_delay_timer.c	\
-				${XLAT_TABLES_LIB_SRCS}				\
 				${IMX_GIC_SOURCES}
+
+ifeq (${IMX_ANDROID_BUILD},true)
+BL31_SOURCES            +=	lib/xlat_tables/aarch64/xlat_tables.c           \
+				lib/xlat_tables/xlat_tables_common.c
+else
+BL31_SOURCES            +=	${XLAT_TABLES_LIB_SRCS}
+endif
 
 XLAT_TABLE_IN_OCRAM_S	:=	1
 STACK_IN_OCRAM_S       :=      1
@@ -55,7 +61,9 @@ STACK_IN_OCRAM_S       :=      1
 $(eval $(call add_define,XLAT_TABLE_IN_OCRAM_S))
 $(eval $(call add_define,STACK_IN_OCRAM_S))
 
+ifneq (${IMX_ANDROID_BUILD},true)
 $(eval $(call add_define,IMX8M_DDR4_DVFS))
+endif
 
 USE_COHERENT_MEM	:=	1
 RESET_TO_BL31		:=	1

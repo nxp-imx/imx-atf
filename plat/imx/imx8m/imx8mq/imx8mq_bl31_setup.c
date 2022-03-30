@@ -18,7 +18,11 @@
 #include <drivers/generic_delay_timer.h>
 #include <lib/el3_runtime/context_mgmt.h>
 #include <lib/mmio.h>
+#ifdef IMX_ANDROID_BUILD
+#include <lib/xlat_tables/xlat_tables.h>
+#else
 #include <lib/xlat_tables/xlat_tables_v2.h>
+#endif
 #include <plat/common/platform.h>
 
 #include <dram.h>

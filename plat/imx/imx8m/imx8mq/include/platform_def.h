@@ -160,4 +160,13 @@
 
 #define COUNTER_FREQUENCY		8333333 /* 25MHz / 3 */
 
+#define DEBUG_CONSOLE			0
+
+#ifdef IMX_ANDROID_BUILD
+#if !DEBUG_CONSOLE
+#undef LOG_LEVEL
+#define LOG_LEVEL 			0
+#endif
+#endif
+
 #define IMX_WDOG_B_RESET
