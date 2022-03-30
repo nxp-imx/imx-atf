@@ -176,6 +176,8 @@
 
 #define COUNTER_FREQUENCY		8000000 /* 8MHz */
 
+#define IMX_TRUSTY_STACK_SIZE 0x100
+
 #define IMX_WDOG_B_RESET
 
 #define MAX_IO_HANDLES			3U
