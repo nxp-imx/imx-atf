@@ -46,6 +46,55 @@ static const struct aipstz_cfg aipstz[] = {
 	{0},
 };
 
+#ifdef IMX_ANDROID_BUILD
+static const struct imx_rdc_cfg rdc[] = {
+	/* Master domain assignment */
+	RDC_MDAn(RDC_MDA_M7, DID1),
+
+	/* peripherals domain permission */
+	RDC_PDAPn(RDC_PDAP_UART4, D1R | D1W),
+	RDC_PDAPn(RDC_PDAP_UART2, D0R | D0W),
+	RDC_PDAPn(RDC_PDAP_RDC, D0R | D0W | D1R),
+
+	/* memory region */
+	RDC_MEM_REGIONn(16, 0x0, 0x0, 0xff),
+	RDC_MEM_REGIONn(17, 0x0, 0x0, 0xff),
+	RDC_MEM_REGIONn(18, 0x0, 0x0, 0xff),
+
+	/* Sentinel */
+	{0},
+};
+
+static const struct imx_csu_cfg csu_cfg[] = {
+	/* peripherals csl setting */
+	CSU_CSLx(CSU_CSL_OCRAM, CSU_SEC_LEVEL_2, LOCKED),
+	CSU_CSLx(CSU_CSL_OCRAM_S, CSU_SEC_LEVEL_2, LOCKED),
+	CSU_CSLx(CSU_CSL_RDC, CSU_SEC_LEVEL_3, LOCKED),
+	CSU_CSLx(CSU_CSL_TZASC, CSU_SEC_LEVEL_4, LOCKED),
+
+	/* master HP0~1 */
+
+	/* SA setting */
+	CSU_SA(CSU_SA_M7, 1, LOCKED),
+	CSU_SA(CSU_SA_SDMA1, 1, LOCKED),
+	CSU_SA(CSU_SA_USB1, 1, LOCKED),
+	CSU_SA(CSU_SA_GPU, 1, LOCKED),
+	CSU_SA(CSU_SA_ENET1, 1, LOCKED),
+	CSU_SA(CSU_SA_USDHC1, 1, LOCKED),
+	CSU_SA(CSU_SA_USDHC2, 1, LOCKED),
+	CSU_SA(CSU_SA_USDHC3, 1, LOCKED),
+	CSU_SA(CSU_SA_DAP, 1, LOCKED),
+	CSU_SA(CSU_SA_SDMA2, 1, LOCKED),
+	CSU_SA(CSU_SA_SDMA3, 1, LOCKED),
+	CSU_SA(CSU_SA_LCDIF, 1, UNLOCKED),
+	CSU_SA(CSU_SA_ISI, 1, LOCKED),
+
+	/* HP control setting */
+
+	/* Sentinel */
+	{0}
+};
+#else
 static const struct imx_rdc_cfg rdc[] = {
 	/* Master domain assignment */
 	RDC_MDAn(RDC_MDA_M7, DID1),
@@ -78,6 +127,7 @@ static const struct imx_csu_cfg csu_cfg[] = {
 	/* Sentinel */
 	{0}
 };
+#endif
 
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;

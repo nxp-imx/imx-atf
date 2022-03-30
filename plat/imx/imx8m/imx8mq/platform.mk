@@ -76,3 +76,7 @@ $(eval $(call add_define,BL32_SIZE))
 ifeq (${SPD},trusty)
 	BL31_CFLAGS    +=      -DPLAT_XLAT_TABLES_DYNAMIC=1
 endif
+
+ifeq (${IMX_ANDROID_BUILD},true)
+$(eval $(call add_define,IMX_ANDROID_BUILD))
+endif
