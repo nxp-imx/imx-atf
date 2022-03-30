@@ -429,7 +429,9 @@ void plat_trusty_set_boot_args(aapcs64_params_t *args)
 static int32_t trusty_setup(void)
 {
 	entry_point_info_t *ep_info;
+#ifndef PLAT_imx8mq
 	uint32_t instr;
+#endif
 	uint32_t flags;
 	int32_t ret;
 	bool aarch32 = false;
@@ -441,6 +443,7 @@ static int32_t trusty_setup(void)
 		return -1;
 	}
 
+#ifndef PLAT_imx8mq
 	/* memmap first page of trusty's code memory before peeking */
 	ret = mmap_add_dynamic_region(ep_info->pc, /* PA */
 			ep_info->pc, /* VA */
@@ -463,6 +466,7 @@ static int32_t trusty_setup(void)
 
 	/* unmap trusty's memory page */
 	(void)mmap_remove_dynamic_region(ep_info->pc, PAGE_SIZE);
+#endif
 
 	/* configure tzc380 for imx8m */
 #if defined(PLAT_imx8mq) || defined(PLAT_imx8mm) || defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
