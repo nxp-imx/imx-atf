@@ -46,13 +46,8 @@
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 32)
 #define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 32)
 
-#ifdef SPD_trusty
 #define MAX_XLAT_TABLES			5
 #define MAX_MMAP_REGIONS		15
-#else
-#define MAX_XLAT_TABLES			4
-#define MAX_MMAP_REGIONS		14
-#endif
 
 #define HAB_RVT_BASE			U(0x00000880) /* HAB_RVT for i.MX8MQ */
 
@@ -96,6 +91,8 @@
 #define AIPSTZ2_BASE			U(0x305f0000)
 #define AIPSTZ3_BASE			U(0x309f0000)
 #define AIPSTZ4_BASE			U(0x32df0000)
+#define IMX_TCM_BASE			U(0x7E0000)
+#define IMX_TCM_SIZE			U(0x40000)
 
 #define GPV_BASE			U(0x32000000)
 #define GPV_SIZE			U(0x800000)
