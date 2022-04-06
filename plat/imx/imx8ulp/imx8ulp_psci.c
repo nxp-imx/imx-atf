@@ -157,25 +157,25 @@ ps_apd_pwr_mode_cfgs_t apd_pwr_mode_cfgs = {
 /* APD power switch config */
 ps_apd_swt_cfgs_t apd_swt_cfgs = {
 	[DPD_PWR_MODE] = {
-		.swt_board[0] = SWT_BOARD(0x00060003, 0x7c),
+		.swt_board[0] = SWT_BOARD(0x0, 0x1fffc),
 		.swt_mem[0] = SWT_MEM(0x0, 0x0, 0x1ffff),
 		.swt_mem[1] = SWT_MEM(0x003fffff, 0x003fffff, 0x0),
 	},
 
 	[PD_PWR_MODE] = {
-		.swt_board[0] = SWT_BOARD(0x00060003, 0x00001e74),
+		.swt_board[0] = SWT_BOARD(0x0, 0x00001fffc),
 		.swt_mem[0] = SWT_MEM(0x00010c00, 0x0, 0x1ffff),
 		.swt_mem[1] = SWT_MEM(0x003fffff, 0x003f0000, 0x0),
 	},
 
 	[ADMA_PWR_MODE] = {
-		.swt_board[0] = SWT_BOARD(0x0006ff77, 0x0006ff7c),
+		.swt_board[0] = SWT_BOARD(0x11E74, 0x11E74),
 		.swt_mem[0] = SWT_MEM(0x0001fffd, 0x0001fffd, 0x1ffff),
 		.swt_mem[1] = SWT_MEM(0x003fffff, 0x003fffff, 0x0),
 	},
 
 	[ACT_PWR_MODE] = {
-		.swt_board[0] = SWT_BOARD(0x0006ff77, 0x0000ff7c),
+		.swt_board[0] = SWT_BOARD(0x11E74, 0x11E74),
 		.swt_mem[0] = SWT_MEM(0x0001fffd, 0x0001fffd, 0x1ffff),
 		.swt_mem[1] = SWT_MEM(0x003fffff, 0x003fffff, 0x0),
 	},
