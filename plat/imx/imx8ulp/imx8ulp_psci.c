@@ -181,6 +181,38 @@ ps_apd_swt_cfgs_t apd_swt_cfgs = {
 	},
 };
 
+/* PMIC config for power down, LDO1 should be OFF */
+ps_apd_pmic_reg_data_cfgs_t pd_pmic_reg_cfgs = {
+	[0] = {
+		.tag = PMIC_REG_VALID_TAG,
+		.power_mode = PD_PWR_MODE,
+		.i2c_addr = 0x30,
+		.i2c_data = 0x9c,
+	},
+	[1] = {
+		.tag = PMIC_REG_VALID_TAG,
+		.power_mode = ACT_PWR_MODE,
+		.i2c_addr = 0x30,
+		.i2c_data = 0x9d,
+	},
+};
+
+/* PMIC config for deep power down, BUCK3 should be OFF */
+ps_apd_pmic_reg_data_cfgs_t dpd_pmic_reg_cfgs = {
+	[0] = {
+		.tag = PMIC_REG_VALID_TAG,
+		.power_mode = DPD_PWR_MODE,
+		.i2c_addr = 0x21,
+		.i2c_data = 0x78,
+	},
+	[1] = {
+		.tag = PMIC_REG_VALID_TAG,
+		.power_mode = ACT_PWR_MODE,
+		.i2c_addr = 0x21,
+		.i2c_data = 0x79,
+	},
+};
+
 struct ps_pwr_mode_cfg_t *pwr_sys_cfg = (struct ps_pwr_mode_cfg_t *)UPWR_DRAM_SHARED_BASE_ADDR;
 
 void imx_set_pwr_mode_cfg(abs_pwr_mode_t mode)
@@ -194,6 +226,15 @@ void imx_set_pwr_mode_cfg(abs_pwr_mode_t mode)
 
 	/* apd power switch config */
 	memcpy(&pwr_sys_cfg->ps_apd_swt_cfg[mode], &apd_swt_cfgs[mode], sizeof(swt_config_t));
+
+	/* power off the BUCK3 in DPD mode */
+	if (mode == DPD_PWR_MODE) {
+		memcpy(&pwr_sys_cfg->ps_apd_pmic_reg_data_cfg, &dpd_pmic_reg_cfgs,
+			 sizeof(ps_apd_pmic_reg_data_cfgs_t));
+	} else if (mode == PD_PWR_MODE) {
+		memcpy(&pwr_sys_cfg->ps_apd_pmic_reg_data_cfg, &pd_pmic_reg_cfgs,
+			 sizeof(ps_apd_pmic_reg_data_cfgs_t));
+	}
 }
 
 extern void cgc1_save(void);
