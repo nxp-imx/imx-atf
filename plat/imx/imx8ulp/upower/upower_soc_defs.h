@@ -1286,6 +1286,31 @@ static inline void  set_mon_cfg(uint8_t        dom,
 	*cfg = mon_cfg.R;
 }
 
+#define PMIC_REG_VALID_TAG 0xAAU
+
+/**
+ * limit the max pmic register->value count to 8
+ * each data cost 4 Bytes, totally 32 Bytes
+ */
+#define MAX_PMIC_REG_COUNT 0x8U
+
+/**
+ * the configuration structure for PMIC register setting
+ *
+ * @ tag: The TAG number to judge if the data is valid or not, valid tag is PMIC_REG_VALID_TAG
+ * @ power_mode : corresponding to each domain's power mode
+ * RTD refer to upwr_ps_rtd_pwr_mode_t
+ * APD refer to abs_pwr_mode_t
+ * @ i2c_addr : i2c address
+ * @ i2c_data : i2c data value
+ */
+struct ps_pmic_reg_data_cfg_t{
+    uint32_t tag : 8;
+    uint32_t power_mode : 8;
+    uint32_t i2c_addr : 8;
+    uint32_t i2c_data : 8;
+};
+
 /* Uniformize access to PMIC cfg for RTD and APD */ 
 
 typedef union {
@@ -1374,12 +1399,16 @@ static inline void set_avd_pmic_mode_msk(uint8_t     dom,
 
 typedef struct ps_rtd_pwr_mode_cfg_t ps_rtd_pwr_mode_cfgs_t[NUM_RTD_PWR_MODES];
 typedef struct ps_apd_pwr_mode_cfg_t ps_apd_pwr_mode_cfgs_t[NUM_APD_PWR_MODES];
+typedef struct ps_pmic_reg_data_cfg_t ps_rtd_pmic_reg_data_cfgs_t[MAX_PMIC_REG_COUNT];
+typedef struct ps_pmic_reg_data_cfg_t ps_apd_pmic_reg_data_cfgs_t[MAX_PMIC_REG_COUNT];
 
 struct ps_pwr_mode_cfg_t {
 	ps_rtd_pwr_mode_cfgs_t  ps_rtd_pwr_mode_cfg;
 	ps_rtd_swt_cfgs_t       ps_rtd_swt_cfg;
 	ps_apd_pwr_mode_cfgs_t  ps_apd_pwr_mode_cfg ;
 	ps_apd_swt_cfgs_t       ps_apd_swt_cfg;
+    ps_rtd_pmic_reg_data_cfgs_t ps_rtd_pmic_reg_data_cfg;
+    ps_apd_pmic_reg_data_cfgs_t ps_apd_pmic_reg_data_cfg;
 };
 
 #define UPWR_XCP_MIN_ADDR   (0x28350000U)
