@@ -55,11 +55,11 @@ else
 BL31_SOURCES            +=	${XLAT_TABLES_LIB_SRCS}
 endif
 
-XLAT_TABLE_IN_OCRAM_S	:=	1
-STACK_IN_OCRAM_S       :=      1
+IMX_SEPARATE_XLAT_TABLE :=	1
+IMX_SEPARATE_STACK :=		1
 
-$(eval $(call add_define,XLAT_TABLE_IN_OCRAM_S))
-$(eval $(call add_define,STACK_IN_OCRAM_S))
+$(eval $(call add_define,IMX_SEPARATE_XLAT_TABLE))
+$(eval $(call add_define,IMX_SEPARATE_STACK))
 
 ifneq (${IMX_ANDROID_BUILD},true)
 $(eval $(call add_define,IMX8M_DDR4_DVFS))
@@ -82,7 +82,7 @@ ifeq (${IMX_DRAM_RETENTION},1)
 BL31_SOURCES		+=	${IMX_DRAM_SOURCES}
 endif
 
-SEPARATE_NOBITS_REGION  :=        1
+#SEPARATE_NOBITS_REGION  :=        1
 
 ifneq (${PRELOADED_BL33_BASE},)
 $(eval $(call add_define_val,PLAT_NS_IMAGE_OFFSET,${PRELOADED_BL33_BASE}))
