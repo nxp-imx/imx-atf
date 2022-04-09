@@ -56,11 +56,11 @@ else
 BL31_SOURCES            +=	${XLAT_TABLES_LIB_SRCS}
 endif
 
-XLAT_TABLE_IN_OCRAM_S	:=	1
-STACK_IN_OCRAM_S       :=      1
+IMX_SEPARATE_XLAT_TABLE :=	1
+IMX_SEPARATE_STACK :=		1
 
-$(eval $(call add_define,XLAT_TABLE_IN_OCRAM_S))
-$(eval $(call add_define,STACK_IN_OCRAM_S))
+$(eval $(call add_define,IMX_SEPARATE_XLAT_TABLE))
+$(eval $(call add_define,IMX_SEPARATE_STACK))
 
 ifneq (${IMX_ANDROID_BUILD},true)
 $(eval $(call add_define,IMX8M_DDR4_DVFS))
