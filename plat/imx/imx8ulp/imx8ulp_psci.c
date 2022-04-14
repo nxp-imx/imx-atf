@@ -169,13 +169,13 @@ ps_apd_swt_cfgs_t apd_swt_cfgs = {
 	},
 
 	[ADMA_PWR_MODE] = {
-		.swt_board[0] = SWT_BOARD(0x11E74, 0x11E74),
+		.swt_board[0] = SWT_BOARD(0x15f74, 0x15f74),
 		.swt_mem[0] = SWT_MEM(0x0001fffd, 0x0001fffd, 0x1ffff),
 		.swt_mem[1] = SWT_MEM(0x003fffff, 0x003fffff, 0x0),
 	},
 
 	[ACT_PWR_MODE] = {
-		.swt_board[0] = SWT_BOARD(0x11E74, 0x11E74),
+		.swt_board[0] = SWT_BOARD(0x15f74, 0x15f74),
 		.swt_mem[0] = SWT_MEM(0x0001fffd, 0x0001fffd, 0x1ffff),
 		.swt_mem[1] = SWT_MEM(0x003fffff, 0x003fffff, 0x0),
 	},
