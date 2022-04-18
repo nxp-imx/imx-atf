@@ -317,3 +317,11 @@ void soc_mem_access(void)
 {
 	/* Nothing to do for ls1012 as there is no TZASC block */
 }
+
+/*
+ * This function sets up DTB address to be passed to next boot stage
+ */
+void plat_set_dt_address(entry_point_info_t *image_info)
+{
+	image_info->args.arg3 = BL32_FDT_OVERLAY_ADDR;
+}

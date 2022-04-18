@@ -149,4 +149,5 @@ void get_cluster_info(const struct soc_type *soc_list, uint8_t ps_count,
 		.num_clusters = (ncl),	\
 		.cores_per_cluster = (nc)}
 
+void plat_set_dt_address(entry_point_info_t *image_info);
 #endif /* PLAT_COMMON_H */

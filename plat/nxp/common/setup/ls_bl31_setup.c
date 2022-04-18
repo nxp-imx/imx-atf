@@ -67,7 +67,9 @@ entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
 	next_image_info->spsr   = SPSR_FOR_EL2H;
 	next_image_info->h.attr = NON_SECURE;
 #endif
-
+#if defined(SPD_opteed)
+	plat_set_dt_address(next_image_info);
+#endif
 	if (next_image_info->pc != 0U) {
 		return next_image_info;
 	} else {

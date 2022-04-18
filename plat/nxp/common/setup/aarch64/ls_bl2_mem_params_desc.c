@@ -83,6 +83,10 @@ static bl_mem_params_node_t bl2_mem_params_descs[] = {
 			VERSION_2, entry_point_info_t, NON_SECURE | EXECUTABLE),
 		.ep_info.pc = BL33_BASE,
 
+# ifdef NXP_LOAD_BL32
+		.ep_info.args.arg1 = BL32_BASE,
+# endif
+
 		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP,
 				VERSION_2, image_info_t, 0),
 #ifdef CSF_HEADER_PREPENDED
