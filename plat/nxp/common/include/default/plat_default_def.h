@@ -55,6 +55,12 @@
 #define NXP_SP_SHRD_DRAM_SIZE	(2 * 1024 * 1024)
 #endif
 
+/* 6M Offset from DRAM0 end for DTB overlay */
+#ifndef	BL32_FDT_OVERLAY_OFFSET
+#define	BL32_FDT_OVERLAY_OFFSET	(6 * 1024 * 1024)
+#endif
+
+
 #ifndef NXP_NS_DRAM_SIZE
 /* Non secure memory */
 #define NXP_NS_DRAM_SIZE	(PLAT_DEF_DRAM0_SIZE - \
@@ -167,6 +173,10 @@
  */
 #ifndef BL32_IRQ_SEC_PHY_TIMER
 #define BL32_IRQ_SEC_PHY_TIMER	29
+#endif
+
+#ifndef BL32_FDT_OVERLAY_ADDR
+#define BL32_FDT_OVERLAY_ADDR	NXP_SECURE_DRAM_ADDR - BL32_FDT_OVERLAY_OFFSET
 #endif
 
 #endif	/*	PLAT_DEFAULT_DEF_H	*/
