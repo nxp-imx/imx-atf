@@ -127,6 +127,8 @@ void bl31_platform_setup(void)
 
 void bl31_plat_runtime_setup(void)
 {
+	console_switch_state(CONSOLE_FLAG_RUNTIME);
+
 	return;
 }
 
