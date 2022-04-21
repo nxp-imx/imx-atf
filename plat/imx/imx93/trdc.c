@@ -580,6 +580,10 @@ static void trdc_setup(struct trdc_config_info *cfg)
 						cfg->mbc_cfg[i].mem_id, j, cfg->mbc_cfg[i].secure,
 						cfg->mbc_cfg[i].glbac_id);
 				}
+			} else {
+				trdc_mbc_blk_config(cfg->trdc_base, cfg->mbc_cfg[i].mbc_id, cfg->mbc_cfg[i].dom_id,
+						cfg->mbc_cfg[i].mem_id, cfg->mbc_cfg[i].blk_id, cfg->mbc_cfg[i].secure,
+						cfg->mbc_cfg[i].glbac_id);
 			}
 		}
 	}

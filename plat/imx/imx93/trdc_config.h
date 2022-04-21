@@ -180,6 +180,18 @@ struct trdc_mbc_config trdc_n_mbc[] = {
 	{ 2, 3, 1, MBC_BLK_ALL, 0, false }, /* MBC2 GIC for A55 DID3 */
 	{ 3, 3, 0, MBC_BLK_ALL, 1, true  }, /* MBC3 OCRAM for A55 DID3 */
 	{ 3, 3, 1, MBC_BLK_ALL, 1, true  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 0, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 1, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 2, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 3, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 4, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 5, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 0, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 1, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 2, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 3, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 4, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 5, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
 
 	{ 0, 7, 1, MBC_BLK_ALL, 0, false }, /* MBC0 AIPS4 for eDMA DID7 */
 	{ 0, 7, 2, MBC_BLK_ALL, 0, false }, /* MBC0 MEDIAMIX for eDMA DID7 */
