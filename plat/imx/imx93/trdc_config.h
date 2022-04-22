@@ -40,9 +40,9 @@ struct trdc_mbc_config trdc_a_mbc[] = {
 	{ 0, 1, 0, MBC_BLK_ALL, 0, true }, /* MBC0 AIPS1 for MTR DID1 */
 	{ 0, 1, 1, MBC_BLK_ALL, 0, true }, /* MBC0 Sentinel_SOC_In for MTR DID1 */
 
-	{ 0, 2, 0, MBC_BLK_ALL, 0, false }, /* MBC0 AIPS1 for M33 DID2 */
-	{ 0, 2, 1, MBC_BLK_ALL, 0, false }, /* MBC0 Sentinel_SOC_In for M33 DID2 */
-	{ 0, 2, 2, MBC_BLK_ALL, 0, false }, /* MBC0 GPIO1 for M33 DID2 */
+	{ 0, 2, 0, MBC_BLK_ALL, 0, true }, /* MBC0 AIPS1 for M33 DID2 */
+	{ 0, 2, 1, MBC_BLK_ALL, 0, true }, /* MBC0 Sentinel_SOC_In for M33 DID2 */
+	{ 0, 2, 2, MBC_BLK_ALL, 0, true }, /* MBC0 GPIO1 for M33 DID2 */
 	{ 1, 2, 0, MBC_BLK_ALL, 2, true  }, /* MBC1 CM33 code TCM for M33 DID2 */
 	{ 1, 2, 1, MBC_BLK_ALL, 2, true  }, /* MBC1 CM33 system TCM for M33 DID2 */
 
@@ -78,14 +78,14 @@ struct trdc_mbc_config trdc_w_mbc[] = {
 	{ 0, 1, 0, MBC_BLK_ALL, 0, true }, /* MBC0 AIPS2 for MTR DID1 */
 	{ 1, 1, 0, MBC_BLK_ALL, 0, true }, /* MBC1 AIPS3 for MTR DID1 */
 
-	{ 0, 2, 0, MBC_BLK_ALL, 0, false }, /* MBC0 AIPS2 for M33 DID2 */
-	{ 0, 2, 1, MBC_BLK_ALL, 0, false }, /* MBC0 GPIO2_In for M33 DID2 */
-	{ 0, 2, 2, MBC_BLK_ALL, 0, false }, /* MBC0 GPIO3 for M33 DID2 */
-	{ 0, 2, 3, MBC_BLK_ALL, 0, false }, /* MBC0 DAP  for M33 DID2 */
-	{ 1, 2, 0, MBC_BLK_ALL, 0, false }, /* MBC1 AIPS3 for M33 DID2 */
-	{ 1, 2, 1, MBC_BLK_ALL, 0, false }, /* MBC1 AHB_ISPAP for M33 DID2 */
+	{ 0, 2, 0, MBC_BLK_ALL, 0, true }, /* MBC0 AIPS2 for M33 DID2 */
+	{ 0, 2, 1, MBC_BLK_ALL, 0, true }, /* MBC0 GPIO2_In for M33 DID2 */
+	{ 0, 2, 2, MBC_BLK_ALL, 0, true }, /* MBC0 GPIO3 for M33 DID2 */
+	{ 0, 2, 3, MBC_BLK_ALL, 0, true }, /* MBC0 DAP  for M33 DID2 */
+	{ 1, 2, 0, MBC_BLK_ALL, 0, true }, /* MBC1 AIPS3 for M33 DID2 */
+	{ 1, 2, 1, MBC_BLK_ALL, 0, true }, /* MBC1 AHB_ISPAP for M33 DID2 */
 	{ 1, 2, 2, MBC_BLK_ALL, 0, true },  /* MBC1 NIC_MAIN_GPV for M33 DID2 */
-	{ 1, 2, 3, MBC_BLK_ALL, 0, false }, /* MBC1 GPIO4 for M33 DID2 */
+	{ 1, 2, 3, MBC_BLK_ALL, 0, true }, /* MBC1 GPIO4 for M33 DID2 */
 
 	{ 0, 3, 0, MBC_BLK_ALL, 0, false }, /* MBC0 AIPS2 for A55 DID3 */
 	{ 0, 3, 1, MBC_BLK_ALL, 0, false }, /* MBC0 GPIO2_In for A55 DID3 */
@@ -155,16 +155,16 @@ struct trdc_mbc_config trdc_n_mbc[] = {
 	{ 1, 1, 2, MBC_BLK_ALL, 0, true }, /* MBC1 MLMIX for  MTR DID1 */
 	{ 1, 1, 3, MBC_BLK_ALL, 0, true }, /* MBC1 MLMIX for  MTR DID1 */
 
-	{ 0, 2, 0, MBC_BLK_ALL, 0, false }, /* MBC0 DDRCFG for M33 DID2 */
-	{ 0, 2, 1, MBC_BLK_ALL, 0, false }, /* MBC0 AIPS4 for M33 DID2 */
-	{ 0, 2, 2, MBC_BLK_ALL, 0, false }, /* MBC0 MEDIAMIX for M33 DID2 */
-	{ 0, 2, 3, MBC_BLK_ALL, 0, false }, /* MBC0 HSIOMIX for M33 DID2 */
-	{ 1, 2, 0, MBC_BLK_ALL, 0, false }, /* MBC1 MTR_DCA, TCU, TROUT for M33 DID2 */
-	{ 1, 2, 1, MBC_BLK_ALL, 0, false }, /* MBC1 MTR_DCA, TCU, TROUT for M33 DID2 */
-	{ 1, 2, 2, MBC_BLK_ALL, 0, false }, /* MBC1 MLMIX for M33 DID2 */
-	{ 1, 2, 3, MBC_BLK_ALL, 0, false }, /* MBC1 MLMIX for M33 DID2 */
-	{ 2, 2, 0, MBC_BLK_ALL, 1, false }, /* MBC2 GIC for M33 DID2 */
-	{ 2, 2, 1, MBC_BLK_ALL, 1, false }, /* MBC2 GIC for M33 DID2 */
+	{ 0, 2, 0, MBC_BLK_ALL, 0, true }, /* MBC0 DDRCFG for M33 DID2 */
+	{ 0, 2, 1, MBC_BLK_ALL, 0, true }, /* MBC0 AIPS4 for M33 DID2 */
+	{ 0, 2, 2, MBC_BLK_ALL, 0, true }, /* MBC0 MEDIAMIX for M33 DID2 */
+	{ 0, 2, 3, MBC_BLK_ALL, 0, true }, /* MBC0 HSIOMIX for M33 DID2 */
+	{ 1, 2, 0, MBC_BLK_ALL, 0, true }, /* MBC1 MTR_DCA, TCU, TROUT for M33 DID2 */
+	{ 1, 2, 1, MBC_BLK_ALL, 0, true }, /* MBC1 MTR_DCA, TCU, TROUT for M33 DID2 */
+	{ 1, 2, 2, MBC_BLK_ALL, 0, true }, /* MBC1 MLMIX for M33 DID2 */
+	{ 1, 2, 3, MBC_BLK_ALL, 0, true }, /* MBC1 MLMIX for M33 DID2 */
+	{ 2, 2, 0, MBC_BLK_ALL, 1, true }, /* MBC2 GIC for M33 DID2 */
+	{ 2, 2, 1, MBC_BLK_ALL, 1, true }, /* MBC2 GIC for M33 DID2 */
 	{ 3, 2, 0, MBC_BLK_ALL, 0, true  }, /* MBC3 OCRAM for M33 DID2 */
 	{ 3, 2, 1, MBC_BLK_ALL, 0, true  }, /* MBC3 OCRAM for M33 DID2 */
 
@@ -206,7 +206,7 @@ struct trdc_glbac_config trdc_n_mrc_glbac[] = {
 struct trdc_mrc_config trdc_n_mrc[] = {
 	{ 0, 0, 0, 0x80000000, 0x80000000, 0, false }, /* MRC0 DRAM for S400 DID0 */
 	{ 0, 1, 0, 0x80000000, 0x80000000, 0, false }, /* MRC0 DRAM for MTR DID1 */
-	{ 0, 2, 0, 0x80000000, 0x80000000, 0, false }, /* MRC0 DRAM for M33 DID2 */
+	{ 0, 2, 0, 0x80000000, 0x80000000, 0, true }, /* MRC0 DRAM for M33 DID2 */
 	{ 0, 3, 0, 0x80000000, 0x80000000, 1, false }, /* MRC0 DRAM for A55 DID3 */
 	{ 0, 5, 0, 0x80000000, 0x80000000, 0, false }, /* MRC0 DRAM for USDHC1 DID5 */
 	{ 0, 6, 0, 0x80000000, 0x80000000, 0, false }, /* MRC0 DRAM for USDHC2 DID6 */
