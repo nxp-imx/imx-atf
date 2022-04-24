@@ -181,6 +181,8 @@ BL2_SOURCES		+=	plat/imx/imx8m/imx8m_measured_boot.c	\
 				${EVENT_LOG_SOURCES}
 endif
 
+$(eval $(call add_define,IMX8M_DDR4_DVFS))
+
 ifeq (${SPD},trusty)
 	BL31_CFLAGS    +=      -DPLAT_XLAT_TABLES_DYNAMIC=1
 endif
