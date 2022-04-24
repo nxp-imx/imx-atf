@@ -66,6 +66,8 @@ $(eval $(call add_define,BL32_SIZE))
 IMX_BOOT_UART_BASE	?=	0x30890000
 $(eval $(call add_define,IMX_BOOT_UART_BASE))
 
+$(eval $(call add_define,IMX8M_DDR4_DVFS))
+
 ifeq (${SPD},trusty)
 	BL31_CFLAGS    +=      -DPLAT_XLAT_TABLES_DYNAMIC=1
 endif
