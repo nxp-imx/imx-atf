@@ -196,6 +196,8 @@ BL2_SOURCES		+=	plat/imx/imx8m/imx8m_measured_boot.c	\
     BL2_INCLUDE_DIRS += $(LIBEVLOG_INCLUDE_DIRS)
 endif
 
+$(eval $(call add_define,IMX8M_DDR4_DVFS))
+
 ifeq (${SPD},trusty)
 	BL31_CFLAGS    +=      -DPLAT_XLAT_TABLES_DYNAMIC=1
 endif
