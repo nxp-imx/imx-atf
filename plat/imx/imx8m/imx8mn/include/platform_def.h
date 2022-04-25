@@ -56,8 +56,13 @@
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(ULL(1) << 32)
 #define PLAT_PHY_ADDR_SPACE_SIZE	(ULL(1) << 32)
 
+#ifdef SPD_trusty
+#define MAX_XLAT_TABLES			10
+#define MAX_MMAP_REGIONS		18
+#else
 #define MAX_XLAT_TABLES			8
 #define MAX_MMAP_REGIONS		16
+#endif
 
 #define HAB_RVT_BASE			U(0x00000900) /* HAB_RVT for i.MX8MM */
 
@@ -181,5 +186,8 @@
 #define TCM_MAP		MAP_REGION_FLAT(IMX_TCM_BASE, IMX_TCM_SIZE, MT_MEMORY | MT_RW | MT_NS) /* TCM */
 
 #define IMX_TRUSTY_STACK_SIZE 0x100
+#define TRUSTY_SHARED_MEMORY_OBJ_SIZE (12 * 1024)
+#define IMX_SEPARATE_NOBITS_BASE	U(0x950000)
+#define IMX_SEPARATE_NOBITS_LIMIT	U(0x960000)
 
 #endif /* platform_def.h */

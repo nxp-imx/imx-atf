@@ -31,6 +31,11 @@
 #include <plat_imx8.h>
 
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
+#ifdef SPD_trusty
+#define OCRAM_TZ_REGION	(0x4a1)
+#else
+#define OCRAM_TZ_REGION	(0x4c1)
+#endif
 
 static const mmap_region_t imx_mmap[] = {
 	GIC_MAP, AIPS_MAP, OCRAM_S_MAP, DDRC_MAP,
@@ -198,7 +203,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	mmio_setbits_32((GPV5_BASE_ADDR + FORCE_INCR_OFFSET), FORCE_INCR_BIT_MASK);
 
 	/* config the ocram memory range for secure access */
-	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, 0x4c1);
+	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, OCRAM_TZ_REGION);
 	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x2c);
 	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, val | 0x3DFF0000);
 
