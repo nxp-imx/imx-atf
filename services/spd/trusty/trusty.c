@@ -553,6 +553,7 @@ DECLARE_RT_SVC(
 	trusty_smc_handler
 );
 
+#ifndef PLAT_imx8mq
 DECLARE_RT_SVC(
 	trusty_fast_uuid,
 
@@ -562,6 +563,7 @@ DECLARE_RT_SVC(
 	NULL,
 	trusty_smc_handler
 );
+#endif
 
 /* Define a SPD runtime service descriptor for yielding SMC calls */
 DECLARE_RT_SVC(

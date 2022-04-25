@@ -4,9 +4,11 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
+ifneq (${PLAT},imx8mq)
 TRUSTY_SPD_WITH_SHARED_MEM ?= 1
+endif
 
-SPD_INCLUDES		:=
+SPD_INCLUDES		:=	-Iservices/spd/trusty/include
 
 SPD_SOURCES		:=	services/spd/trusty/trusty.c		\
 				services/spd/trusty/trusty_helpers.S
