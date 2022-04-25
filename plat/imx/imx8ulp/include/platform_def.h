@@ -43,8 +43,13 @@
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 32)
 #define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 32)
 
+#ifdef SPD_trusty
+#define MAX_XLAT_TABLES			10
+#define MAX_MMAP_REGIONS		11
+#else
 #define MAX_XLAT_TABLES			8
 #define MAX_MMAP_REGIONS		9
+#endif
 
 #define PLAT_GICD_BASE			U(0x2d400000)
 #define PLAT_GICR_BASE			U(0x2d440000)
@@ -88,5 +93,6 @@
 #define BL32_FDT_OVERLAY_ADDR		0x9d000000
 
 #define IMX_TRUSTY_STACK_SIZE 0x100
+#define TRUSTY_SHARED_MEMORY_OBJ_SIZE (12 * 1024)
 
 #endif /* PLATFORM_DEF_H */
