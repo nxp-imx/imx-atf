@@ -520,6 +520,10 @@ void bl31_plat_arch_setup(void)
 	mmap_add_region(BL32_BASE, BL32_BASE, BL32_SIZE, MT_MEMORY | MT_RW);
 #endif
 
+#ifdef IMX_SEPARATE_XLAT_TABLE
+	mmap_add_region(IMX_SEPARATE_NOBITS_BASE, IMX_SEPARATE_NOBITS_BASE, IMX_SEPARATE_NOBITS_LIMIT - IMX_SEPARATE_NOBITS_BASE, MT_MEMORY | MT_RW | MT_SECURE);
+#endif
+
 #if USE_COHERENT_MEM
 	mmap_add_region(coh_start, coh_start, coh_size,
 			MT_DEVICE | MT_RW | MT_SECURE);
