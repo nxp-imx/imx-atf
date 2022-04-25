@@ -36,10 +36,21 @@
 #endif
 
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
+#ifdef SPD_trusty
+#define OCRAM_TZ_REGION	(0x4c1)
+#else
+#define OCRAM_TZ_REGION	(0x4e1)
+#endif
 
 static const mmap_region_t imx_mmap[] = {
 	GIC_MAP, AIPS_MAP, OCRAM_S_MAP, DDRC_MAP,
 	NOC_MAP, CAAM_RAM_MAP, NS_OCRAM_MAP,
+#ifdef SPD_trusty
+	DRAM2_MAP,
+#endif
+#ifdef IMX_SEPARATE_XLAT_TABLE
+	IMX_SEPARATE_NOBITS,
+#endif
 	ROM_MAP, DRAM_MAP, VPU_BLK_CTL_MAP, TCM_MAP, {0},
 };
 
@@ -213,7 +224,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	imx_csu_init(csu_cfg);
 
 	/* config the ocram memory range for secure access */
-	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, 0x4E1);
+	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, OCRAM_TZ_REGION);
 	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x2c);
 	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, val | 0x3DFF0000);
 

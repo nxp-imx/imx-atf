@@ -160,7 +160,9 @@ $(eval $(call add_define,IMX_BOOT_UART_BASE))
 $(eval $(call add_define,IMX8M_DDR4_DVFS))
 
 ifeq (${SPD},trusty)
-	BL31_CFLAGS    +=      -DPLAT_XLAT_TABLES_DYNAMIC=1
+IMX_SEPARATE_XLAT_TABLE :=	1
+
+$(eval $(call add_define,IMX_SEPARATE_XLAT_TABLE))
 endif
 
 ifeq (${IMX_ANDROID_BUILD},true)
