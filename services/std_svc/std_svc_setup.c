@@ -136,7 +136,7 @@ static uintptr_t std_svc_smc_handler(uint32_t smc_fid,
 	}
 #endif
 
-#if defined(SPD_spmd)
+#if defined(SPD_spmd) || TRUSTY_SPM
 	/*
 	 * Dispatch FFA calls to the FFA SMC handler implemented by the SPM
 	 * dispatcher and return its return value

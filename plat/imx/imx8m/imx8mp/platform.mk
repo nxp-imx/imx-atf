@@ -34,6 +34,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
 				plat/imx/imx8m/imx8m_caam.c			\
 				plat/imx/imx8m/imx8m_csu.c			\
 				plat/imx/imx8m/imx8m_psci_common.c		\
+				plat/imx/imx8m/imx8m_snvs.c			\
 				plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c	\
 				plat/imx/imx8m/imx8mp/imx8mp_psci.c		\
 				plat/imx/imx8m/imx8mp/gpc.c			\
@@ -156,6 +157,21 @@ $(eval $(call add_define,BL32_SIZE))
 IMX_BOOT_UART_BASE	?=	0x30890000
 $(eval $(call add_define,IMX_BOOT_UART_BASE))
 
+$(eval $(call add_define,IMX8M_DDR4_DVFS))
+
 ifeq (${SPD},trusty)
-	BL31_CFLAGS    +=      -DPLAT_XLAT_TABLES_DYNAMIC=1
+IMX_SEPARATE_XLAT_TABLE :=	1
+
+$(eval $(call add_define,IMX_SEPARATE_XLAT_TABLE))
+endif
+
+ifeq (${IMX_ANDROID_BUILD},true)
+$(eval $(call add_define,IMX_ANDROID_BUILD))
+$(eval $(call add_define,LPA_${LPA}))
+endif
+
+ifeq (${LPA},ENABLE)
+BL31_SOURCES            +=      plat/imx/imx8m/fsl_sema4.c			\
+                                plat/imx/imx8m/sema4.c				\
+                                plat/imx/imx8m/imx8mp/imx8mp_lpa_psci.c
 endif

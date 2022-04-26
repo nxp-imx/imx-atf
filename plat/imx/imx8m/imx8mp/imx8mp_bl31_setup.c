@@ -26,14 +26,31 @@
 #include <imx_rdc.h>
 #include <imx8m_caam.h>
 #include <imx8m_csu.h>
+#include <imx8m_snvs.h>
 #include <platform_def.h>
 #include <plat_imx8.h>
 
+#if defined(LPA_ENABLE)
+#include <sema4.h>
+#define CPUCNT  (IMX_SRC_BASE + LPA_STATUS)
+#endif
+
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
+#ifdef SPD_trusty
+#define OCRAM_TZ_REGION	(0x4c1)
+#else
+#define OCRAM_TZ_REGION	(0x4e1)
+#endif
 
 static const mmap_region_t imx_mmap[] = {
 	GIC_MAP, AIPS_MAP, OCRAM_S_MAP, DDRC_MAP,
 	NOC_MAP, CAAM_RAM_MAP, NS_OCRAM_MAP,
+#ifdef SPD_trusty
+	DRAM2_MAP,
+#endif
+#ifdef IMX_SEPARATE_XLAT_TABLE
+	IMX_SEPARATE_NOBITS,
+#endif
 	ROM_MAP, DRAM_MAP, VPU_BLK_CTL_MAP, TCM_MAP, {0},
 };
 
@@ -45,6 +62,74 @@ static const struct aipstz_cfg aipstz[] = {
 	{0},
 };
 
+#ifdef IMX_ANDROID_BUILD
+static const struct imx_rdc_cfg rdc[] = {
+	/* Master domain assignment */
+	RDC_MDAn(RDC_MDA_M7, DID1),
+
+	RDC_MDAn(RDC_MDA_LCDIF, DID2),
+	RDC_MDAn(RDC_MDA_LCDIF2, DID2),
+	RDC_MDAn(RDC_MDA_HDMI_TX, DID2),
+
+
+	/* peripherals domain permission */
+	RDC_PDAPn(RDC_PDAP_UART2, D0R | D0W),
+	RDC_PDAPn(RDC_PDAP_WDOG1, D0R | D0W),
+	RDC_PDAPn(RDC_PDAP_RDC, D0R | D0W | D1R),
+
+	/* memory region */
+	RDC_MEM_REGIONn(40, 0x00000000, 0x50000000, ENA|D3R|D3W|D2R|/*D2W|*/D1R|D1W|D0R|D0W),
+	RDC_MEM_REGIONn(41, 0x50000000, 0x58000000, LCK|ENA|D3R|D3W|D2R|D2W|D1R|D1W|/*D0R|*/D0W),
+	RDC_MEM_REGIONn(42, 0x58000000, 0xFFFFFFFF, LCK|ENA|D3R|D3W|D2R|/*D2W|*/D1R|D1W|D0R|D0W),
+
+	/* Sentinel */
+	{0},
+};
+
+static const struct imx_csu_cfg csu_cfg[] = {
+	/* peripherals csl setting */
+	CSU_CSLx(CSU_CSL_OCRAM, CSU_SEC_LEVEL_2, LOCKED),
+	CSU_CSLx(CSU_CSL_OCRAM_S, CSU_SEC_LEVEL_2, LOCKED),
+	CSU_CSLx(CSU_CSL_RDC, CSU_SEC_LEVEL_3, LOCKED),
+	CSU_CSLx(CSU_CSL_TZASC, CSU_SEC_LEVEL_4, LOCKED),
+#ifdef SPD_trusty
+	CSU_CSLx(CSU_CSL_VPU, CSU_SEC_LEVEL_5, LOCKED),
+#endif
+
+	/* master HP0~1 */
+
+	/* SA setting */
+	CSU_SA(CSU_SA_M7, 1, LOCKED),
+	CSU_SA(CSU_SA_SDMA1, 1, LOCKED),
+	CSU_SA(CSU_SA_PCIE_CTRL1, 1, LOCKED),
+	CSU_SA(CSU_SA_USB1, 1, LOCKED),
+	CSU_SA(CSU_SA_USB2, 1, LOCKED),
+	CSU_SA(CSU_SA_ENET1, 1, LOCKED),
+	CSU_SA(CSU_SA_USDHC1, 1, LOCKED),
+	CSU_SA(CSU_SA_USDHC2, 1, LOCKED),
+	CSU_SA(CSU_SA_USDHC3, 1, LOCKED),
+	CSU_SA(CSU_SA_DAP, 1, LOCKED),
+	CSU_SA(CSU_SA_SDMA2, 1, LOCKED),
+	CSU_SA(CSU_SA_SDMA3, 1, LOCKED),
+	CSU_SA(CSU_SA_LCDIF1, 1, UNLOCKED),
+	CSU_SA(CSU_SA_ISI, 1, LOCKED),
+	CSU_SA(CSU_SA_LCDIF2, 1, UNLOCKED),
+	CSU_SA(CSU_SA_HDMI_TX, 1, LOCKED),
+	CSU_SA(CSU_SA_ENET2, 1, LOCKED),
+	CSU_SA(CSU_SA_GPU3D, 1, LOCKED),
+	CSU_SA(CSU_SA_GPU2D, 1, LOCKED),
+	CSU_SA(CSU_SA_VPU_G1, 1, LOCKED),
+	CSU_SA(CSU_SA_VPU_G2, 1, LOCKED),
+	CSU_SA(CSU_SA_VPU_VC8000E, 1, LOCKED),
+	CSU_SA(CSU_SA_ISP1, 1, LOCKED),
+	CSU_SA(CSU_SA_ISP2, 1, LOCKED),
+
+	/* HP control setting */
+
+	/* Sentinel */
+	{0}
+};
+#else
 static const struct imx_rdc_cfg rdc[] = {
 	/* Master domain assignment */
 	RDC_MDAn(RDC_MDA_M7, DID1),
@@ -74,6 +159,7 @@ static const struct imx_csu_cfg csu_cfg[] = {
 	/* Sentinel */
 	{0}
 };
+#endif
 
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
@@ -138,7 +224,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	imx_csu_init(csu_cfg);
 
 	/* config the ocram memory range for secure access */
-	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, 0x4E1);
+	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, OCRAM_TZ_REGION);
 	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x2c);
 	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, val | 0x3DFF0000);
 
@@ -179,6 +265,10 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 #endif
 #endif
 
+#if !defined(SPD_opteed) && !defined(SPD_trusty)
+	enable_snvs_privileged_access();
+#endif
+
 	bl31_tzc380_setup();
 
 #if defined (CSU_RDC_TEST)
@@ -210,6 +300,10 @@ void bl31_plat_arch_setup(void)
 
 void bl31_platform_setup(void)
 {
+#if defined(LPA_ENABLE)
+	uint32_t value;
+#endif
+
 	generic_delay_timer_init();
 
 	/* select the CKIL source to 32K OSC */
@@ -226,6 +320,13 @@ void bl31_platform_setup(void)
 	/* Enable and reset M7 */
 	mmio_setbits_32(IMX_SRC_BASE + 0xc,  SRC_SCR_M4_ENABLE_MASK);
 	mmio_clrbits_32(IMX_SRC_BASE + 0xc, SRC_SCR_M4C_NON_SCLR_RST_MASK);
+
+#if defined(LPA_ENABLE)
+	/* CPUCNT bits [15:0] used as flags for LPA, clearing it at boot */
+	value = mmio_read_32(CPUCNT);
+	mmio_write_32(CPUCNT, (value & ~0xFFFF) | 0x01);
+	sema4_init();
+#endif
 }
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(unsigned int type)

@@ -22,9 +22,11 @@
 #include <lib/smccc.h>
 #include <plat/common/platform.h>
 #include <tools_share/uuid.h>
-
-#include "sm_err.h"
-#include "smcall.h"
+#include <trusty/smcall.h>
+#include <trusty/sm_err.h>
+#if defined(PLAT_imx8mq) || defined(PLAT_imx8mm) || defined(PLAT_imx8mn) ||defined(PLAT_imx8mp)
+#include <drivers/arm/tzc380.h>
+#endif
 
 /* Trusty UID: RFC-4122 compliant UUID version 4 */
 DEFINE_SVC_UUID2(trusty_uuid,
@@ -38,7 +40,7 @@ DEFINE_SVC_UUID2(trusty_uuid,
 #define TRUSTY_PARAMS_LEN_BYTES	(4096U * 2)
 
 struct trusty_stack {
-	uint8_t space[PLATFORM_STACK_SIZE] __aligned(16);
+	uint8_t space[IMX_TRUSTY_STACK_SIZE] __aligned(16);
 	uint32_t end;
 };
 
@@ -426,7 +428,9 @@ void plat_trusty_set_boot_args(aapcs64_params_t *args)
 static int32_t trusty_setup(void)
 {
 	entry_point_info_t *ep_info;
+#ifndef PLAT_imx8mq
 	uint32_t instr;
+#endif
 	uint32_t flags;
 	int32_t ret;
 	bool aarch32 = false;
@@ -438,6 +442,7 @@ static int32_t trusty_setup(void)
 		return -1;
 	}
 
+#ifndef PLAT_imx8mq
 	/* memmap first page of trusty's code memory before peeking */
 	ret = mmap_add_dynamic_region(ep_info->pc, /* PA */
 			ep_info->pc, /* VA */
@@ -460,6 +465,13 @@ static int32_t trusty_setup(void)
 
 	/* unmap trusty's memory page */
 	(void)mmap_remove_dynamic_region(ep_info->pc, PAGE_SIZE);
+#endif
+
+	/* configure tzc380 for imx8m */
+#if defined(PLAT_imx8mq) || defined(PLAT_imx8mm) || defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
+	tzc380_configure_region(1, (BL32_BASE - IMX_DRAM_BASE), TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_32M) |
+			TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_S_RW);
+#endif
 
 	SET_PARAM_HEAD(ep_info, PARAM_EP, VERSION_1, SECURE | EP_ST_ENABLE);
 	if (!aarch32)
@@ -523,11 +535,23 @@ DECLARE_RT_SVC(
 	trusty_fast,
 
 	OEN_TOS_START,
-	OEN_TOS_END,
+	SMC_ENTITY_SECURE_MONITOR,
 	SMC_TYPE_FAST,
 	trusty_setup,
 	trusty_smc_handler
 );
+
+#ifndef PLAT_imx8mq
+DECLARE_RT_SVC(
+	trusty_fast_uuid,
+
+	OEN_TOS_END,
+	OEN_TOS_END,
+	SMC_TYPE_FAST,
+	NULL,
+	trusty_smc_handler
+);
+#endif
 
 /* Define a SPD runtime service descriptor for yielding SMC calls */
 DECLARE_RT_SVC(

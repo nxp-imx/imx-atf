@@ -28,6 +28,7 @@
 #include <imx_rdc.h>
 #include <imx8m_caam.h>
 #include <imx8m_csu.h>
+#include <imx8m_snvs.h>
 #include <plat_imx8.h>
 
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
@@ -42,6 +43,7 @@ static const mmap_region_t imx_mmap[] = {
 	MAP_REGION_FLAT(IMX_NS_OCRAM_BASE, IMX_NS_OCRAM_SIZE, MT_MEMORY | MT_RW), /* NS OCRAM */
 	MAP_REGION_FLAT(IMX_ROM_BASE, IMX_ROM_SIZE, MT_MEMORY | MT_RO), /* ROM code */
 	MAP_REGION_FLAT(IMX_DRAM_BASE, IMX_DRAM_SIZE, MT_MEMORY | MT_RW | MT_NS), /* DRAM */
+	MAP_REGION_FLAT(IMX_TCM_BASE, IMX_TCM_SIZE, MT_MEMORY | MT_RW | MT_NS), /* TCM */
 	{0},
 };
 
@@ -53,6 +55,54 @@ static const struct aipstz_cfg aipstz[] = {
 	{0},
 };
 
+#ifdef IMX_ANDROID_BUILD
+static const struct imx_rdc_cfg rdc[] = {
+	/* Master domain assignment */
+	RDC_MDAn(RDC_MDA_M4, DID1),
+
+	/* peripherals domain permission */
+	RDC_PDAPn(RDC_PDAP_UART4, D1R | D1W),
+	RDC_PDAPn(RDC_PDAP_UART2, D0R | D0W),
+	RDC_PDAPn(RDC_PDAP_UART1, D0R | D0W),
+
+	/* memory region */
+
+	/* Sentinel */
+	{0},
+};
+
+static const struct imx_csu_cfg csu_cfg[] = {
+	/* peripherals csl setting */
+	CSU_CSLx(0x1, CSU_SEC_LEVEL_0, LOCKED),
+	CSU_CSLx(CSU_CSL_RDC, CSU_SEC_LEVEL_3, LOCKED),
+	CSU_CSLx(CSU_CSL_TZASC, CSU_SEC_LEVEL_4, LOCKED),
+
+	/* master HP0~1 */
+
+	/* SA setting */
+//	CSU_SA(CSU_SA_M4, 1, LOCKED),          /* M4 */
+	CSU_SA(CSU_SA_SDMA1, 1, LOCKED),       /* SDMA1 */
+	CSU_SA(CSU_SA_PCIE_CTRL1, 1, LOCKED),  /* PCIE */
+	CSU_SA(CSU_SA_USB1, 1, LOCKED),        /* USB1 */
+	CSU_SA(CSU_SA_USB2, 1, LOCKED),        /* USB2 */
+	CSU_SA(CSU_SA_VPU, 1, LOCKED),         /* VPU */
+	CSU_SA(CSU_SA_GPU, 1, LOCKED),         /* GPU */
+	CSU_SA(CSU_SA_ENET, 1, LOCKED),        /* ENET */
+	CSU_SA(CSU_SA_USDHC1, 1, LOCKED),      /* USDHC1 */
+	CSU_SA(CSU_SA_USDHC2, 1, LOCKED),      /* USDHC2 */
+	CSU_SA(CSU_SA_USDHC3, 1, LOCKED),      /* USDHC3 */
+	CSU_SA(CSU_SA_SDMA2, 1, LOCKED),       /* SDMA2 */
+	CSU_SA(CSU_SA_SDMA3, 1, LOCKED),       /* SDMA3 */
+	CSU_SA(CSU_SA_DAP, 1, LOCKED),         /* DAP */
+	CSU_SA(CSU_SA_LCDIF, 1, UNLOCKED),     /* LCDIF */
+	CSU_SA(CSU_SA_CSI, 1, LOCKED),         /* CSI */
+
+	/* HP control setting */
+
+	/* Sentinel */
+	{0}
+};
+#else
 static const struct imx_rdc_cfg rdc[] = {
 	/* Master domain assignment */
 	RDC_MDAn(RDC_MDA_M4, DID1),
@@ -81,6 +131,7 @@ static const struct imx_csu_cfg csu_cfg[] = {
 	/* Sentinel */
 	{0}
 };
+#endif
 
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
@@ -179,6 +230,10 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.args.arg3 = BL32_FDT_OVERLAY_ADDR;
 	bl32_image_ep_info.args.arg3 = BL32_FDT_OVERLAY_ADDR;
 #endif
+#endif
+
+#if !defined(SPD_opteed) && !defined(SPD_trusty)
+	enable_snvs_privileged_access();
 #endif
 
 	bl31_tzc380_setup();

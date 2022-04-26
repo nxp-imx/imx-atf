@@ -26,10 +26,16 @@
 #include <imx_rdc.h>
 #include <imx8m_caam.h>
 #include <imx8m_csu.h>
+#include <imx8m_snvs.h>
 #include <platform_def.h>
 #include <plat_imx8.h>
 
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
+#ifdef SPD_trusty
+#define OCRAM_TZ_REGION	(0x4a1)
+#else
+#define OCRAM_TZ_REGION	(0x4c1)
+#endif
 
 static const mmap_region_t imx_mmap[] = {
 	GIC_MAP, AIPS_MAP, OCRAM_S_MAP, DDRC_MAP,
@@ -45,6 +51,55 @@ static const struct aipstz_cfg aipstz[] = {
 	{0},
 };
 
+#ifdef IMX_ANDROID_BUILD
+static const struct imx_rdc_cfg rdc[] = {
+	/* Master domain assignment */
+	RDC_MDAn(RDC_MDA_M7, DID1),
+
+	/* peripherals domain permission */
+	RDC_PDAPn(RDC_PDAP_UART4, D1R | D1W),
+	RDC_PDAPn(RDC_PDAP_UART2, D0R | D0W),
+	RDC_PDAPn(RDC_PDAP_RDC, D0R | D0W | D1R),
+
+	/* memory region */
+	RDC_MEM_REGIONn(16, 0x0, 0x0, 0xff),
+	RDC_MEM_REGIONn(17, 0x0, 0x0, 0xff),
+	RDC_MEM_REGIONn(18, 0x0, 0x0, 0xff),
+
+	/* Sentinel */
+	{0},
+};
+
+static const struct imx_csu_cfg csu_cfg[] = {
+	/* peripherals csl setting */
+	CSU_CSLx(CSU_CSL_OCRAM, CSU_SEC_LEVEL_2, LOCKED),
+	CSU_CSLx(CSU_CSL_OCRAM_S, CSU_SEC_LEVEL_2, LOCKED),
+	CSU_CSLx(CSU_CSL_RDC, CSU_SEC_LEVEL_3, LOCKED),
+	CSU_CSLx(CSU_CSL_TZASC, CSU_SEC_LEVEL_4, LOCKED),
+
+	/* master HP0~1 */
+
+	/* SA setting */
+	CSU_SA(CSU_SA_M7, 1, LOCKED),
+	CSU_SA(CSU_SA_SDMA1, 1, LOCKED),
+	CSU_SA(CSU_SA_USB1, 1, LOCKED),
+	CSU_SA(CSU_SA_GPU, 1, LOCKED),
+	CSU_SA(CSU_SA_ENET1, 1, LOCKED),
+	CSU_SA(CSU_SA_USDHC1, 1, LOCKED),
+	CSU_SA(CSU_SA_USDHC2, 1, LOCKED),
+	CSU_SA(CSU_SA_USDHC3, 1, LOCKED),
+	CSU_SA(CSU_SA_DAP, 1, LOCKED),
+	CSU_SA(CSU_SA_SDMA2, 1, LOCKED),
+	CSU_SA(CSU_SA_SDMA3, 1, LOCKED),
+	CSU_SA(CSU_SA_LCDIF, 1, UNLOCKED),
+	CSU_SA(CSU_SA_ISI, 1, LOCKED),
+
+	/* HP control setting */
+
+	/* Sentinel */
+	{0}
+};
+#else
 static const struct imx_rdc_cfg rdc[] = {
 	/* Master domain assignment */
 	RDC_MDAn(RDC_MDA_M7, DID1),
@@ -77,6 +132,7 @@ static const struct imx_csu_cfg csu_cfg[] = {
 	/* Sentinel */
 	{0}
 };
+#endif
 
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
@@ -147,7 +203,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	mmio_setbits_32((GPV5_BASE_ADDR + FORCE_INCR_OFFSET), FORCE_INCR_BIT_MASK);
 
 	/* config the ocram memory range for secure access */
-	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, 0x4c1);
+	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, OCRAM_TZ_REGION);
 	val = mmio_read_32(IMX_IOMUX_GPR_BASE + 0x2c);
 	mmio_write_32(IMX_IOMUX_GPR_BASE + 0x2c, val | 0x3DFF0000);
 
@@ -186,6 +242,10 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.args.arg3 = BL32_FDT_OVERLAY_ADDR;
 	bl32_image_ep_info.args.arg3 = BL32_FDT_OVERLAY_ADDR;
 #endif
+#endif
+
+#if !defined(SPD_opteed) && !defined(SPD_trusty)
+	enable_snvs_privileged_access();
 #endif
 
 	bl31_tzc380_setup();

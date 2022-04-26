@@ -36,6 +36,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
 				plat/imx/imx8m/imx8m_csu.c			\
 				plat/imx/imx8m/imx8m_caam.c			\
 				plat/imx/imx8m/imx8m_psci_common.c		\
+				plat/imx/imx8m/imx8m_snvs.c			\
 				plat/imx/imx8m/imx8mq/gpc.c			\
 				plat/imx/common/imx8_topology.c			\
 				plat/imx/common/imx_sip_handler.c		\
@@ -45,15 +46,25 @@ BL31_SOURCES		+=	plat/imx/common/imx8_helpers.S			\
 				drivers/arm/tzc/tzc380.c			\
 				drivers/delay_timer/delay_timer.c		\
 				drivers/delay_timer/generic_delay_timer.c	\
-				${XLAT_TABLES_LIB_SRCS}				\
 				${IMX_DRAM_SOURCES}				\
 				${IMX_GIC_SOURCES}
 
-XLAT_TABLE_IN_OCRAM_S	:=	1
-STACK_IN_OCRAM_S       :=      1
+ifeq (${IMX_ANDROID_BUILD},true)
+BL31_SOURCES            +=	lib/xlat_tables/aarch64/xlat_tables.c           \
+				lib/xlat_tables/xlat_tables_common.c
+else
+BL31_SOURCES            +=	${XLAT_TABLES_LIB_SRCS}
+endif
 
-$(eval $(call add_define,XLAT_TABLE_IN_OCRAM_S))
-$(eval $(call add_define,STACK_IN_OCRAM_S))
+IMX_SEPARATE_XLAT_TABLE :=	1
+IMX_SEPARATE_STACK :=		1
+
+$(eval $(call add_define,IMX_SEPARATE_XLAT_TABLE))
+$(eval $(call add_define,IMX_SEPARATE_STACK))
+
+ifneq (${IMX_ANDROID_BUILD},true)
+$(eval $(call add_define,IMX8M_DDR4_DVFS))
+endif
 
 USE_COHERENT_MEM	:=	1
 RESET_TO_BL31		:=	1
@@ -70,6 +81,6 @@ $(eval $(call add_define,BL32_BASE))
 BL32_SIZE		?=	0x2000000
 $(eval $(call add_define,BL32_SIZE))
 
-ifeq (${SPD},trusty)
-	BL31_CFLAGS    +=      -DPLAT_XLAT_TABLES_DYNAMIC=1
+ifeq (${IMX_ANDROID_BUILD},true)
+$(eval $(call add_define,IMX_ANDROID_BUILD))
 endif

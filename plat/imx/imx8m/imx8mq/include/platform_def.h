@@ -46,13 +46,10 @@
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 32)
 #define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 32)
 
-#ifdef SPD_trusty
 #define MAX_XLAT_TABLES			5
 #define MAX_MMAP_REGIONS		15
-#else
-#define MAX_XLAT_TABLES			4
-#define MAX_MMAP_REGIONS		14
-#endif
+
+#define IMX_TRUSTY_STACK_SIZE 0x100
 
 #define HAB_RVT_BASE			U(0x00000880) /* HAB_RVT for i.MX8MQ */
 
@@ -63,7 +60,7 @@
 #define IMX_CONSOLE_BAUDRATE		115200
 
 #define IMX_AIPS_BASE			U(0x30200000)
-#define IMX_AIPS_SIZE			U(0xC00000)
+#define IMX_AIPS_SIZE			U(0x3000000)
 #define IMX_AIPS1_BASE			U(0x30200000)
 #define IMX_AIPS3_ARB_BASE		U(0x30800000)
 #define IMX_OCOTP_BASE			U(0x30350000)
@@ -96,6 +93,8 @@
 #define AIPSTZ2_BASE			U(0x305f0000)
 #define AIPSTZ3_BASE			U(0x309f0000)
 #define AIPSTZ4_BASE			U(0x32df0000)
+#define IMX_TCM_BASE			U(0x7E0000)
+#define IMX_TCM_SIZE			U(0x40000)
 
 #define GPV_BASE			U(0x32000000)
 #define GPV_SIZE			U(0x800000)
@@ -149,10 +148,21 @@
 #define OCRAM_S_SIZE			U(0x8000)
 #define OCRAM_S_LIMIT			(OCRAM_S_BASE + OCRAM_S_SIZE)
 
+#define IMX_SEPARATE_NOBITS_BASE 	OCRAM_S_BASE
+#define IMX_SEPARATE_NOBITS_LIMIT	OCRAM_S_LIMIT
+
 #define IMX_SCTR_BASE			0x306c0000
 #define CNTFID0_OFF			U(0x20)
 #define CNTFID1_OFF			U(0x24)
 #define COUNTER_FREQUENCY		8000000 /* 8MHz */
 
 #define DEBUG_CONSOLE			0
+
+#ifdef IMX_ANDROID_BUILD
+#if !DEBUG_CONSOLE
+#undef LOG_LEVEL
+#define LOG_LEVEL 			0
+#endif
+#endif
+
 #define IMX_WDOG_B_RESET

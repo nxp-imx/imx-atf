@@ -18,7 +18,11 @@
 #include <drivers/generic_delay_timer.h>
 #include <lib/el3_runtime/context_mgmt.h>
 #include <lib/mmio.h>
+#ifdef IMX_ANDROID_BUILD
+#include <lib/xlat_tables/xlat_tables.h>
+#else
 #include <lib/xlat_tables/xlat_tables_v2.h>
+#endif
 #include <plat/common/platform.h>
 
 #include <dram.h>
@@ -28,6 +32,7 @@
 #include <imx_rdc.h>
 #include <imx8m_caam.h>
 #include <imx8m_csu.h>
+#include <imx8m_snvs.h>
 #include <plat_imx8.h>
 
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
@@ -42,6 +47,7 @@ static const mmap_region_t imx_mmap[] = {
 	MAP_REGION_FLAT(IMX_DRAM_BASE, IMX_DRAM_SIZE, MT_MEMORY | MT_RW | MT_NS),
 	MAP_REGION_FLAT(IMX_CAAM_RAM_BASE, IMX_CAAM_RAM_SIZE, MT_MEMORY | MT_RW), /* CAMM RAM */
 	MAP_REGION_FLAT(IMX_NS_OCRAM_BASE, IMX_NS_OCRAM_SIZE, MT_MEMORY | MT_RW), /* NS OCRAM */
+	MAP_REGION_FLAT(IMX_TCM_BASE, IMX_TCM_SIZE, MT_MEMORY | MT_RW | MT_NS), /* TCM */
 	{0},
 };
 
@@ -183,6 +189,10 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.args.arg3 = BL32_FDT_OVERLAY_ADDR;
 	bl32_image_ep_info.args.arg3 = BL32_FDT_OVERLAY_ADDR;
 #endif
+#endif
+
+#if !defined(SPD_opteed) && !defined(SPD_trusty)
+	enable_snvs_privileged_access();
 #endif
 
 	bl31_tzc380_setup();

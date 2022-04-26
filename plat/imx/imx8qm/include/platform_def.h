@@ -155,11 +155,16 @@
 /* non-secure uboot base */
 #define PLAT_NS_IMAGE_OFFSET		BL31_LIMIT
 
-#define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 32)
-#define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 32)
+#define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 36)
+#define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 36)
 
+#ifdef SPD_trusty
+#define MAX_XLAT_TABLES			10
+#define MAX_MMAP_REGIONS		14
+#else
 #define MAX_XLAT_TABLES			8
 #define MAX_MMAP_REGIONS		12
+#endif
 
 /* enable it to make debug message to SC console */
 #define SC_CONSOLE			0
@@ -169,5 +174,10 @@
 #else
 #define DEBUG_CONSOLE_A53		DEBUG_CONSOLE
 #endif
+
+#define IMX_TRUSTY_STACK_SIZE 0x100
+#define TRUSTY_SHARED_MEMORY_OBJ_SIZE (12 * 1024)
+#define IMX_SEPARATE_NOBITS_BASE	U(0x130000)
+#define IMX_SEPARATE_NOBITS_LIMIT	U(0x140000)
 
 #endif /* PLATFORM_DEF_H */
