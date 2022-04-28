@@ -369,6 +369,9 @@ void __dead2 imx8ulp_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_st
 
 void __dead2 imx8ulp_system_reset(void)
 {
+	/* Slow down apd nic frequency to make sure wdog can work well */
+	mmio_clrbits_32(IMX_CGC1_BASE + 0x34, GENMASK_32(29, 28));
+
 	imx_pwr_set_cpu_entry(0, IMX_ROM_ENTRY);
 
 	mmio_write_32(IMX_WDOG3_BASE + 0x4, 0xd928c520);
