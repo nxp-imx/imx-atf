@@ -342,7 +342,7 @@ void __dead2 imx_system_reset(void)
 	while ((mmio_read_32(IMX_WDOG3_BASE) & 0x800) == 0)
 		;
 	mmio_write_32(IMX_WDOG3_BASE + 0x8, 0x10);
-	mmio_write_32(IMX_WDOG3_BASE, 0x21a3);
+	mmio_write_32(IMX_WDOG3_BASE, 0x21e3);
 
 	while (true)
 		;
