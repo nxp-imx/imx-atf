@@ -21,12 +21,22 @@
 #include <imx8_lpuart.h>
 #include <platform_def.h>
 #include <plat_imx8.h>
+#include <trdc.h>
 
 static const mmap_region_t imx_mmap[] = {
-	/* APIS2 mapping  */
-	MAP_REGION_FLAT(AIPS2_BASE, AIPSx_SIZE, MT_DEVICE | MT_RW),
-	MAP_REGION_FLAT(PLAT_GICD_BASE, 0x200000, MT_DEVICE | MT_RW),
-	MAP_REGION_FLAT(AIPS1_BASE, AIPSx_SIZE, MT_DEVICE | MT_RW),
+	/* APIS2 mapping */
+	MAP_REGION_FLAT(AIPS2_BASE, AIPSx_SIZE, MT_DEVICE | MT_RW | MT_NS),
+	MAP_REGION_FLAT(AIPS1_BASE, AIPSx_SIZE, MT_DEVICE | MT_RW), /* ECO fix , secure can access nonsecure */
+	/* AIPS4 */
+	MAP_REGION_FLAT(AIPS4_BASE, AIPSx_SIZE, MT_DEVICE | MT_RW | MT_NS),
+
+	MAP_REGION_FLAT(PLAT_GICD_BASE, 0x200000, MT_DEVICE | MT_RW), /* ECO fix, secure can access nonsecure */
+
+	MAP_REGION_FLAT(TRDC_A_BASE, TRDC_x_SISE, MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(TRDC_W_BASE, TRDC_x_SISE, MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(TRDC_M_BASE, TRDC_x_SISE, MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(TRDC_N_BASE, TRDC_x_SISE, MT_DEVICE | MT_RW),
+
 	{0},
 };
 
@@ -103,6 +113,8 @@ void bl31_plat_arch_setup(void)
 	init_xlat_tables();
 
 	enable_mmu_el3(0);
+
+	trdc_config();
 }
 
 void bl31_platform_setup(void)
@@ -112,6 +124,12 @@ void bl31_platform_setup(void)
 	plat_gic_driver_init();
 	plat_gic_init();
 }
+
+void bl31_plat_runtime_setup(void)
+{
+	return;
+}
+
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(unsigned int type)
 {

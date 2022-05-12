@@ -59,6 +59,12 @@
 #define GPIO3_BASE			U(0x43820000)
 #define GPIO4_BASE			U(0x43830000)
 
+#define TRDC_A_BASE			U(0x44270000)
+#define TRDC_W_BASE			U(0x42460000)
+#define TRDC_M_BASE			U(0x42810000)
+#define TRDC_N_BASE			U(0x49010000)
+#define TRDC_x_SISE			U(0x20000)
+
 #define COUNTER_FREQUENCY		24000000
 
 #endif /* platform_def.h */
