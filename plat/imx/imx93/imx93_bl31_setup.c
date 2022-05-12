@@ -72,6 +72,27 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 
 void bl31_plat_arch_setup(void)
 {
+	/* Assign all the GPIO pins to non-secure world by default */
+	mmio_write_32(GPIO2_BASE + 0x10, 0xffffffff);
+	mmio_write_32(GPIO2_BASE + 0x14, 0x3);
+	mmio_write_32(GPIO2_BASE + 0x18, 0xffffffff);
+	mmio_write_32(GPIO2_BASE + 0x1c, 0x3);
+
+	mmio_write_32(GPIO3_BASE + 0x10, 0xffffffff);
+	mmio_write_32(GPIO3_BASE + 0x14, 0x3);
+	mmio_write_32(GPIO3_BASE + 0x18, 0xffffffff);
+	mmio_write_32(GPIO3_BASE + 0x1c, 0x3);
+
+	mmio_write_32(GPIO4_BASE + 0x10, 0xffffffff);
+	mmio_write_32(GPIO4_BASE + 0x14, 0x3);
+	mmio_write_32(GPIO4_BASE + 0x18, 0xffffffff);
+	mmio_write_32(GPIO4_BASE + 0x1c, 0x3);
+
+	mmio_write_32(GPIO1_BASE + 0x10, 0xffffffff);
+	mmio_write_32(GPIO1_BASE + 0x14, 0x3);
+	mmio_write_32(GPIO1_BASE + 0x18, 0xffffffff);
+	mmio_write_32(GPIO1_BASE + 0x1c, 0x3);
+
 	mmap_add_region(BL31_BASE, BL31_BASE, (BL31_LIMIT - BL31_BASE),
 		MT_MEMORY | MT_RW | MT_SECURE);
 	mmap_add_region(BL_CODE_BASE, BL_CODE_BASE, (BL_CODE_END - BL_CODE_BASE),
