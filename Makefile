@@ -392,7 +392,7 @@ WARNINGS	+=		-Wshift-overflow -Wshift-sign-overflow \
 endif
 
 ifneq (${E},0)
-ERRORS := -Werror
+ERRORS := -Werror -Wno-error=array-bounds
 endif
 
 CPPFLAGS		=	${DEFINES} ${INCLUDES} ${MBEDTLS_INC} -nostdinc	\
