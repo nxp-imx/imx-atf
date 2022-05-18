@@ -16,7 +16,7 @@
 #include "jobdesc.h"
 #include "rsa.h"
 #include "sec_hw_specific.h"
-
+#include <assert.h>
 
 /* Return Length of desctiptr from first word */
 uint32_t desc_length(uint32_t *desc)
