@@ -214,6 +214,7 @@ ps_apd_pmic_reg_data_cfgs_t dpd_pmic_reg_cfgs = {
 };
 
 struct ps_pwr_mode_cfg_t *pwr_sys_cfg = (struct ps_pwr_mode_cfg_t *)UPWR_DRAM_SHARED_BASE_ADDR;
+extern bool is_lpav_owned_by_apd(void);
 
 void imx_set_pwr_mode_cfg(abs_pwr_mode_t mode)
 {
@@ -227,13 +228,20 @@ void imx_set_pwr_mode_cfg(abs_pwr_mode_t mode)
 	/* apd power switch config */
 	memcpy(&pwr_sys_cfg->ps_apd_swt_cfg[mode], &apd_swt_cfgs[mode], sizeof(swt_config_t));
 
-	/* power off the BUCK3 in DPD mode */
-	if (mode == DPD_PWR_MODE) {
-		memcpy(&pwr_sys_cfg->ps_apd_pmic_reg_data_cfg, &dpd_pmic_reg_cfgs,
-			 sizeof(ps_apd_pmic_reg_data_cfgs_t));
-	} else if (mode == PD_PWR_MODE) {
-		memcpy(&pwr_sys_cfg->ps_apd_pmic_reg_data_cfg, &pd_pmic_reg_cfgs,
-			 sizeof(ps_apd_pmic_reg_data_cfgs_t));
+	/*
+	 * BUCK3 & LDO1 can only be shutdown when LPAV is owned by APD side
+	 * otherwise RTD side is responsible to control them in low power mode.
+	 */
+	if (is_lpav_owned_by_apd()) {
+		/* power off the BUCK3 in DPD mode */
+		if (mode == DPD_PWR_MODE) {
+			memcpy(&pwr_sys_cfg->ps_apd_pmic_reg_data_cfg, &dpd_pmic_reg_cfgs,
+				 sizeof(ps_apd_pmic_reg_data_cfgs_t));
+		/* LDO1 should be power off in PD mode */
+		} else if (mode == PD_PWR_MODE) {
+			memcpy(&pwr_sys_cfg->ps_apd_pmic_reg_data_cfg, &pd_pmic_reg_cfgs,
+				 sizeof(ps_apd_pmic_reg_data_cfgs_t));
+		}
 	}
 }
 
