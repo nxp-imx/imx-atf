@@ -140,6 +140,7 @@ uint32_t freq_specific_reg_array[PHY_DIFF_NUM]= {
 spinlock_t dfs_lock;
 static volatile uint32_t core_count;
 static volatile bool in_progress = false;
+static volatile bool sys_dvfs = false;
 static int num_fsp;
 
 static void ddr_init(void)
@@ -432,6 +433,8 @@ static void set_ddr_clk(uint32_t ddr_freq)
 #define DDR_DFS_GET_FSP_COUNT	0x10
 #define DDR_BYPASS_DRATE	U(400)
 
+extern int upower_pmic_i2c_write(uint32_t reg_addr, uint32_t reg_val);
+
 /* Normally, we only switch frequency between 1(bypass) and 2(highest) */
 int lpddr4_dfs(uint32_t freq_index)
 {
@@ -446,6 +449,13 @@ int lpddr4_dfs(uint32_t freq_index)
 	 */
 	if (freq_index > 2)
 		return -1;
+
+	/*
+	 * increase the voltage to 1.1V firstly before increase frequency
+	 * and APD enter OD mode
+	 */
+	if (freq_index == 2 && sys_dvfs)
+		upower_pmic_i2c_write(0x22, 0x28);
 
 	/* Enable LPI_WAKEUP_EN */
 	ddr_ctl_144 = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_144);
@@ -499,6 +509,12 @@ int lpddr4_dfs(uint32_t freq_index)
 	/* Must be something wrong, return failure */
 	}
 
+	/* decrease the BUCK3 voltage after frequency changed to lower
+	 * and APD in ND_MODE
+	 */
+	if (freq_index == 1 && sys_dvfs)
+		upower_pmic_i2c_write(0x22, 0x20);
+
 	/* DFS done successfully */
 	return 0;
 }
@@ -544,6 +560,7 @@ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 
 	/* start lpddr frequency scaling */
 	in_progress = true;
+	sys_dvfs = x3 ? true : false;
 	dsb();
 
 	/* notify other core wait for scaling done */
