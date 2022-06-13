@@ -48,9 +48,32 @@
 #include "soc.h"
 
 static struct soc_type soc_list[] =  {
+	/* SoC LX2160A */
 	SOC_ENTRY(LX2160A, LX2160A, 8, 2),
+	SOC_ENTRY(LX2160E, LX2160E, 8, 2),
+	SOC_ENTRY(LX2160C, LX2160C, 8, 2),
+	SOC_ENTRY(LX2160N, LX2160N, 8, 2),
 	SOC_ENTRY(LX2080A, LX2080A, 8, 1),
+	SOC_ENTRY(LX2080E, LX2080E, 8, 1),
+	SOC_ENTRY(LX2080C, LX2080C, 8, 1),
+	SOC_ENTRY(LX2080N, LX2080N, 8, 1),
 	SOC_ENTRY(LX2120A, LX2120A, 6, 2),
+	SOC_ENTRY(LX2120E, LX2120E, 6, 2),
+	SOC_ENTRY(LX2120C, LX2120C, 6, 2),
+	SOC_ENTRY(LX2120N, LX2120N, 6, 2),
+	/* SoC LX2162A */
+	SOC_ENTRY(LX2162A, LX2162A, 8, 2),
+	SOC_ENTRY(LX2162E, LX2162E, 8, 2),
+	SOC_ENTRY(LX2162C, LX2162C, 8, 2),
+	SOC_ENTRY(LX2162N, LX2162N, 8, 2),
+	SOC_ENTRY(LX2082A, LX2082A, 8, 1),
+	SOC_ENTRY(LX2082E, LX2082E, 8, 1),
+	SOC_ENTRY(LX2082C, LX2082C, 8, 1),
+	SOC_ENTRY(LX2082N, LX2082N, 8, 1),
+	SOC_ENTRY(LX2122A, LX2122A, 6, 2),
+	SOC_ENTRY(LX2122E, LX2122E, 6, 2),
+	SOC_ENTRY(LX2122C, LX2122C, 6, 2),
+	SOC_ENTRY(LX2122N, LX2122N, 6, 2),
 };
 
 static dcfg_init_info_t dcfg_init_data = {
@@ -451,8 +474,8 @@ void soc_init(void)
 
 	/* low-level init of the soc */
 	soc_init_start();
-	soc_init_percpu();
 	_init_global_data();
+	soc_init_percpu();
 	_initialize_psci();
 
 	if (ccn_get_part0_id(NXP_CCN_ADDR) != CCN_508_PART0_ID) {
