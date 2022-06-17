@@ -87,7 +87,7 @@ struct xrdc_pac_msc_config imx8ulp_pdac[] = {
 	{ 0, PAC_SLOT_ALL, {0, 7, 0, 0, 0, 0, 0, 7} }, /* PAC0 */
 	{ 0, 36, {0, 0, 0, 0, 0, 0, 7, 7} }, /* PAC0 slot 36 for CMC1 */
 	{ 0, 41, {0, 0, 0, 0, 0, 0, 7, 7} }, /* PAC0 slot 41 for SIM_AD */
-	{ 0, 47, {0, 0, 0, 0, 7, 0, 0, 7} }, /* PAC0 slot 47 for XRDC MGR*/
+	{ 0, 47, {0, 0, 0, 0, 7, 0, 0, 5} }, /* PAC0 slot 47 for XRDC MGR*/
 	{ 1, PAC_SLOT_ALL, {0, 7, 0, 0, 0, 0, 0, 7} }, /* PAC1 */
 	{ 1, 9,  {0, 7, 7, 7, 0, 0, 0, 7} }, /* SAI5 for HIFI4 and eDMA2 */
 	{ 1, 12, {0, 7, 0, 0, 0, 0, 7, 7} }, /* PAC1 slot 12 for IOMUXC1 */
