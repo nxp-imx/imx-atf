@@ -37,9 +37,11 @@ static const int ap_core_index[PLATFORM_CLUSTER0_CORE_COUNT + PLATFORM_CLUSTER1_
 	SC_R_A53_3, SC_R_A72_0, SC_R_A72_1,
 };
 
-/* save gic dist/redist context when GIC is poewr down */
-static struct plat_gic_ctx imx_gicv3_ctx;
 static unsigned int gpt_lpcg, gpt_reg[2];
+
+#if (!defined COCKPIT_A53) && (!defined COCKPIT_A72)
+/* save gic dist/redist context when GIC is powered down */
+static struct plat_gic_ctx imx_gicv3_ctx;
 
 static void imx_enable_irqstr_wakeup(void)
 {
@@ -70,6 +72,7 @@ static void imx_disable_irqstr_wakeup(void)
 	/* put IRQSTR into OFF mode */
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_OFF);
 }
+#endif
 
 int imx_pwr_domain_on(u_register_t mpidr)
 {
@@ -163,19 +166,20 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 	}
 
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
+#if (!defined COCKPIT_A53) && (!defined COCKPIT_A72)
 		uint32_t irqstr_mu_reg = (IRQSTR_PLAT_OS_MU_IRQ / 32) - 1;
 		uint32_t irqstr_mu_mask = (1 << (IRQSTR_PLAT_OS_MU_IRQ % 32));
 		uint32_t irqstr_mu_status, reg;
 		bool irqstr_mu_wakeup = false;
-
+#endif
 		plat_gic_cpuif_disable();
 
+#if (!defined COCKPIT_A53) && (!defined COCKPIT_A72)
 		/* save gic context */
 		plat_gic_save(cpu_id, &imx_gicv3_ctx);
 		/* enable the irqsteer for wakeup */
 		imx_enable_irqstr_wakeup();
 
-#if (!defined COCKPIT_A53) && (!defined COCKPIT_A72)
 		cci_disable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(mpidr));
 		/* Put GIC in LP mode. */
 		sc_pm_set_resource_power_mode(ipc_handle, SC_R_GIC, SC_PM_PW_MODE_OFF);
@@ -213,8 +217,10 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 
 		sc_pm_set_cpu_resume(ipc_handle,
 			ap_core_index[cpu_id + PLATFORM_CLUSTER0_CORE_COUNT * cluster_id],
-			true, BL31_BASE);
+			true, CPU_START_ADDR);
 
+#if (!defined COCKPIT_A53) && (!defined COCKPIT_A72)
+		/* Initialize wakeup source for NON-COCKPIT case. */
 		if (!imx_is_wakeup_src_irqsteer())
 			sc_pm_req_cpu_low_power_mode(ipc_handle,
 				ap_core_index[cpu_id + PLATFORM_CLUSTER0_CORE_COUNT * cluster_id],
@@ -242,6 +248,13 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 				SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_IRQSTEER);
 		} else
 			sc_pm_set_resource_power_mode(ipc_handle, SC_R_IRQSTR_SCU2, SC_PM_PW_MODE_OFF);
+
+#else
+		/* GIC is the only wakeup source for cockpit. */
+			sc_pm_req_cpu_low_power_mode(ipc_handle,
+				ap_core_index[cpu_id + PLATFORM_CLUSTER0_CORE_COUNT * cluster_id],
+				SC_PM_PW_MODE_OFF, SC_PM_WAKE_SRC_GIC);
+#endif
 	}
 }
 
@@ -292,11 +305,13 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 #if (!defined COCKPIT_A53) && (!defined COCKPIT_A72)
 		sc_pm_req_low_power_mode(ipc_handle, SC_R_CCI, SC_PM_PW_MODE_ON);
 		cci_enable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(mpidr));
-#endif
+
 		/* restore gic context */
 		plat_gic_restore(cpu_id, &imx_gicv3_ctx);
+
 		/* disable the irqsteer wakeup */
 		imx_disable_irqstr_wakeup();
+#endif
 
 		plat_gic_cpuif_enable();
 	}
