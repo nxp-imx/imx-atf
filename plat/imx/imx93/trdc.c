@@ -11,13 +11,14 @@
 #include <common/bl_common.h>
 #include <common/debug.h>
 #include <lib/mmio.h>
+#include <platform_def.h>
 
 #include "trdc_config.h"
 
 struct trdc_mgr_info trdc_mgr_blks[] = {
 	{ TRDC_A_BASE, 0, 0, 39, 40 },
 	{ TRDC_W_BASE, 0, 0, 70, 71 },
-	{ TRDC_M_BASE, 1, 0, 1, 2 },
+	{ TRDC_W_BASE, 1, 0, 1, 2 },
 	{ TRDC_N_BASE, 0, 1, 1, 2 },
 };
 
@@ -65,4 +66,26 @@ void trdc_config(void)
 	}
 
 	NOTICE("TRDC init done\n");
+}
+
+/*wakeup mix TRDC init */
+void trdc_w_reinit(void)
+{
+	/* config the access permission for the TRDC_W MGR and MC slot */
+	trdc_mgr_mbc_setup(&trdc_mgr_blks[1]);
+
+	trdc_mgr_mbc_setup(&trdc_mgr_blks[2]);
+
+	/* config the TRDC user settting from the config table */
+	trdc_setup(&trdc_cfg_info[1]);
+}
+
+/*nic mix TRDC init */
+void trdc_n_reinit(void)
+{
+	/* config the access permission for the TRDC_N MGR and MC slot */
+	trdc_mgr_mbc_setup(&trdc_mgr_blks[3]);
+
+	/* config the TRDC user settting from the config table */
+	trdc_setup(&trdc_cfg_info[2]);
 }

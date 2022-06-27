@@ -78,6 +78,17 @@ static inline void gpc_force_cpu_suspend(unsigned int cpu)
 	mmio_setbits_32(GPC_GLOBAL_BASE + GPC_SYS_SLEEP, FORCE_CPUx_DISABLE(cpu));
 }
 
+static inline void gpc_unforce_cpu_suspend(unsigned int cpu)
+{
+	mmio_clrbits_32(GPC_GLOBAL_BASE+ GPC_SYS_SLEEP, FORCE_CPUx_DISABLE(cpu));
+}
+
+/* enable system sleep mode for a cpu */
+static inline void gpc_set_cpu_ss_mode(unsigned int cpu, unsigned int mode)
+{
+	mmio_write_32(CM_SLICE(cpu) + CM_SYS_SLEEP_CTRL, mode);
+}
+
 static inline void gpc_pmic_stby_en(bool en)
 {
 	mmio_write_32(GPC_GLOBAL_BASE + PMIC_CTRL, en ? 1 : 0);

@@ -60,4 +60,3 @@ void pwr_sys_init(void)
 	/* enable the HW LP handshake between S401 & A55 cluster */
 	mmio_setbits_32(BLK_CTRL_S_BASE + HW_LP_HANDHSK, BIT(5));
 }
-
