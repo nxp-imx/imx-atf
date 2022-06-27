@@ -11,6 +11,7 @@ PLAT_INCLUDES		:=	-Iplat/imx/common/include		\
 include lib/xlat_tables_v2/xlat_tables.mk
 
 GICV3_SUPPORT_GIC600  :=      1
+GICV3_OVERRIDE_DISTIF_PWR_OPS	:=	1
 
 # Include GICv3 driver files
 include drivers/arm/gic/v3/gicv3.mk
@@ -23,6 +24,7 @@ IMX_GIC_SOURCES		:=	${GICV3_SOURCES}			\
 BL31_SOURCES		+=	plat/common/aarch64/crash_console_helpers.S   \
 				plat/imx/imx93/aarch64/plat_helpers.S		\
 				plat/imx/imx93/plat_topology.c			\
+				plat/imx/imx93/dram_retention.c			\
 				plat/imx/common/lpuart_console.S		\
 				plat/imx/imx93/trdc.c			\
 				plat/imx/imx93/imx93_bl31_setup.c		\

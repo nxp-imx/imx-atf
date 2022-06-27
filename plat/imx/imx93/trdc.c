@@ -608,3 +608,25 @@ void trdc_config(void)
 		trdc_setup(&trdc_cfg_info[i]);
 	}
 }
+
+/*wakeup mix TRDC init */
+void trdc_w_reinit(void)
+{
+	/* config the access permission for the TRDC_W MGR and MC slot */
+	trdc_mgr_mbc_setup(&trdc_mgr_blks[1]);
+
+	trdc_mgr_mbc_setup(&trdc_mgr_blks[2]);
+
+	/* config the TRDC user settting from the config table */
+	trdc_setup(&trdc_cfg_info[1]);
+}
+
+/*nic mix TRDC init */
+void trdc_n_reinit(void)
+{
+	/* config the access permission for the TRDC_N MGR and MC slot */
+	trdc_mgr_mbc_setup(&trdc_mgr_blks[3]);
+
+	/* config the TRDC user settting from the config table */
+	trdc_setup(&trdc_cfg_info[2]);
+}
