@@ -282,20 +282,14 @@ void wdog3_restore(void)
 	/* enable wdog3 clock */
 	mmio_write_32(IMX_PCC3_BASE + 0xa8, 0xd2800000);
 
-	/* unlock the wdog */
-	mmio_write_32(IMX_WDOG3_BASE + 0x4, 0xc520);
-	mmio_write_32(IMX_WDOG3_BASE + 0x4, 0xd928);
-
-	dsb();
-
-	/* wait for the unlock status */
-	while(!(mmio_read_32(IMX_WDOG3_BASE) & BIT(11)))
-		;
-
-	/* set the tiemout value */
-	mmio_write_32(IMX_WDOG3_BASE + 0x8, wdog3[1]);
 	/* reconfig the CS */
 	mmio_write_32(IMX_WDOG3_BASE, wdog3[0]);
+	/* set the tiemout value */
+	mmio_write_32(IMX_WDOG3_BASE + 0x8, wdog3[1]);
+
+	/* wait for the lock status */
+	while((mmio_read_32(IMX_WDOG3_BASE) & BIT(11)))
+		;
 
 	/* wait for the config done */
 	while(!(mmio_read_32(IMX_WDOG3_BASE) & BIT(10)))
