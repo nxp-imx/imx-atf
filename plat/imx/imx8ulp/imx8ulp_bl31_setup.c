@@ -35,6 +35,8 @@ static entry_point_info_t bl33_image_ep_info;
 
 static const mmap_region_t imx_mmap[] = {
 	MAP_REGION_FLAT(DEVICE0_BASE, DEVICE0_SIZE, MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(0x27010000, 0x20000, MT_DEVICE | MT_RW | MT_NS), /* MU and FSB */
+	MAP_REGION_FLAT(0x2802B000, 0x1000, MT_DEVICE | MT_RW | MT_NS), /* SEC SIM */
 	MAP_REGION_FLAT(DEVICE1_BASE, DEVICE1_SIZE, MT_DEVICE | MT_RW),
 	/* For SCMI shared memory region */
 	MAP_REGION_FLAT(0x2201f000, 0x1000, MT_RW | MT_DEVICE),
