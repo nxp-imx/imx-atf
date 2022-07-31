@@ -148,7 +148,7 @@ static void scmi_sensor_description_get(struct scmi_msg *msg)
 	num_ret = num_sensor_flags & 0xFFFF;
 	return_values.num_sensor_flags = num_sensor_flags;
 
-	scmi_write_response(msg, &return_values, sizeof(return_values) + num_ret * sizeof(struct scmi_sensor_desc));
+	scmi_write_response(msg, &return_values, sizeof(return_values) + (num_ret - 1) * sizeof(struct scmi_sensor_desc));
 }
 
 static void scmi_sensor_config_get(struct scmi_msg *msg)
