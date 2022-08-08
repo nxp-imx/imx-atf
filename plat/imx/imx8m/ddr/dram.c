@@ -245,6 +245,10 @@ void dram_info_init(unsigned long dram_timing_base)
 	/* only support maximum 3 setpoints */
 	dram_info.num_fsp = (i > MAX_FSP_NUM) ? MAX_FSP_NUM : i;
 
+	/* no valid fsp table, return directly */
+	if (i == 0)
+		return;
+
 	/* save the DRAMTMG2/9 for rank to rank workaround */
 	save_rank_setting();
 
