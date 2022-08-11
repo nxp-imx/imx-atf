@@ -106,8 +106,10 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 
 	/* check the core level power status */
 	if (is_local_state_off(CORE_PWR_STATE(target_state))) {
+#ifndef IMX_ANDROID_BUILD
 		/* mark this core as awake by masking IRQ0 */
 		imx_gpc_set_a53_core_awake(core_id);
+#endif
 		/* clear the core lpm setting */
 		imx_set_cpu_lpm(core_id, false);
 		/* enable the gic cpu interface */

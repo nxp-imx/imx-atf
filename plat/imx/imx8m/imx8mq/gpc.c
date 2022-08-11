@@ -30,7 +30,9 @@
 #define MAX_HW_IRQ_NUM		U(128)
 #define MAX_IMR_NUM		U(4)
 
+#ifndef IMX_ANDROID_BUILD
 static uint32_t gpc_saved_imrs[16];
+#endif
 static uint32_t gpc_wake_irqs[4];
 static uint32_t gpc_imr_offset[] = {
 	IMX_GPC_BASE + IMR1_CORE0_A53,
@@ -59,6 +61,7 @@ static void gpc_imr_core_spin_unlock(unsigned int core_id)
 	spin_unlock(&gpc_imr_lock[core_id]);
 }
 
+#ifndef IMX_ANDROID_BUILD
 static void gpc_save_imr_lpm(unsigned int core_id, unsigned int imr_idx)
 {
 	uint32_t reg = gpc_imr_offset[core_id] + imr_idx * 4;
@@ -110,6 +113,7 @@ void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
 		}
 	}
 }
+#endif
 
 static void imx_gpc_hwirq_mask(unsigned int hwirq)
 {
@@ -472,8 +476,10 @@ void imx_gpc_init(void)
 		mmio_write_32(gpc_imr_offset[i], ~0x1);
 	}
 
+#ifndef IMX_ANDROID_BUILD
 	/* leave the IOMUX_GPC bit 12 on for core wakeup */
 	mmio_setbits_32(IMX_IOMUX_GPR_BASE + 0x4, 1 << 12);
+#endif
 
 	/* use external IRQs to wakeup C0~C3 from LPM */
 	val = mmio_read_32(IMX_GPC_BASE + LPCR_A53_BSC);
