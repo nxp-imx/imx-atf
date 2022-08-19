@@ -5,18 +5,21 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
-#include <scmi.h>
 #include <stdlib.h>
 #include <inttypes.h>
 #include <stdint.h>
 #include <string.h>
+
 #include <common/debug.h>
 #include <drivers/scmi.h>
+#include <lib/mmio.h>
 #include <lib/utils_def.h>
 #include <lib/libc/errno.h>
+#include <scmi.h>
 #include <upower_soc_defs.h>
 #include <upower_api.h>
+
+#include <platform_def.h>
 
 #define POWER_STATE_ON	(0 << 30)
 #define POWER_STATE_OFF	(1 << 30)
@@ -393,6 +396,17 @@ bool pd_allow_power_off(unsigned int pd_id)
 	return true;
 }
 
+#define PCC_GPU2D	(IMX_PCC5_BASE + 0xf0)
+#define PCC_GPU3D	(IMX_PCC5_BASE + 0xf4)
+void assert_gpu_reset(unsigned int pd_id, bool enable)
+{
+	if (pd_id == IMX8ULP_PD_GPU2D) {
+		mmio_clrbits_32(PCC_GPU2D, BIT(28));
+	} else {
+		mmio_clrbits_32(PCC_GPU3D, BIT(28));
+	}
+}
+
 int32_t plat_scmi_pd_set_state(unsigned int agent_id __unused,
 			       unsigned int flags,
 			       unsigned int pd_id,
@@ -422,6 +436,11 @@ int32_t plat_scmi_pd_set_state(unsigned int agent_id __unused,
 	mem = scmi_power_domains[i].bits;
 	on = (state == POWER_STATE_ON ? true : false);
 	if (on) {
+		/* Assert the GPU reset */
+		if (pd_id == IMX8ULP_PD_GPU2D || pd_id == IMX8ULP_PD_GPU3D) {
+			assert_gpu_reset(pd_id, true);
+		}
+
 		ret = plat_scmi_pd_psw(i, state);
 		if (ret)
 			return SCMI_DENIED;
