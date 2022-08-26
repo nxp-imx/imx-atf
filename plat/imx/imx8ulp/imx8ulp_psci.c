@@ -17,6 +17,8 @@
 #include <upower_soc_defs.h>
 #include <upower_api.h>
 
+static uintptr_t secure_entrypoint;
+
 #define CORE_PWR_STATE(state) ((state)->pwr_domain_state[MPIDR_AFFLVL0])
 #define CLUSTER_PWR_STATE(state) ((state)->pwr_domain_state[MPIDR_AFFLVL1])
 #define SYSTEM_PWR_STATE(state) ((state)->pwr_domain_state[PLAT_MAX_PWR_LVL])
@@ -82,7 +84,7 @@ int imx_pwr_domain_on(u_register_t mpidr)
 {
 	unsigned int cpu = MPIDR_AFFLVL0_VAL(mpidr);
 
-	imx_pwr_set_cpu_entry(cpu, BL31_BASE);
+	imx_pwr_set_cpu_entry(cpu, secure_entrypoint);
 
 	mmio_write_32(IMX_CMC1_BASE + 0x18, 0x3f);
 	mmio_write_32(IMX_CMC1_BASE + 0x50 + 0x4 * cpu, 0);
@@ -257,7 +259,7 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 
 	if (is_local_state_off(CORE_PWR_STATE(target_state))) {
 		plat_gic_cpuif_disable();
-		imx_pwr_set_cpu_entry(cpu, BL31_BASE);
+		imx_pwr_set_cpu_entry(cpu, secure_entrypoint);
 		/* core put into power down */
 		mmio_write_32(IMX_CMC1_BASE + 0x50 + 0x4 * cpu, 0x3);
 		/* FIXME config wakeup interrupt in WKPU */
@@ -301,7 +303,7 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 		upwr_xcp_set_rtd_apd_llwu(APD_DOMAIN, 0, NULL);
 		upower_wait_resp();
 
-		/* enable the USB wakeup */ 
+		/* enable the USB wakeup */
 		usb_wakeup_enable(true);
 
 		/* config the WUU to enabled the wakeup source */
@@ -482,7 +484,8 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			const plat_psci_ops_t **psci_ops)
 {
-	imx_mailbox_init(sec_entrypoint);
+	secure_entrypoint = sec_entrypoint;
+	imx_pwr_set_cpu_entry(0, sec_entrypoint);
 	*psci_ops = &imx_plat_psci_ops;
 
 	mmio_write_32(IMX_CMC1_BASE + 0x18, 0x3f);
