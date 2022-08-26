@@ -1010,6 +1010,7 @@ $(eval $(call assert_booleans,\
         SAVE_KEYS \
         SEPARATE_CODE_AND_RODATA \
         SEPARATE_NOBITS_REGION \
+        SEPARATE_RWDATA_REGION \
         SPIN_ON_BL1_EXIT \
         SPM_MM \
         SPMD_SPM_AT_SEL2 \
@@ -1119,6 +1120,7 @@ $(eval $(call add_defines,\
         RESET_TO_BL31 \
         SEPARATE_CODE_AND_RODATA \
         SEPARATE_NOBITS_REGION \
+        SEPARATE_RWDATA_REGION \
         RECLAIM_INIT_CODE \
         SPD_${SPD} \
         SPIN_ON_BL1_EXIT \
