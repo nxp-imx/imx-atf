@@ -99,6 +99,7 @@ struct power_domain {
 	uint64_t bits;
 	uint32_t power_state;
 	bool lpav; /* belong to lpav domain */
+	uint32_t sw_rst_reg; /* pcc sw reset reg offset */
 };
 
 /* The Rich OS need flow the macro */
@@ -127,6 +128,15 @@ struct power_domain {
 #define IMX8ULP_PD_PS15		21
 #define IMX8ULP_PD_PS16		22
 #define IMX8ULP_PD_MAX		23
+
+/* LPAV peripheral PCC */
+#define PCC_GPU2D	(IMX_PCC5_BASE + 0xf0)
+#define PCC_GPU3D	(IMX_PCC5_BASE + 0xf4)
+#define PCC_EPDC	(IMX_PCC5_BASE + 0xcc)
+#define PCC_CSI		(IMX_PCC5_BASE + 0xbc)
+#define PCC_PXP		(IMX_PCC5_BASE + 0xd0)
+
+#define PCC_SW_RST	BIT(28)
 
 static struct power_domain scmi_power_domains[] = {
 	{
@@ -200,6 +210,7 @@ static struct power_domain scmi_power_domains[] = {
 		.bits = SRAM_EPDC,
 		.power_state = POWER_STATE_OFF,
 		.lpav = true,
+		.sw_rst_reg = PCC_EPDC,
 	},
 	{
 		.name = "DMA2",
@@ -218,6 +229,7 @@ static struct power_domain scmi_power_domains[] = {
 		.bits = SRAM_GPU2D,
 		.power_state = POWER_STATE_OFF,
 		.lpav = true,
+		.sw_rst_reg = PCC_GPU2D,
 	},
 	{
 		.name = "GPU3D",
@@ -227,6 +239,7 @@ static struct power_domain scmi_power_domains[] = {
 		.bits = SRAM_GPU3D,
 		.power_state = POWER_STATE_OFF,
 		.lpav = true,
+		.sw_rst_reg = PCC_GPU3D,
 	},
 	{
 		.name = "HIFI4",
@@ -254,6 +267,7 @@ static struct power_domain scmi_power_domains[] = {
 		.bits = SRAM_MIPI_CSI_FIFO,
 		.power_state = POWER_STATE_OFF,
 		.lpav = true,
+		.sw_rst_reg = PCC_CSI,
 	},
 	{
 		.name = "MIPI_DSI",
@@ -272,6 +286,7 @@ static struct power_domain scmi_power_domains[] = {
 		.bits = SRAM_PXP,
 		.power_state = POWER_STATE_OFF,
 		.lpav = true,
+		.sw_rst_reg = PCC_PXP,
 	},
 };
 
@@ -396,14 +411,11 @@ bool pd_allow_power_off(unsigned int pd_id)
 	return true;
 }
 
-#define PCC_GPU2D	(IMX_PCC5_BASE + 0xf0)
-#define PCC_GPU3D	(IMX_PCC5_BASE + 0xf4)
-void assert_gpu_reset(unsigned int pd_id, bool enable)
+void assert_pcc_reset(unsigned int pcc)
 {
-	if (pd_id == IMX8ULP_PD_GPU2D) {
-		mmio_clrbits_32(PCC_GPU2D, BIT(28));
-	} else {
-		mmio_clrbits_32(PCC_GPU3D, BIT(28));
+	/* if sw_rst_reg is valid, assert the pcc reset */
+	if (pcc) {
+		mmio_clrbits_32(pcc, PCC_SW_RST);
 	}
 }
 
@@ -436,10 +448,8 @@ int32_t plat_scmi_pd_set_state(unsigned int agent_id __unused,
 	mem = scmi_power_domains[i].bits;
 	on = (state == POWER_STATE_ON ? true : false);
 	if (on) {
-		/* Assert the GPU reset */
-		if (pd_id == IMX8ULP_PD_GPU2D || pd_id == IMX8ULP_PD_GPU3D) {
-			assert_gpu_reset(pd_id, true);
-		}
+		/* Assert pcc sw reset if necessary */
+		assert_pcc_reset(scmi_power_domains[i].sw_rst_reg);
 
 		ret = plat_scmi_pd_psw(i, state);
 		if (ret)
