@@ -489,7 +489,8 @@
 		bl	zeromem
 #endif
 
-#if defined(IMAGE_BL1) || (defined(IMAGE_BL2) && BL2_AT_EL3 && BL2_IN_XIP_MEM)
+#if defined(IMAGE_BL1) || (defined(IMAGE_BL2) && BL2_AT_EL3 && BL2_IN_XIP_MEM) || \
+	(defined(IMAGE_BL31) && SEPARATE_RWDATA_REGION)
 		adrp	x0, __DATA_RAM_START__
 		add	x0, x0, :lo12:__DATA_RAM_START__
 		adrp	x1, __DATA_ROM_START__
