@@ -96,6 +96,8 @@ ifeq (${SPD},trusty)
 IMX_SEPARATE_XLAT_TABLE :=	1
 
 $(eval $(call add_define,IMX_SEPARATE_XLAT_TABLE))
+
+BL31_SOURCES += plat/imx/common/ffa_shared_mem.c
 endif
 
 ifeq (${IMX_ANDROID_BUILD},true)
