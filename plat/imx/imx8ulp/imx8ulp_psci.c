@@ -461,6 +461,8 @@ void imx_get_sys_suspend_power_state(psci_power_state_t *req_state)
 		req_state->pwr_domain_state[i] = PLAT_POWER_DOWN_OFF_STATE;
 }
 
+extern void apd_io_pad_off(void);
+
 void __dead2 imx_system_off(void)
 {
 	int i;
@@ -478,6 +480,9 @@ void __dead2 imx_system_off(void)
 	}
 
 	plat_gic_cpuif_disable();
+
+	/* power off all the pad */
+	apd_io_pad_off();
 
 	/* Config the power mode info for entering DPD mode and ACT mode */
 	imx_set_pwr_mode_cfg(ADMA_PWR_MODE);
