@@ -47,6 +47,10 @@ BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
 				${XLAT_TABLES_LIB_SRCS}			\
 				${IMX_GIC_SOURCES}
 
+ifeq (${SPD},trusty)
+	BL31_SOURCES += plat/imx/common/ffa_shared_mem.c
+endif
+
 ifeq ($(findstring clang,$(notdir $(CC))),)
     TF_CFLAGS_aarch64	+=	-fno-strict-aliasing
 endif

@@ -162,6 +162,8 @@ $(eval $(call add_define,IMX8M_DDR4_DVFS))
 ifeq (${SPD},trusty)
 IMX_SEPARATE_XLAT_TABLE :=	1
 
+BL31_SOURCES += plat/imx/common/ffa_shared_mem.c
+
 $(eval $(call add_define,IMX_SEPARATE_XLAT_TABLE))
 endif
 
