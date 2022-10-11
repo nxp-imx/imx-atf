@@ -37,6 +37,9 @@
 #endif
 
 #include <errata.h>
+#ifdef CONFIG_OCRAM_ECC_EN
+#include <ocram.h>
+#endif
 #include <ls_interrupt_mgmt.h>
 #ifdef CONFIG_OCRAM_ECC_EN
 #include <ocram.h>
