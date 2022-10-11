@@ -30,6 +30,7 @@
 
 #define BL31_BASE			U(0x204E0000)
 #define BL31_LIMIT			U(0x20520000)
+#define SAVED_DRAM_TIMING_BASE		U(0x2051c000)
 
 /* non-secure uboot base */
 /* TODO */
@@ -43,7 +44,7 @@
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(ULL(1) << 32)
 #define PLAT_PHY_ADDR_SPACE_SIZE	(ULL(1) << 32)
 
-#define MAX_XLAT_TABLES			8
+#define MAX_XLAT_TABLES			12
 #define MAX_MMAP_REGIONS		16
 
 #define IMX_LPUART_BASE			0x44380000
@@ -59,6 +60,11 @@
 #define GPIO2_BASE			U(0x43810000)
 #define GPIO3_BASE			U(0x43820000)
 #define GPIO4_BASE			U(0x43830000)
+#define GPIO_BASE			U(0x53810000)
+#define GPIO_SIZE			U(0x30000)
+#define S400_MU_BASE			U(0x47520000)
+#define DDRMIX_BASE			U(0x4E000000)
+#define DDRMIX_SIZE			U(0x400000)
 
 #define TRDC_A_BASE			U(0x44270000)
 #define TRDC_W_BASE			U(0x42460000)
