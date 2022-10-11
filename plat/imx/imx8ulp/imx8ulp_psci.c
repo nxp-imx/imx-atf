@@ -201,9 +201,21 @@ ps_apd_pmic_reg_data_cfgs_t pd_pmic_reg_cfgs = {
 	},
 	[1] = {
 		.tag = PMIC_REG_VALID_TAG,
+		.power_mode = PD_PWR_MODE,
+		.i2c_addr = 0x22,
+		.i2c_data = 0xb,
+	},
+	[2] = {
+		.tag = PMIC_REG_VALID_TAG,
 		.power_mode = ACT_PWR_MODE,
 		.i2c_addr = 0x30,
 		.i2c_data = 0x9d,
+	},
+	[3] = {
+		.tag = PMIC_REG_VALID_TAG,
+		.power_mode = ACT_PWR_MODE,
+		.i2c_addr = 0x22,
+		.i2c_data = 0x28,
 	},
 };
 
@@ -225,9 +237,12 @@ ps_apd_pmic_reg_data_cfgs_t dpd_pmic_reg_cfgs = {
 
 struct ps_pwr_mode_cfg_t *pwr_sys_cfg = (struct ps_pwr_mode_cfg_t *)UPWR_DRAM_SHARED_BASE_ADDR;
 extern bool is_lpav_owned_by_apd(void);
+extern int upower_pmic_i2c_read(uint32_t reg_addr, uint32_t *reg_val);
 
 void imx_set_pwr_mode_cfg(abs_pwr_mode_t mode)
 {
+	uint32_t volt;
+
 	if ( mode >= NUM_PWR_MODES)
 		return;
 
@@ -249,6 +264,9 @@ void imx_set_pwr_mode_cfg(abs_pwr_mode_t mode)
 				 sizeof(ps_apd_pmic_reg_data_cfgs_t));
 		/* LDO1 should be power off in PD mode */
 		} else if (mode == PD_PWR_MODE) {
+			/* overwrite the buck3 voltage setting in active mode */
+			upower_pmic_i2c_read(0x22, &volt);
+			pd_pmic_reg_cfgs[3].i2c_data = volt;
 			memcpy(&pwr_sys_cfg->ps_apd_pmic_reg_data_cfg, &pd_pmic_reg_cfgs,
 				 sizeof(ps_apd_pmic_reg_data_cfgs_t));
 		}
