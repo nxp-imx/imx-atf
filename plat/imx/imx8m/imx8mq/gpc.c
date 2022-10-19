@@ -27,6 +27,9 @@
 #define FSL_SIP_CONFIG_GPC_SET_AFF	0x04
 #define FSL_SIP_CONFIG_GPC_CORE_WAKE	0x05
 
+#define MAX_HW_IRQ_NUM		U(128)
+#define MAX_DOMAIN_ID		U(10)
+
 #ifndef IMX_ANDROID_BUILD
 static uint32_t gpc_saved_imrs[16];
 #endif
@@ -112,6 +115,9 @@ static void imx_gpc_hwirq_mask(unsigned int hwirq)
 	uintptr_t reg;
 	unsigned int val;
 
+	if (hwirq >= MAX_HW_IRQ_NUM)
+		return;
+
 	gpc_imr_core_spin_lock(0);
 	reg = gpc_imr_offset[0] + (hwirq / 32) * 4;
 	val = mmio_read_32(reg);
@@ -125,6 +131,9 @@ static void imx_gpc_hwirq_unmask(unsigned int hwirq)
 	uintptr_t reg;
 	unsigned int val;
 
+	if (hwirq >= MAX_HW_IRQ_NUM)
+		return;
+
 	gpc_imr_core_spin_lock(0);
 	reg = gpc_imr_offset[0] + (hwirq / 32) * 4;
 	val = mmio_read_32(reg);
@@ -136,6 +145,9 @@ static void imx_gpc_hwirq_unmask(unsigned int hwirq)
 static void imx_gpc_set_wake(uint32_t hwirq, unsigned int on)
 {
 	uint32_t mask, idx;
+
+	if (hwirq >= MAX_HW_IRQ_NUM)
+		return;
 
 	mask = 1 << hwirq % 32;
 	idx = hwirq / 32;
@@ -171,6 +183,8 @@ static void imx_gpc_set_affinity(uint32_t hwirq, unsigned cpu_idx)
 	uintptr_t reg;
 	unsigned int val;
 
+	if (hwirq >= MAX_HW_IRQ_NUM || cpu_idx >= 4)
+		return;
 	/*
 	 * using the mask/unmask bit as affinity function.unmask the
 	 * IMR bit to enable IRQ wakeup for this core.
@@ -349,6 +363,9 @@ void imx_gpc_pm_domain_enable(uint32_t domain_id, bool on)
 	uint32_t val;
 	uintptr_t reg;
 
+	/* check if the domain_id is valid */
+	if (domain_id > MAX_DOMAIN_ID)
+		return;
 	/*
 	 * PCIE1 and PCIE2 share the same reset signal, if we power down
 	 * PCIE2, PCIE1 will be hold in reset too.
