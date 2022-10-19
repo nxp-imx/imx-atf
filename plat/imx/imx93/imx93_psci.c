@@ -279,6 +279,39 @@ void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
 	}
 }
 
+void nicmix_qos_init(void)
+{
+	mmio_write_32(0x49000010, 0x44);
+	mmio_write_32(0x49000014, 0x330033);
+	mmio_write_32(0x49000018, 0x330033);
+	mmio_write_32(0x4900001c, 0x330033);
+	mmio_write_32(0x49000020, 0x440044);
+}
+
+void wakeupmix_qos_init(void)
+{
+	mmio_write_32(0x42846100, 0x4);
+	mmio_write_32(0x42846104, 0x4);
+
+	mmio_write_32(0x42847100, 0x4);
+	mmio_write_32(0x42847104, 0x4);
+
+	mmio_write_32(0x42842100, 0x4);
+	mmio_write_32(0x42842104, 0x4);
+
+	mmio_write_32(0x42843100, 0x4);
+	mmio_write_32(0x42843104, 0x4);
+
+	mmio_write_32(0x42845100, 0x4);
+	mmio_write_32(0x42845104, 0x4);
+
+	mmio_write_32(0x43947100, 0x4);
+	mmio_write_32(0x43947104, 0x4);
+
+	mmio_write_32(0x43945100, 0x4);
+	mmio_write_32(0x43945104, 0x4);
+}
+
 void nicmix_pwr_down(unsigned int core_id)
 {
 	/* enable the handshake between sentinel & NICMIX */
@@ -302,6 +335,7 @@ void nicmix_pwr_up(unsigned int core_id)
 	/* keep nicmix on when exit from system suspend */
 	mmio_write_32(IMX_SRC_BASE + 0x1c00 + 0x14, BIT(12) | BIT(13));
 	trdc_n_reinit();
+	nicmix_qos_init();
 	plat_gic_restore(core_id, &imx_gicv3_ctx);
 	imx_set_sys_wakeup(core_id, false);
 }
@@ -406,6 +440,7 @@ void wakeupmix_pwr_up(void)
 		/* keep wakeupmix on when exit from system suspend */
 		mmio_write_32(IMX_SRC_BASE + 0xc00 + 0x14, BIT(12) | BIT(13));
 		trdc_w_reinit();
+		wakeupmix_qos_init();
 		gpio_restore(wakeupmix_gpio_ctx, 3);
 	}
 }
@@ -713,6 +748,8 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	imx_set_cpu_boot_entry(0, sec_entrypoint);
 
 	gpc_src_init();
+	nicmix_qos_init();
+	wakeupmix_qos_init();
 
 	*psci_ops = &imx_plat_psci_ops;
 
