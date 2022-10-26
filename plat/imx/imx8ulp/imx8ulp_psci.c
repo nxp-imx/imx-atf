@@ -229,9 +229,21 @@ ps_apd_pmic_reg_data_cfgs_t dpd_pmic_reg_cfgs = {
 	},
 	[1] = {
 		.tag = PMIC_REG_VALID_TAG,
+		.power_mode = DPD_PWR_MODE,
+		.i2c_addr = 0x30,
+		.i2c_data = 0x9c,
+	},
+	[2] = {
+		.tag = PMIC_REG_VALID_TAG,
 		.power_mode = ACT_PWR_MODE,
 		.i2c_addr = 0x21,
 		.i2c_data = 0x79,
+	},
+	[3] = {
+		.tag = PMIC_REG_VALID_TAG,
+		.power_mode = ACT_PWR_MODE,
+		.i2c_addr = 0x30,
+		.i2c_data = 0x9d,
 	},
 };
 
