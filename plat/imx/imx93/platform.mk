@@ -21,12 +21,15 @@ IMX_GIC_SOURCES		:=	${GICV3_SOURCES}			\
 				plat/common/plat_psci_common.c		\
 				plat/imx/common/plat_imx8_gic.c
 
+IMX_DRAM_SOURCES	:=	plat/imx/imx93/ddr/dram.c		\
+				plat/imx/imx93/ddr/ddr_dvfs.c	        \
+				plat/imx/imx93/ddr/dram_retention.c
+
 BL31_SOURCES		+=	common/desc_image_load.c			\
 				plat/common/aarch64/crash_console_helpers.S	\
 				plat/imx/imx93/aarch64/plat_helpers.S		\
 				plat/imx/imx93/plat_topology.c			\
 				plat/imx/common/imx_common.c			\
-				plat/imx/imx93/dram_retention.c			\
 				plat/imx/common/lpuart_console.S		\
 				plat/imx/imx93/trdc.c			\
 				plat/imx/imx93/pwr_ctrl.c			\
@@ -40,6 +43,7 @@ BL31_SOURCES		+=	common/desc_image_load.c			\
 				drivers/delay_timer/generic_delay_timer.c	\
 				drivers/nxp/trdc/imx_trdc.c			\
 				${IMX_GIC_SOURCES}				\
+				${IMX_DRAM_SOURCES}				\
 				${XLAT_TABLES_LIB_SRCS}
 
 RESET_TO_BL31		:=	1
