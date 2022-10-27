@@ -22,6 +22,7 @@
 #include <platform_def.h>
 #include <plat_imx8.h>
 #include <trdc.h>
+#include <dram.h>
 
 static const mmap_region_t imx_mmap[] = {
 	/* APIS2 mapping */
@@ -143,6 +144,9 @@ void bl31_plat_arch_setup(void)
 void bl31_platform_setup(void)
 {
 	generic_delay_timer_init();
+
+	/* Init the dram info */
+	dram_info_init(SAVED_DRAM_TIMING_BASE);
 
 	plat_gic_driver_init();
 	plat_gic_init();

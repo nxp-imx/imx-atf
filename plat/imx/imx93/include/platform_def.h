@@ -30,6 +30,7 @@
 
 #define BL31_BASE			U(0x204E0000)
 #define BL31_LIMIT			U(0x20520000)
+
 #define SAVED_DRAM_TIMING_BASE		U(0x2051c000)
 
 /* non-secure uboot base */
