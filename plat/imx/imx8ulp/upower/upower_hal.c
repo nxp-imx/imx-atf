@@ -132,7 +132,7 @@ int upower_read_temperature(uint32_t sensor_id, int32_t *temperature)
 {
 	int ret, ret_val;
 	upwr_resp_t err_code;
-	uint64_t t;
+	int64_t t;
 
 	ret = upwr_tpm_get_temperature(sensor_id, NULL);
 	if (ret)
