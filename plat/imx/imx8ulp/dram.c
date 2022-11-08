@@ -208,13 +208,14 @@ void dram_lp_auto_disable(void)
 	/* Save initial config */
 	dram_ctl_143 = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_143);
 
+	/* Set LPI_SRPD_LONG_MCCLK_GATE_WAKEUP_F2 to Maximum */
+	mmio_setbits_32(IMX_DDRC_BASE + DENALI_CTL_143, 0xF << 24);
+
 	if (lp_auto_en && !dram_auto_lp_true) {
 		/* 0.a Save DDRC auto low-power mode parameter */
 		dram_timing_cfg->auto_lp_cfg[0] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_144);
 		dram_timing_cfg->auto_lp_cfg[1] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_147);
 		dram_timing_cfg->auto_lp_cfg[2] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_146);
-		/* Set LPI_SRPD_LONG_MCCLK_GATE_WAKEUP_F2 to Maximum */
-		mmio_setbits_32(IMX_DDRC_BASE + DENALI_CTL_143, 0xF << 24);
 		/* 0.b Disable DDRC auto low-power mode interface */
 		mmio_clrbits_32(IMX_DDRC_BASE + DENALI_CTL_146, LP_AUTO_ENTRY_EN << 24);
 		/* 0.c Read any location to get DRAM out of Self-refresh */
@@ -231,6 +232,9 @@ void dram_lp_auto_disable(void)
 
 void dram_lp_auto_enable(void)
 {
+	/* restore ctl config */
+	mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_143, dram_ctl_143);
+
 	/* Switch back to Auto Low-power mode */
 	if (dram_auto_lp_true) {
 		/* 12.a Confirm DRAM is out of Self-refresh */
@@ -246,8 +250,6 @@ void dram_lp_auto_enable(void)
 		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_147, dram_timing_cfg->auto_lp_cfg[1]);
 		/* 12.e Re-enable DDRC auto low-power mode interface */
 		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_146, dram_timing_cfg->auto_lp_cfg[2]);
-		/* restore ctl config */
-		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_143, dram_ctl_143);
 		/* dram low power mode flag */
 		dram_auto_lp_true = false;
 	}

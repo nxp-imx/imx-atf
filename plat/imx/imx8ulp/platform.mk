@@ -67,6 +67,10 @@ BL32_SIZE		?=	0x2000000
 $(eval $(call add_define,BL32_BASE))
 $(eval $(call add_define,BL32_SIZE))
 
+ifdef IMX8ULP_DSL_SUPPORT
+$(eval $(call add_define,IMX8ULP_DSL_SUPPORT))
+endif
+
 ifeq (${SPD},trusty)
 	BL31_CFLAGS    +=      -DPLAT_XLAT_TABLES_DYNAMIC=1
 endif
