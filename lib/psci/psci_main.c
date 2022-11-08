@@ -211,10 +211,17 @@ int psci_system_suspend(uintptr_t entrypoint, u_register_t context_id)
 	 * might return if the power down was abandoned for any reason, e.g.
 	 * arrival of an interrupt
 	 */
+#if defined(IMX8ULP_DSL_SUPPORT)
+	rc = psci_cpu_suspend_start(cpu_idx,
+				    PLAT_MAX_PWR_LVL,
+				    &state_info,
+				    PSTATE_TYPE_STANDBY);
+#else
 	rc = psci_cpu_suspend_start(cpu_idx,
 				    PLAT_MAX_PWR_LVL,
 				    &state_info,
 				    PSTATE_TYPE_POWERDOWN);
+#endif
 
 	return rc;
 }
