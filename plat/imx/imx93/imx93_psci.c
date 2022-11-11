@@ -180,6 +180,8 @@ void gpc_src_init(void)
 	mmio_setbits_32(IMX_SRC_BASE + A55C0_MEM + 0x400 * 0 + 0x4, MEM_LP_EN);
 	/* LPM config to only ON in run mode, LPM control only by core itself; domain0/1 */
 	mmio_write_32(IMX_SRC_BASE + IMX_SRC_A55C0_OFFSET + 0x400 * 0 + 0x14, 0x1 << (0 * 4));
+	/* Set CNT_MODE =0 to reduce unnecessary latency */
+	mmio_write_32(IMX_SRC_BASE + IMX_SRC_A55C0_OFFSET + 0x400 * 0 + 0x80, 0x00a000a0);
 	/* config SRC to enable LPM control(HW flow) */
 	mmio_clrsetbits_32(IMX_SRC_BASE + IMX_SRC_A55C0_OFFSET + 0x400 * 0 + 0x4, 0xffff0000, (1 << (0 + 16)) | BIT(2));
 
@@ -203,6 +205,8 @@ void gpc_src_init(void)
 	 * to make sure the setting can be write successfully
 	 */
 	mmio_write_32(IMX_SRC_BASE + IMX_SRC_A55C0_OFFSET + 0x400 * 2 + 0x14, BIT(12));
+	/* Set CNT_MODE =0 to reduce unnecessary latency */
+	mmio_write_32(IMX_SRC_BASE + IMX_SRC_A55C0_OFFSET + 0x400 * 2 + 0x80, 0x00a000a0);
 	/* config the SRC for cluster slice LPM control */
 	mmio_clrsetbits_32(IMX_SRC_BASE + IMX_SRC_A55C0_OFFSET + 0x400 * 2 + 0x4, 0xffff0000, BIT(19) | BIT(2));
 }
@@ -529,6 +533,8 @@ void imx_pwr_domain_on_finish(const psci_power_state_t *target_state)
 		mmio_setbits_32(IMX_SRC_BASE + A55C0_MEM + 0x400 * core_id + 0x4, MEM_LP_EN);
 		/* LPM config to only ON in run mode, LPM control only by core itself; domain0/1 */
 		mmio_write_32(IMX_SRC_BASE + IMX_SRC_A55C0_OFFSET + 0x400 * core_id + 0x14, 0x1 << (core_id * 4));
+		/* Set CNT_MODE =0 to reduce unnecessary latency */
+		mmio_write_32(IMX_SRC_BASE + IMX_SRC_A55C0_OFFSET + 0x400 * core_id + 0x80, 0x00a000a0);
 		/* config SRC to enable LPM control(HW flow) */
 		mmio_clrsetbits_32(IMX_SRC_BASE + IMX_SRC_A55C0_OFFSET + 0x400 * core_id + 0x4, 0xffff0000, (1 << (core_id + 16)) | BIT(2));
 
