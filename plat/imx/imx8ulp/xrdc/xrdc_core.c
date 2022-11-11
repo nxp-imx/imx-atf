@@ -19,6 +19,9 @@
 #define MRC_OFFSET	0x2000
 #define MRC_STEP	0x200
 
+#define XRDC_MGR_PAC_ID 0
+#define XRDC_MGR_PAC_SLOT 47
+
 enum xrdc_comp_type{
 	MDA_TYPE = (1 << 16),
 	MRC_TYPE = (2 << 16),
@@ -122,6 +125,10 @@ static int xrdc_config_pac(uint32_t pac, uint32_t index, uint32_t dxacp)
 
 	if (pac > 2)
 		return -EINVAL;
+
+	/* Skip the PAC slot for XRDC MGR, use Sentinel configuration */
+	if (pac == XRDC_MGR_PAC_ID && index == XRDC_MGR_PAC_SLOT)
+		return 0;
 
 	w0_addr = XRDC_ADDR + 0x1000 + 0x400 * pac + 0x8 * index;
 
