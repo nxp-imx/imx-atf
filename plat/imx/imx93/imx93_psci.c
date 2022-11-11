@@ -412,6 +412,8 @@ void imx_pwr_domain_on_finish(const psci_power_state_t *target_state)
 		src_mem_lpm_en(SRC_A55P0_MEM + core_id, MEM_OFF);
 		/* LPM config to only ON in run mode to its domain */
 		src_mix_set_lpm(SRC_A55C0 + core_id, core_id, CM_MODE_WAIT);
+		/* Set CNT_MODE =0 to reduce unnecessary latency */
+		src_ack_cnt_mode(SRC_A55C0 + core_id, 0x0);
 		/* white list config, only enable its own domain */
 		src_authen_config(SRC_A55C0 + core_id, 1 << core_id, 0x1);
 
