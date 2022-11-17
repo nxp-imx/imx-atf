@@ -88,6 +88,7 @@
 #define OSCPLL_LPM_DOMAIN_MODE(x, d) ((x) << (d * 4))
 #define OSCPLL_LPM_AUTH	U(0x30)
 #define PLL_HW_CTRL_EN	BIT(16)
+#define LPCG(x) 	(0x44458000 + (x) * 0x40)
 
 #define S400_MU_RSR	(S400_MU_BASE + 0x12c)
 #define S400_MU_TRx(i)	(S400_MU_BASE + 0x200 + (i) * 4)
@@ -209,6 +210,11 @@ void gpc_src_init(void)
 	mmio_write_32(IMX_SRC_BASE + IMX_SRC_A55C0_OFFSET + 0x400 * 2 + 0x80, 0x00a000a0);
 	/* config the SRC for cluster slice LPM control */
 	mmio_clrsetbits_32(IMX_SRC_BASE + IMX_SRC_A55C0_OFFSET + 0x400 * 2 + 0x4, 0xffff0000, BIT(19) | BIT(2));
+
+	/* enable S401 clock gating LP handshake */
+	mmio_setbits_32(BLK_CTRL_S_BASE + HW_LP_HANDHSK, BIT(24) | BIT(23));
+	mmio_setbits_32(LPCG(3) + 0x10, BIT(13) | BIT (12));
+	mmio_setbits_32(LPCG(3) + 0x30, BIT(2));
 }
 
 void pll_pwr_down(bool enter)
