@@ -63,4 +63,9 @@ void pwr_sys_init(void)
 
 	/* enable the HW LP handshake between S401 & A55 cluster */
 	mmio_setbits_32(BLK_CTRL_S_BASE + HW_LP_HANDHSK, BIT(5));
+
+	/* enable S401 clock gating LP handshake */
+	mmio_setbits_32(BLK_CTRL_S_BASE + HW_LP_HANDHSK, BIT(24) | BIT(23));
+	mmio_setbits_32(LPCG(3) + 0x10, BIT(13) | BIT (12));
+	mmio_setbits_32(LPCG(3) + 0x30, BIT(2));
 }

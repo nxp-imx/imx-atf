@@ -86,6 +86,7 @@
 #define BBNSM_DP_EN			BIT(24)
 #define BBNSM_TOSP			BIT(25)
 
+#define CCM_BASE			U(0x44450000)
 #define SRC_BASE			U(0x44460000)
 #define GPC_BASE			U(0x44470000)
 #define BLK_CTRL_S_BASE			U(0x444F0000)
