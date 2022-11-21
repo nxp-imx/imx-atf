@@ -286,6 +286,9 @@ static int xrdc_apply_config(xrdc_check_func check_func)
 
 int xrdc_apply_lpav_config(void)
 {
+	/* Configure PAC2 to allow to access PCC5 */
+	xrdc_config_pac(2, 39, 0xe00000);
+
 	/* Enable the eDMA2 MP clock for MDA16 access */
 	mmio_write_32(0x2da70000, 0xc0000000);
 	return xrdc_apply_config(xrdc_check_lpav);
