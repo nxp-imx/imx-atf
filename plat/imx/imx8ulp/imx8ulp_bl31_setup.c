@@ -143,6 +143,9 @@ void bl31_plat_arch_setup(void)
 
 	/* TODO: Hack, refine this piece, scmi channel free */
 	mmio_write_32(0x2201f004, 1);
+
+	/* Allow M core to reset A core */
+	mmio_clrbits_32(IMX_MU0B_BASE + 0x10, BIT(2));
 }
 
 extern uint32_t upower_init(void);
