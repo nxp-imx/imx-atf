@@ -97,6 +97,16 @@ struct trdc_config_info {
 	uint32_t num_mrc_cfg;
 };
 
+struct trdc_fused_module_info {
+	unsigned long trdc_base;
+	uint8_t fsb_index;
+	uint8_t fuse_bit;
+	uint8_t mbc_id;
+	uint8_t mem_id;
+	uint8_t blk_id;
+	uint8_t blk_num;
+};
+
 struct trdc_mgr_info trdc_mgr_blks[] = {
 	{ 0x44270000, 0, 0, 39, 40 }, /* TRDC_A */
 	{ 0x42460000, 0, 0, 70, 71 }, /* TRDC_W */
@@ -123,6 +133,21 @@ struct trdc_config_info trdc_cfg_info[] = {
 		trdc_n_mrc_glbac, ARRAY_SIZE(trdc_n_mrc_glbac),
 		trdc_n_mrc, ARRAY_SIZE(trdc_n_mrc)
 	}, /* TRDC_N */
+};
+
+struct trdc_fused_module_info fuse_info[] = {
+	{ 0x49010000, 19, 13, 1, 2, 16, 1 }, /* NPU, NICMIX, MBC1, MEM2, slot 16 */
+	{ 0x49010000, 19, 13, 1, 3, 16, 1 }, /* NPU, NICMIX, MBC1, MEM3, slot 16 */
+	{ 0x44270000, 19, 30, 0, 0, 58, 1 }, /* FLEXCAN1, AONMIX, MBC0, MEM0, slot 58 */
+	{ 0x42460000, 19, 31, 0, 0, 91, 1 }, /* FLEXCAN2, WAKEUPMIX, MBC0, MEM0, slot 91 */
+	{ 0x49010000, 20, 4, 0, 3, 16, 16 }, /* USB1, NICMIX, MBC0, MEM3, slot 16-31 */
+	{ 0x49010000, 20, 4, 0, 3, 32, 16 }, /* USB2, NICMIX, MBC0, MEM3, slot 32-47 */
+	{ 0x42460000, 20, 5, 1, 0, 9, 1   }, /* ENET1 (FEC), WAKEUPMIX, MBC1, MEM0, slot 9 */
+	{ 0x42460000, 20, 5, 1, 0, 10, 1  }, /* ENET2 (eQOS), WAKEUPMIX, MBC1, MEM0, slot 10 */
+	{ 0x49010000, 20, 10, 0, 2, 34, 1 }, /* PXP, NICMIX, MBC0, MEM2, slot 34 */
+	{ 0x49010000, 20, 17, 0, 2, 32, 1 }, /* MIPI CSI NICMIX, MBC0, MEM2, slot 32 */
+	{ 0x49010000, 20, 19, 0, 2, 33, 1 }, /* MIPI DSI NICMIX, MBC0, MEM2, slot 33 */
+	{ 0x44270000, 21, 7, 0, 0, 83, 1  }, /* ADC1 AONMIX, MBC0, MEM0, slot 83 */
 };
 
 int trdc_mda_set_cpu(unsigned long trdc_reg, uint32_t mda_inst,
@@ -223,9 +248,24 @@ int trdc_mbc_set_control(unsigned long trdc_reg, uint32_t mbc_x, uint32_t glbac_
 {
 	struct trdc_mbc *mbc_base = (struct trdc_mbc *)trdc_get_mbc_base(trdc_reg, mbc_x);
 	struct mbc_mem_dom *mbc_dom;
+	uint32_t i;
 
 	if (mbc_base == 0 || glbac_id >= 8)
 		return -EINVAL;
+
+	/* Skip glbac7 used for TRDC MGR protection*/
+	if (glbac_id == 7 && glbac_val != 0x6000) {
+		for (i = 0; i < ARRAY_SIZE(trdc_mgr_blks); i++) {
+			if (trdc_reg == trdc_mgr_blks[i].trdc_base
+				&& mbc_x == trdc_mgr_blks[i].mbc_id) {
+				return -EPERM;
+			}
+		}
+	}
+
+	/* Skip glbac6 used for fused module */
+	if (glbac_id == 6 && glbac_val != 0)
+		return -EPERM;
 
 	/* only first dom has the glbac */
 	mbc_dom = &mbc_base->mem_dom[0];
@@ -542,6 +582,25 @@ static void trdc_mgr_mbc_setup(struct trdc_mgr_info *mgr)
 	}
 }
 
+static void trdc_mgr_fused_slot_setup(struct trdc_fused_module_info *fused_slot)
+{
+	uint32_t i, val, did;
+
+	if (trdc_mbc_enabled(fused_slot->trdc_base)) {
+		trdc_mbc_set_control(fused_slot->trdc_base, fused_slot->mbc_id, 6, 0x0); /* No access permission */
+
+		val = mmio_read_32(FSB_BASE + FSB_SHADOW_OFF + (fused_slot->fsb_index << 2));
+		/* If the module is fused, set GLBAC6 for no access permission */
+		if (val & BIT_32(fused_slot->fuse_bit)) {
+			for (i = 0; i < fused_slot->blk_num; i++) {
+				for (did = 0; did < DID_NUM; did++)
+					trdc_mbc_blk_config(fused_slot->trdc_base, fused_slot->mbc_id, did,
+						fused_slot->mem_id, fused_slot->blk_id + i, true, 6);
+			}
+		}
+	}
+}
+
 static void trdc_setup(struct trdc_config_info *cfg)
 {
 	uint32_t i, j, num;
@@ -607,11 +666,18 @@ void trdc_config(void)
 	for (i = 0; i < ARRAY_SIZE(trdc_cfg_info); i++) {
 		trdc_setup(&trdc_cfg_info[i]);
 	}
+
+	/* Configure the access permission for fused slots */
+	for (i = 0; i < ARRAY_SIZE(fuse_info); i++) {
+		trdc_mgr_fused_slot_setup(&fuse_info[i]);
+	}
 }
 
 /*wakeup mix TRDC init */
 void trdc_w_reinit(void)
 {
+	int i;
+
 	/* config the access permission for the TRDC_W MGR and MC slot */
 	trdc_mgr_mbc_setup(&trdc_mgr_blks[1]);
 
@@ -619,14 +685,28 @@ void trdc_w_reinit(void)
 
 	/* config the TRDC user settting from the config table */
 	trdc_setup(&trdc_cfg_info[1]);
+
+	/* Configure the access permission for fused slots in wakeupmix TRDC */
+	for (i = 0; i < ARRAY_SIZE(fuse_info); i++) {
+		if (fuse_info[i].trdc_base == 0x42460000)
+			trdc_mgr_fused_slot_setup(&fuse_info[i]);
+	}
 }
 
 /*nic mix TRDC init */
 void trdc_n_reinit(void)
 {
+	int i;
+
 	/* config the access permission for the TRDC_N MGR and MC slot */
 	trdc_mgr_mbc_setup(&trdc_mgr_blks[3]);
 
 	/* config the TRDC user settting from the config table */
 	trdc_setup(&trdc_cfg_info[2]);
+
+	/* Configure the access permission for fused slots in nicmix TRDC */
+	for (i = 0; i < ARRAY_SIZE(fuse_info); i++) {
+		if (fuse_info[i].trdc_base == 0x49010000)
+			trdc_mgr_fused_slot_setup(&fuse_info[i]);
+	}
 }
