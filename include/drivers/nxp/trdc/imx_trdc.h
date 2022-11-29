@@ -154,6 +154,16 @@ struct trdc_config_info {
 	uint32_t num_mrc_cfg;
 };
 
+struct trdc_fused_module_info {
+	unsigned long trdc_base;
+	uint8_t fsb_index;
+	uint8_t fuse_bit;
+	uint8_t mbc_id;
+	uint8_t mem_id;
+	uint8_t blk_id;
+	uint8_t blk_num;
+};
+
 extern struct trdc_mgr_info trdc_mgr_blks[];
 extern unsigned int trdc_mgr_num;
 /* APIs to apply and enable TRDC */
@@ -166,6 +176,7 @@ int trdc_mda_set_noncpu(uintptr_t trdc_base, uint32_t mda_inst,
 			uint8_t did);
 
 void trdc_mgr_mbc_setup(struct trdc_mgr_info *mgr);
+void trdc_mgr_fused_slot_setup(struct trdc_fused_module_info *fused_slot);
 void trdc_setup(struct trdc_config_info *cfg);
 void trdc_config(void);
 

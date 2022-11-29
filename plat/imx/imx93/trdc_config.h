@@ -11,6 +11,7 @@
 #define TRDC_N_BASE	U(0x49010000)
 
 /* GLBAC7 is used for TRDC only, any setting to GLBAC7 will be ignored */
+/* GLBAC6 is used for fused modules, any setting to GLBAC6 will be ignored */
 
 /* aonmix */
 struct trdc_glbac_config trdc_a_mbc_glbac[] = {

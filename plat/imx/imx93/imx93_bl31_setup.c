@@ -34,6 +34,7 @@ static const mmap_region_t imx_mmap[] = {
 	TRDC_A_MAP, TRDC_W_MAP, TRDC_M_MAP,
 	TRDC_N_MAP, DDRMIX_MAP, GPIO_MAP,
 	S400_MU_MAP, NIC_GPV_MAP, AIPS3_MAP,
+	FSB_MAP,
 	{0},
 };
 
