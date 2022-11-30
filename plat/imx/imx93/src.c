@@ -127,8 +127,11 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 
 	switch(x1) {
 	case IMX_SIP_SRC_M4_START:
-		mmio_write_32(BLK_CTL_S_AONMIX_BASE + M33_INITSVTOR, x2);
-		mmio_write_32(REG_SRC_GLOBAL_GPR9, 0xffe0000); /* for SPL kick M33, Uboot load m33 firmware */
+		mmio_write_32(BLK_CTL_S_AONMIX_BASE + M33_INITSVTOR, 0);
+		if (x2)
+			mmio_write_32(REG_SRC_GLOBAL_GPR9, x2);
+		else
+			mmio_write_32(REG_SRC_GLOBAL_GPR9, 0xFFE0000); /* for SPL kick M33, Uboot load m33 firmware */
 		mmio_clrbits_32(BLK_CTL_S_AONMIX_BASE + M33_CFG_OFF, M33_CPU_WAIT_MASK);
 		break;
 	case IMX_SIP_SRC_M4_STARTED:
