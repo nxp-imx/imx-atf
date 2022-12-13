@@ -361,6 +361,7 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 	}
 }
 
+#define DRAM_LPM_STATUS		U(0x2802b004)
 extern void imx8ulp_init_scmi_server(void);
 void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 {
@@ -389,6 +390,11 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 
 		/* re-init the SCMI channel */
 		imx8ulp_init_scmi_server();
+	}
+
+	/* wait for DDR is ready when DDR is under the RTD side control for power saving */
+	while (mmio_read_32(DRAM_LPM_STATUS) != 0) {
+		;
 	}
 
 	/* clear cluster's LPM setting. */
