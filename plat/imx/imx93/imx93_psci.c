@@ -22,11 +22,17 @@
 
 #define ARM_PLL		U(0x44481000)
 #define SYS_PLL		U(0x44481100)
+#define SYS_PLL_DFS_0	U(SYS_PLL + 0x70)
+#define SYS_PLL_DFS_1	U(SYS_PLL + 0x90)
+#define SYS_PLL_DFS_2	U(SYS_PLL + 0xb0)
 #define OSCPLL_CHAN(x)	(0x44455000 + (x) * 0x40)
+#define OSCPLL_NUM	U(12)
 #define OSCPLL_LPM0	U(0x10)
 #define OSCPLL_LPM_DOMAIN_MODE(x, d) ((x) << (d * 4))
 #define OSCPLL_LPM_AUTH	U(0x30)
 #define PLL_HW_CTRL_EN	BIT(16)
+#define CCM_ROOT_SLICE(x)	(0x44450000 + (x) * 0x80)
+#define ROOT_MUX_MASK	GENMASK_32(9, 8)
 
 #define S400_MU_RSR	(S400_MU_BASE + 0x12c)
 #define S400_MU_TRx(i)	(S400_MU_BASE + 0x200 + (i) * 4)
@@ -41,6 +47,13 @@
 #define GPIO_PIN_MAX_NUM		U(32)
 #define GPIO_CTX(addr, num)	\
 	{.base = (addr), .pin_num = (num), }
+
+enum ccm_clock_root {
+	M33_ROOT = 3,
+	WAKEUP_AXI_ROOT = 7,
+	HSIO_CLK_ROOT = 61,
+	NIC_CLK_ROOT = 65,
+};
 
 extern void dram_enter_retention(void);
 extern void dram_exit_retention(void);
@@ -73,6 +86,7 @@ static struct gpio_ctx wakeupmix_gpio_ctx[3] = {
 	GPIO_CTX(GPIO4_BASE | BIT(28), 28),
 };
 
+static uint32_t clock_root[4];
 /*
  * Empty implementation of these hooks avoid setting the GICR_WAKER.Sleep bit
  * on ARM GICv3 implementations without LPI support.
@@ -86,18 +100,26 @@ void arm_gicv3_distif_post_restore(unsigned int rdist_proc_num)
 void pll_pwr_down(bool enter)
 {
 	if(enter) {
-		/* switch all the PLLs to hw_ctrl(bit 16) in PLL CTRL reg */
+		/* Switch the ARM/SYS PLLs to hw_ctrl(bit 16) in PLL CTRL reg */
 		mmio_setbits_32(ARM_PLL, PLL_HW_CTRL_EN);
+		mmio_setbits_32(SYS_PLL, PLL_HW_CTRL_EN);
+		mmio_setbits_32(SYS_PLL_DFS_0, PLL_HW_CTRL_EN);
+		mmio_setbits_32(SYS_PLL_DFS_1, PLL_HW_CTRL_EN);
+		mmio_setbits_32(SYS_PLL_DFS_2, PLL_HW_CTRL_EN);
 
 		/* LPM setting for PLL */
-		for (unsigned int i = 1; i <= 2; i++) {
+		for (unsigned int i = 1; i <= OSCPLL_NUM; i++) {
 			mmio_setbits_32(OSCPLL_CHAN(i) + OSCPLL_LPM0, OSCPLL_LPM_DOMAIN_MODE(0x1, 0x3));
 			mmio_setbits_32(OSCPLL_CHAN(i) + OSCPLL_LPM_AUTH, BIT(2));
 		}
 	} else {
 		mmio_clrbits_32(ARM_PLL, PLL_HW_CTRL_EN);
+		mmio_clrbits_32(SYS_PLL, PLL_HW_CTRL_EN);
+		mmio_clrbits_32(SYS_PLL_DFS_0, PLL_HW_CTRL_EN);
+		mmio_clrbits_32(SYS_PLL_DFS_1, PLL_HW_CTRL_EN);
+		mmio_clrbits_32(SYS_PLL_DFS_2, PLL_HW_CTRL_EN);
 
-		for (unsigned int i = 1; i <= 2; i++) {
+		for (unsigned int i = 1; i <= OSCPLL_NUM; i++) {
 			mmio_clrbits_32(OSCPLL_CHAN(i) + OSCPLL_LPM_AUTH, BIT(2));
 		}
 	}
@@ -193,6 +215,14 @@ void nicmix_pwr_down(unsigned int core_id)
 	/* enable the handshake between sentinel & NICMIX */
 	mmio_setbits_32(BLK_CTRL_S_BASE + HW_LP_HANDHSK, BIT(11));
 
+	/* swith wakeup axi, hsio & nic to 24M when NICMIX power down */
+	clock_root[1] = mmio_read_32(CCM_ROOT_SLICE(WAKEUP_AXI_ROOT));
+	clock_root[2] = mmio_read_32(CCM_ROOT_SLICE(HSIO_CLK_ROOT));
+	clock_root[3] = mmio_read_32(CCM_ROOT_SLICE(NIC_CLK_ROOT));
+	mmio_clrbits_32(CCM_ROOT_SLICE(WAKEUP_AXI_ROOT), ROOT_MUX_MASK);
+	mmio_clrbits_32(CCM_ROOT_SLICE(HSIO_CLK_ROOT), ROOT_MUX_MASK);
+	mmio_clrbits_32(CCM_ROOT_SLICE(NIC_CLK_ROOT), ROOT_MUX_MASK);
+
 	/* NICMIX */
 	src_mix_set_lpm(SRC_NIC, 0x3, CM_MODE_WAIT);
 	src_authen_config(SRC_NIC, 0x8, 0x1);
@@ -209,6 +239,10 @@ void nicmix_pwr_down(unsigned int core_id)
 
 void nicmix_pwr_up(unsigned int core_id)
 {
+	mmio_setbits_32(CCM_ROOT_SLICE(WAKEUP_AXI_ROOT), clock_root[1] & ROOT_MUX_MASK);
+	mmio_setbits_32(CCM_ROOT_SLICE(HSIO_CLK_ROOT), clock_root[2] & ROOT_MUX_MASK);
+	mmio_setbits_32(CCM_ROOT_SLICE(NIC_CLK_ROOT), clock_root[3] & ROOT_MUX_MASK);
+
 	/* keep nicmix on when exit from system suspend */
 	src_mix_set_lpm(SRC_NIC, 0x3, CM_MODE_SUSPEND);
 	trdc_n_reinit();
@@ -301,6 +335,10 @@ void wakeupmix_pwr_down(void)
 {
 	gpio_save(wakeupmix_gpio_ctx, 3);
 	if (no_wakeup_enabled) {
+		/* m33 root need to switch to 24M OSC when wakeupmix power down */
+		clock_root[0] = mmio_read_32(CCM_ROOT_SLICE(M33_ROOT));
+		mmio_clrbits_32(CCM_ROOT_SLICE(M33_ROOT), ROOT_MUX_MASK);
+
 		/* wakeup mix controlled by A55 cluster power down: domain3 only */
 		src_mix_set_lpm(SRC_WKUP, 0x3, CM_MODE_WAIT);
 		src_authen_config(SRC_WKUP, 0x8, 0x1);
@@ -314,6 +352,7 @@ void wakeupmix_pwr_down(void)
 void wakeupmix_pwr_up(void)
 {
 	if (no_wakeup_enabled) {
+		mmio_setbits_32(CCM_ROOT_SLICE(M33_ROOT), clock_root[0] & ROOT_MUX_MASK);
 		/* keep wakeupmix on when exit from system suspend */
 		src_mix_set_lpm(SRC_WKUP, 0x3, CM_MODE_SUSPEND);
 		trdc_w_reinit();
