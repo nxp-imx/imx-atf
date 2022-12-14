@@ -225,11 +225,18 @@ static inline void src_ack_cnt_mode(unsigned int mix, uint8_t mode)
 /*******************************************************************************
  * BLK_CTRL_S definitions & declarations
  ******************************************************************************/
+#define CM33_CFG		U(0x60)
+#define CM33_CPU_WAIT_MASK	BIT(2)
 #define HW_LP_HANDHSK		U(0x110)
 #define HW_LP_HANDHSK2		U(0x114)
 #define CA55_CPUWAIT		U(0x118)
 #define CA55_RVBADDR0_L		U(0x11c)
 #define CA55_RVBADDR0_H		U(0x120)
+
+static inline bool is_m33_disabled(void)
+{
+	return  mmio_read_32(BLK_CTRL_S_BASE + CM33_CFG) & CM33_CPU_WAIT_MASK;
+}
 
 /*******************************************************************************
  * Other definitions & declarations
