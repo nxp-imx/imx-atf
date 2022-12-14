@@ -20,12 +20,14 @@
 #include <plat_imx8.h>
 
 #define BLK_CTRL_S_BASE                0x444F0000
+#define M33_CFG_OFF            	0x60
 #define CA55_CPUWAIT           0x118
 #define CA55_RVBADDR0_L                0x11c
 #define CA55_RVBADDR0_H                0x120
 #define HW_LP_HANDHSK		0x110
 #define HW_LP_HANDHSK2		0x114
 #define HW_S401_RESET_REQ_MASK  0x130
+#define M33_CPU_WAIT_MASK      BIT(2)
 
 #define IMX_SRC_BASE		0x44460000
 #define IMX_GPC_BASE		0x44470000
@@ -673,11 +675,9 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 		/* Enable system suspend when A55 cluster is in SUSPEND MODE */
 		mmio_setbits_32(IMX_GPC_BASE + A55C0_CMC_OFFSET + 0x800 * 2 + CM_SYS_SLEEP_CTRL, SS_SUSPEND);
 
-		/*
-		 * FIXME: Only use A55 cluster to trigger system sleep, force M33 into system sleep
-		 * this should be removed after M33 low power suspport is ready
-		 */
-		mmio_setbits_32(IMX_GPC_BASE + GPC_GLOBAL_OFFSET + GPC_SYS_SLEEP, BIT(16));
+		/* force M33 into system sleep if m33 is not enabled. */
+		if (mmio_read_32(BLK_CTRL_S_BASE + M33_CFG_OFF) & M33_CPU_WAIT_MASK)
+			mmio_setbits_32(IMX_GPC_BASE + GPC_GLOBAL_OFFSET + GPC_SYS_SLEEP, BIT(16));
 		/* put OSC into power down */
 		mmio_setbits_32(IMX_GPC_BASE + GPC_GLOBAL_OFFSET + GPC_RCOSC_CTRL, BIT(0));
 		/* put PMIC into standby mode */
@@ -697,8 +697,8 @@ void imx_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
 		/* Disable system suspend when A55 cluster is in SUSPEND MODE */
 		mmio_clrbits_32(IMX_GPC_BASE + A55C0_CMC_OFFSET + 0x800 * 2 + CM_SYS_SLEEP_CTRL, SS_SUSPEND);
-		/* FIXME: Only use A55 cluster to trigger system sleep, force CM33 into system sleep  */
-		mmio_clrbits_32(IMX_GPC_BASE + GPC_GLOBAL_OFFSET + GPC_SYS_SLEEP, BIT(16));
+		if (mmio_read_32(BLK_CTRL_S_BASE + M33_CFG_OFF) & M33_CPU_WAIT_MASK)
+			mmio_clrbits_32(IMX_GPC_BASE + GPC_GLOBAL_OFFSET + GPC_SYS_SLEEP, BIT(16));
 		/* Disable PMIC standby */
 		mmio_clrbits_32(IMX_GPC_BASE + GPC_GLOBAL_OFFSET + PMIC_CTRL, BIT(0));
 		/* Disable OSC power down */
