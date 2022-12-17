@@ -97,6 +97,14 @@ static uintptr_t trusty_generic_platform_smc(uint32_t smc_fid,
 	case SMC_FC64_GET_REG_BASE:
 		SMC_RET1(handle, trusty_get_reg_base(x1));
 
+	case SMC_FC_ECHO_ONE_ARG:
+	case SMC_FC64_ECHO_ONE_ARG:
+		SMC_RET2(handle, smc_fid, x1);
+
+	case SMC_FC_ECHO_THREE_ARGS:
+	case SMC_FC64_ECHO_THREE_ARGS:
+		SMC_RET4(handle, smc_fid, x1, x2, x3);
+
 	default:
 		NOTICE("%s(0x%x, 0x%lx) unknown smc\n", __func__, smc_fid, x1);
 		SMC_RET1(handle, SMC_UNK);
