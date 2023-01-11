@@ -50,10 +50,10 @@ struct trdc_fused_module_info fuse_info[] = {
 	{ 0x49010000, 19, 13, 1, 3, 16, 1 }, /* NPU, NICMIX, MBC1, MEM3, slot 16 */
 	{ 0x44270000, 19, 30, 0, 0, 58, 1 }, /* FLEXCAN1, AONMIX, MBC0, MEM0, slot 58 */
 	{ 0x42460000, 19, 31, 0, 0, 91, 1 }, /* FLEXCAN2, WAKEUPMIX, MBC0, MEM0, slot 91 */
-	{ 0x49010000, 20, 4, 0, 3, 16, 16 }, /* USB1, NICMIX, MBC0, MEM3, slot 16-31 */
+	{ 0x49010000, 20, 3, 0, 3, 16, 16 }, /* USB1, NICMIX, MBC0, MEM3, slot 16-31 */
 	{ 0x49010000, 20, 4, 0, 3, 32, 16 }, /* USB2, NICMIX, MBC0, MEM3, slot 32-47 */
 	{ 0x42460000, 20, 5, 1, 0, 9, 1   }, /* ENET1 (FEC), WAKEUPMIX, MBC1, MEM0, slot 9 */
-	{ 0x42460000, 20, 5, 1, 0, 10, 1  }, /* ENET2 (eQOS), WAKEUPMIX, MBC1, MEM0, slot 10 */
+	{ 0x42460000, 20, 6, 1, 0, 10, 1  }, /* ENET2 (eQOS), WAKEUPMIX, MBC1, MEM0, slot 10 */
 	{ 0x49010000, 20, 10, 0, 2, 34, 1 }, /* PXP, NICMIX, MBC0, MEM2, slot 34 */
 	{ 0x49010000, 20, 17, 0, 2, 32, 1 }, /* MIPI CSI NICMIX, MBC0, MEM2, slot 32 */
 	{ 0x49010000, 20, 19, 0, 2, 33, 1 }, /* MIPI DSI NICMIX, MBC0, MEM2, slot 33 */
