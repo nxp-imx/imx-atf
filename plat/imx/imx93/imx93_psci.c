@@ -31,8 +31,12 @@
 #define OSCPLL_LPM_DOMAIN_MODE(x, d) ((x) << (d * 4))
 #define OSCPLL_LPM_AUTH	U(0x30)
 #define PLL_HW_CTRL_EN	BIT(16)
+#define LPCG_AUTH	U(0x30)
+#define LPCG_CUR	U(0x1c)
+#define CPU_LPM_EN	BIT(2)
 #define CCM_ROOT_SLICE(x)	(0x44450000 + (x) * 0x80)
 #define ROOT_MUX_MASK	GENMASK_32(9, 8)
+#define ROOT_CLK_OFF	BIT(24)
 
 #define S400_MU_RSR	(S400_MU_BASE + 0x12c)
 #define S400_MU_TRx(i)	(S400_MU_BASE + 0x200 + (i) * 4)
@@ -56,8 +60,35 @@
 enum ccm_clock_root {
 	M33_ROOT = 3,
 	WAKEUP_AXI_ROOT = 7,
+	CAN1_ROOT = 23,
+	CAN2_ROOT = 24,
+	UART1_ROOT = 25,
+	UART2_ROOT = 26,
+	UART3_ROOT = 27,
+	UART4_ROOT = 28,
+	UART5_ROOT = 29,
+	UART6_ROOT = 30,
+	UART7_ROOT = 31,
+	UART8_ROOT = 32,
 	HSIO_CLK_ROOT = 61,
 	NIC_CLK_ROOT = 65,
+};
+
+enum ccm_lpcg {
+	GPIO1_LPCG = 34,
+	GPIO2_LPCG = 35,
+	GPIO3_LPCG = 36,
+	GPIO4_LPCG = 37,
+	CAN1_LPCG = 50,
+	CAN2_LPCG = 51,
+	UART1_LPCG = 52,
+	UART2_LPCG = 53,
+	UART3_LPCG = 54,
+	UART4_LPCG = 55,
+	UART5_LPCG = 56,
+	UART6_LPCG = 57,
+	UART7_LPCG = 58,
+	UART8_LPCG = 59,
 };
 
 extern void dram_enter_retention(void);
@@ -101,6 +132,78 @@ void arm_gicv3_distif_pre_save(unsigned int rdist_proc_num)
 
 void arm_gicv3_distif_post_restore(unsigned int rdist_proc_num)
 {}
+
+static struct qchannel_hsk_config {
+	const uint32_t lpcg_idx;
+	const uint32_t root_idx;
+	const unsigned int wakeup_irq;
+	uint32_t root_ctrl;
+	uint32_t lpcg_cur;
+	uint32_t lpcg_auth;
+	bool active_wakeup;
+} hsk_config[] = {
+	{ CAN1_LPCG, CAN1_ROOT, 8 },
+	{ CAN2_LPCG, CAN2_ROOT, 51 },
+
+	{ UART1_LPCG, UART1_ROOT, 19 },
+	{ UART2_LPCG, UART2_ROOT, 20 },
+	{ UART3_LPCG, UART3_ROOT, 68 },
+	{ UART4_LPCG, UART4_ROOT, 69 },
+	{ UART5_LPCG, UART5_ROOT, 70 },
+	{ UART6_LPCG, UART6_ROOT, 71 },
+	{ UART7_LPCG, UART7_ROOT, 210 },
+	{ UART8_LPCG, UART8_ROOT, 211 },
+
+	{ GPIO1_LPCG, },
+	{ GPIO2_LPCG, },
+	{ GPIO3_LPCG, },
+	{ GPIO4_LPCG, },
+};
+
+static inline bool is_wakeup_source(unsigned int irq)
+{
+	uint32_t val;
+
+	val = mmio_read_32(CM_SLICE(3) + CM_IRQ_WAKEUP_MASK0 + 0x4 * (irq / 32));
+	return val & (1 << (irq % 32)) ? false : true;
+}
+/*
+ * For peripherals like CANs, GPIOs & UARTs that need to support async wakeup
+ * when clock is gated, LPCGs of these IPs need to be changed to CPU LPM
+ * controlled, and for CANs &UARTs, we also need to make sure its ROOT clock
+ * slice is enabled.
+ */
+void peripheral_qchannel_hsk(bool en)
+{
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_SIZE(hsk_config); i++) {
+		if (en) {
+			/* Only enable the qchannel handshake for active wakeup used by A55 */
+			if (!hsk_config[i].wakeup_irq || is_wakeup_source(hsk_config[i].wakeup_irq)) {
+				hsk_config[i].active_wakeup = true;
+				if (hsk_config[i].root_idx) {
+					hsk_config[i].root_ctrl = mmio_read_32(CCM_ROOT_SLICE(hsk_config[i].root_idx));
+					mmio_clrbits_32(CCM_ROOT_SLICE(hsk_config[i].root_idx), ROOT_CLK_OFF);
+				}
+
+				hsk_config[i].lpcg_auth = mmio_read_32(LPCG(hsk_config[i].lpcg_idx) + LPCG_AUTH);
+				hsk_config[i].lpcg_cur = mmio_read_32(LPCG(hsk_config[i].lpcg_idx) + LPCG_CUR);
+				mmio_setbits_32(LPCG(hsk_config[i].lpcg_idx) + LPCG_AUTH, CPU_LPM_EN);
+				mmio_write_32(LPCG(hsk_config[i].lpcg_idx) + LPCG_CUR, 0x2);
+			} else {
+				hsk_config[i].active_wakeup = false;
+			}
+		} else if (hsk_config[i].active_wakeup) {
+			/* restore the initial config */
+			mmio_write_32(LPCG(hsk_config[i].lpcg_idx) + LPCG_CUR, hsk_config[i].lpcg_cur);
+			mmio_write_32(LPCG(hsk_config[i].lpcg_idx) + LPCG_AUTH, hsk_config[i].lpcg_auth);
+			if (hsk_config[i].root_idx) {
+				mmio_write_32(CCM_ROOT_SLICE(hsk_config[i].root_idx), hsk_config[i].root_ctrl);
+			}
+		}
+	}
+}
 
 void pll_pwr_down(bool enter)
 {
@@ -553,6 +656,8 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 		/* put PMIC into standby mode */
 		gpc_pmic_stby_en(true);
 
+		peripheral_qchannel_hsk(true);
+
 		/* power down PLL */
 		pll_pwr_down(true);
 	}
@@ -577,6 +682,7 @@ void imx_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 		gpc_rosc_off(false);
 		/* power down PLL */
 		pll_pwr_down(false);
+		peripheral_qchannel_hsk(false);
 
 		nicmix_pwr_up(core_id);
 		wakeupmix_pwr_up();
