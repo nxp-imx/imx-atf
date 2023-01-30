@@ -75,6 +75,7 @@ enum ccm_clock_root {
 };
 
 enum ccm_lpcg {
+	MUB_LPCG = 20,
 	GPIO1_LPCG = 34,
 	GPIO2_LPCG = 35,
 	GPIO3_LPCG = 36,
@@ -264,6 +265,8 @@ void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
 		 */
 		gpc_select_wakeup_raw_irq(CPU_A55C0);
 		gpc_select_wakeup_raw_irq(CPU_A55_PLAT);
+		/* make sure MUB side clock is enabled */
+		mmio_write_32(LPCG(MUB_LPCG), 0x1);
 		/*
 		 * enable the MU1B general interrupt 1 for M33 SW to wakeup
 		 * A55 by assert an interrupt
@@ -273,6 +276,9 @@ void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
 		/* switch to GIC wakeup source for last_core and cluster */
 		gpc_select_wakeup_gic(CPU_A55C0);
 		gpc_select_wakeup_gic(CPU_A55_PLAT);
+
+		/* make sure MUB side clock is enabled */
+		mmio_write_32(LPCG(MUB_LPCG), 0x1);
 		/* clear pending General interrupt 1 and disable the it */
 		mmio_clrbits_32(MU1B_GIER, MU_GPI1);
 		mmio_setbits_32(MU1B_GSR, MU_GPI1);
