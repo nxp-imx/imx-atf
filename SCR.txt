@@ -1,0 +1,9 @@
+Package:                     imx-atf.git
+Version:                     2.6
+Outgoing License:            BSD-3-Clause
+License File:                docs/license.rst
+Type of Content:             source
+Description and comments:    ARM Trusted Firmware
+Release Location:            https://github.com/nxp-imx/imx-atf -b lf-6.1.1-1.0.0
+Origin:                      NXP (BSD-3-clause)
+                             arm-trusted-firmware - ARM Limited (BSD-3-clause) - http://github.com/ARM-software/arm-trusted-firmware/
