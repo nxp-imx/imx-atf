@@ -114,6 +114,9 @@
 #define MU1B_GSR	(MU1B_BASE + 0x118)
 #define MU_GPI1		BIT(1)
 
+#define M33_ACTIVE_FLAG		(IMX_SRC_BASE + 0x54)
+#define M33_ACTIVE		U(0x5555)
+
 #define CORE_PWR_STATE(state) ((state)->pwr_domain_state[MPIDR_AFFLVL0])
 #define CLUSTER_PWR_STATE(state) ((state)->pwr_domain_state[MPIDR_AFFLVL1])
 #define SYSTEM_PWR_STATE(state) ((state)->pwr_domain_state[PLAT_MAX_PWR_LVL])
@@ -298,6 +301,15 @@ static struct qchannel_hsk_config {
 	{ GPIO3_LPCG, },
 	{ GPIO4_LPCG, },
 };
+
+/*
+ * M33 side need to raise this flag it DDR is used when
+ * A55 side enter low power mode.
+ */
+static inline bool is_m33_active(void)
+{
+	return mmio_read_32(M33_ACTIVE_FLAG) == M33_ACTIVE;
+}
 
 static inline bool is_wakeup_source(unsigned int irq)
 {
@@ -773,24 +785,30 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 	}
 
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
-		/*
-		 * for the A55 cluster, the cache disable/flushing is controlled by HW,
-		 * so flush cache explictly before put DDR into retention to make sure
-		 * no cache maintenance to DDR memory happens afte DDR retention.
-		 */
-		dcsw_op_all(DCCISW);
-		dram_enter_retention();
+		if (!is_m33_active()) {
+			/*
+			 * for the A55 cluster, the cache disable/flushing is controlled by HW,
+			 * so flush cache explictly before put DDR into retention to make sure
+			 * no cache maintenance to DDR memory happens afte DDR retention.
+			 */
+			dcsw_op_all(DCCISW);
+			dram_enter_retention();
 
-		/*
-		 * if NICMIX or WAKEUPMIX power down, the TRDC_N/W config will lost,
-		 * so need to request Sentinel to set the correct permission at the early
-		 * begining.
-		 */
-		s401_request_pwrdown();
+			/*
+			 * if NICMIX or WAKEUPMIX power down, the TRDC_N/W config will lost,
+			 * so need to request Sentinel to set the correct permission at the early
+			 * begining.
+			 */
+			s401_request_pwrdown();
 
-		nicmix_pwr_down(core_id);
-		wakeupmix_pwr_down();
+			nicmix_pwr_down(core_id);
+			wakeupmix_pwr_down();
 
+			/* power down PLL */
+			pll_pwr_down(true);
+		}
+
+		peripheral_qchannel_hsk(true);
 		/* config the A55 cluster target mode to SUSPEND */
 		mmio_write_32(IMX_GPC_BASE + A55C0_CMC_OFFSET + 0x800 * 2 + CM_MODE_CTRL, CM_MODE_SUSPEND);
 
@@ -804,11 +822,6 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 		mmio_setbits_32(IMX_GPC_BASE + GPC_GLOBAL_OFFSET + GPC_RCOSC_CTRL, BIT(0));
 		/* put PMIC into standby mode */
 		mmio_setbits_32(IMX_GPC_BASE + GPC_GLOBAL_OFFSET + PMIC_CTRL, BIT(0));
-
-		peripheral_qchannel_hsk(true);
-
-		/* power down PLL */
-		pll_pwr_down(true);
 	}
 }
 
@@ -827,13 +840,14 @@ void imx_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 		mmio_clrbits_32(IMX_GPC_BASE + GPC_GLOBAL_OFFSET + PMIC_CTRL, BIT(0));
 		/* Disable OSC power down */
 		mmio_clrbits_32(IMX_GPC_BASE + GPC_GLOBAL_OFFSET + GPC_RCOSC_CTRL, BIT(0));
-		/* power down PLL */
-		pll_pwr_down(false);
 		peripheral_qchannel_hsk(false);
-
-		nicmix_pwr_up(core_id);
-		wakeupmix_pwr_up();
-		dram_exit_retention();
+		if (!is_m33_active()) {
+			/* power down PLL */
+			pll_pwr_down(false);
+			nicmix_pwr_up(core_id);
+			wakeupmix_pwr_up();
+			dram_exit_retention();
+		}
 	}
 
 	/* cluster level */
