@@ -1,3 +1,9 @@
+/*
+ * Copyright 2020-2023 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #ifndef _IMX8_SCMI_H
 #define _IMX8_SCMI_H
 
