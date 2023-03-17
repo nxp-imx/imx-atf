@@ -40,14 +40,20 @@ struct imx_fracpll_rate_table {
 };
 
 static struct imx_fracpll_rate_table imx9_fracpll_tbl[] = {
-        FRAC_PLL_RATE(933000000U, 1, 155, 4, 1, 2), /* 933Mhz */
-        FRAC_PLL_RATE(800000000U, 1, 200, 6, 0, 1), /* 800Mhz */
-        FRAC_PLL_RATE(600000000U, 1, 200, 8, 0, 1), /* 600Mhz */
-        FRAC_PLL_RATE(400000000U, 1, 200, 12, 0, 1), /* 400Mhz */
-        FRAC_PLL_RATE(233000000U, 1, 155, 16, 1, 3), /* 233Mhz */
-        FRAC_PLL_RATE(200000000U, 1, 200, 24, 0, 1), /* 200Mhz */
-        FRAC_PLL_RATE(166000000U, 1, 166, 24, 0, 1), /* 166Mhz */
-        FRAC_PLL_RATE(167000000U, 1, 167, 24, 0, 1), /* 167Mhz */
+	FRAC_PLL_RATE(1000000000U, 1, 166, 4, 2, 3), /* 1000Mhz */
+	FRAC_PLL_RATE(933000000U, 1, 155, 4, 1, 2),  /* 933Mhz */
+	FRAC_PLL_RATE(800000000U, 1, 200, 6, 0, 1),  /* 800Mhz */
+	FRAC_PLL_RATE(700000000U, 1, 145, 5, 5, 6),  /* 700Mhz */
+	FRAC_PLL_RATE(600000000U, 1, 200, 8, 0, 1),  /* 600Mhz */
+	FRAC_PLL_RATE(500000000U, 1, 125, 6, 0, 1),  /* 500Mhz */
+	FRAC_PLL_RATE(466000000U, 1, 155, 8, 1, 3),  /* 466Mhz */
+	FRAC_PLL_RATE(400000000U, 1, 200, 12, 0, 1), /* 400Mhz */
+	FRAC_PLL_RATE(300000000U, 1, 200, 16, 0, 1), /* 300Mhz */
+	FRAC_PLL_RATE(250000000U, 1, 125, 12,0, 1),  /* 250Mhz */
+	FRAC_PLL_RATE(233000000U, 1, 155, 16, 1, 3), /* 233Mhz */
+	FRAC_PLL_RATE(200000000U, 1, 200, 24, 0, 1), /* 200Mhz */
+	FRAC_PLL_RATE(167000000U, 1, 167, 24, 0, 1), /* 167Mhz */
+	FRAC_PLL_RATE(166000000U, 1, 166, 24, 0, 1), /* 166Mhz */
 };
 
 int ddr_pll_init(unsigned int drate)
@@ -98,6 +104,7 @@ int ddr_pll_init(unsigned int drate)
 	/* wait for the PLL lock */
 	do {
 		if (mmio_read_32(DRAM_PLL_BASE + 0xf0) & BIT(0)) {
+			udelay(20);
 			/* enable the clock output */
 			mmio_write_32(DRAM_PLL_BASE + 0x4, BIT(1));
 			break;
@@ -112,6 +119,9 @@ int ddr_pll_init(unsigned int drate)
 void ddr_pll_bypass(unsigned int drate)
 {
 	switch (drate) {
+	case 625:
+		mmio_clrsetbits_32(DRAM_ALT_CLK, 0x3ff, (0x3 << 8) | 0x0);
+		break;
 	case 400:
 		mmio_clrsetbits_32(DRAM_ALT_CLK, 0x3ff, (0x2 << 8) | 0x1);
 		break;
@@ -164,75 +174,114 @@ void ddr_clock_switch(struct dram_fsp_cfg *cfg, unsigned int target_drate){
 }
 
 /* DDR SWFFC flow is normally used for non half speed DDR frequency scaling */
-void ddr_swffc(struct dram_timing_info *info, unsigned int pstat)
+int ddr_swffc(struct dram_timing_info *info, unsigned int pstat)
 {
 	static uint32_t cur_state = 0;
 	uint32_t regval, tmp;
-	uint32_t PPTTrainSetup_Save = 0;
-	uint8_t mr13 = 0;
+	uint32_t cfg3 = 0;
+	bool ecc_en;
+	bool less_533mts = 0;
+	uint32_t wait_flag = 0;
+	uint32_t wait_us = 0;
+	int ret = 0;
+
 	if(pstat == cur_state)
-		return;
+		return 0;
 
-	dwc_ddrphy_apb_wr(0xd0000, 0x0);
-	PPTTrainSetup_Save = dwc_ddrphy_apb_rd(0x20010);
-	dwc_ddrphy_apb_wr(0x20010, 0x0);
-	dwc_ddrphy_apb_wr(0xd0000, 0x1);
+	ecc_en = !!(mmio_read_32(REG_ERR_EN) & ECC_EN);
+	less_533mts = info->fsp_table[cur_state] <= 533 ? true : false;
 
-	/* [SR_FAST_WK_EN] should be cleared */
-	mmio_clrbits_32(REG_DDR_SDRAM_CFG_3,BIT(1));
+	if (ecc_en && ((mmio_read_32(REG_DDR_TX_CFG_1) & 0xF) != 0)) {
+		VERBOSE("With ECC enabled TX_CFG_1 WWATER should be zero! \r\n");
+		mmio_clrbits_32(REG_DDR_TX_CFG_1, 0xF);
+	}
+
+	cfg3 = mmio_read_32(REG_DDR_SDRAM_CFG_3);
+	/* [SR_FAST_WK_EN] & dynamic refresh rate  must be cleared */
+	if (cfg3 & (BIT(1) | BIT(7))) {
+		mmio_clrbits_32(REG_DDR_SDRAM_CFG_3, BIT(1) | BIT(7));
+	}
 
 	/* DDR_SDRAM_CFG[MEM_HALT] = 1 */
-	mmio_setbits_32(REG_DDR_SDRAM_CFG,BIT(1));
+	mmio_setbits_32(REG_DDR_SDRAM_CFG, BIT(1));
 	do {
 		regval = mmio_read_32(REG_DDR_SDRAM_CFG);
 		if (regval & 0x02)
 			break;
 	} while (1);
 
-	check_ddrc_idle();
-
-	mr13 = 0xC0;   /* freqset: 1, mrset: 1 */
-	ddrc_mrs(0x4, mr13, 13);
-
-	ddrc_apply_reg_config(REG_TYPE_MR, info->fsp_cfg[pstat].mr_cfg);
-
-	/* [DFI_FREQ] for PState */
-	tmp= mmio_read_32(REG_DDR_SDRAM_CFG_4);
-	tmp = ((tmp & 0xFFFE0FFF) | (pstat << 12));
-	mmio_write_32(REG_DDR_SDRAM_CFG_4, tmp);
-	while (1) {
-		tmp =mmio_read_32(REG_DDR_SDRAM_CFG_4);
-		if(((tmp & 0x0001F000) >> 12) == pstat)
-			break;
+	if (ecc_en) {
+		wait_flag = 0xC0000000;
+		wait_us = 100;
+	} else {
+		wait_flag = 0x80000000;
+		wait_us = less_533mts ? 5 : 100;
 	}
 
-	if (info->fsp_cfg[cur_state].bypass) {
-		/* bypass mode reset DDRC state machine */
-		udelay(2);
-		mmio_setbits_32(REG_DDR_SDRAM_CFG_3, BIT(31));
-		while((mmio_read_32(REG_DDR_SDRAM_CFG_3) & BIT(31)) == BIT(31)) {}
-		udelay(5);
+	ret = check_ddrc_idle(wait_us, wait_flag);
+	if (!less_533mts && (ret == -1)) {
+		VERBOSE("wait %d us idle failed under %d MTS:REG_DDRDSR_2:0x%x it should not happen, swffc break!\r\n",
+			wait_us,
+			info->fsp_table[cur_state],
+			mmio_read_32(REG_DDRDSR_2)
+			);
+	} else {
+		ddrc_mrs(0x4, 0xC0, 13);
+		ddrc_apply_reg_config(REG_TYPE_MR, info->fsp_cfg[pstat].mr_cfg);
+
+		/* [DFI_FREQ] for PState */
+		tmp= mmio_read_32(REG_DDR_SDRAM_CFG_4);
+		tmp = ((tmp & 0xFFFE0FFF) | (pstat << 12));
+		mmio_write_32(REG_DDR_SDRAM_CFG_4, tmp);
+		while (1) {
+			tmp =mmio_read_32(REG_DDR_SDRAM_CFG_4);
+			if (((tmp & 0x0001F000) >> 12) == pstat)
+				break;
+		}
+
+		if (less_533mts) {
+			/* bypass mode reset DDRC state machine */
+			udelay(2);
+			mmio_setbits_32(REG_DDR_SDRAM_CFG_3, BIT(31));
+			while((mmio_read_32(REG_DDR_SDRAM_CFG_3) & BIT(31)) == BIT(31)) {
+			}
+			udelay(5);
+		}
+
+		/* FRC_SR] to force DDRC to place DRAM in self refresh */
+		mmio_setbits_32(REG_DDR_SDRAM_CFG_2, BIT(31));
+
+		/* Must wait some time to ensure in self refresh */
+		if (info->fsp_table[cur_state] >= 3733) {
+			udelay(3);
+		} else if(info->fsp_table[cur_state] >= 625) {
+			udelay(7);
+		} else {
+			udelay(70);
+		}
+
+		ddr_clock_switch(&info->fsp_cfg[pstat], info->fsp_table[pstat]);
+		ddrc_apply_reg_config(REG_TYPE_DDRC, info->fsp_cfg[pstat].ddrc_cfg);
+
+		/* Clear FRC_SR] exit self refresh */
+		mmio_clrbits_32(REG_DDR_SDRAM_CFG_2, BIT(31));
+
+		if (less_533mts) {
+			udelay(5);
+		}
+
+		/* update mrset to correct value */
+		ddrc_mrs(0x4, 0xC0, 13);
+
+		cur_state = pstat;
+
+		ret = 0;
 	}
 
-	/* FRC_SR] to force DDRC to place DRAM in self refresh */
-	mmio_setbits_32(REG_DDR_SDRAM_CFG_2, BIT(31));
-
-	/* Must wait some time to ensure in self refresh */
-	udelay(70);
-	ddr_clock_switch(&info->fsp_cfg[pstat], info->fsp_table[pstat]);
-	ddrc_apply_reg_config(REG_TYPE_DDRC, info->fsp_cfg[pstat].ddrc_cfg);
-
-	/* Clear FRC_SR] exit self refresh */
-	mmio_clrbits_32(REG_DDR_SDRAM_CFG_2, BIT(31));
-	do {
-		regval = mmio_read_32(REG_DDR_SDRAM_CFG_2);
-		if ((regval & 0x80000000) == 0x0)
-			break;
-	} while (1);
-
-	dwc_ddrphy_apb_wr(0xd0000, 0x0);
-	dwc_ddrphy_apb_wr(0x20010, PPTTrainSetup_Save);
-	dwc_ddrphy_apb_wr(0xd0000, 0x1);
+	/* restore REG_DDR_SDRAM_CFG_3 for fast wake up & dynamic refresh rate */
+	if (cfg3) {
+		mmio_write_32(REG_DDR_SDRAM_CFG_3, cfg3);
+	}
 
 	/* Clear MEM_HALT */
 	mmio_clrbits_32(REG_DDR_SDRAM_CFG,BIT(1));
@@ -242,7 +291,7 @@ void ddr_swffc(struct dram_timing_info *info, unsigned int pstat)
 			break;
 	} while (1);
 
-	cur_state = pstat;
+	return ret;
 }
 
 void ipg_stop_ack_wait(uint32_t expect)
@@ -268,11 +317,20 @@ void dram_hwffc_half_speed()
 
 void dram_hwffc_full_speed()
 {
+	uint32_t dyn_ref_rate_en = 0;
+
 	mmio_write_32(REG_HWFFC_CTRL, 0x1); /* enable HWFFC and select full speed */
 	ipg_stop_ack_wait(0x0);
 	mmio_setbits_32(REG_DDRC_STOP_CTRL, BIT(0));
 	ipg_stop_ack_wait(0x1);
 	mmio_clrbits_32(REG_DDRC_STOP_CTRL, BIT(0));
+
+	dyn_ref_rate_en = mmio_read_32(REG_DDR_SDRAM_CFG_3) & 0x80;
+	if(dyn_ref_rate_en)
+		mmio_clrbits_32(REG_DDR_SDRAM_CFG_3, BIT(7));
+	ddrc_mrs(0x4, 0xC0, 13);
+	if(dyn_ref_rate_en)
+		mmio_setbits_32(REG_DDR_SDRAM_CFG_3, BIT(7));
 }
 
 /* DDR HWFFC can only be used for full speed & half speed fast frequency change */

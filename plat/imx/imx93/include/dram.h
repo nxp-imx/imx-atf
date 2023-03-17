@@ -69,14 +69,14 @@ extern struct dram_timing_info *timing_info;
 void dram_info_init(unsigned long dram_timing_base);
 
 /* dram frequency change */
-void ddr_swffc(struct dram_timing_info *dram_info, unsigned int pstate);
+int ddr_swffc(struct dram_timing_info *dram_info, unsigned int pstate);
 void ddr_hwffc(uint32_t pstate);
 
 /* dram retention */
 void dram_enter_retention(void);
 void dram_exit_retention(void);
 
-void check_ddrc_idle(void);
+int check_ddrc_idle(int waitus, uint32_t flag);
 uint32_t ddrc_mrr(uint32_t mr_rank, uint32_t mr_addr);
 void ddrc_mrs(uint32_t cs_sel, uint32_t opcode, uint32_t mr);
 int ddrc_apply_reg_config(enum reg_type type, struct dram_cfg_param *reg_config);
