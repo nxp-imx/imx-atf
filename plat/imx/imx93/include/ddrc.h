@@ -39,6 +39,7 @@
 #define REG_DDR_TIMING_CFG_12   (DDRC_BASE_ADDR + 0x300)
 #define REG_DDR_TIMING_CFG_13   (DDRC_BASE_ADDR + 0x304)
 #define REG_DDR_TIMING_CFG_14   (DDRC_BASE_ADDR + 0x308)
+#define REG_DDR_TX_CFG_1        (DDRC_BASE_ADDR + 0x800)
 #define REG_DDRDSR_2        	(DDRC_BASE_ADDR + 0xB24)
 #define REG_DEBUG_26            (DDRC_BASE_ADDR + 0xF64)
 
@@ -47,5 +48,6 @@
 #define REG_AUTO_CG_CTRL	(DDRMIX_BLK_CTRL_BASE + 0x10)
 
 #define REG_ERR_EN              (DDRC_BASE_ADDR + 0x1000)
+#define ECC_EN			BIT(31)
 
 #endif /*IMX_DDRC_H */

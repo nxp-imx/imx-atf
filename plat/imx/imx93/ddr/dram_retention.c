@@ -111,7 +111,7 @@ void dram_enter_retention(void)
 	uint32_t val;
 
 	/* 2. Polling for DDRDSR_2[IDLE] to be set */
-	check_ddrc_idle();
+	check_ddrc_idle(0, 0x80000000);
 
 	/* HALT the ddrc axi port */
 	mmio_setbits_32(DDR_SDRAM_CFG, BIT(1));
@@ -231,7 +231,12 @@ void ddrc_init(struct dram_timing_info *timing)
 	uint32_t val;
 
 	for (i = 0;  i < timing->ddrc_cfg_num; i++) {
-		mmio_write_32(ddrc_cfg->reg, ddrc_cfg->val);
+		/* skip the dram init as we resume from retention */
+		if (ddrc_cfg->reg == 0x4e300114) {
+			mmio_write_32(ddrc_cfg->reg, ddrc_cfg->val & ~BIT(4));
+		} else {
+			mmio_write_32(ddrc_cfg->reg, ddrc_cfg->val);
+		}
 		ddrc_cfg++;
 	}
 
@@ -248,7 +253,7 @@ void ddrc_init(struct dram_timing_info *timing)
 	val = mmio_read_32(DDR_SDRAM_CFG);
 	mmio_write_32(DDR_SDRAM_CFG, val | BIT(31));
 
-	check_ddrc_idle();
+	check_ddrc_idle(0, 0x80000000);
 }
 
 void ddrphy_coldreset(void) {

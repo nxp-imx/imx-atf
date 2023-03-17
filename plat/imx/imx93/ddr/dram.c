@@ -157,14 +157,26 @@ unsigned long ddrphy_addr_remap(uint32_t paddr_apb_from_ctlr)
 	return paddr_apb_phy;
 }
 
-void check_ddrc_idle(void){
+int check_ddrc_idle(int waitus, uint32_t flag){
 	uint32_t regval;
-	uint32_t maxwaitus = 5;
+	int waitforever = 0;
+	int waitedus = 0;
+	if(waitus == 0)
+		waitforever = 1;
 	do{
 		regval = mmio_read_32(REG_DDRDSR_2);
-		if(regval & BIT(31))
+		if((regval & flag) == flag)
 			break;
-	}while(--maxwaitus);
+		udelay(1);
+		waitus--;
+		waitedus++;
+	}while(waitus | waitforever);
+
+	if((waitus == 0) & !waitforever){
+		return -1;
+	}
+
+	return waitedus;
 }
 
 void ddrc_mrs(uint32_t cs_sel, uint32_t opcode, uint32_t mr)
@@ -177,8 +189,7 @@ void ddrc_mrs(uint32_t cs_sel, uint32_t opcode, uint32_t mr)
 	/* Wait until REG_DDR_SDRAM_MD_CNTL[31] is cleared by HW (MD_EN=0) */
 	while((mmio_read_32(REG_DDR_SDRAM_MD_CNTL) & 0x80000000) == 0x80000000) {
 	}
-
-	check_ddrc_idle();
+	check_ddrc_idle(3, 0x80000000);
 }
 
 int ddrc_apply_reg_config(enum reg_type type, struct dram_cfg_param *reg_config){
@@ -271,6 +282,7 @@ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 	uint32_t online_cpus = x2 - 1; 
 	uint64_t mpidr = read_mpidr_el1();
 	unsigned int cpu_id = MPIDR_AFFLVL1_VAL(mpidr);
+	int ret = 0;
 
 	/* get the fsp num, return the number of supported fsp */
 	if (IMX_SIP_DDR_DVFS_GET_FREQ_COUNT == x1) {
@@ -307,15 +319,18 @@ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 		ddr_hwffc(fsp_index);
 		in_swffc = false;
 	} else if(fsp_index != 1) {
-		ddr_swffc(timing_info, fsp_index);
-		in_swffc = (fsp_index == 2);
+		ret = ddr_swffc(timing_info, fsp_index);
+		if(ret == 0)
+			in_swffc = (fsp_index == 2);
 	}
 
-	cur_fsp = fsp_index;
+	if(ret == 0)
+		cur_fsp = fsp_index;
+
 	in_progress = false;
 	core_count = 0;
 	dsb();
 	isb();
 
-	SMC_RET1(handle, 0);
+	SMC_RET1(handle, ret);
 }
