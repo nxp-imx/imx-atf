@@ -275,6 +275,8 @@ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 	/* get the fsp num, return the number of supported fsp */
 	if (IMX_SIP_DDR_DVFS_GET_FREQ_COUNT == x1) {
 		SMC_RET1(handle, num_fsp);
+	} else if (IMX_SIP_DDR_DVFS_GET_FREQ_INFO == x1) {
+		SMC_RET1(handle, timing_info->fsp_table[x2]);
 	} else if (fsp_index > num_fsp) {
 		/* fsp out of range */
 		SMC_RET1(handle, SMC_UNK);
