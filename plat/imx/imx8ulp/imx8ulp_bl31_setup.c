@@ -38,6 +38,8 @@ static const mmap_region_t imx_mmap[] = {
 	MAP_REGION_FLAT(0x27010000, 0x20000, MT_DEVICE | MT_RW | MT_NS), /* MU and FSB */
 	MAP_REGION_FLAT(0x2802B000, 0x1000, MT_DEVICE | MT_RW | MT_NS), /* SEC SIM */
 	MAP_REGION_FLAT(DEVICE1_BASE, DEVICE1_SIZE, MT_DEVICE | MT_RW),
+	/* Map partial DRAM space for DRAM low-power mode control */
+	MAP_REGION_FLAT(DEVICE2_BASE, DEVICE2_SIZE, MT_DEVICE | MT_RW),
 	/* For SCMI shared memory region */
 	MAP_REGION_FLAT(0x2201f000, 0x1000, MT_RW | MT_DEVICE),
 	{0}
