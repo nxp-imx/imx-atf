@@ -46,6 +46,10 @@ BL31_SOURCES		+=	common/desc_image_load.c			\
 				${IMX_DRAM_SOURCES}				\
 				${XLAT_TABLES_LIB_SRCS}
 
+ifeq (${SPD},trusty)
+	BL31_SOURCES += plat/imx/common/ffa_shared_mem.c
+endif
+
 RESET_TO_BL31		:=	1
 HW_ASSISTED_COHERENCY	:= 	1
 USE_COHERENT_MEM	:=	0
