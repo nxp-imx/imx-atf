@@ -45,8 +45,13 @@
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(ULL(1) << 32)
 #define PLAT_PHY_ADDR_SPACE_SIZE	(ULL(1) << 32)
 
+#ifdef SPD_trusty
+#define MAX_XLAT_TABLES			15
+#define MAX_MMAP_REGIONS		19
+#else
 #define MAX_XLAT_TABLES			12
 #define MAX_MMAP_REGIONS		16
+#endif
 
 #define IMX_LPUART_BASE			0x44380000
 #define IMX_BOOT_UART_CLK_IN_HZ		24000000 /* Select 24MHz oscillator */
@@ -77,5 +82,8 @@
 #define TRDC_x_SISE			U(0x20000)
 
 #define COUNTER_FREQUENCY		24000000
+
+#define IMX_TRUSTY_STACK_SIZE 0x100
+#define TRUSTY_SHARED_MEMORY_OBJ_SIZE (12 * 1024)
 
 #endif /* platform_def.h */

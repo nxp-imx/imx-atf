@@ -210,7 +210,11 @@ struct trdc_glbac_config trdc_n_mrc_glbac[] = {
 
 #if defined(SPD_opteed)
 #define TEE_SHM_SIZE 0x200000
+#else
+#define TEE_SHM_SIZE 0x0
+#endif
 
+#if defined(SPD_opteed) || defined(SPD_trusty)
 #define DRAM_MEM_0_START (0x80000000)
 #define DRAM_MEM_0_SIZE (BL32_BASE - 0x80000000)
 

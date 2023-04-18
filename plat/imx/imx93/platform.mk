@@ -43,6 +43,10 @@ BL31_SOURCES		+=	plat/common/aarch64/crash_console_helpers.S   \
 				${IMX_DRAM_SOURCES}				\
 				${XLAT_TABLES_LIB_SRCS}
 
+ifeq (${SPD},trusty)
+	BL31_SOURCES += plat/imx/common/ffa_shared_mem.c
+endif
+
 RESET_TO_BL31		:=	1
 HW_ASSISTED_COHERENCY	:= 	1
 USE_COHERENT_MEM	:=	0
