@@ -133,7 +133,7 @@ ps_apd_pwr_mode_cfgs_t apd_pwr_mode_cfgs = {
 	[DPD_PWR_MODE] = {
 		.swt_board_offs = 0x180,
 		.swt_mem_offs = 0x188,
-		.pmic_cfg = PMIC_CFG(0x23, 0xa, 0x2),
+		.pmic_cfg = PMIC_CFG(0x23, 0x0, 0x2),
 		.pad_cfg = PAD_CFG(0x0, 0xc, 0x01e80a02),
 		.bias_cfg = BIAS_CFG(0x0, 0x2, 0x2, 0x0),
 	},
@@ -142,7 +142,7 @@ ps_apd_pwr_mode_cfgs_t apd_pwr_mode_cfgs = {
 	[PD_PWR_MODE] = {
 		.swt_board_offs = 0x170,
 		.swt_mem_offs = 0x178,
-		.pmic_cfg = PMIC_CFG(0x23, 0x2, 0x2),
+		.pmic_cfg = PMIC_CFG(0x23, 0x0, 0x2),
 		.pad_cfg = PAD_CFG(0x0, 0xc, 0x01e80a00),
 		.bias_cfg = BIAS_CFG(0x0, 0x2, 0x2, 0x0),
 	},
@@ -158,7 +158,7 @@ ps_apd_pwr_mode_cfgs_t apd_pwr_mode_cfgs = {
 	[ACT_PWR_MODE] = {
 		.swt_board_offs = 0x110,
 		.swt_mem_offs = 0x118,
-		.pmic_cfg = PMIC_CFG(0x23, 0x2, 0x2),
+		.pmic_cfg = PMIC_CFG(0x23, 0x0, 0x2),
 		.pad_cfg = PAD_CFG(0x0, 0x0, 0x0deb7a00),
 		.bias_cfg = BIAS_CFG(0x2, 0x2, 0x2, 0x0),
 	},
