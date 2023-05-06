@@ -61,6 +61,9 @@ IMX_SEPARATE_STACK :=		1
 $(eval $(call add_define,IMX_SEPARATE_XLAT_TABLE))
 $(eval $(call add_define,IMX_SEPARATE_STACK))
 
+IMX_SEPARATE_COHERENT_MEM :=	1
+$(eval $(call add_define,IMX_SEPARATE_COHERENT_MEM))
+
 ifneq (${IMX_ANDROID_BUILD},true)
 $(eval $(call add_define,IMX8M_DDR4_DVFS))
 endif
@@ -74,7 +77,7 @@ ERRATA_A53_835769	:=	1
 ERRATA_A53_843419	:=	1
 ERRATA_A53_855873	:=	1
 
-IMX_DRAM_RETENTION	?=	0
+IMX_DRAM_RETENTION	?=	1
 $(eval $(call assert_boolean,IMX_DRAM_RETENTION))
 $(eval $(call add_define,IMX_DRAM_RETENTION))
 
