@@ -1013,7 +1013,7 @@ static int to_spi_err(long ret)
 /*
  * trusty_shared_memory_smc - SMC call handler.
  */
-uintptr_t spmd_smc_handler(uint32_t smc_fid,
+uintptr_t spmd_ffa_smc_handler(uint32_t smc_fid,
 			   u_register_t x1,
 			   u_register_t x2,
 			   u_register_t x3,
