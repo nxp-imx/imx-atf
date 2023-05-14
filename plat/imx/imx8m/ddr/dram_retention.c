@@ -28,7 +28,7 @@ bool imx_m4_lpa_active(void);
 bool imx_is_m4_enabled(void);
 #endif
 
-static void rank_setting_update(void)
+void rank_setting_update(void)
 {
 	uint32_t i, offset;
 	uint32_t pstate_num = dram_info.num_fsp;
