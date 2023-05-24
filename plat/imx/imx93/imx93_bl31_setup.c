@@ -139,7 +139,7 @@ void bl31_plat_arch_setup(void)
 	mmap_add_region(BL_CODE_BASE, BL_CODE_BASE, (BL_CODE_END - BL_CODE_BASE),
 		MT_MEMORY | MT_RO | MT_SECURE);
 
-#if defined(SPD_opteed) || defined(SPD_trusty)
+#ifdef SPD_trusty
 	mmap_add_region(BL32_BASE, BL32_BASE, BL32_SIZE, MT_MEMORY | MT_RW);
 #endif
 
