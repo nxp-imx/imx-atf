@@ -134,6 +134,8 @@ void bl31_plat_arch_setup(void)
 	mmio_write_32(GPIO1_BASE + 0x18, 0xffffffff);
 	mmio_write_32(GPIO1_BASE + 0x1c, 0x3);
 
+	mmap_add_region(OCRAM_BASE, OCRAM_BASE, OCRAM_SIZE,
+		MT_MEMORY | MT_RW | MT_SECURE);
 	mmap_add_region(BL31_BASE, BL31_BASE, (BL31_LIMIT - BL31_BASE),
 		MT_MEMORY | MT_RW | MT_SECURE);
 	mmap_add_region(BL_CODE_BASE, BL_CODE_BASE, (BL_CODE_END - BL_CODE_BASE),
