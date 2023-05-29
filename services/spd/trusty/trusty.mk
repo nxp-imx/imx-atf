@@ -10,6 +10,11 @@ endif
 
 SPD_INCLUDES		:=	-Iservices/spd/trusty/include
 
+ifeq (${PLAT}, imx8qm)
+        SPD_INCLUDES            +=	-Iplat/imx/imx8qm/include
+endif
+
+
 SPD_SOURCES		:=	services/spd/trusty/trusty.c		\
 				services/spd/trusty/trusty_helpers.S
 

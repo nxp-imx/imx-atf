@@ -17,6 +17,9 @@
 #include <lib/el3_runtime/context_mgmt.h>
 #include <lib/mmio.h>
 #include <sci/sci.h>
+#if defined(PLAT_imx8qm)
+#include <imx8qm_bl31_setup.h>
+#endif
 
 #if defined(PLAT_imx8qm) || defined(PLAT_imx8qx) || defined(PLAT_imx8dx) || defined(PLAT_imx8dxl)
 
@@ -304,3 +307,17 @@ int imx_hifi_xrdc(uint32_t smc_fid)
 	return 0;
 }
 #endif
+
+#if defined(PLAT_imx8qm) && defined(SPD_trusty)
+int imx_configure_memory_for_vpu(void *handle,
+				 u_register_t x1) {
+	int err;
+	err = configure_memory_region_owned_by_os_part(x1);
+	if (err == 0) {
+		SMC_RET1(handle, 0);
+	} else {
+		SMC_RET1(handle, 1);
+	}
+}
+#endif
+
