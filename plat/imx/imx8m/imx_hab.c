@@ -7,6 +7,8 @@
 
 #include <common/runtime_svc.h>
 #include <imx_sip_svc.h>
+#include <lib/xlat_tables/xlat_tables_v2.h>
+#include <common/debug.h>
 
 #define HAB_CID_ATF	U(2)	/* TF-A Caller ID */
 
@@ -82,6 +84,11 @@ struct hab_rvt_api {
 
 struct hab_rvt_api *g_hab_rvt_api = (struct hab_rvt_api *)HAB_RVT_BASE;
 
+#define IMX_DRAM_0_START (IMX_DRAM_BASE)
+#define IMX_DRAM_0_SIZE  (BL32_BASE - IMX_DRAM_BASE)
+#define IMX_DRAM_1_START (BL32_BASE + BL32_SIZE)
+#define IMX_DRAM_1_SIZE  (IMX_DRAM_BASE + IMX_DRAM_SIZE - IMX_DRAM_1_START)
+
 /*******************************************************************************
  * Handler for servicing HAB SMC calls
  ******************************************************************************/
@@ -91,34 +98,76 @@ int imx_hab_handler(uint32_t smc_fid,
 			u_register_t x3,
 			u_register_t x4)
 {
+	int ret = SMC_OK;
+
+#ifdef PLAT_XLAT_TABLES_DYNAMIC
+	if (mmap_add_dynamic_region(IMX_DRAM_0_START, IMX_DRAM_0_START,
+					IMX_DRAM_0_SIZE, MT_MEMORY | MT_RW | MT_NS)) {
+		ERROR("%s: Failed in mmap_add_dynamic_region!\n", __func__);
+		return SMC_UNK;
+	}
+
+	/* skip the BL32 space as it's already mapped statically */
+	if (IMX_DRAM_1_SIZE) {
+		if (mmap_add_dynamic_region(IMX_DRAM_1_START, IMX_DRAM_1_START,
+						IMX_DRAM_1_SIZE, MT_MEMORY | MT_RW | MT_NS)) {
+			ERROR("%s: Failed in mmap_add_dynamic_region!\n", __func__);
+			return SMC_UNK;
+		}
+	}
+#endif
+
 	switch (x1) {
 	case IMX_SIP_HAB_ENTRY:
-		return g_hab_rvt_api->entry();
+		ret = g_hab_rvt_api->entry();
+		break;
 	case IMX_SIP_HAB_EXIT:
-		return g_hab_rvt_api->exit();
+		ret = g_hab_rvt_api->exit();
+		break;
 	case IMX_SIP_HAB_CHECK_TARGET:
-		return g_hab_rvt_api->check_target((enum hab_target)x2,
+		ret = g_hab_rvt_api->check_target((enum hab_target)x2,
 			(const void *)x3, (size_t)x4);
+		break;
 	case IMX_SIP_HAB_AUTH_IMG:
-		return (unsigned long)g_hab_rvt_api->authenticate_image(HAB_CID_ATF,
+		ret = (unsigned long)g_hab_rvt_api->authenticate_image(HAB_CID_ATF,
 			x2, (void **)x3, (size_t *)x4, NULL);
+		break;
 	case IMX_SIP_HAB_REPORT_EVENT:
-		return g_hab_rvt_api->report_event(HAB_FAILURE,
+		ret = g_hab_rvt_api->report_event(HAB_FAILURE,
 			(uint32_t)x2, (uint8_t *)x3, (size_t *)x4);
+		break;
 	case IMX_SIP_HAB_REPORT_STATUS:
-		return g_hab_rvt_api->report_status((enum hab_config *)x2,
+		ret = g_hab_rvt_api->report_status((enum hab_config *)x2,
 			(enum hab_state *)x3);
+		break;
 	case IMX_SIP_HAB_FAILSAFE:
 		g_hab_rvt_api->failsafe();
 		break;
 	case IMX_SIP_HAB_AUTH_IMG_NO_DCD:
-		return (unsigned long)g_hab_rvt_api->authenticate_image_no_dcd(
+		ret = (unsigned long)g_hab_rvt_api->authenticate_image_no_dcd(
 			HAB_CID_ATF, x2, (void **)x3, (size_t *)x4, NULL);
+		break;
 	case IMX_SIP_HAB_GET_VERSION:
-		return g_hab_rvt_api->get_version();
+		ret = g_hab_rvt_api->get_version();
+		break;
 	default:
-		return SMC_UNK;
+		ret = SMC_UNK;
 	};
 
-	return SMC_OK;
+#ifdef PLAT_XLAT_TABLES_DYNAMIC
+	if (mmap_remove_dynamic_region(IMX_DRAM_0_START, IMX_DRAM_0_SIZE)) {
+		ERROR("%s: Failed in mmap_remove_dynamic_region!\n", __func__);
+		return SMC_UNK;
+	}
+
+	/* skip the BL32 space as it's already mapped statically */
+	if (IMX_DRAM_1_SIZE) {
+		if (mmap_remove_dynamic_region(IMX_DRAM_1_START, IMX_DRAM_1_SIZE)) {
+			ERROR("%s: Failed in mmap_remove_dynamic_region!\n", __func__);
+			return SMC_UNK;
+		}
+	}
+#endif
+
+	return ret;
 }

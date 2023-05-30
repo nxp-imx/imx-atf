@@ -41,7 +41,10 @@
 
 static const mmap_region_t imx_mmap[] = {
 	GIC_MAP, AIPS_MAP, OCRAM_S_MAP, DDRC_MAP,
-	CAAM_RAM_MAP, NS_OCRAM_MAP, ROM_MAP, DRAM_MAP, TCM_MAP,
+	CAAM_RAM_MAP, NS_OCRAM_MAP, ROM_MAP, TCM_MAP,
+#ifndef PLAT_XLAT_TABLES_DYNAMIC
+	DRAM_MAP,
+#endif
 	{0},
 };
 
