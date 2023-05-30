@@ -111,9 +111,6 @@ static struct trusty_shmem_client_state trusty_shmem_client_state[2] = {
 	[true].secure = true,
 	[true].identity_mapped = true,
 	[true].receiver = true,
-#if defined(PLAT_imx8mm) || defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
-	[false].identity_mapped = true,
-#endif
 };
 
 /**
