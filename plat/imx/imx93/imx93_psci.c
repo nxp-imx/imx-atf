@@ -732,6 +732,8 @@ void imx_pwr_domain_off(const psci_power_state_t *target_state)
 
 	plat_gic_cpuif_disable();
 
+	write_clusterpwrdn(DSU_CLUSTER_PWR_OFF);
+
 	/* switch to GPC wakeup source */
 	mmio_clrbits_32(IMX_GPC_BASE + A55C0_CMC_OFFSET + 0x800 * core_id + CM_MISC, IRQ_MUX);
 
@@ -753,7 +755,6 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 {
 	uint64_t mpidr = read_mpidr_el1();
 	unsigned int core_id = MPIDR_AFFLVL1_VAL(mpidr);
-	uint32_t val;
 
 	/* do cpu level config */
 	if (is_local_state_off(CORE_PWR_STATE(target_state))) {
@@ -768,17 +769,13 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 		/* config the A55 cluster target mode to WAIT */
 		mmio_write_32(IMX_GPC_BASE + A55C0_CMC_OFFSET + 0x800 * 2 + CM_MODE_CTRL, CM_MODE_WAIT);
 
-		/* config DSU for cluster power down */
-		val = read_clusterpwrdn();
-		val &= ~DSU_CLUSTER_PWR_MASK;
-		val |= DSU_CLUSTER_PWR_OFF;
 		/* enable L3 retention */
 		if (is_local_state_retn(CLUSTER_PWR_STATE(target_state))) {
 			mmio_setbits_32(IMX_SRC_BASE + A55C0_MEM + 0x400 * 3 + 0x4, MEM_LP_RETENTION);
-			val |= BIT(1);
+			write_clusterpwrdn(DSU_CLUSTER_PWR_OFF | BIT(1));
+		} else {
+			write_clusterpwrdn(DSU_CLUSTER_PWR_OFF);
 		}
-
-		write_clusterpwrdn(val);
 	}
 
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
@@ -849,15 +846,6 @@ void imx_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 
 	/* cluster level */
 	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state))) {
-		/* clear DSU cluster power down if cluster power off is aborted by wakeup */
-		/*
-		 * FIXME: has side effect, need to remove below config
-		 * val = read_clusterpwrdn();
-		 * val &= ~(DSU_CLUSTER_PWR_MASK | BIT(1));
-		 * val |= DSU_CLUSTER_PWR_ON;
-		 * write_clusterpwrdn(val);
-		 */ 
- 
 		/* set the cluster's target mode to RUN */
 		mmio_write_32(IMX_GPC_BASE + A55C0_CMC_OFFSET + 0x800 * 2 + CM_MODE_CTRL, CM_MODE_RUN);
 		/* clear L3 retention */
