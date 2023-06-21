@@ -15,6 +15,13 @@
 #include <platform_def.h>
 #include "trdc_config.h"
 
+#define BLK_CTRL_NS_ANOMIX_BASE  0x44210000
+
+#define ELE_MU_RSR	(S400_MU_BASE + 0x12c)
+#define ELE_MU_TRx(i)	(S400_MU_BASE + 0x200 + (i) * 4)
+#define ELE_MU_RRx(i)	(S400_MU_BASE + 0x280 + (i) * 4)
+#define ELE_READ_FUSE_REQ	U(0x17970206)
+
 #define DID_NUM 16
 #define MBC_MAX_NUM 4
 #define MRC_MAX_NUM 2
@@ -108,6 +115,11 @@ struct trdc_fused_module_info {
 	uint8_t blk_num;
 };
 
+struct trdc_fuse_data{
+	uint8_t fsb_index;
+	uint32_t value;
+};
+
 struct trdc_mgr_info trdc_mgr_blks[] = {
 	{ 0x44270000, 0, 0, 39, 40 }, /* TRDC_A */
 	{ 0x42460000, 0, 0, 70, 71 }, /* TRDC_W */
@@ -149,6 +161,12 @@ struct trdc_fused_module_info fuse_info[] = {
 	{ 0x49010000, 20, 17, 0, 2, 32, 1 }, /* MIPI CSI NICMIX, MBC0, MEM2, slot 32 */
 	{ 0x49010000, 20, 19, 0, 2, 33, 1 }, /* MIPI DSI NICMIX, MBC0, MEM2, slot 33 */
 	{ 0x44270000, 21, 7, 0, 0, 83, 1  }, /* ADC1 AONMIX, MBC0, MEM0, slot 83 */
+};
+
+struct trdc_fuse_data fuse_data[] = {
+	{ 19, 0 },
+	{ 20, 0 },
+	{ 21, 0 },
 };
 
 int trdc_mda_set_cpu(unsigned long trdc_reg, uint32_t mda_inst,
@@ -583,6 +601,54 @@ static void trdc_mgr_mbc_setup(struct trdc_mgr_info *mgr)
 	}
 }
 
+static uint32_t ele_read_common_fuse(uint32_t fuse_id)
+{
+	uint32_t msg, resp, val = 0;
+
+	mmio_write_32(ELE_MU_TRx(0), ELE_READ_FUSE_REQ);
+	mmio_write_32(ELE_MU_TRx(1), fuse_id);
+
+	do {
+		resp = mmio_read_32(ELE_MU_RSR);
+	} while ((resp & 0x3) != 0x3);
+
+	msg = mmio_read_32(ELE_MU_RRx(0));
+	resp = mmio_read_32(ELE_MU_RRx(1));
+
+	if ((resp & 0xff) == 0xd6)
+		val = mmio_read_32(ELE_MU_RRx(2));
+
+	VERBOSE("resp %x; %x; %x", msg, resp, val);
+
+	return val;
+}
+
+static void trdc_fuse_init(void)
+{
+	uint32_t val, i;
+
+	val = mmio_read_32(BLK_CTRL_NS_ANOMIX_BASE + 0x28);
+	for (i = 0; i < ARRAY_SIZE(fuse_data); i++) {
+		if (val & BIT(0)) /* OSCCA enabled */
+			fuse_data[i].value = ele_read_common_fuse(fuse_data[i].fsb_index);
+		else
+			fuse_data[i].value = mmio_read_32(FSB_BASE + FSB_SHADOW_OFF
+				+ (fuse_data[i].fsb_index << 2));
+	}
+}
+
+static uint32_t trdc_fuse_read(uint8_t word_index)
+{
+	uint32_t i;
+
+	for (i = 0; i < ARRAY_SIZE(fuse_data); i++) {
+		if (fuse_data[i].fsb_index == word_index)
+			return fuse_data[i].value;
+	}
+
+	return 0;
+}
+
 static void trdc_mgr_fused_slot_setup(struct trdc_fused_module_info *fused_slot)
 {
 	uint32_t i, val, did;
@@ -590,7 +656,7 @@ static void trdc_mgr_fused_slot_setup(struct trdc_fused_module_info *fused_slot)
 	if (trdc_mbc_enabled(fused_slot->trdc_base)) {
 		trdc_mbc_set_control(fused_slot->trdc_base, fused_slot->mbc_id, 6, 0x0); /* No access permission */
 
-		val = mmio_read_32(FSB_BASE + FSB_SHADOW_OFF + (fused_slot->fsb_index << 2));
+		val = trdc_fuse_read(fused_slot->fsb_index);
 		/* If the module is fused, set GLBAC6 for no access permission */
 		if (val & BIT_32(fused_slot->fuse_bit)) {
 			for (i = 0; i < fused_slot->blk_num; i++) {
@@ -651,6 +717,8 @@ static void trdc_setup(struct trdc_config_info *cfg)
 void trdc_config(void)
 {
 	int i;
+
+	trdc_fuse_init();
 
 	/* Set MTR to DID1 */
 	trdc_mda_set_noncpu(0x44270000, 4, 0, false, 0x2, 0x2, 0x1);
