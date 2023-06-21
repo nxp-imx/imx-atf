@@ -15,6 +15,13 @@
 
 #include "trdc_config.h"
 
+#define BLK_CTRL_NS_ANOMIX_BASE  0x44210000
+
+#define ELE_MU_RSR	(S400_MU_BASE + 0x12c)
+#define ELE_MU_TRx(i)	(S400_MU_BASE + 0x200 + (i) * 4)
+#define ELE_MU_RRx(i)	(S400_MU_BASE + 0x280 + (i) * 4)
+#define ELE_READ_FUSE_REQ	U(0x17970206)
+
 struct trdc_mgr_info trdc_mgr_blks[] = {
 	{ TRDC_A_BASE, 0, 0, 39, 40 },
 	{ TRDC_W_BASE, 0, 0, 70, 71 },
@@ -60,9 +67,65 @@ struct trdc_fused_module_info fuse_info[] = {
 	{ 0x44270000, 21, 7, 0, 0, 83, 1  }, /* ADC1 AONMIX, MBC0, MEM0, slot 83 */
 };
 
+struct trdc_fuse_data fuse_data[] = {
+	{ 19, 0 },
+	{ 20, 0 },
+	{ 21, 0 },
+};
+
+static uint32_t ele_read_common_fuse(uint32_t fuse_id)
+{
+	uint32_t msg, resp, val = 0;
+
+	mmio_write_32(ELE_MU_TRx(0), ELE_READ_FUSE_REQ);
+	mmio_write_32(ELE_MU_TRx(1), fuse_id);
+
+	do {
+		resp = mmio_read_32(ELE_MU_RSR);
+	} while ((resp & 0x3) != 0x3);
+
+	msg = mmio_read_32(ELE_MU_RRx(0));
+	resp = mmio_read_32(ELE_MU_RRx(1));
+
+	if ((resp & 0xff) == 0xd6)
+		val = mmio_read_32(ELE_MU_RRx(2));
+
+	VERBOSE("resp %x; %x; %x", msg, resp, val);
+
+	return val;
+}
+
+static void trdc_fuse_init(void)
+{
+	uint32_t val, i;
+
+	val = mmio_read_32(BLK_CTRL_NS_ANOMIX_BASE + 0x28);
+	for (i = 0; i < ARRAY_SIZE(fuse_data); i++) {
+		if (val & BIT(0)) /* OSCCA enabled */
+			fuse_data[i].value = ele_read_common_fuse(fuse_data[i].fsb_index);
+		else
+			fuse_data[i].value = mmio_read_32(FSB_BASE + FSB_SHADOW_OFF
+				+ (fuse_data[i].fsb_index << 2));
+	}
+}
+
+uint32_t trdc_fuse_read(uint8_t word_index)
+{
+	uint32_t i;
+
+	for (i = 0; i < ARRAY_SIZE(fuse_data); i++) {
+		if (fuse_data[i].fsb_index == word_index)
+			return fuse_data[i].value;
+	}
+
+	return 0;
+}
+
 void trdc_config(void)
 {
 	unsigned int i;
+
+	trdc_fuse_init();
 
 	/* Set MTR to DID1 */
 	trdc_mda_set_noncpu(TRDC_A_BASE, 4, false, 0x2, 0x2, 0x1);

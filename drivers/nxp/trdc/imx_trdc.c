@@ -312,7 +312,7 @@ void trdc_mgr_fused_slot_setup(struct trdc_fused_module_info *fused_slot)
 		/* No access permission */
 		trdc_mbc_set_control(fused_slot->trdc_base, fused_slot->mbc_id, 6, 0x0);
 
-		val = mmio_read_32(FSB_BASE + FSB_SHADOW_OFF + (fused_slot->fsb_index << 2));
+		val = trdc_fuse_read(fused_slot->fsb_index);
 		/* If the module is fused, set GLBAC6 for no access permission */
 		if (val & BIT_32(fused_slot->fuse_bit)) {
 			for (i = 0; i < fused_slot->blk_num; i++) {
