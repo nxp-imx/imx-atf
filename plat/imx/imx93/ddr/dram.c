@@ -242,6 +242,7 @@ static uint64_t waiting_dvfs(uint32_t id, uint32_t flags,
 		/* frequency change done */
 		if (!in_progress)
 			break;
+		wfe();
 	}
 
 	return 0;
@@ -330,6 +331,7 @@ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 	in_progress = false;
 	core_count = 0;
 	dsb();
+	sev();
 	isb();
 
 	SMC_RET1(handle, ret);
