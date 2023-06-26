@@ -779,9 +779,6 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 		}
 
 		write_clusterpwrdn(val);
-
-		/* FIXME: slow down S401 clock: 24M OSC */
-		mmio_clrbits_32(0x44450200, GENMASK_32(9, 8));
 	}
 
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
@@ -865,8 +862,6 @@ void imx_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 		mmio_write_32(IMX_GPC_BASE + A55C0_CMC_OFFSET + 0x800 * 2 + CM_MODE_CTRL, CM_MODE_RUN);
 		/* clear L3 retention */
 		mmio_clrbits_32(IMX_SRC_BASE + A55C0_MEM + 0x400 * 3 + 0x4, MEM_LP_RETENTION);
-		/* FIXME:  set S401 clock back */
-		mmio_setbits_32(0x44450200, BIT(9));
 	}
 	/* do core level */
 	if (is_local_state_off(CORE_PWR_STATE(target_state))) {
