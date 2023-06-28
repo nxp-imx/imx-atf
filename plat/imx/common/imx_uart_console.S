@@ -15,6 +15,11 @@
 #define USR2  0x98 /* UART Status Register 2 */
 #define UTS   0xb4 /* UART Test Register (mx31) */
 #define  URXD_RX_DATA    (0xFF)
+#define FCR   0x0a01
+#define BIR   0xf
+#define BMR   0x68
+#define CR1   0x1
+#define CR2   0x4027
 
 	.globl	console_imx_uart_register
 	.globl	console_imx_uart_init
@@ -40,7 +45,20 @@ register_fail:
 endfunc console_imx_uart_register
 
 func console_imx_uart_init
-	mov	w0, #1
+	mov     w5, #FCR
+	str     w5, [x0, #0x90]
+	mov     w5, #BIR
+	str     w5, [x0, #0xa4]
+	mov     w5, #BMR
+	str     w5, [x0, #0xa8]
+	mov     w5, #CR2
+	str     w5, [x0, #0x84]
+	mov     w5, #CR1
+	str     w5, [x0, #0x80]
+
+	ldr     w5, [x0, #0x88]
+	orr     x5, x5, #0x4
+	str     w5, [x0, #0x88]
 	ret
 endfunc console_imx_uart_init
 
