@@ -292,9 +292,9 @@ void dram_exit_retention(void)
 
 	/* additional step to make sure DDR exit retenton works */
 	mmio_setbits_32(SRC_DDRC_SW_CTRL, BIT(0));
-	udelay(10000);
+	udelay(10);
 	mmio_clrbits_32(SRC_DDRC_SW_CTRL, BIT(0));
-	udelay(10000);
+	udelay(10);
 
 	/* 2. Cold reset the DDRPHY */
 	ddrphy_coldreset();
