@@ -347,6 +347,7 @@ bool is_lpav_owned_by_apd(void)
 void lpav_ctx_save(void)
 {
 	int i;
+	uint32_t val;
 
 	/* CGC2 save */
 	for (i = 0; i < ARRAY_SIZE(cgc2); i++)
@@ -357,11 +358,17 @@ void lpav_ctx_save(void)
 		pll4[i][1] = mmio_read_32(pll4[i][0]);
 
 	/* PCC5 save */
-	for (i = 0; i < ARRAY_SIZE(pcc5_0); i++)
-		pcc5_0[i] = mmio_read_32(IMX_PCC5_BASE + i * 4);
+	for (i = 0; i < ARRAY_SIZE(pcc5_0); i++) {
+		val = mmio_read_32(IMX_PCC5_BASE + i * 4);
+		if (val & PCC_PR)
+			pcc5_0[i] = val;
+	}
 
-	for (i = 0; i < ARRAY_SIZE(pcc5_1); i++)
-		pcc5_1[i][1] = mmio_read_32(pcc5_1[i][0]);
+	for (i = 0; i < ARRAY_SIZE(pcc5_1); i++) {
+		val = mmio_read_32(pcc5_1[i][0]);
+		if (val & PCC_PR)
+			pcc5_1[i][1] = val;
+	}
 
 	/* LPAV SIM save */
 	for (i = 0; i < ARRAY_SIZE(lpav_sim); i++)
@@ -398,11 +405,15 @@ void lpav_ctx_restore(void)
 		mmio_write_32(cgc2[i][0], cgc2[i][1]);
 
 	/* PCC5 restore */
-	for (i = 0; i < ARRAY_SIZE(pcc5_0); i++)
-		mmio_write_32(IMX_PCC5_BASE + i * 4, pcc5_0[i]);
+	for (i = 0; i < ARRAY_SIZE(pcc5_0); i++) {
+		if (pcc5_0[i] & PCC_PR)
+			mmio_write_32(IMX_PCC5_BASE + i * 4, pcc5_0[i]);
+	}
 
-	for (i = 0; i < ARRAY_SIZE(pcc5_1); i++)
-		mmio_write_32(pcc5_1[i][0], pcc5_1[i][1]);
+	for (i = 0; i < ARRAY_SIZE(pcc5_1); i++) {
+		if (pcc5_1[i][1] & PCC_PR)
+			mmio_write_32(pcc5_1[i][0], pcc5_1[i][1]);
+	}
 
 	/* LPAV_SIM */
 	for (i = 0; i < ARRAY_SIZE(lpav_sim); i++)
