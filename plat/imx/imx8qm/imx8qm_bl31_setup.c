@@ -507,6 +507,15 @@ void mx8_partition_resources(void)
 				SC_R_M4_1_PID0, err);
 	}
 
+/* Configure VPU can only be controlled by the secure world. */
+#if defined(SPD_trusty)
+	err = sc_rm_set_peripheral_permissions(ipc_handle, SC_R_VPU, os_part, SC_RM_PERM_SEC_RW);
+	if (err)
+		ERROR("SC_R_VPU peripheral permission configure failed err=%d\n",err);
+	err = sc_rm_set_peripheral_permissions(ipc_handle, SC_R_VPU_DEC_0, os_part, SC_RM_PERM_SEC_RW);
+	if (err)
+		ERROR("SC_R_VPU_DEC_0 peripheral permission configure failed err=%d\n",err);
+#endif
 	if (err)
 		NOTICE("Partitioning Failed\n");
 	else
