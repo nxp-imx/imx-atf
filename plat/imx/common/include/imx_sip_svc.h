@@ -78,7 +78,9 @@ int imx_kernel_entry_handler(uint32_t smc_fid, u_register_t x1,
 
 #if defined(PLAT_imx8qm) && defined(SPD_trusty)
 #define IMX_SIP_CONFIGURE_MEM_FOR_VPU       0xC2000010
+#define IMX_SIP_GET_PARTITION_NUMBER        0xC2000011
 int imx_configure_memory_for_vpu(void *handle, u_register_t x1);
+int imx_get_partition_number(void *handle);
 #endif
 
 
