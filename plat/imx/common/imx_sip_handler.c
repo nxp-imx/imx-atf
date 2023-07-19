@@ -319,5 +319,15 @@ int imx_configure_memory_for_vpu(void *handle,
 		SMC_RET1(handle, 1);
 	}
 }
+int imx_get_partition_number(void *handle) {
+	int os_part, dpu_part;
+	int rc = get_partition_number(&os_part, &dpu_part);
+	if (!rc) {
+		SMC_RET3(handle, rc, os_part, dpu_part);
+	} else {
+		SMC_RET1(handle, rc);
+	}
+}
+
 #endif
 

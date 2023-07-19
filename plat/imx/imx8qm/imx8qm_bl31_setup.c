@@ -51,6 +51,7 @@ static entry_point_info_t bl33_image_ep_info;
 #if defined(SPD_trusty)
 int mem_region_owned_os_part[64] = {0};
 int index = 0;
+sc_rm_pt_t global_dpu_part = 0, global_os_part = 0;
 #endif
 
 #if (defined COCKPIT_A72)
@@ -294,6 +295,8 @@ void mx8_partition_resources(void)
 				false, true, false);
 	if (err)
 		ERROR("dpu part allocate failed err=%d\n",err);
+
+	global_dpu_part = dpu_part;
 
 	err = sc_rm_set_parent(ipc_handle, dpu_part, secure_part);
 	if (err)
@@ -595,6 +598,17 @@ int configure_memory_region_owned_by_os_part(int vpu_part) {
 	}
 	return 0;
 }
+
+int get_partition_number(int* os_part, int* dpu_part) {
+        if ((global_os_part != 0) && (global_dpu_part != 0)) {
+                *os_part = global_os_part;
+                *dpu_part = global_dpu_part;
+                return 0;
+        } else {
+                return -1;
+        }
+}
+
 #endif
 
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,

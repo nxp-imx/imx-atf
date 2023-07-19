@@ -101,6 +101,8 @@ static uintptr_t imx_sip_handler(unsigned int smc_fid,
 #if defined(PLAT_imx8qm) && defined(SPD_trusty)
 	case IMX_SIP_CONFIGURE_MEM_FOR_VPU:
 		return imx_configure_memory_for_vpu(handle, x1);
+	case IMX_SIP_GET_PARTITION_NUMBER:
+		return imx_get_partition_number(handle);
 #endif
 	default:
 		WARN("Unimplemented i.MX SiP Service Call: 0x%x\n", smc_fid);
