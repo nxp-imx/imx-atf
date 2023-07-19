@@ -217,6 +217,7 @@ void mx8_partition_resources(void)
 #if defined(SPD_trusty)
 	sc_rm_mr_t mr_drm = 64;
 	sc_rm_mr_t mr_vpu = 64;
+	sc_rm_pt_t dpu_part;
 #endif
 
 	uint32_t cpu_id, cpu_rev = 0x1; /* Set Rev B as default */
@@ -288,6 +289,16 @@ void mx8_partition_resources(void)
 		}
 
 	}
+	/* allocate dpu parition */
+	err = sc_rm_partition_alloc(ipc_handle, &dpu_part, false, true,
+				false, true, false);
+	if (err)
+		ERROR("dpu part allocate failed err=%d\n",err);
+
+	err = sc_rm_set_parent(ipc_handle, dpu_part, secure_part);
+	if (err)
+		ERROR("set parent for dpu part failed err=%d\n",err);
+	/* end */
 #endif
 	for (mr = 0; mr < 64; mr++) {
 		owned = sc_rm_is_memreg_owned(ipc_handle, mr);
@@ -556,6 +567,12 @@ void mx8_partition_resources(void)
 	err = sc_rm_set_peripheral_permissions(ipc_handle, SC_R_VPU_DEC_0, os_part, SC_RM_PERM_SEC_RW);
 	if (err)
 		ERROR("SC_R_VPU_DEC_0 peripheral permission configure failed err=%d\n",err);
+	/* configure normal memory to dpu part */
+	for (i = 0; i < index; i++) {
+		err = sc_rm_set_memreg_permissions(ipc_handle, mem_region_owned_os_part[i], dpu_part, SC_RM_PERM_FULL);
+		if (err)
+			ERROR("configure normal memory permission for dpu part failed err=%d\n",err);
+	}
 #endif
 	if (err)
 		NOTICE("Partitioning Failed\n");
