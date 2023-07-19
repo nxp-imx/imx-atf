@@ -100,6 +100,14 @@
 #define BL32_FDT_OVERLAY_ADDR		0x9d000000
 #endif
 
+#ifdef SPD_trusty
+#define SECURE_HEAP_BASE		0xe0000000
+#define SECURE_HEAP_LIMIT		0x10000000
+
+#define VPU_FIRMWARE_BASE		0x96000000
+#define VPU_FIRMWARE_LIMIT		0x02000000
+#endif
+
 #endif /* TEE section */
 
 #define OCRAM_BASE		0x100000
