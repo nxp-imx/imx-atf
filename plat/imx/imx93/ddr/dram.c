@@ -269,6 +269,9 @@ void dram_info_init(unsigned long dram_timing_base)
 	if (i == 0)
 		return;
 
+	/* set SR_FAST_WK_EN to 1 by default */
+	mmio_setbits_32(REG_DDR_SDRAM_CFG_3, BIT(1));
+
 	/* Register the EL3 handler for DDR DVFS */
 	set_interrupt_rm_flag(flags, NON_SECURE);
 	rc = register_interrupt_type_handler(INTR_TYPE_EL3, waiting_dvfs, flags);

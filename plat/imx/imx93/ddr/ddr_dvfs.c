@@ -337,15 +337,24 @@ void dram_hwffc_full_speed()
 void ddr_hwffc(uint32_t pstat)
 {
 	static uint32_t cur_state = 0;
+	uint32_t cfg3;
 
 	if(pstat == cur_state)
 		return;
 	mmio_setbits_32(REG_AUTO_CG_CTRL, BIT(17));
+	/* clear SR_FAST_WK_EN beofre HWFFC */
+	cfg3 = mmio_read_32(REG_DDR_SDRAM_CFG_3);
+	mmio_clrbits_32(REG_DDR_SDRAM_CFG_3, BIT(1));
 
 	if (pstat)
 		dram_hwffc_half_speed();
 	else
 		dram_hwffc_full_speed();
+
+	/* set SR_FAST_WK_EN to 1 if it is enabled */
+	if (cfg3 & BIT(1)) {
+		mmio_setbits_32(REG_DDR_SDRAM_CFG_3, BIT(1));
+	}
 
 	cur_state = pstat;
 }
