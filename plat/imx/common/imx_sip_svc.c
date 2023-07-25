@@ -91,7 +91,7 @@ static uintptr_t imx_sip_handler(unsigned int smc_fid,
 #endif
 	case  IMX_SIP_BUILDINFO:
 		SMC_RET1(handle, imx_buildinfo_handler(smc_fid, x1, x2, x3, x4));
-#if defined(PLAT_imx93)
+#if defined(PLAT_imx93) || defined(PLAT_imx91p)
 	case IMX_SIP_DDR_DVFS:
 		return dram_dvfs_handler(smc_fid, handle, x1, x2, x3);
 	case IMX_SIP_SRC:

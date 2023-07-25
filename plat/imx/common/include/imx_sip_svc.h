@@ -127,7 +127,7 @@ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 	u_register_t x1, u_register_t x2, u_register_t x3);
 #endif
 
-#if defined(PLAT_imx93)
+#if defined(PLAT_imx93) || defined(PLAT_imx91p)
 int imx_src_handler(uint32_t smc_fid, u_register_t x1,
 		    u_register_t x2, u_register_t x3, void *handle);
 int dram_dvfs_handler(uint32_t smc_fid, void *handle,
