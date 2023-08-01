@@ -10,6 +10,7 @@
 #define SU(X)           ((X) << 8)
 #define NP(X)           ((X) << 4)
 #define NU(X)           ((X) << 0)
+#define LK              BIT(31)
 
 #define RWX             7
 #define RW              6

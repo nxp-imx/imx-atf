@@ -31,6 +31,9 @@
 #define MBC_BLK_NUM(GLBCFG) (GLBCFG & 0x3FF)
 #define MRC_RGN_NUM(GLBCFG) (GLBCFG & 0x1F)
 
+#define GLBAC_SETTING_MASK	(0x7777)
+#define GLBAC_LOCK_MASK	BIT(31)
+
 struct mbc_mem_dom {
 	uint32_t mem_glbcfg[4];
 	uint32_t nse_blk_index;
@@ -171,7 +174,7 @@ struct trdc_fuse_data fuse_data[] = {
 
 int trdc_mda_set_cpu(unsigned long trdc_reg, uint32_t mda_inst,
 		 uint32_t mda_reg, uint8_t sa, uint8_t dids, uint8_t did,
-		 uint8_t pe, uint8_t pidm, uint8_t pid)
+		 uint8_t pe, uint8_t pidm, uint8_t pid, bool lock)
 {
 	struct trdc_mgr *trdc_base = (struct trdc_mgr *)trdc_reg;
 	uint32_t *mda_w = &trdc_base->mda[mda_inst].mda_w[mda_reg];
@@ -185,12 +188,15 @@ int trdc_mda_set_cpu(unsigned long trdc_reg, uint32_t mda_inst,
 
 	mmio_write_32((uintptr_t)mda_w, val);
 
+	if (lock)
+		mmio_write_32((uintptr_t)mda_w, val | BIT(30));
+
 	return 0;
 }
 
 int trdc_mda_set_noncpu(unsigned long trdc_reg, uint32_t mda_inst,
 		 uint32_t mda_reg, bool did_bypass, uint8_t sa,
-		 uint8_t pa, uint8_t did)
+		 uint8_t pa, uint8_t did, bool lock)
 {
 	struct trdc_mgr *trdc_base = (struct trdc_mgr *)trdc_reg;
 	uint32_t *mda_w = &trdc_base->mda[mda_inst].mda_w[mda_reg];
@@ -204,6 +210,9 @@ int trdc_mda_set_noncpu(unsigned long trdc_reg, uint32_t mda_inst,
 		val |= BIT(8);
 
 	mmio_write_32((uintptr_t)mda_w, val);
+
+	if (lock)
+		mmio_write_32((uintptr_t)mda_w, val | BIT(30));
 
 	return 0;
 }
@@ -598,6 +607,9 @@ static void trdc_mgr_mbc_setup(struct trdc_mgr_info *mgr)
 			trdc_mbc_blk_config(mgr->trdc_base, mgr->mbc_id, i, mgr->mbc_mem_id, mgr->blk_mgr, true, 7);
 			trdc_mbc_blk_config(mgr->trdc_base, mgr->mbc_id, i, mgr->mbc_mem_id, mgr->blk_mc, true, 7);
 		}
+
+		/* lock it up for TRDC mgr */
+		trdc_mbc_set_control(mgr->trdc_base, mgr->mbc_id, 7, GLBAC_LOCK_MASK | 0x6000);
 	}
 }
 
@@ -676,7 +688,8 @@ static void trdc_setup(struct trdc_config_info *cfg)
 	if (trdc_mrc_enabled(cfg->trdc_base)) {
 		for (i = 0; i < cfg->num_mrc_glbac; i++) {
 			trdc_mrc_set_control(cfg->trdc_base, cfg->mrc_glbac[i].mbc_mrc_id,
-				cfg->mrc_glbac[i].glbac_id, cfg->mrc_glbac[i].glbac_val);
+				cfg->mrc_glbac[i].glbac_id,
+				cfg->mrc_glbac[i].glbac_val & GLBAC_SETTING_MASK);
 		}
 
 		for (i = 0; i < cfg->num_mrc_cfg; i++) {
@@ -689,7 +702,8 @@ static void trdc_setup(struct trdc_config_info *cfg)
 	if (trdc_mbc_enabled(cfg->trdc_base)) {
 		for (i = 0; i < cfg->num_mbc_glbac; i++) {
 			trdc_mbc_set_control(cfg->trdc_base, cfg->mbc_glbac[i].mbc_mrc_id,
-				cfg->mbc_glbac[i].glbac_id, cfg->mbc_glbac[i].glbac_val);
+				cfg->mbc_glbac[i].glbac_id,
+				cfg->mbc_glbac[i].glbac_val & GLBAC_SETTING_MASK);
 		}
 
 		for (i = 0; i < cfg->num_mbc_cfg; i++) {
@@ -714,6 +728,27 @@ static void trdc_setup(struct trdc_config_info *cfg)
 	}
 }
 
+static void trdc_try_lockup(struct trdc_config_info *cfg)
+{
+	uint32_t i;
+
+	if (trdc_mrc_enabled(cfg->trdc_base)) {
+		for (i = 0; i < cfg->num_mrc_glbac; i++) {
+			trdc_mrc_set_control(cfg->trdc_base, cfg->mrc_glbac[i].mbc_mrc_id,
+				cfg->mrc_glbac[i].glbac_id,
+				cfg->mrc_glbac[i].glbac_val & (GLBAC_SETTING_MASK | GLBAC_LOCK_MASK));
+		}
+	}
+
+	if (trdc_mbc_enabled(cfg->trdc_base)) {
+		for (i = 0; i < cfg->num_mbc_glbac; i++) {
+			trdc_mbc_set_control(cfg->trdc_base, cfg->mbc_glbac[i].mbc_mrc_id,
+				cfg->mbc_glbac[i].glbac_id,
+				cfg->mbc_glbac[i].glbac_val & (GLBAC_SETTING_MASK | GLBAC_LOCK_MASK));
+		}
+	}
+}
+
 void trdc_config(void)
 {
 	int i;
@@ -721,10 +756,10 @@ void trdc_config(void)
 	trdc_fuse_init();
 
 	/* Set MTR to DID1 */
-	trdc_mda_set_noncpu(0x44270000, 4, 0, false, 0x2, 0x2, 0x1);
+	trdc_mda_set_noncpu(0x44270000, 4, 0, false, 0x2, 0x2, 0x1, false);
 
 	/* Set M33 to DID2*/
-	trdc_mda_set_cpu(0x44270000, 1, 0, 0x2, 0x0, 0x2, 0x0, 0x0, 0x0);
+	trdc_mda_set_cpu(0x44270000, 1, 0, 0x2, 0x0, 0x2, 0x0, 0x0, 0x0, false);
 
 	/* Configure the access permission for TRDC MGR and MC slots */
 	for (i = 0; i < ARRAY_SIZE(trdc_mgr_blks); i++) {
@@ -739,6 +774,11 @@ void trdc_config(void)
 	/* Configure the access permission for fused slots */
 	for (i = 0; i < ARRAY_SIZE(fuse_info); i++) {
 		trdc_mgr_fused_slot_setup(&fuse_info[i]);
+	}
+
+	/* Try to lock up TRDC MBC/MRC according to user settings from config table */
+	for (i = 0; i < ARRAY_SIZE(trdc_cfg_info); i++) {
+		trdc_try_lockup(&trdc_cfg_info[i]);
 	}
 }
 
@@ -760,6 +800,9 @@ void trdc_w_reinit(void)
 		if (fuse_info[i].trdc_base == 0x42460000)
 			trdc_mgr_fused_slot_setup(&fuse_info[i]);
 	}
+
+	/* Try to lock up TRDC MBC/MRC according to user settings from config table */
+	trdc_try_lockup(&trdc_cfg_info[1]);
 }
 
 /*nic mix TRDC init */
@@ -778,4 +821,7 @@ void trdc_n_reinit(void)
 		if (fuse_info[i].trdc_base == 0x49010000)
 			trdc_mgr_fused_slot_setup(&fuse_info[i]);
 	}
+
+	/* Try to lock up TRDC MBC/MRC according to user settings from config table */
+	trdc_try_lockup(&trdc_cfg_info[2]);
 }
