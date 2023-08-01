@@ -136,9 +136,6 @@ void dram_enter_retention(void)
 	/* 5. Clear DDR_ZQ_CNTL register */
 	mmio_write_32(DDR_ZQ_CNTL, 0x0);
 
-	/* 6. Set DEBUG_26[DIS_CTRLUPD_REQ */
-	mmio_setbits_32(DEBUG_26, (0x1f << 12));
-
 	/* 7. Force the DDRC to enter self refresh */
 	self_refresh_enter();
 	mmio_setbits_32(AUTO_CG_CTRL, BIT(17)); /* Enable ipg_stop_reg while auto cg */
