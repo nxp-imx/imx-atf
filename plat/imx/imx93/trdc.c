@@ -128,10 +128,10 @@ void trdc_config(void)
 	trdc_fuse_init();
 
 	/* Set MTR to DID1 */
-	trdc_mda_set_noncpu(TRDC_A_BASE, 4, false, 0x2, 0x2, 0x1);
+	trdc_mda_set_noncpu(TRDC_A_BASE, 4, false, 0x2, 0x2, 0x1, false);
 
 	/* Set M33 to DID2*/
-	trdc_mda_set_cpu(TRDC_A_BASE, 1, 0, 0x2, 0x0, 0x2, 0x0, 0x0, 0x0);
+	trdc_mda_set_cpu(TRDC_A_BASE, 1, 0, 0x2, 0x0, 0x2, 0x0, 0x0, 0x0, false);
 
 	/* Configure the access permission for TRDC MGR and MC slots */
 	for (i = 0U; i < ARRAY_SIZE(trdc_mgr_blks); i++) {
@@ -146,6 +146,11 @@ void trdc_config(void)
 	/* Configure the access permission for fused slots */
 	for (i = 0; i < ARRAY_SIZE(fuse_info); i++) {
 		trdc_mgr_fused_slot_setup(&fuse_info[i]);
+	}
+
+	/* Try to lock up TRDC MBC/MRC according to user settings from config table */
+	for (i = 0; i < ARRAY_SIZE(trdc_cfg_info); i++) {
+		trdc_try_lockup(&trdc_cfg_info[i]);
 	}
 
 	NOTICE("TRDC init done\n");
@@ -169,6 +174,9 @@ void trdc_w_reinit(void)
 		if (fuse_info[i].trdc_base == 0x42460000)
 			trdc_mgr_fused_slot_setup(&fuse_info[i]);
 	}
+
+	/* Try to lock up TRDC MBC/MRC according to user settings from config table */
+	trdc_try_lockup(&trdc_cfg_info[1]);
 }
 
 /*nic mix TRDC init */
@@ -187,4 +195,7 @@ void trdc_n_reinit(void)
 		if (fuse_info[i].trdc_base == 0x49010000)
 			trdc_mgr_fused_slot_setup(&fuse_info[i]);
 	}
+
+	/* Try to lock up TRDC MBC/MRC according to user settings from config table */
+	trdc_try_lockup(&trdc_cfg_info[2]);
 }

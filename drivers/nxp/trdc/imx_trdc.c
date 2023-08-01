@@ -16,7 +16,8 @@
 
 int trdc_mda_set_cpu(uintptr_t trdc_base, uint32_t mda_inst,
 		     uint32_t mda_reg, uint8_t sa, uint8_t dids,
-		     uint8_t did, uint8_t pe, uint8_t pidm, uint8_t pid)
+		     uint8_t did, uint8_t pe, uint8_t pidm,
+		     uint8_t pid, bool lock)
 {
 	uint32_t val = mmio_read_32(trdc_base + MDAC_W_X(mda_inst, mda_reg));
 	/* invalid: config non-cpu master with cpu config format. */
@@ -29,12 +30,16 @@ int trdc_mda_set_cpu(uintptr_t trdc_base, uint32_t mda_inst,
 
 	mmio_write_32(trdc_base + MDAC_W_X(mda_inst, mda_reg), val);
 
+	if (lock) {
+		mmio_write_32(trdc_base + MDAC_W_X(mda_inst, mda_reg), val | BIT(30));
+	}
+
 	return 0;
 }
 
 int trdc_mda_set_noncpu(uintptr_t trdc_base, uint32_t mda_inst,
 			bool did_bypass, uint8_t sa, uint8_t pa,
-			uint8_t did)
+			uint8_t did, bool lock)
 {
 	uint32_t val = mmio_read_32(trdc_base + MDAC_W_X(mda_inst, 0));
 
@@ -47,6 +52,10 @@ int trdc_mda_set_noncpu(uintptr_t trdc_base, uint32_t mda_inst,
 	      MDA_DFMT1_DIDB(did_bypass ? 1U : 0U);
 
 	mmio_write_32(trdc_base + MDAC_W_X(mda_inst, 0), val);
+
+	if (lock) {
+		mmio_write_32(trdc_base + MDAC_W_X(mda_inst, 0), val | BIT(30));
+	}
 
 	return 0;
 }
@@ -301,6 +310,8 @@ void trdc_mgr_mbc_setup(struct trdc_mgr_info *mgr)
 			trdc_mbc_blk_config(mgr->trdc_base, mgr->mbc_id, i,
 				mgr->mbc_mem_id, mgr->blk_mc, true, 7);
 		}
+		/* lock it up for TRDC mgr */
+		trdc_mbc_set_control(mgr->trdc_base, mgr->mbc_id, 7, GLBAC_LOCK_MASK | 0x6000);
 	}
 }
 
@@ -345,7 +356,7 @@ void trdc_setup(struct trdc_config_info *cfg)
 			trdc_mrc_set_control(cfg->trdc_base,
 					     cfg->mrc_glbac[i].mbc_mrc_id,
 					     cfg->mrc_glbac[i].glbac_id,
-					     cfg->mrc_glbac[i].glbac_val);
+					     cfg->mrc_glbac[i].glbac_val | GLBAC_SETTING_MASK);
 		}
 
 		/* set each MRC region access policy */
@@ -367,7 +378,7 @@ void trdc_setup(struct trdc_config_info *cfg)
 			trdc_mbc_set_control(cfg->trdc_base,
 					     cfg->mbc_glbac[i].mbc_mrc_id,
 					     cfg->mbc_glbac[i].glbac_id,
-					     cfg->mbc_glbac[i].glbac_val);
+					     cfg->mbc_glbac[i].glbac_val | GLBAC_SETTING_MASK);
 		}
 
 		for (i = 0U; i < cfg->num_mbc_cfg; i++) {
@@ -401,6 +412,31 @@ void trdc_setup(struct trdc_config_info *cfg)
 						    cfg->mbc_cfg[i].secure,
 						    cfg->mbc_cfg[i].glbac_id);
 			}
+		}
+	}
+}
+
+void trdc_try_lockup(struct trdc_config_info *cfg)
+{
+	uint32_t i;
+
+	if (trdc_mrc_enabled(cfg->trdc_base)) {
+		for (i = 0; i < cfg->num_mrc_glbac; i++) {
+			trdc_mrc_set_control(cfg->trdc_base,
+					     cfg->mrc_glbac[i].mbc_mrc_id,
+					     cfg->mrc_glbac[i].glbac_id,
+					     cfg->mrc_glbac[i].glbac_val &
+						 (GLBAC_SETTING_MASK | GLBAC_LOCK_MASK));
+		}
+	}
+
+	if (trdc_mbc_enabled(cfg->trdc_base)) {
+		for (i = 0; i < cfg->num_mbc_glbac; i++) {
+			trdc_mbc_set_control(cfg->trdc_base,
+					    cfg->mbc_glbac[i].mbc_mrc_id,
+					    cfg->mbc_glbac[i].glbac_id,
+					    cfg->mbc_glbac[i].glbac_val &
+						(GLBAC_SETTING_MASK | GLBAC_LOCK_MASK));
 		}
 	}
 }
