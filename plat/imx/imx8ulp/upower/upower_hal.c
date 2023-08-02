@@ -19,8 +19,6 @@
 
 #define UPOWER_AP_MU1_ADDR	0x29280000
 
-extern void upwr_txrx_isr();
-
 struct MU_tag *muptr = (struct MU_tag *)UPOWER_AP_MU1_ADDR;
 
 void upower_apd_inst_isr()

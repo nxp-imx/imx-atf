@@ -1,142 +1,7 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* +FHDR------------------------------------------------------------------------
- * Copyright 2019-2021 NXP
- * -----------------------------------------------------------------------------
- * FILE NAME      : upower_defs.h
- * DEPARTMENT     : BSTC - Campinas, Brazil
- * AUTHOR         : Celso Brites
- * AUTHOR'S EMAIL : celso.brites@nxp.com
- * -----------------------------------------------------------------------------
- * RELEASE HISTORY
- * VERSION DATE        AUTHOR                  DESCRIPTION
+/**
+ * Copyright 2019-2023 NXP
  *
- * $Log: upower_defs.h.rca $
- * 
- *  Revision: 1.66 Tue Apr 27 12:48:48 2021 nxa11511
- *  Adds new pwm function number UPWR_PWM_REGCFG for new service upwr_pwm_reg_config
- *  (same value as UPWR_PWM_DEVMOD, deprecated).
- *  Adds struct upwr_reg_config_t, only a stub for now.
- *  Replaces typedef upwr_pwm_devmode_msg with upwr_pwm_regcfg_msg.
- *  upwr_pwm_msg.devmode replaced with upwr_pwm_msg.regcfg
- * 
- *  Revision: 1.60 Fri Oct 23 11:49:56 2020 nxa11511
- *  Deleted the GPL license statements, leaving only BSD, as it is compatible with Linux and good for closed ROM/firmware code.
- * 
- *  Revision: 1.59 Wed Sep 30 15:57:35 2020 nxa11511
- *  Now UPWR_DGN_MAX = UPWR_DGN_ALL.
- *  Redefines upwr_dgn_log_t according to dgn_lib.S;
- *  Merge from branch dgn_lib.
- * 
- *  Revision: 1.58.1.1 Tue Sep 29 10:07:12 2020 nxa11511
- *  Adds UPWR_DGN_ALL to upwr_dgn_mode_t, which is now also UPWR_DGN_MAX.
- *  In upwr_dgn_log_t, DGN_LOG_EVENTNEW added DGN_LOG_SPARE deleted.
- * 
- *  Revision: 1.49 Mon Jun  8 06:46:30 2020 nxa11511
- *  *** empty comment string ***
- * 
- *  Revision: 1.44 Tue Apr  7 13:34:01 2020 nxf42682
- *  Put TYPES_LOCAL_H - fixed serious compilation error of version 1.42 and 1.43
- * 
- *  Revision: 1.43 Tue Mar 31 12:50:46 2020 nxf42682
- *  Merged version 1.42 with 1.41.1.1
- * 
- *  Revision: 1.42 Tue Mar 31 08:06:59 2020 nxa11511
- *  Fixes a compiling error.
- * 
- *  Revision: 1.41 Mon Mar 30 23:07:26 2020 nxa10721
- *  Added support for AVD bias
- * 
- *  Revision: 1.40 Mon Mar 30 14:29:44 2020 nxa11511
- *  Updates to API spec 20200404:
- *  API functions upwr_power_on and upwr_boot_start deleted.
- *  API functions upwr_xcp_power_on and upwr_xcp_boot_start moved to the Power Management service group;
- *  renamed to upwr_pwm_dom_power_on and upwr_pwm_boot_start
- * 
- *  Revision: 1.39 Fri Mar 27 17:17:34 2020 nxa11511
- *  Adds typedef upwr_start_msg.
- *  (sets new typedef upwr_xcp_start_msg;
- *  Adds typedef upwr_resp_msg upwr_shutdown_msg;
- *
- *  Revision: 1.35 Tue Mar 10 06:24:09 2020 nxa11511
- *  Fixes identations to comply with the Linux kernel coding guidelines.
- * 
- *  Revision: 1.34 Thu Mar  5 22:08:03 2020 nxa10721
- *  Using the RTD monitor config also for APD
- * 
- *  Revision: 1.33 Mon Mar  2 12:16:14 2020 nxa11511
- *  Changes typedef upwr_start_msg to simple 1-word message.
- * 
- *  Revision: 1.29 Mon Feb 10 10:34:29 2020 nxa10721
- *  Temporarily turns RTD config pointers as uint32_t for A35 compilation in SoC
- * 
- *  Revision: 1.28 Sun Feb  9 16:10:01 2020 nxa10721
- *  Added abs_pwr_mode_t, solving TKT0532383
- *  Define RTD swt and mem configs as a pointer or 32-bit word, according to CPU
- * 
- *  Revision: 1.27 Thu Jan 30 07:09:03 2020 nxa11511
- *  typedef upwr_rom_vers_t members major and minor renamed to vmajor and vminor to avoid clashing with a Linux include macro.
- * 
- *  Revision: 1.23 Mon Nov 25 10:38:33 2019 nxa10721
- *  Typecastings to reduce warns
- * 
- *  Revision: 1.21 Wed Nov 13 21:59:44 2019 nxa10721
- *  Added toutines to handle swt offset
- * 
- *  Revision: 1.20 Tue Nov  5 12:46:45 2019 nxa10721
- *  Added APD power mode config structs, using offsets instead of pointers
- * 
- *  Revision: 1.19 Thu Oct 24 11:33:48 2019 nxa10721
- *  Remove some g++ warns on strings
- * 
- *  Revision: 1.18 Fri Oct 18 06:42:40 2019 nxa10721
- *  Added APD and core power modes
- * 
- *  Revision: 1.17 Wed Oct  9 11:35:24 2019 nxa13158
- *  replaced powersys low power mode config by struct config
- * 
- *  Revision: 1.16 Tue Sep 24 12:16:30 2019 nxa13158
- *  updated upwr_pmc_mon_rtd_cfg_t struct (removed unecessary union)
- * 
- *  Revision: 1.15 Mon Aug 26 14:24:26 2019 nxa13158
- *  reorganized power modes enum to make easy to reuse in tb
- * 
- *  Revision: 1.14 Fri Aug 23 17:54:11 2019 nxa11511
- *  Renames UPWR_RESP_NOT_IMPL to UPWR_RESP_UNINSTALLD.
- * 
- *  Revision: 1.13 Wed Aug 21 12:59:15 2019 nxa13158
- *  renamed RTD mode to active DMA, moved pmc_bias_mode_t to
- *  pmc_api. Updated mem bias struct config
- * 
- *  Revision: 1.12 Wed Aug 21 07:01:47 2019 nxa11511
- *  Several changes in message formats.
- * 
- *  Revision: 1.9 Thu Aug 15 17:10:04 2019 nxa13158
- *  removed POR from power modes transitions. Not needed anymore
- * 
- *  Revision: 1.8 Thu Aug 15 11:50:08 2019 nxa11511
- *  UPWR_SG_PMODE renamed to UPWR_SG_PMGMT.
- * 
- *  Revision: 1.7 Wed Aug 14 10:16:48 2019 nxa13158
- *  Fixed upwr_pmc_bias_cfg_t struct definition
- * 
- *  Revision: 1.6 Tue Aug 13 17:52:07 2019 nxa11511
- *  Adds Exception function enum.
- *  Fixes union upwr_pmc_mon_rtd_cfg_t.
- * 
- *  Revision: 1.5 Tue Aug 13 15:26:40 2019 nxa13158
- *  added Power Modes configuration structs.
- * 
- *  Revision: 1.4 Mon Aug 12 18:18:40 2019 nxa11511
- *  Message structs/unions turned into typedefs.
- *  Adds message formats for the new initialization procedure with the boot start step.
- * 
- *  Revision: 1.3 Sat Aug 10 09:06:21 2019 nxa11511
- *  Adds extern "C" if __cplusplus is #defined and UPWR_NAMESPACE is #undefined.
- * 
- *  Revision: 1.1 Thu Aug  1 17:14:33 2019 nxa11511
- *  uPower driver API #defines and typedefs shared with the firmware
- * 
- * -----------------------------------------------------------------------------
  * KEYWORDS: micro-power uPower driver API
  * -----------------------------------------------------------------------------
  * PURPOSE: uPower driver API #defines and typedefs shared with the firmware
@@ -145,12 +10,12 @@
  * PARAM NAME RANGE:DESCRIPTION:       DEFAULTS:                           UNITS
  * -----------------------------------------------------------------------------
  * REUSE ISSUES: no reuse issues
- * -FHDR--------------------------------------------------------------------- */
+ */
 
 #ifndef _UPWR_DEFS_H
 #define _UPWR_DEFS_H
 
-#ifndef TYPES_LOCAL_H 
+#ifndef TYPES_LOCAL_H
 
 #include <stdint.h> /* this include breaks the SoC compile - TBD why? */
 
@@ -230,16 +95,16 @@ typedef union {
 	} ptrs;
 } upwr_2pointer_msg;
 
-typedef enum { /* Service Groups in priority order, high to low */
-	UPWR_SG_EXCEPT,   /* 0 = exception           */
-	UPWR_SG_PWRMGMT , /* 1 = power management    */
-	UPWR_SG_DELAYM,   /* 2 = delay   measurement */
-	UPWR_SG_VOLTM ,   /* 3 = voltage measurement */
-	UPWR_SG_CURRM,    /* 4 = current measurement */
-	UPWR_SG_TEMPM,    /* 5 = temperature measurement */
-	UPWR_SG_DIAG,     /* 6 = diagnostic  */
-	UPWR_SG_COUNT
-} upwr_sg_t;
+#define UPWR_SG_EXCEPT   (0U)   /* 0 = exception           */
+#define UPWR_SG_PWRMGMT  (1U)   /* 1 = power management    */
+#define UPWR_SG_DELAYM   (2U)   /* 2 = delay   measurement */
+#define	UPWR_SG_VOLTM    (3U)   /* 3 = voltage measurement */
+#define UPWR_SG_CURRM    (4U)   /* 4 = current measurement */
+#define	UPWR_SG_TEMPM    (5U)   /* 5 = temperature measurement */
+#define	UPWR_SG_DIAG     (6U)   /* 6 = diagnostic  */
+#define	UPWR_SG_COUNT    (7U)
+
+typedef uint32_t upwr_sg_t;
 
 /* *************************************************************************
  * Initialization - downstream
@@ -261,31 +126,31 @@ typedef union {
  * Service Group EXCEPTION - downstream
  ***************************************************************************/
 
-typedef enum {             /* Exception Functions */
-	UPWR_XCP_INIT,     /*  0 = init msg (not a service request itself) */
-	UPWR_XCP_PING = UPWR_XCP_INIT,
-			   /*  0 = also ping request, since its response is
-				   an init msg */
-	UPWR_XCP_START,    /*  1 = service start: upwr_start 
-                            *      (not a service request itself) */
-	UPWR_XCP_SHUTDOWN, /*  2 = service shutdown: upwr_xcp_shutdown */
-	UPWR_XCP_CONFIG,   /*  3 = uPower configuration: upwr_xcp_config */
-	UPWR_XCP_SW_ALARM, /*  4 = uPower software alarm: upwr_xcp_sw_alarm */
-	UPWR_XCP_I2C,      /*  5 = I2C access: upwr_xcp_i2c_access */
-	UPWR_XCP_SPARE_6,  /*  6 = spare */
-	UPWR_XCP_SET_DDR_RETN,  /*  7 = set/clear ddr retention */
-	UPWR_XCP_SET_RTD_APD_LLWU,  /*  8 = set/clear rtd/apd llwu */
-	UPWR_XCP_SPARE_8 = UPWR_XCP_SET_RTD_APD_LLWU,  /*  8 = spare */
-    UPWR_XCP_SET_RTD_USE_DDR,      /* 9 = M33 core set it is using DDR or not */
-	UPWR_XCP_SPARE_9 = UPWR_XCP_SET_RTD_USE_DDR,  /*  9 = spare */
-	UPWR_XCP_SPARE_10, /* 10 = spare */
-	UPWR_XCP_SPARE_11, /* 11 = spare */
-	UPWR_XCP_SPARE_12, /* 12 = spare */
-	UPWR_XCP_SPARE_13, /* 13 = spare */
-	UPWR_XCP_SPARE_14, /* 14 = spare */
-	UPWR_XCP_SPARE_15, /* 15 = spare */
-	UPWR_XCP_F_COUNT
-} upwr_xcp_f_t;
+#define	UPWR_XCP_INIT        (0U)     /*  0 = init msg (not a service request itself) */
+#define	UPWR_XCP_PING        (0U)     /*  0 = also ping request, since its response isan init msg */
+#define	UPWR_XCP_START       (1U)     /*  1 = service start: upwr_start *(not a service request itself) */
+#define	UPWR_XCP_SHUTDOWN    (2U)     /*  2 = service shutdown: upwr_xcp_shutdown */
+#define	UPWR_XCP_CONFIG      (3U)     /*  3 = uPower configuration: upwr_xcp_config */
+#define	UPWR_XCP_SW_ALARM    (4U)     /*  4 = uPower software alarm: upwr_xcp_sw_alarm */
+#define	UPWR_XCP_I2C         (5U)     /*  5 = I2C access: upwr_xcp_i2c_access */
+#define	UPWR_XCP_SPARE_6     (6U)     /*  6 = spare */
+#define	UPWR_XCP_SET_DDR_RETN (7U)    /*  7 = set/clear ddr retention */
+#define UPWR_XCP_SET_RTD_APD_LLWU (8U)  /*  8 = set/clear rtd/apd llwu */
+#define	UPWR_XCP_SPARE_8    (8U)  /*  8 = spare */
+#define UPWR_XCP_SET_RTD_USE_DDR  (9U)      /* 9 = M33 core set it is using DDR or not */
+#define	UPWR_XCP_SPARE_9 (9U)  /*  9 = spare */
+#define	UPWR_XCP_SPARE_10 (10U) /* 10 = spare */
+#define	UPWR_XCP_SET_MIPI_DSI_ENA (10U)    /*  10 = set/clear mipi dsi ena */
+#define	UPWR_XCP_SPARE_11 (11U) /* 11 = spare */
+#define	UPWR_XCP_GET_MIPI_DSI_ENA (11U)    /*  11 = get mipi dsi ena status */
+#define	UPWR_XCP_SPARE_12 (12U) /* 12 = spare */
+#define	UPWR_XCP_SET_OSC_MODE (12U) /* 12 = set uPower OSC mode, high or low */
+#define	UPWR_XCP_SPARE_13 (13U) /* 13 = spare */
+#define	UPWR_XCP_SPARE_14 (14U) /* 14 = spare */
+#define	UPWR_XCP_SPARE_15 (15U) /* 15 = spare */
+#define	UPWR_XCP_F_COUNT (16U)
+
+typedef uint32_t upwr_xcp_f_t;
 
 typedef upwr_down_1w_msg    upwr_xcp_ping_msg;
 typedef upwr_down_1w_msg    upwr_xcp_shutdown_msg;
@@ -295,8 +160,11 @@ typedef upwr_start_msg      upwr_xcp_start_msg;
 typedef upwr_down_2w_msg    upwr_xcp_config_msg;
 typedef upwr_down_1w_msg    upwr_xcp_swalarm_msg;
 typedef upwr_down_1w_msg    upwr_xcp_ddr_retn_msg;
+typedef upwr_down_1w_msg    upwr_xcp_set_mipi_dsi_ena_msg;
+typedef upwr_down_1w_msg    upwr_xcp_get_mipi_dsi_ena_msg;
 typedef upwr_down_1w_msg    upwr_xcp_rtd_use_ddr_msg;
 typedef upwr_down_1w_msg    upwr_xcp_rtd_apd_llwu_msg;
+typedef upwr_down_1w_msg    upwr_xcp_set_osc_mode_msg;
 typedef upwr_pointer_msg    upwr_xcp_i2c_msg;
 
 typedef struct { /* structure pointed by message upwr_xcp_i2c_msg */
@@ -319,8 +187,11 @@ typedef union {
 	upwr_xcp_swalarm_msg      swalarm;   /* software alarm */
 	upwr_xcp_i2c_msg          i2c;       /* I2C access */
 	upwr_xcp_ddr_retn_msg     set_ddr_retn;       /* set ddr retention msg */
+	upwr_xcp_set_mipi_dsi_ena_msg     set_mipi_dsi_ena;       /* set mipi dsi ena msg */
+	upwr_xcp_get_mipi_dsi_ena_msg     get_mipi_dsi_ena;       /* get mipi dsi ena msg */
 	upwr_xcp_rtd_use_ddr_msg     set_rtd_use_ddr;       /* set rtd is using ddr msg */
 	upwr_xcp_rtd_apd_llwu_msg     set_llwu;       /* set rtd/apd llwu msg */
+	upwr_xcp_set_osc_mode_msg     set_osc_mode;       /* set osc_mode msg */
 } upwr_xcp_msg;
 
 typedef struct { /* structure pointed by message upwr_volt_dva_req_id_msg */
@@ -338,45 +209,45 @@ typedef struct { /* structure pointed by message upwr_volt_dva_req_id_msg */
  * Service Group POWER MANAGEMENT - downstream
  ***************************************************************************/
 
-typedef enum {            /* Power Management Functions */
-	UPWR_PWM_REGCFG,  /* 0 = regulator config: upwr_pwm_reg_config */
-	UPWR_PWM_DEVMODE = UPWR_PWM_REGCFG, /* deprecated, for old compile */
-	UPWR_PWM_VOLT   , /* 1 = voltage change: upwr_pwm_chng_reg_voltage */
-	UPWR_PWM_SWITCH , /* 2 = switch control: upwr_pwm_chng_switch_mem */
-	UPWR_PWM_PWR_ON,  /* 3 = switch/RAM/ROM power on: upwr_pwm_power_on  */
-	UPWR_PWM_PWR_OFF, /* 4 = switch/RAM/ROM power off: upwr_pwm_power_off */
-	UPWR_PWM_RETAIN,  /* 5 = retain memory array: upwr_pwm_mem_retain */
-	UPWR_PWM_DOM_BIAS,/* 6 = Domain bias control: upwr_pwm_chng_dom_bias */
-	UPWR_PWM_MEM_BIAS,/* 7 = Memory bias control: upwr_pwm_chng_mem_bias */
-	UPWR_PWM_PMICCFG, /* 8 = PMIC configuration:  upwr_pwm_pmic_config */
-	UPWR_PWM_PMICMOD = UPWR_PWM_PMICCFG, /* deprecated, for old compile */
-	UPWR_PWM_PES,      /* 9 so far, no use */
-	UPWR_PWM_CONFIG , /* 10= apply power mode defined configuration */
-	UPWR_PWM_CFGPTR,  /* 11= configuration pointer */
-	UPWR_PWM_DOM_PWRON,/* 12 = domain power on: upwr_pwm_dom_power_on */
-	UPWR_PWM_BOOT,     /* 13 = boot start: upwr_pwm_boot_start */
-    UPWR_PWM_FREQ,     /* 14 = domain frequency setup */
-	UPWR_PWM_PARAM,    /* 15 = power management parameters */
-	UPWR_PWM_F_COUNT
-} upwr_pwm_f_t;
+#define	UPWR_PWM_REGCFG    (0U)     /* 0 = regulator config: upwr_pwm_reg_config */
+#define UPWR_PWM_DEVMODE   (0U)     /* deprecated, for old compile */
+#define	UPWR_PWM_VOLT      (1U)     /* 1 = voltage change: upwr_pwm_chng_reg_voltage */
+#define	UPWR_PWM_SWITCH    (2U)     /* 2 = switch control: upwr_pwm_chng_switch_mem */
+#define UPWR_PWM_PWR_ON    (3U)     /* 3 = switch/RAM/ROM power on: upwr_pwm_power_on  */
+#define	UPWR_PWM_PWR_OFF   (4U)     /* 4 = switch/RAM/ROM power off: upwr_pwm_power_off */
+#define	UPWR_PWM_RETAIN    (5U)     /* 5 = retain memory array: upwr_pwm_mem_retain */
+#define UPWR_PWM_DOM_BIAS  (6U)     /* 6 = Domain bias control: upwr_pwm_chng_dom_bias */
+#define	UPWR_PWM_MEM_BIAS  (7U)     /* 7 = Memory bias control: upwr_pwm_chng_mem_bias */
+#define	UPWR_PWM_PMICCFG   (8U)     /* 8 = PMIC configuration:  upwr_pwm_pmic_config */
+#define	UPWR_PWM_PMICMOD   (8U)     /* deprecated, for old compile */
+#define	UPWR_PWM_PES       (9U)     /* 9 so far, no use */
+#define	UPWR_PWM_CONFIG    (10U)    /* 10= apply power mode defined configuration */
+#define	UPWR_PWM_CFGPTR    (11U)    /* 11= configuration pointer */
+#define	UPWR_PWM_DOM_PWRON (12U)    /* 12 = domain power on: upwr_pwm_dom_power_on */
+#define	UPWR_PWM_BOOT      (13U)    /* 13 = boot start: upwr_pwm_boot_start */
+#define UPWR_PWM_FREQ      (14U)    /* 14 = domain frequency setup */
+#define	UPWR_PWM_PARAM     (15U)    /* 15 = power management parameters */
+#define	UPWR_PWM_F_COUNT (16U)
+
+typedef uint32_t upwr_pwm_f_t;
 
 #define MAX_PMETER_SSEL 7U
 
-typedef enum {            /* Voltage Management Functions */
-	UPWR_VTM_CHNG_PMIC_RAIL_VOLT,  /* 0 = change pmic rail voltage */
-	UPWR_VTM_GET_PMIC_RAIL_VOLT, /* 1 = get pmic rail voltage */
-	UPWR_VTM_PMIC_CONFIG, /* 2 = configure PMIC IC */
-    UPWR_VTM_DVA_DUMP_INFO, /* 3 = dump dva information */
-    UPWR_VTM_DVA_REQ_ID, /* 4 = dva request ID array */
-    UPWR_VTM_DVA_REQ_DOMAIN, /* 5 = dva request domain */
-    UPWR_VTM_DVA_REQ_SOC, /* 6 = dva request the whole SOC */
-    UPWR_VTM_PMETER_MEAS, /* 7 = pmeter measure */
-    UPWR_VTM_VMETER_MEAS, /* 8 = vmeter measure */
-    UPWR_VTM_PMIC_COLD_RESET, /* 9 = pmic cold reset */
-    UPWR_VTM_SET_DVFS_PMIC_RAIL,     /* 10 = set which domain use which pmic rail, for DVFS use */
-    UPWR_VTM_SET_PMIC_MODE,        /* 11 = set pmic mode */
-    UPWR_VTM_F_COUNT
-} upwr_volt_f_t;
+#define	UPWR_VTM_CHNG_PMIC_RAIL_VOLT    (0U)      /* 0 = change pmic rail voltage */
+#define	UPWR_VTM_GET_PMIC_RAIL_VOLT     (1U)      /* 1 = get pmic rail voltage */
+#define UPWR_VTM_PMIC_CONFIG            (2U)      /* 2 = configure PMIC IC */
+#define UPWR_VTM_DVA_DUMP_INFO          (3U)      /* 3 = dump dva information */
+#define UPWR_VTM_DVA_REQ_ID             (4U)      /* 4 = dva request ID array */
+#define UPWR_VTM_DVA_REQ_DOMAIN         (5U)      /* 5 = dva request domain */
+#define UPWR_VTM_DVA_REQ_SOC            (6U)      /* 6 = dva request the whole SOC */
+#define UPWR_VTM_PMETER_MEAS            (7U)      /* 7 = pmeter measure */
+#define UPWR_VTM_VMETER_MEAS            (8U)      /* 8 = vmeter measure */
+#define UPWR_VTM_PMIC_COLD_RESET        (9U)      /* 9 = pmic cold reset */
+#define UPWR_VTM_SET_DVFS_PMIC_RAIL     (10U)     /* 10 = set which domain use which pmic rail, for DVFS use */
+#define UPWR_VTM_SET_PMIC_MODE          (11U)     /* 11 = set pmic mode */
+#define UPWR_VTM_F_COUNT                (16U)
+
+typedef uint32_t upwr_volt_f_t;
 
 #define VMETER_SEL_RTD 0U
 #define VMETER_SEL_LDO 1U
@@ -394,17 +265,16 @@ typedef enum {            /* Voltage Management Functions */
  */
 #define MAX_TEMP_SENSOR 2U
 
-typedef enum {          /* Temperature Management Functions */
-    UPWR_TEMP_GET_CUR_TEMP,  /* 0 = get current temperature */
-    UPWR_TEMP_F_COUNT
-} upwr_temp_f_t;
+#define    UPWR_TEMP_GET_CUR_TEMP (0U)  /* 0 = get current temperature */
+#define    UPWR_TEMP_F_COUNT      (1U)
+typedef uint32_t upwr_temp_f_t;
 
-typedef enum {          /* Delay Meter Management Functions */
-    UPWR_DMETER_GET_DELAY_MARGIN, /* 0 = get delay margin */
-    UPWR_DMETER_SET_DELAY_MARGIN, /* 1 = set delay margin */
-    UPWR_PMON_REQ, /* 2 = process monitor service */
-    UPWR_DMETER_F_COUNT
-} upwr_dmeter_f_t;
+#define    UPWR_DMETER_GET_DELAY_MARGIN (0U)  /* 0 = get delay margin */
+#define    UPWR_DMETER_SET_DELAY_MARGIN (1U) /* 1 = set delay margin */
+#define    UPWR_PMON_REQ                (2U) /* 2 = process monitor service */
+#define    UPWR_DMETER_F_COUNT          (3U)
+
+typedef uint32_t upwr_dmeter_f_t;
 
 typedef upwr_down_1w_msg    upwr_volt_pmeter_meas_msg;
 
@@ -413,7 +283,7 @@ typedef upwr_down_1w_msg    upwr_volt_pmic_set_mode_msg;
 typedef upwr_down_1w_msg    upwr_volt_vmeter_meas_msg;
 
 struct upwr_reg_config_t {
-	uint32_t reg;   // TODO: real config
+	uint32_t reg;
 };
 
 struct upwr_switch_board_t { /* set of 32 switches */
@@ -541,6 +411,17 @@ typedef union {
 /* upwr_pwm_freq_setup-specific message format */
 
 /**
+ * DVA adjust stage
+ */
+#define DVA_ADJUST_STAGE_INVALID 0U
+/* first stage, gross adjust, for increase frequency use */
+#define DVA_ADJUST_STAGE_ONE 1U
+/* second stage, fine adjust for increase frequency use */
+#define DVA_ADJUST_STAGE_TWO 2U
+/* combine first + second stage, for descrese frequency use */
+#define DVA_ADJUST_STAGE_FULL 3U
+
+/**
  * This message structure is used for DVFS feature
  * 1. Because user may use different PMIC or different board,
  * the pmic regulator of RTD/APD may change,
@@ -548,14 +429,17 @@ typedef union {
  * The number must be matched with PMIC IC and board.
  * use 4 bits for pmic regulator, support to 16 regulator.
  *
- * use 12 bits for target frequency, accurate to MHz, support to 4096 MHz
+ * use 2 bits for DVA stage
+ *
+ * use 10 bits for target frequency, accurate to MHz, support to 1024 MHz
  */
 typedef union {
 	struct upwr_msg_hdr hdr;
 	struct {
 		uint32_t rsv: UPWR_HEADER_BITS;
-		uint32_t rail: 4; /* pmic regulator  */
-		uint32_t target_freq: 12; /* target frequency */
+		uint32_t rail: 4;                         /* pmic regulator  */
+		uint32_t stage: 2;                        /* DVA stage */
+		uint32_t target_freq: 10;                 /* target frequency */
 	} args;
 } upwr_pwm_freq_msg;
 
@@ -682,26 +566,23 @@ typedef struct {
  * Service Group DIAGNOSE - downstream
  ***************************************************************************/
 
-typedef enum {            /* Diagnose Functions */
-	UPWR_DGN_MODE,    /* 0 = diagnose mode: upwr_dgn_mode */
-	UPWR_DGN_F_COUNT,
-    UPWR_DGN_BUFFER_EN,
-} upwr_dgn_f_t;
+/* Diagnose Functions */
+#define	UPWR_DGN_MODE              (0U)    /* 0 = diagnose mode: upwr_dgn_mode */
+#define	UPWR_DGN_F_COUNT           (1U)
+#define UPWR_DGN_BUFFER_EN         (2U)
+typedef uint32_t upwr_dgn_f_t;
 
-typedef enum {
-	UPWR_DGN_ALL2ERR, /* record all until an error occurs,
-			     freeze recording on error             */
-	UPWR_DGN_ALL2HLT, /* record all until an error occurs,
-			     halt core        on error             */
-	UPWR_DGN_ALL,     /* trace, warnings, errors, task state recorded */
-	UPWR_DGN_MAX = UPWR_DGN_ALL,
-	UPWR_DGN_TRACE,   /* trace, warnings, errors recorded      */
-	UPWR_DGN_SRVREQ,  /* service request activity recorded     */
-	UPWR_DGN_WARN,    /* warnings and errors recorded          */
-	UPWR_DGN_ERROR,   /* only errors recorded                  */
-	UPWR_DGN_NONE,    /* no diagnostic recorded                */
-	UPWR_DGN_COUNT
-} upwr_dgn_mode_t;
+#define UPWR_DGN_ALL2ERR            (0U)          /* record all until an error occurs, freeze recording on error */
+#define UPWR_DGN_ALL2HLT            (1U)          /* record all until an error occurs, halt core on error */
+#define UPWR_DGN_ALL                (2U)          /* trace, warnings, errors, task state recorded */
+#define UPWR_DGN_MAX                UPWR_DGN_ALL
+#define UPWR_DGN_TRACE              (3U)          /* trace, warnings, errors recorded      */
+#define UPWR_DGN_SRVREQ             (4U)          /* service request activity recorded     */
+#define UPWR_DGN_WARN               (5U)          /* warnings and errors recorded          */
+#define UPWR_DGN_ERROR              (6U)          /* only errors recorded                  */
+#define UPWR_DGN_NONE               (7U)          /* no diagnostic recorded                */
+#define UPWR_DGN_COUNT              (8U)
+typedef uint32_t upwr_dgn_mode_t;
 
 typedef upwr_down_1w_msg upwr_dgn_mode_msg;
 
@@ -712,7 +593,7 @@ typedef union {
 
 typedef struct {
     struct upwr_msg_hdr   hdr;
-    uint32_t              buf_addr; 
+    uint32_t              buf_addr;
 } upwr_dgn_v2_msg;
 
 /* diagnostics log types in the shared RAM log buffer */
@@ -748,19 +629,18 @@ typedef enum {
                             UPWR_SRVGROUP_BITS+UPWR_FUNCTION_BITS)
 #define UPWR_RESP_RET_BITS (32U - UPWR_RESP_HDR_BITS)
 
-typedef enum { /* response error codes */
-	UPWR_RESP_OK = 0,     /* no error */
-	UPWR_RESP_SG_BUSY,    /* service group is busy */
-	UPWR_RESP_SHUTDOWN,   /* services not up or shutting down */
-	UPWR_RESP_BAD_REQ,    /* invalid request */
-	UPWR_RESP_BAD_STATE,  /* system state doesn't allow perform the request */
-	UPWR_RESP_UNINSTALLD, /* service or function not installed */
-	UPWR_RESP_UNINSTALLED =
-	UPWR_RESP_UNINSTALLD, /* service or function not installed (alias) */
-	UPWR_RESP_RESOURCE,   /* resource not available */
-	UPWR_RESP_TIMEOUT,    /* service timeout */
-	UPWR_RESP_COUNT
-} upwr_resp_t;
+#define UPWR_RESP_OK                (0U)     /* no error */
+#define UPWR_RESP_SG_BUSY           (1U)     /* service group is busy */
+#define UPWR_RESP_SHUTDOWN          (2U)     /* services not up or shutting down */
+#define UPWR_RESP_BAD_REQ           (3U)     /* invalid request */
+#define UPWR_RESP_BAD_STATE         (4U)     /* system state doesn't allow perform the request */
+#define UPWR_RESP_UNINSTALLD        (5U)     /* service or function not installed */
+#define UPWR_RESP_UNINSTALLED       (5U)     /* service or function not installed (alias) */
+#define UPWR_RESP_RESOURCE          (6U)     /* resource not available */
+#define UPWR_RESP_TIMEOUT           (7U)     /* service timeout */
+#define UPWR_RESP_COUNT             (8U)
+
+typedef uint32_t upwr_resp_t;
 
 struct upwr_resp_hdr {
 	uint32_t errcode :UPWR_RESP_ERR_BITS;

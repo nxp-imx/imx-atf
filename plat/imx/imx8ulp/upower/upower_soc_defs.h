@@ -1,84 +1,7 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* +FHDR------------------------------------------------------------------------
- * Copyright 2020-2021 NXP
- * -----------------------------------------------------------------------------
- * FILE NAME      : upower_soc_defs.h
- * DEPARTMENT     : BSTC - Campinas, Brazil
- * AUTHOR         : Celso Brites
- * AUTHOR'S EMAIL : celso.brites@nxp.com
- * -----------------------------------------------------------------------------
- * RELEASE HISTORY
- * VERSION DATE        AUTHOR                  DESCRIPTION
+/**
+ * Copyright 2019-2023 NXP
  *
- * $Log: upower_soc_defs.h.rca $
- * 
- *  Revision: 1.56 Tue Apr 27 12:58:16 2021 nxa11511
- *  Adds macro UPWR_VOLT_MICROV
- * 
- *  Revision: 1.52 Fri Dec 11 17:03:29 2020 nxa06695
- *  Add ifdef TYPES_LOCAL_H.
- * 
- *  Revision: 1.51 Tue Nov 17 15:19:56 2020 nxa11511
- *  Comments change for the API spec release 20201122,
- *  with the new chapter with 8ULP-dependent definitions.
- * 
- *  Revision: 1.47 Fri Oct 23 11:49:56 2020 nxa11511
- *  Deleted the GPL license statements, leaving only BSD, as it is compatible with Linux and good for closed ROM/firmware code.
- * 
- *  Revision: 1.46 Thu Sep 24 16:44:46 2020 nxa11511
- *  Reduces UPWR_API_BUFFER_ENDPLUS 64 bytes to give room to diag buffer.
- * 
- *  Revision: 1.39 Tue Sep  1 12:47:49 2020 nxa11511
- *  Adds back GPL-2.0 license, keeping BSD3 (dual licensing).
- * 
- *  Revision: 1.33 Thu Jun 18 11:30:48 2020 nxa11511
- *  RDY2PATCH replaces APD_BOOTED in sic_gpor_t.
- * 
- *  Revision: 1.30 Thu Jun  4 07:57:09 2020 nxa11511
- *  Adds power management parameter bit SLP_ALLOW
- * 
- *  Revision: 1.29 Tue Jun  2 05:55:04 2020 nxf42682
- *  Updated upwr_mon_cfg_union_t bitfields to uint32_t
- * 
- *  Revision: 1.28 Thu May 28 10:50:03 2020 nxa11511
- *  Removed #defines for memory bias min/max voltages.
- * 
- *  Revision: 1.21 Thu May  7 11:38:41 2020 nxf42682
- *  Merge 1.20 with 1.15.1.1
- * 
- *  Revision: 1.20 Wed May  6 12:40:51 2020 nxa11511
- *  Adds #ifdefs for SoC VE compilation.
- * 
- *  Revision: 1.14 Thu Apr 16 15:22:16 2020 nxa08113
- *  Change the position of UPWR_APD_CORES define
- * 
- *  Revision: 1.12 Thu Apr 16 09:54:42 2020 nxa11511
- *  typedefs needed by API users moved from pmc_api.h to upower_soc_defs.h
- * 
- *  Revision: 1.10 Thu Apr  9 19:28:19 2020 nxa10721
- *  Use offsets instead pointers on APD config struct and routines, as it must be
- * 
- *  Revision: 1.9 Thu Apr  9 05:50:36 2020 nxf42682
- *  Returned to v1.7, for 1.8 DID NOT compile for FW releases
- * 
- *  Revision: 1.7 Mon Apr  6 11:27:32 2020 nxa10721
- *  Added AVD PMIC mode msk
- * 
- *  Revision: 1.6 Mon Apr  6 11:11:34 2020 nxa11511
- *  Adds typedef SOC_BOOT_TYPE_T, moved from 8ulp_pmc_hal.h
- * 
- *  Revision: 1.4 Mon Mar 30 22:52:00 2020 nxa10721
- *  Added PMIC controls for AVD domain
- * 
- *  Revision: 1.3 Fri Mar 27 17:18:26 2020 nxa11511
- *  Adds #ifndef guards for the RAM and word count #defines.
- * 
- *  Revision: 1.2 Tue Mar 24 10:51:42 2020 nxa11511
- *  Adds typedef soc_domain_t.
- *  Moves #include "upower_defs.h" to fix compile errors.
- *  Adds Power Mode configuration definitions.
- * 
- * -----------------------------------------------------------------------------
  * KEYWORDS: micro-power uPower driver API
  * -----------------------------------------------------------------------------
  * PURPOSE: SoC-dependent uPower driver API #defines and typedefs shared
@@ -88,7 +11,7 @@
  * PARAM NAME RANGE:DESCRIPTION:       DEFAULTS:                           UNITS
  * -----------------------------------------------------------------------------
  * REUSE ISSUES: no reuse issues
- * -FHDR--------------------------------------------------------------------- */
+ */
 
 #ifndef _UPWR_SOC_DEFS_H
 #define _UPWR_SOC_DEFS_H
@@ -149,8 +72,8 @@
 
 /******************************************************************************
  * i.MX8ULP-dependent uPower API Definition
- * 
- * Version: 20210430 Copyright 2019-2021 NXP
+ *
+ * Copyright 2019-2023 NXP
  *
  * This chapter documents the API definitions that are specific to the
  * i.MX8ULP SoC.
@@ -160,7 +83,7 @@
 /**---------------------------------------------------------------
  * INITIALIZATION, CONFIGURATION
  *
- * i.MX8ULP provides only one Message Unit (MU) for each core domain: 
+ * i.MX8ULP provides only one Message Unit (MU) for each core domain:
  * Real Time Domain (RTD) and Application Domain (APD), which has two A35 cores.
  * Both A35 cores in APD must share the same API instance, meaning upwr_init
  * must be called only once for each domain. The API does not provide any
@@ -170,7 +93,7 @@
  *
  * A domain must not go to Power Down (PD) or Deep Power Down (DPD) power modes
  * with any service still pending (response not received).
- * 
+ *
  * Next sections describe the i.MX8ULP particularities of service calls.
  *
  */
@@ -231,41 +154,41 @@ typedef struct {
 
 #define UPWR_FILL_DOMBIAS_ARGS(dom, bias, args)           \
 do {                                                      \
-	args.B.domapply = args.B.avdapply = 0U;            \
+	(args).B.domapply = (args).B.avdapply = 0U;            \
                                                           \
-	switch (bias->apply) {                            \
-		case BIAS_APPLY_RTD_AVD:                  \
-			args.B.avdapply = 1U;              \
-			/* no break here, fallthrough */  \
-		case BIAS_APPLY_RTD:                      \
-			dom = (uint32_t)RTD_DOMAIN;       \
-			args.B.domapply = 1U;              \
-			break;                            \
-		case BIAS_APPLY_APD_AVD:                  \
-			args.B.avdapply = 1U;              \
-			/* no break here, fallthrough */  \
-		case BIAS_APPLY_APD:                      \
-			dom = (uint32_t)APD_DOMAIN;       \
-			args.B.domapply = 1U;              \
-			break;                            \
-		case BIAS_APPLY_AVD:                      \
-			args.B.avdapply = 1U;              \
-			break;                            \
+	switch ((bias)->apply) {                            \
+	case BIAS_APPLY_RTD_AVD:                  \
+		(args).B.avdapply = 1U;              \
+	/* fall through */                 \
+	case BIAS_APPLY_RTD:                      \
+		(dom) = (uint32_t)RTD_DOMAIN;       \
+		(args).B.domapply = 1U;              \
+		break;                            \
+	case BIAS_APPLY_APD_AVD:                  \
+		(args).B.avdapply = 1U;              \
+	/* fall through */                 \
+	case BIAS_APPLY_APD:                      \
+		(dom) = (uint32_t)APD_DOMAIN;       \
+		(args).B.domapply = 1U;              \
+		break;                            \
+	case BIAS_APPLY_AVD:                      \
+		(args).B.avdapply = 1U;              \
+		break;                            \
         default:                              \
-            break;                            \
+		break;                            \
     }                                                 \
-	args.B.dommode = (uint32_t)bias->dommode;         \
-	args.B.avdmode = (uint32_t)bias->avdmode;         \
-	uint32_t sat = UPWR_BIAS2MILIV((1U << UPWR_DOMBIAS_RBB_BITS) - 1U);\
-	args.B.domrbbn = (bias->dombias.rbbn > sat)? sat: \
-                     UPWR_BIAS_MILIV(bias->dombias.rbbn); \
-	args.B.domrbbp = (bias->dombias.rbbp > sat)? sat: \
-                     UPWR_BIAS_MILIV(bias->dombias.rbbp); \
-	args.B.avdrbbn = (bias->avdbias.rbbn > sat)? sat: \
-                     UPWR_BIAS_MILIV(bias->avdbias.rbbn); \
-	args.B.avdrbbp = (bias->avdbias.rbbp > sat)? sat: \
-                     UPWR_BIAS_MILIV(bias->avdbias.rbbp); \
-} while (0)
+	(args).B.dommode = (uint32_t)((bias)->dommode);         \
+	(args).B.avdmode = (uint32_t)((bias)->avdmode);         \
+	uint32_t sat = UPWR_BIAS2MILIV((1UL << UPWR_DOMBIAS_RBB_BITS) - 1UL);\
+	(args).B.domrbbn = ((bias)->dombias.rbbn > sat) ? sat : \
+			   UPWR_BIAS_MILIV((bias)->dombias.rbbn); \
+	(args).B.domrbbp = ((bias)->dombias.rbbp > sat) ? sat : \
+			   UPWR_BIAS_MILIV((bias)->dombias.rbbp); \
+	(args).B.avdrbbn = ((bias)->avdbias.rbbn > sat) ? sat : \
+			   UPWR_BIAS_MILIV((bias)->avdbias.rbbn); \
+	(args).B.avdrbbp = ((bias)->avdbias.rbbp > sat) ? sat : \
+			   UPWR_BIAS_MILIV((bias)->avdbias.rbbp); \
+} while (false)
 
 /* service upwr_pwm_chng_mem_bias message argument fields */
 
@@ -277,8 +200,8 @@ typedef struct {
 
 #define UPWR_FILL_MEMBIAS_ARGS(bias, args)                \
 do {                                                      \
-	args.B.en = bias->en;                             \
-} while (0)
+	(args).B.en = (bias)->en;                             \
+} while (false)
 
 #include "upower_defs.h"
 
@@ -309,8 +232,8 @@ typedef uint32_t soc_domain_t;
 
 #define UPWR_VOLT_MILIV(v) (v)        /* voltage in mV    to argument value */
 #define UPWR_VOLT_MICROV(v)((v) / 1000U) /* voltage in uV    to argument value */
-#define UPWR_BIAS_MILIV(v) (((v) + 49U ) / 50U)   /* bias voltage(mV) to argument value */
-#define UPWR_BIAS2MILIV(v) ((v) * 50U)   /* inverse of UPWR_BIAS_MILIV         */
+#define UPWR_BIAS_MILIV(v) (((v) + 49UL) / 50UL)   /* bias voltage(mV) to argument value */
+#define UPWR_BIAS2MILIV(v) ((v) * 50UL)   /* inverse of UPWR_BIAS_MILIV         */
 #define UPWR_FREQ_KHZ(f)   (f)        /* frequency (kHz)  to argument value */
 
 #define UPWR_DOMBIAS_MAX_MV      (UPWR_BIAS2MILIV((1U << UPWR_DOMBIAS_RBB_BITS) - 1U))
@@ -330,7 +253,7 @@ typedef uint32_t soc_domain_t;
  *    I2C and mode pins used to control an external PMIC;
  *    1= uPower firmware or PMIC driver configures i.MX8ULP IOMUX and mode pins;
  *    0= i.MX8ULP IOMUX and mode pins not configured by uPower;
- *  - DGNBUFBITS (4 bits): determines the diagnostic buffer size according to 
+ *  - DGNBUFBITS (4 bits): determines the diagnostic buffer size according to
  *    the formula: size = 2^(DGNBUFBITS+3) bytes;
  *
  *  Defaults are all zeroes; all other bits are reserved, and must be written 0.
@@ -344,7 +267,7 @@ typedef union {
 					    this configuration is valid for
 					    RTD only
 					  */
-		uint32_t CFG_IOMUX  : 1U; /* 1= tells uPower fw/PMIC driver to 
+		uint32_t CFG_IOMUX  : 1U; /* 1= tells uPower fw/PMIC driver to
 					       config i.MX8ULP IOMUX for the PMIC
 					       I2C and mode pins;
 					    0= uPower fw/PMIC must not config
@@ -374,13 +297,13 @@ typedef union {
  *
  */
 
-typedef enum {
-	UPWR_ALARM_INTERNAL,             /* internal error */
-	UPWR_ALARM_EXCEPTION,            /* core exception */
-	UPWR_ALARM_SLACK,                /* delay path too slow */
-	UPWR_ALARM_VOLTAGE,              /* voltage drop */
-	UPWR_ALARM_LAST = UPWR_ALARM_VOLTAGE
-} upwr_alarm_t;
+#define	UPWR_ALARM_INTERNAL   (0U)             /* internal error */
+#define	UPWR_ALARM_EXCEPTION  (1U)             /* core exception */
+#define	UPWR_ALARM_SLACK      (2U)             /* delay path too slow */
+#define	UPWR_ALARM_VOLTAGE    (3U)             /* voltage drop */
+#define	UPWR_ALARM_LAST       UPWR_ALARM_VOLTAGE
+
+typedef uint32_t upwr_alarm_t;
 
 /**---------------------------------------------------------------
  * POWER MANAGEMENT SERVICE GROUP
@@ -443,7 +366,7 @@ typedef union {
 					       DSL if DSL_DIS=1  */
 		uint32_t DSL_BGAP_OFF:1U; /* 1= turn bandgap off when uPower
 					       goes Deep Sleep               */
-		uint32_t DPD_BGAP_ON :1U; /* 1= leave bandgap on when uPower 
+		uint32_t DPD_BGAP_ON :1U; /* 1= leave bandgap on when uPower
                                                goes Deep Power Down          */
 		uint32_t RSV        :27U; /* reserved bits: should be all 0s  */
 	} B;
@@ -519,8 +442,8 @@ typedef enum {
  */
 
 /**+
- * upwr_pwm_power_on(), 
- * upwr_pwm_power_off(), 
+ * upwr_pwm_power_on(),
+ * upwr_pwm_power_off(),
  * upwr_pwm_mem_retain()
  *
  * These three service functions use the same arguments:
@@ -535,7 +458,7 @@ typedef enum {
  * if switch number >  9 bit number = switch number + 3;
  *
  * bits 9, 10, 11 and 12 must have the same value (corresponding to switch 9)
- * 
+ *
  * Note: this argument is not used in upwr_pwm_mem_retain.
  *
  * argument mem is an array of two 32-bit words: uint32_t mem[2];
@@ -657,7 +580,7 @@ typedef enum {
  * Structure mon_cfg_t:
  *
  * Configures a voltage monitor and its actions.
- * There are monitors for RTD, APD and AVD, monitoring LVD and HVD. 
+ * There are monitors for RTD, APD and AVD, monitoring LVD and HVD.
  * - lvl  : Voltage level (in uV).
  * - mode : Mode of monitor (ON, OFF, LP, etc).
  * - compl: Extra info for the monitor.
@@ -768,9 +691,9 @@ struct upwr_dom_bias_cfg_t {
 typedef union {
   uint32_t                  R;
   struct {
-    uint32_t                  mode      : 8;    // Dom bias mode
+    uint32_t                  mode      : 8;
     uint32_t                  rsrv_1    : 8;
-    uint32_t                  avd_mode  : 8;    // AVD bias mode
+    uint32_t                  avd_mode  : 8;
     uint32_t                  rsrv_2    : 8;
   }                         B;
 } dom_bias_mode_cfg_t;
@@ -781,9 +704,9 @@ typedef union {
   typedef union {
   uint32_t                  R;
   struct {
-    uint32_t                  lvl       : 8;    // Dom bias level
+    uint32_t                  lvl       : 8;
     uint32_t                  rsrv_1    : 8;
-    uint32_t                  avd_lvl   : 8;    // AVD bias level
+    uint32_t                  avd_lvl   : 8;
     uint32_t                  rsrv_2    : 8;
   }                         B;
 } dom_bias_lvl_cfg_t;
@@ -803,7 +726,7 @@ typedef struct {
 /**+
  * upwr_pwm_chng_mem_bias()
  *
- * Argument struct contains only the field en, which can be either 1 (bias 
+ * Argument struct contains only the field en, which can be either 1 (bias
  * enabled) or 0 (bias disabled).
  *
  * Argument domain must be either RTD_DOMAIN (Real Time Domain) or APD_DOMAIN
@@ -814,7 +737,6 @@ typedef struct {
 
 struct upwr_mem_bias_cfg_t {
 	uint32_t en; /* Memory bias enable config */
-	
 };
 
 /* bias struct used in power mode config definitions */
@@ -841,8 +763,7 @@ typedef enum {/* from msb->lsb: Azure bit, dual boot bit, low power boot bit */
 	SOC_BOOT_AZURE    = 4
 } SOC_BOOT_TYPE_T;
 
-#define GEN_CASE_ENUM_NAME(e) \
-  case(e): return (char*)#e
+#ifdef UPWR_COMP_RAM
 
 /* Power modes for RTD domain  */
 typedef enum {
@@ -855,20 +776,6 @@ typedef enum {
 	ACT_RTD_PWR_MODE, /* Active Domain Mode */
 	NUM_RTD_PWR_MODES
 } upwr_ps_rtd_pwr_mode_t;
-
-static inline const char* get_rtd_pwr_mode_name(upwr_ps_rtd_pwr_mode_t mode)
-{
-	switch(mode) {
-		GEN_CASE_ENUM_NAME(DPD_RTD_PWR_MODE);
-		GEN_CASE_ENUM_NAME(PD_RTD_PWR_MODE);
-		GEN_CASE_ENUM_NAME(DSL_RTD_PWR_MODE);
-		GEN_CASE_ENUM_NAME(HLD_RTD_PWR_MODE);
-		GEN_CASE_ENUM_NAME(SLP_RTD_PWR_MODE);
-		GEN_CASE_ENUM_NAME(ADMA_RTD_PWR_MODE);
-		GEN_CASE_ENUM_NAME(ACT_RTD_PWR_MODE);
-		default: return (char*)"WRONG_RTD_PWER_MODE";
-	}
-}
 
 /* Abstract power modes */
 typedef enum {
@@ -886,6 +793,38 @@ typedef enum {
 	INVALID_PWR_MODE  = TRANS_PWR_MODE + 1
 } abs_pwr_mode_t;
 
+#else
+
+/* Power modes for RTD domain  */
+#define	DPD_RTD_PWR_MODE   (0U)  /* Real Time Deep Power Down mode */
+#define	PD_RTD_PWR_MODE    (1U)  /* Real Time Power Down mode */
+#define	DSL_RTD_PWR_MODE   (2U)  /* Real Time Domain Deep Sleep Mode */
+#define	HLD_RTD_PWR_MODE   (3U)  /* Real Time Domain Hold Mode */
+#define	SLP_RTD_PWR_MODE   (4U)  /* Sleep Mode */
+#define	ADMA_RTD_PWR_MODE  (5U)  /* Active DMA Mode */
+#define	ACT_RTD_PWR_MODE   (6U)  /* Active Domain Mode */
+#define	NUM_RTD_PWR_MODES  (7U)
+
+typedef uint32_t upwr_ps_rtd_pwr_mode_t;
+
+/* Abstract power modes */
+#define	DPD_PWR_MODE       (0U)
+#define	PD_PWR_MODE        (1U)
+#define	PACT_PWR_MODE      (2U)
+#define	DSL_PWR_MODE       (3U)
+#define	HLD_PWR_MODE       (4U)
+#define	SLP_PWR_MODE       (5U)
+#define	ADMA_PWR_MODE      (6U)
+#define	ACT_PWR_MODE       (7U)
+#define	NUM_PWR_MODES      (8U)
+#define	NUM_APD_PWR_MODES NUM_PWR_MODES
+#define	TRANS_PWR_MODE    NUM_PWR_MODES
+#define	INVALID_PWR_MODE  (TRANS_PWR_MODE + 1U)
+
+typedef uint32_t abs_pwr_mode_t;
+
+#endif
+
 typedef struct {
 	abs_pwr_mode_t  mode;
 	bool            ok;
@@ -898,45 +837,6 @@ typedef struct {
 	pch_trans_t     core[UPWR_APD_CORES];
 } apd_trans_t;
 
-
-/* Get name of a power mode */
-static inline char *get_abs_pwr_mode_name(abs_pwr_mode_t mode)
-{
-	switch(mode) {
-		GEN_CASE_ENUM_NAME(DPD_PWR_MODE);
-		GEN_CASE_ENUM_NAME(PD_PWR_MODE);
-		GEN_CASE_ENUM_NAME(PACT_PWR_MODE);
-		GEN_CASE_ENUM_NAME(DSL_PWR_MODE);
-		GEN_CASE_ENUM_NAME(HLD_PWR_MODE);
-		GEN_CASE_ENUM_NAME(SLP_PWR_MODE);
-		GEN_CASE_ENUM_NAME(ADMA_PWR_MODE);
-		GEN_CASE_ENUM_NAME(ACT_PWR_MODE);
-		default: return (char*)"WRONG_ABS_PWR_MODE";
-	}
-}
-
-
-/* Power modes for APD cores. PCH pactive is one-hot w/ these values */
-#if 0 // TODO: remove it?
-typedef enum {
-  PD_CORE_PWR_MODE,
-  SLP_CORE_PWR_MODE,
-  ADMA_CORE_PWR_MODE,
-  ACT_CORE_PWR_MODE,
-  NUM_CORE_PWR_MODES
-} upwr_core_pwr_mode_t;
-
-static inline const char* get_core_pwr_mode_name(upwr_core_pwr_mode_t mode) {
-  switch(mode) {
-  GEN_CASE_ENUM_NAME(PD_CORE_PWR_MODE);
-  GEN_CASE_ENUM_NAME(SLP_CORE_PWR_MODE);
-  GEN_CASE_ENUM_NAME(ADMA_CORE_PWR_MODE);
-  GEN_CASE_ENUM_NAME(ACT_CORE_PWR_MODE);
-  default: return (char*)"WRONG_CORE_PWR_MODE";
-  }
-}
-#endif
-
 /* Codes for APD pwr mode as programmed in LPMODE reg */
 typedef enum {
 	ACT_APD_LPM,
@@ -947,20 +847,6 @@ typedef enum {
 	DPD_APD_LPM    = 31,
 	HLD_APD_LPM    = 63
 } upwr_apd_lpm_t;
-
-static inline const char *get_apd_pwr_mode_name(upwr_apd_lpm_t mode)
-{
-	switch(mode) {
-		GEN_CASE_ENUM_NAME(ACT_APD_LPM);
-		GEN_CASE_ENUM_NAME(SLP_APD_LPM);
-		GEN_CASE_ENUM_NAME(DSL_APD_LPM);
-		GEN_CASE_ENUM_NAME(PACT_APD_LPM);
-		GEN_CASE_ENUM_NAME(PD_APD_LPM);
-		GEN_CASE_ENUM_NAME(DPD_APD_LPM);
-		GEN_CASE_ENUM_NAME(HLD_APD_LPM);
-		default: return (char*)"WRONG_APD_LPM";
-	}
-}
 
 /* PowerSys low power config */
 
@@ -975,7 +861,7 @@ struct upwr_powersys_cfg_t {
 /* Config pmc PADs */
 
 struct upwr_pmc_pad_cfg_t {
-	uint32_t pad_close;   /* PMC PAD close config */ 
+	uint32_t pad_close;   /* PMC PAD close config */
 	uint32_t pad_reset;   /* PMC PAD reset config */
 	uint32_t pad_tqsleep; /* PMC PAD TQ Sleep config */
 };
@@ -1079,19 +965,26 @@ struct upwr_power_mode_cfg_t {
 
 static inline int unsigned upwr_sizeof_pmode_cfg(uint32_t domain)
 {
-	switch (domain)
-	{
-		case RTD_DOMAIN: return sizeof(struct upwr_power_mode_cfg_t) +
+	switch (domain) {
+	case RTD_DOMAIN:
+		return sizeof(struct upwr_power_mode_cfg_t) +
 					(sizeof(struct upwr_switch_board_t)*
 					 UPWR_PMC_SWT_WORDS) +
 					(sizeof(struct upwr_mem_switches_t)*
 					 UPWR_PMC_MEM_WORDS) -
-					2*(sizeof(void*) - sizeof(swt_board_ptr_t));
-		case APD_DOMAIN: return sizeof(struct ps_apd_pwr_mode_cfg_t) +
+					2U * (sizeof(void *) - sizeof(swt_board_ptr_t));
+
+	/* fall through */
+	case APD_DOMAIN:
+		return sizeof(struct ps_apd_pwr_mode_cfg_t) +
 					(sizeof(struct upwr_switch_board_t)*
 					 UPWR_PMC_SWT_WORDS) +
 					(sizeof(struct upwr_mem_switches_t)*
 					 UPWR_PMC_MEM_WORDS);
+
+	/* fall through */
+	default:
+		break;
 	}
 
 	return 0;
@@ -1254,35 +1147,30 @@ typedef union upwr_mon_cfg_union_t {
 	}                         B;
 } upwr_mon_cfg_t;
 
-/* Get the monitor config word from RAM (domaind and AVD) */ 
+/* Get the monitor config word from RAM (domaind and AVD) */
 
 static inline uint32_t get_mon_cfg(uint8_t dom, void *mode_cfg)
 {
 	if (dom == RTD_DOMAIN) {
-		return
-		  ((struct ps_rtd_pwr_mode_cfg_t*)mode_cfg)->mon_cfg.mon_hvd_en;
-	}
-	else {
-		return
-		 ((struct ps_apd_pwr_mode_cfg_t*)mode_cfg)->pad_cfg.pad_tqsleep;
+		return ((struct ps_rtd_pwr_mode_cfg_t *)mode_cfg)->mon_cfg.mon_hvd_en;
+	} else {
+		return ((struct ps_apd_pwr_mode_cfg_t *)mode_cfg)->pad_cfg.pad_tqsleep;
 	}
 }
 
-/* Set the monitor config word in RAM (domaind and AVD) */ 
+/* Set the monitor config word in RAM (domaind and AVD) */
 
-static inline void  set_mon_cfg(uint8_t        dom,
-				void          *mode_cfg,
+static inline void  set_mon_cfg(uint8_t dom,
+				void *mode_cfg,
 				upwr_mon_cfg_t mon_cfg)
 {
-	uint32_t        *cfg;
+	uint32_t *cfg;
 	if (dom == RTD_DOMAIN) {
-		cfg = (uint32_t*)
-		 &((struct ps_rtd_pwr_mode_cfg_t*)mode_cfg)->mon_cfg.mon_hvd_en;
+		cfg = (uint32_t *)&((struct ps_rtd_pwr_mode_cfg_t *)mode_cfg)->mon_cfg.mon_hvd_en;
+	} else {
+		cfg = (uint32_t *)&((struct ps_apd_pwr_mode_cfg_t *)mode_cfg)->pad_cfg.pad_tqsleep;
 	}
-	else {
-		cfg = (uint32_t*)
-		&((struct ps_apd_pwr_mode_cfg_t*)mode_cfg)->pad_cfg.pad_tqsleep;
-	}
+
 	*cfg = mon_cfg.R;
 }
 
@@ -1311,7 +1199,7 @@ struct ps_pmic_reg_data_cfg_t{
     uint32_t i2c_data : 8;
 };
 
-/* Uniformize access to PMIC cfg for RTD and APD */ 
+/* Uniformize access to PMIC cfg for RTD and APD */
 
 typedef union {
 	struct upwr_reg_cfg_t     RTD;
@@ -1334,47 +1222,41 @@ typedef union {
 
 static inline pmic_mode_cfg_t *get_pmic_mode_cfg(uint8_t dom, pmic_cfg_t *cfg)
 {
-	uint32_t        *mode_cfg;
+	uint32_t *mode_cfg;
 
-	if (dom == RTD_DOMAIN) mode_cfg = &cfg->RTD.mode;
-			  else mode_cfg = &cfg->APD.mode;
+	if (dom == RTD_DOMAIN) {
+		mode_cfg = &cfg->RTD.mode;
+	} else {
+		mode_cfg = &cfg->APD.mode;
+	}
+
 	return (pmic_mode_cfg_t*)mode_cfg;
 }
 
-static inline uint8_t get_pmic_mode(uint8_t dom, pmic_cfg_t *cfg) 
+static inline uint8_t get_pmic_mode(uint8_t dom, pmic_cfg_t *cfg)
 {
 	return get_pmic_mode_cfg(dom, cfg)->B.mode;
 }
 
-static inline void set_pmic_mode(uint8_t dom, pmic_cfg_t *cfg, uint8_t mode) 
+static inline void set_pmic_mode(uint8_t dom, pmic_cfg_t *cfg, uint8_t mode)
 {
 	get_pmic_mode_cfg(dom, cfg)->B.mode = mode;
 }
 
-static inline uint8_t get_pmic_mode_msk(uint8_t dom, pmic_cfg_t *cfg) 
+static inline uint32_t get_pmic_mode_msk(uint8_t dom, pmic_cfg_t *cfg)
 {
 	pmic_mode_cfg_t   *mode_cfg;
 
 	if (dom == RTD_DOMAIN) {
 		mode_cfg = (pmic_mode_cfg_t*)&cfg->RTD.mode;
 		return mode_cfg->B.msk;
-	}
-	else return cfg->APD.mode_msk;
-}
-
-static inline void set_pmic_mode_msk(uint8_t dom, pmic_cfg_t *cfg, uint8_t msk) 
-{
-	pmic_mode_cfg_t   *mode_cfg;
-
-	if (dom == RTD_DOMAIN) {
-		mode_cfg = (pmic_mode_cfg_t*)&cfg->RTD.mode;
-		mode_cfg->B.msk = msk;
-	}
-	else cfg->APD.mode_msk = msk;
+	} else {
+		return cfg->APD.mode_msk;
+    }
 }
 
 /* Getters and setters for AVD mode and mask */
-static inline uint8_t get_avd_pmic_mode(uint8_t dom, pmic_cfg_t *cfg) 
+static inline uint8_t get_avd_pmic_mode(uint8_t dom, pmic_cfg_t *cfg)
 {
 	return get_pmic_mode_cfg(dom, cfg)->B.avd_mode;
 }
@@ -1384,18 +1266,31 @@ static inline void set_avd_pmic_mode(uint8_t dom, pmic_cfg_t *cfg, uint8_t mode)
 	get_pmic_mode_cfg(dom, cfg)->B.avd_mode = mode;
 }
 
-static inline uint8_t get_avd_pmic_mode_msk(uint8_t dom, pmic_cfg_t *cfg) 
+static inline uint8_t get_avd_pmic_mode_msk(uint8_t dom, pmic_cfg_t *cfg)
 {
 	return get_pmic_mode_cfg(dom, cfg)->B.avd_msk;
 }
 
 static inline void set_avd_pmic_mode_msk(uint8_t     dom,
 					 pmic_cfg_t *cfg,
-					 uint8_t     msk) 
+					 uint8_t     msk)
 {
 	get_pmic_mode_cfg(dom, cfg)->B.avd_msk = msk;
 }
 
+struct ps_delay_cfg_t {
+	uint32_t tag : 8U;
+	uint32_t rsv : 8U;
+	uint32_t exitdelay : 16U;   // exit delay in us
+};
+
+#define PS_DELAY_TAG 0xA5U
+
+/* max exit delay = 0xffff = 65535 us = 65.5 ms (it is enough...) */
+/* with 8 bits, 256 -> not enough */
+
+typedef struct ps_delay_cfg_t ps_rtd_delay_cfgs_t[NUM_RTD_PWR_MODES];
+typedef struct ps_delay_cfg_t ps_apd_delay_cfgs_t[NUM_APD_PWR_MODES];
 
 typedef struct ps_rtd_pwr_mode_cfg_t ps_rtd_pwr_mode_cfgs_t[NUM_RTD_PWR_MODES];
 typedef struct ps_apd_pwr_mode_cfg_t ps_apd_pwr_mode_cfgs_t[NUM_APD_PWR_MODES];
@@ -1407,8 +1302,11 @@ struct ps_pwr_mode_cfg_t {
 	ps_rtd_swt_cfgs_t       ps_rtd_swt_cfg;
 	ps_apd_pwr_mode_cfgs_t  ps_apd_pwr_mode_cfg ;
 	ps_apd_swt_cfgs_t       ps_apd_swt_cfg;
-    ps_rtd_pmic_reg_data_cfgs_t ps_rtd_pmic_reg_data_cfg;
-    ps_apd_pmic_reg_data_cfgs_t ps_apd_pmic_reg_data_cfg;
+	ps_rtd_pmic_reg_data_cfgs_t ps_rtd_pmic_reg_data_cfg;
+	ps_apd_pmic_reg_data_cfgs_t ps_apd_pmic_reg_data_cfg;
+	ps_rtd_delay_cfgs_t    ps_rtd_delay_cfg;
+	ps_apd_delay_cfgs_t    ps_apd_delay_cfg;
+
 };
 
 #define UPWR_XCP_MIN_ADDR   (0x28350000U)

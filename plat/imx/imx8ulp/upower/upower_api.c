@@ -1,103 +1,7 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* +FHDR----------------------------------------------------------------------
- * Copyright 2019-2021 NXP
- * ---------------------------------------------------------------------------
- * FILE NAME      : upower_api.c
- * DEPARTMENT     : BSTC - Campinas, Brazil
- * AUTHOR         : Celso Brites
- * AUTHOR'S EMAIL : celso.brites@nxp.com
- * ---------------------------------------------------------------------------
- * RELEASE HISTORY
- * VERSION DATE        AUTHOR                  DESCRIPTION
+/**
+ * Copyright 2019-2023 NXP
  *
- * $Log: upower_api.c.rca $
- *
- *  Revision: 1.216 Fri May 28 06:27:06 2021 nxa55768
- *  powersys_fw_048.011.012.006
- * 
- * 
- *  Revision: 1.215 Fri Apr 30 06:27:06 2021 nxa10721
- *  powersys_fw_048.011.012.006
- * 
- *  Revision: 1.62 Tue Apr 27 12:43:01 2021 nxa11511
- *  Spec review fixes.
- *  Fixes uninitialized variable in upwr_pwm_power_on, upwr_pwm_power_off, upwr_pwm_chng_switch_mem.
- *  Adds new service upwr_pwm_reg_config.
- * 
- *  Revision: 1.54 Fri Oct 23 13:19:58 2020 nxa11511
- *  Deleted the GPL license statements, leaving only BSD, as it is compatible with Linux and good for closed ROM/firmware code.
- * 
- *  Revision: 1.53 Thu Sep 24 16:42:38 2020 nxa11511
- *  Fixes API buffer base setting.
- * 
- *  Revision: 1.51 Wed Sep 16 15:58:44 2020 nxa11511
- *  Fixes the APD/RTD API buffer overlap issue using new #defines and tupedefs in upower_soc_defs.h
- * 
- *  Revision: 1.39 Sun Jun 21 14:34:54 2020 nxa11511
- *  Fixes compilation outside block-level testbench.
- * 
- *  Revision: 1.25 Tue Mar 10 06:23:23 2020 nxa11511
- *  Fixes copying of argument structs to shared memory.
- *  Fixes shared memory argument buffer size, fixing TKT0534585.
- * 
- *  Revision: 1.24 Mon Mar  2 12:25:32 2020 nxa11511
- *  Updates comments to the new version 20200222.
- *  upwr_start callback now checks start error, doesn't change API state in case.
- *  Adds same-domain checks in calls with domain argument.
- *  Updates upwr_start to the new definition.
- * 
- *  Revision: 1.17 Mon Jan 27 20:18:07 2020 nxa10721
- *  powersys_fw_021.002.000.004
- * 
- *  Revision: 1.19 Mon Jan 27 15:29:03 2020 nxa11511
- *  Adds memcpy, under #ifdef NO_MEMCPY.
- * 
- *  Revision: 1.13 Fri Sep 27 10:54:30 2019 nxa13158
- *  added if NULL condition to check if user_callback exists
- * 
- *  Revision: 1.12 Mon Sep  9 23:54:18 2019 nxa16953
- *  Updated based on latest register structs.
- * 
- *  Revision: 1.11 Fri Aug 23 17:51:07 2019 nxa11511
- *  Adds macros to simplify service request implementation.
- *  Adds shutdown support.
- *  Adds some message field asserts.
- *  Bug fixes.
- *  Changes ok/ko response to an error code.
- *  Adds Exception service requests.
- *  Adds bias setting functions and Diagnostic mode function.
- *  full implementation of the API spec in shared review (version 20190818).
- * 
- *  Revision: 1.8 Wed Aug 14 13:45:13 2019 nxa11511
- *  Fixes compilation for simulation.
- * 
- *  Revision: 1.7 Wed Aug 14 07:10:53 2019 nxa11511
- *  Partial editing only, not compiled, not tested:
- *  - updates upwr_init to the latest spec, including new argument waitinit.
- *  - bug fixes.
- *  - Rx and Tx interrupts treated in the same ISR.
- * 
- *  Revision: 1.3 Sat Aug 10 09:04:32 2019 nxa11511
- *  No longer gets UPWR_NAMESPACE.
- *  Fixes some strict compiling errors.
- * 
- *  Revision: 1.1 Fri Aug  2 14:28:58 2019 nxa11511
- *  mvfile on Fri Aug  2 14:28:58 2019 by user nxa11511.
- *  Originated from sync://sync-15088:15088/Projects/common_blocks/da_ip_ahb_upower_subsys_ln28fdsoi_tb/vectors/firmware/stimulus/src/drvapi/vers0/upower_api.cc;1.8
- * 
- *  Revision: 1.8 Fri Aug  2 14:28:40 2019 nxa11511
- *  Adapted to Linux coding guidelines.
- *  Converted to C (no longer using C++ features).
- * 
- *  Revision: 1.7 Wed Jun 12 15:44:39 2019 nxa11511
- *  Number of MUs now #defined by UPWR_MU_INSTANCES.
- *  Adds optional namespace definition with #define UPWR_NAMESPACE.
- *  No longer disables interrupt at the ISR start (automatically done by CAPI).
- * 
- *  Revision: 1.5 Wed Apr 10 14:43:35 2019 nxa11511
- *  Several bug fixes.
- * 
- * -----------------------------------------------------------------------------
  * KEYWORDS: micro-power uPower driver API
  * -----------------------------------------------------------------------------
  * PURPOSE: uPower driver API
@@ -106,7 +10,6 @@
  * PARAM NAME RANGE:DESCRIPTION:       DEFAULTS:                           UNITS
  * -----------------------------------------------------------------------------
  * REUSE ISSUES: no reuse issues
- * -FHDR------------------------------------------------------------------------
  */
 
 #include "upower_soc_defs.h"
@@ -117,11 +20,7 @@
 #include "capi_wrapper.h"
 #include "CAPI_RAM.hh"
 
-#define UPWR_API_ASSERT(c) do { if (!(c)) { ERROR("upower_api.c", "assert failed @line " UPWR_API_STRING(__LINE__)); }} while (0)
-
 #else
-
-#define UPWR_API_ASSERT(c) do {} while (0)
 
 #ifdef NO_MEMCPY
 
@@ -155,18 +54,6 @@ void *memcpy(void *dest, const void *src, size_t n)
 
 #endif /* not block-level code */
 
-#ifndef __UPWR_API_CODE__
-#define __UPWR_API_CODE__
-#endif
-
-#ifndef __UPWR_API_DATA__
-#define __UPWR_API_DATA__
-#endif
-
-#ifndef __UPWR_API_SHARED_RAM__
-#define __UPWR_API_SHARED_RAM__
-#endif
-
 #define UPWR_API_STR(s)     #s
 #define UPWR_API_STRING(s)     UPWR_API_STR(s)
 #define UPWR_API_CNCT(a,b)   a##b
@@ -179,34 +66,42 @@ void *memcpy(void *dest, const void *src, size_t n)
  */
 
 /* tests Service Group busy */
-#define UPWR_SG_BUSY(sg) (sg_busy & (1 << sg))
+#define UPWR_SG_BUSY(sg) ((sg_busy & (1U << (sg))) == 1U)
+
+#ifndef false
+#define false 0
+#endif
+
+#ifndef true
+#define true 1
+#endif
 
 /* installs a user callback for the Service Group */
-#define UPWR_USR_CALLB(sg, cb) do { user_callback[sg] = cb; } while (0)
+#define UPWR_USR_CALLB(sg, cb) { user_callback[(sg)] = (cb); }
 
 /* fills up common message header info */
-#define UPWR_MSG_HDR(hdr, sg, fn)           \
-	hdr.domain   = (uint32_t)pwr_domain;\
-	hdr.srvgrp   = sg;                  \
-	hdr.function = fn;
+#define UPWR_MSG_HDR(hdr, sg, fn)   {        \
+	(hdr).domain   = (uint32_t)pwr_domain;\
+	(hdr).srvgrp   = (sg);                  \
+	(hdr).function = (fn); }
 
 /* ---------------------------------------------------------------
  * Common Data Structures
  * ---------------------------------------------------------------
  */
 
-soc_domain_t __UPWR_API_DATA__ pwr_domain; /* CPU/power domain */
+static soc_domain_t  pwr_domain;
 
-upwr_code_vers_t __UPWR_API_DATA__ fw_rom_version;
-upwr_code_vers_t __UPWR_API_DATA__ fw_ram_version;
-uint32_t         __UPWR_API_DATA__ fw_launch_option;
+static upwr_code_vers_t  fw_rom_version;
+static upwr_code_vers_t  fw_ram_version;
+static uint32_t fw_launch_option;
 
 /* shared memory buffers */
 
 #define UPWR_API_BUFFER_SIZE (MAX_SG_EXCEPT_MEM_SIZE + MAX_SG_PWRMGMT_MEM_SIZE + MAX_SG_VOLTM_MEM_SIZE)
 
-void* __UPWR_API_DATA__  sh_buffer[UPWR_SG_COUNT]; /* service group shared mem
-                                                      buffer pointers */
+/* service group shared mem buffer pointers */
+static void *sh_buffer[UPWR_SG_COUNT];
 
 /* Callbacks registered for each service group :
  *
@@ -215,60 +110,57 @@ void* __UPWR_API_DATA__  sh_buffer[UPWR_SG_COUNT]; /* service group shared mem
  * receive a new request.
  */
 
-upwr_callb            __UPWR_API_DATA__ user_callback[UPWR_SG_COUNT];/* user */
-UPWR_RX_CALLB_FUNC_T  __UPWR_API_DATA__ sgrp_callback[UPWR_SG_COUNT];/* API  */
+static upwr_callb user_callback[UPWR_SG_COUNT];
+static UPWR_RX_CALLB_FUNC_T sgrp_callback[UPWR_SG_COUNT];
 
 /* request data structures for each service group */
-                                                   /* message waiting for TX */
-upwr_down_max_msg __UPWR_API_DATA__ sg_req_msg[UPWR_SG_COUNT];
-                                                     /* waiting message size */
-unsigned int      __UPWR_API_DATA__ sg_req_siz[UPWR_SG_COUNT];
-                                                            /* response msg  */
-upwr_up_max_msg   __UPWR_API_DATA__ sg_rsp_msg[UPWR_SG_COUNT];
-                                                        /* response msg size */
-unsigned int      __UPWR_API_DATA__ sg_rsp_siz[UPWR_SG_COUNT];
+/* message waiting for TX */
+static upwr_down_max_msg  sg_req_msg[UPWR_SG_COUNT];
+/* waiting message size */
+static unsigned int sg_req_siz[UPWR_SG_COUNT];
+/* response msg  */
+static upwr_up_max_msg sg_rsp_msg[UPWR_SG_COUNT];
+/* response msg size */
+static unsigned int sg_rsp_siz[UPWR_SG_COUNT];
 
 /* tx pending status for each (1 bit per service group) */
-volatile uint32_t  __UPWR_API_DATA__ sg_tx_pend;
-                                 /* serv.group of current ongoing Tx, if any */
-volatile upwr_sg_t __UPWR_API_DATA__ sg_tx_curr;
+static volatile uint32_t sg_tx_pend;
+/* serv.group of current ongoing Tx, if any */
+static volatile upwr_sg_t  sg_tx_curr;
 
 /* service group busy status, only for this domain (MU index 0) */
-                               /* SG bit = 1 if group is busy with a request */
-volatile uint32_t  __UPWR_API_DATA__   sg_busy;
+/* SG bit = 1 if group is busy with a request */
+static volatile uint32_t sg_busy;
 
-                                  /* OS-dependent memory allocation function */
-upwr_malloc_ptr_t  __UPWR_API_DATA__ os_malloc;
-               /* OS-dependent pointer->physical address conversion function */
-upwr_phyadr_ptr_t  __UPWR_API_DATA__ os_ptr2phy;
-                              /* OS-dependent function to lock critical code */
-upwr_lock_ptr_t    __UPWR_API_DATA__ os_lock;
+/* OS-dependent memory allocation function */
+static upwr_malloc_ptr_t os_malloc;
+/* OS-dependent pointer->physical address conversion function */
+static upwr_phyadr_ptr_t os_ptr2phy;
+/* OS-dependent function to lock critical code */
+static upwr_lock_ptr_t os_lock;
 
-struct MU_tag*     __UPWR_API_DATA__ mu      ; /* pointer to MU structure */
+/* pointer to MU structure */
+static struct MU_tag *mu;
 
-                                        /* maps id -> MU Tx interrupt vector */
-unsigned int       __UPWR_API_DATA__ mu_txvec;
-                                        /* maps id -> MU Rx interrupt vector */
-unsigned int       __UPWR_API_DATA__ mu_rxvec;
+/* indicates that a transmission was done
+ * and is pending; this bit is necessary
+ * because the Tx and Rx interrupts are ORed
+ * together, and there is no way of telling
+ * if only Rx interrupt or both occurred just
+ * by looking at the MU status registers
+ */
+static uint32_t  mu_tx_pend;
 
-int __UPWR_API_DATA__ mu_tx_pend;  /* indicates that a transmission was done
-                                    * and is pending; this bit is necessary
-                                    * because the Tx and Rx interrupts are ORed
-                                    * together, and there is no way of telling
-                                    * if only Rx interrupt or both occurred just
-                                    * by looking at the MU status registers */
-UPWR_TX_CALLB_FUNC_T __UPWR_API_DATA__ mu_tx_callb; /* Tx callback */
-UPWR_RX_CALLB_FUNC_T __UPWR_API_DATA__ mu_rx_callb; /* Rx callback */
+static UPWR_TX_CALLB_FUNC_T  mu_tx_callb;
+static UPWR_RX_CALLB_FUNC_T  mu_rx_callb;
 
-typedef enum {
-	UPWR_API_INIT_WAIT,        /* waiting for ROM firmware initialization */
-	UPWR_API_INITLZED,         /* ROM firmware initialized */
-	UPWR_API_START_WAIT,       /* waiting for start services */
-	UPWR_API_SHUTDOWN_WAIT,    /* waiting for shutdown */
-	UPWR_API_READY             /* ready to receive service requests */
-} upwr_api_state_t;
+#define	UPWR_API_INIT_WAIT           (0U)        /* waiting for ROM firmware initialization */
+#define	UPWR_API_INITLZED            (1U)        /* ROM firmware initialized */
+#define	UPWR_API_START_WAIT          (2U)        /* waiting for start services */
+#define	UPWR_API_SHUTDOWN_WAIT       (3U)        /* waiting for shutdown */
+#define	UPWR_API_READY               (4U)        /* ready to receive service requests */
 
-volatile upwr_api_state_t __UPWR_API_DATA__ api_state;
+volatile upwr_api_state_t api_state;
 
 #ifdef  __cplusplus
 #ifndef UPWR_NAMESPACE /* extern "C" 'cancels' the effect of namespace */
@@ -279,7 +171,7 @@ extern "C" {
 /* default pointer->physical address conversion, returns the same address */
 
 static void* ptr2phys(const void* ptr) {
-	return (void*)ptr;
+	return (void *)ptr;
 }
 
 /* ---------------------------------------------------------------
@@ -296,7 +188,7 @@ static void* ptr2phys(const void* ptr) {
  *                     buffer belongs;
  *                     The 3rd argument is the size of structure to be copied.
  *                     The 4th argument is an offset to apply to the copy
- *                     destination address. 
+ *                     destination address.
  *                     The 5th argument is ptr before the conversion to physical
  *                     address.
  *                     2nd, 3rd. 4th and 5th arguments are not used if the
@@ -315,7 +207,7 @@ static uint32_t upwr_ptr2offset(unsigned long         ptr,
 	}
 
 	/* pointer is outside the shared memory, copy the struct to buffer */
-	memcpy(offset + (char*)sh_buffer[sg], (void*)vptr, siz);
+	(void)memcpy((void *)(offset + (char *)sh_buffer[sg]), (void *)vptr, siz);
 	return (uint32_t)((unsigned long)sh_buffer[sg] + offset - UPWR_DRAM_SHARED_BASE_ADDR);
 }
 
@@ -332,39 +224,43 @@ static uint32_t upwr_ptr2offset(unsigned long         ptr,
 
 static void upwr_lock(int lock)
 {
-  if (os_lock != NULL) os_lock(lock);
+  if (os_lock != NULL) {
+      os_lock(lock);
+  }
 }
 
 /* upwr_exp_isr()- handles the exception interrupt from uPower */
 
-void __UPWR_API_CODE__ upwr_exp_isr(void)
+static void upwr_exp_isr(void)
 {
 	/* TBD - what do do here */
 }
 
 /* upwr_copy2tr prototype; function definition in auxiliary function section */
-void upwr_copy2tr(struct MU_tag* mu, const uint32_t* msg, unsigned int size);
+void upwr_copy2tr(struct MU_tag *local_mu, const uint32_t *msg, unsigned int size);
 
-#define UPWR_MU_TSR_EMPTY ((uint32_t)((1 << UPWR_MU_MSG_SIZE) -1))
+#define UPWR_MU_TSR_EMPTY ((uint32_t)((1UL << UPWR_MU_MSG_SIZE) - 1UL))
 
 /* upwr_txrx_isr()- handles both the Tx and Rx MU interrupts */
 
-void __UPWR_API_CODE__ upwr_txrx_isr(void)
+void upwr_txrx_isr(void)
 {
-	if (mu_tx_pend &&                              /* Tx pending and ... */
+	if ((mu_tx_pend != 0UL) &&                              /* Tx pending and ... */
            (mu->TSR.R == UPWR_MU_TSR_EMPTY)) {    /* ... Tx registers empty: */
 	                                                  /* Tx ISR occurred */
-		mu_tx_pend   = 0;
-		mu->TCR.R    = 0; /* disable the tx interrupts */
-		mu->FCR.B.F0 = 0; /* urgency flag off, in case it was set */
-		if (mu_tx_callb != NULL) mu_tx_callb();
+		mu_tx_pend   = 0UL;
+		mu->TCR.R    = 0U; /* disable the tx interrupts */
+		mu->FCR.B.F0 = 0U; /* urgency flag off, in case it was set */
+		if (mu_tx_callb != NULL) {
+			mu_tx_callb();
+		}
 	}
 
-	if (mu->RSR.R != (uint32_t)0) {                   /* Rx ISR occurred */
-
-		mu->RCR.R = 0;   /* disable the interrupt until data is read */
-
-		if (mu_rx_callb != NULL) mu_rx_callb();
+	if (mu->RSR.R != 0UL) {                   /* Rx ISR occurred */
+		mu->RCR.R = 0U;   /* disable the interrupt until data is read */
+		if (mu_rx_callb != NULL) {
+			mu_rx_callb();
+		}
 	}
 }
 
@@ -378,29 +274,29 @@ void __UPWR_API_CODE__ upwr_txrx_isr(void)
  * Return: none (void).
  */
 
-void upwr_next_req(void)
+static void upwr_next_req(void)
 {
-	upwr_sg_t sg = (upwr_sg_t)0;
+	upwr_sg_t sg = (upwr_sg_t)0U;
 
 	/* no lock needed here, this is called from an MU ISR */
-	sg_tx_pend &= ~(1 << sg_tx_curr); /* no longer pending */
+	sg_tx_pend &= ~((uint32_t)1UL << sg_tx_curr); /* no longer pending */
 
-	if (sg_tx_pend == 0) return; /* no other pending */
+	if (sg_tx_pend == 0U) {
+		return; /* no other pending */
+	}
 
 	/* find the next one pending */
-	for (uint32_t mask = 1; mask < (1 << UPWR_SG_COUNT); mask = mask << 1) {
-		if (sg_tx_pend & mask) break;
-		sg = (upwr_sg_t)((int)sg + 1);
+	for (uint32_t mask = 1UL; mask < (1UL << UPWR_SG_COUNT); mask = mask << 1UL) {
+		if ((sg_tx_pend & mask) != 0U) {
+			break;
+		}
+
+		sg = (upwr_sg_t)(sg + 1U);
 	}
 
 	sg_tx_curr = sg;
-	if (upwr_tx((uint32_t*)&sg_req_msg[sg],
-		     sg_req_siz[sg],
-		     upwr_next_req) < 0) {
-		UPWR_API_ASSERT(0);
+	if (upwr_tx((uint32_t *)&sg_req_msg[sg], sg_req_siz[sg], upwr_next_req) < 0)
 		return; /* leave the Tx pending */
-	}
-		
 }
 
 /**
@@ -414,7 +310,7 @@ void upwr_next_req(void)
  * Return: none (void).
  */
 
-void upwr_mu_int_callback(void)
+static void upwr_mu_int_callback(void)
 {
 	upwr_sg_t              sg;       /* service group number */
 	UPWR_RX_CALLB_FUNC_T   sg_callb; /* service group callback */
@@ -422,7 +318,6 @@ void upwr_mu_int_callback(void)
 	unsigned int           size;     /* in words */
 
 	if (upwr_rx((char *)&rxmsg, &size) < 0) {
-		UPWR_API_ASSERT(0);
 		return;
 	}
 
@@ -433,26 +328,27 @@ void upwr_mu_int_callback(void)
 	sg_rsp_siz[sg] = size;
 
 	/* clear the service group busy status */
-	sg_busy &= ~(1 << sg);	/* no lock needed here, we're in the MU ISR */
+	sg_busy &= ~(1UL << sg);	/* no lock needed here, we're in the MU ISR */
 
 	if ((sg_callb = sgrp_callback[sg]) == NULL) {
 		upwr_callb user_callb = user_callback[sg];
 
 		/* no service group callback; call the user callback if any */
 
-		if (user_callb == NULL) goto done; /* no user callback */
+		if (user_callb == NULL) {
+			goto done; /* no user callback */
+		}
 
 		/* make the user callback */
 		user_callb(sg,
 			   rxmsg.hdr.function,
 			   (upwr_resp_t)rxmsg.hdr.errcode,
-			   (int)(size == 2)? rxmsg.word2:rxmsg.hdr.ret);
+			   (size == 2U) ? rxmsg.word2 : rxmsg.hdr.ret);
 		goto done;
 	}
 
 	sg_callb();                    /* finally make the group callback */
 	/* don't uninstall the group callback, it's permanent */
-
 done:
 	if (rxmsg.hdr.errcode == UPWR_RESP_SHUTDOWN) { /* shutdown error: */
 		api_state = UPWR_API_INITLZED;
@@ -480,25 +376,24 @@ done:
  * Return: none (void)
  */
 
-void upwr_srv_req(upwr_sg_t     sg,
+static void upwr_srv_req(upwr_sg_t     sg,
 		  uint32_t*     msg,
 		  unsigned int  size)
 {
 	int rc;
 
 	upwr_lock(1);
-	sg_busy |= 1 << sg;
+	sg_busy |= (uint32_t)1U << sg;
 	upwr_lock(0);
 
 	rc = upwr_tx(msg, size, upwr_next_req);
 	if (rc  < 0) {
-		UPWR_API_ASSERT(rc == -1);
 		/* queue full, make the transmission pending */
 		msg_copy((char *)&sg_req_msg[sg], (char *)msg, size);
 		sg_req_siz[sg] = size;
 		upwr_lock(1);
 		sg_tx_curr  = sg;
-		sg_tx_pend |= 1 << sg;
+		sg_tx_pend |= (uint32_t)1U << sg;
 		upwr_lock(0);
 		return;
 	}
@@ -508,7 +403,7 @@ void upwr_srv_req(upwr_sg_t     sg,
  * INITIALIZATION, CONFIGURATION
  *
  * A reference uPower initialization sequence goes as follows:
- * 
+ *
  * 1. host CPU calls upwr_init.
  * 2. (optional) host checks the ROM version and SoC code calling upwr_vers(...)
  *    and optionally performs any configuration or workaround accordingly.
@@ -550,99 +445,81 @@ void upwr_srv_req(upwr_sg_t     sg,
 void upwr_start_callb(void)
 {
 	switch (api_state) {
-		case UPWR_API_START_WAIT:
-		{
-			upwr_rdy_callb start_callb = (upwr_rdy_callb)
-						  user_callback[UPWR_SG_EXCEPT];
+	case UPWR_API_START_WAIT:
+	{
+		upwr_rdy_callb start_callb = (upwr_rdy_callb)user_callback[UPWR_SG_EXCEPT];
 
-			upwr_ready_msg* msg =
-				(upwr_ready_msg*)&sg_rsp_msg[UPWR_SG_EXCEPT];
+		upwr_ready_msg *msg = (upwr_ready_msg *)&sg_rsp_msg[UPWR_SG_EXCEPT];
 
-			/* message sanity check */
-			UPWR_API_ASSERT(msg->hdr.srvgrp   == UPWR_SG_EXCEPT);
-			UPWR_API_ASSERT(msg->hdr.function == UPWR_XCP_START);
-			UPWR_API_ASSERT(msg->hdr.errcode  == UPWR_RESP_OK);
+		fw_ram_version.soc_id = fw_rom_version.soc_id;
+		fw_ram_version.vmajor = msg->args.vmajor;
+		fw_ram_version.vminor = msg->args.vminor;
+		fw_ram_version.vfixes = msg->args.vfixes;
 
-			fw_ram_version.soc_id = fw_rom_version.soc_id;
-			fw_ram_version.vmajor = msg->args.vmajor;
-			fw_ram_version.vminor = msg->args.vminor;
-			fw_ram_version.vfixes = msg->args.vfixes;
+		/*
+		 * vmajor == vminor == vfixes == 0 indicates start error
+		 * in this case, go back to the INITLZED state
+		 */
 
-			/* vmajor == vminor == vfixes == 0 indicates start error
-			   in this case, go back to the INITLZED state */
+		if ((fw_ram_version.vmajor != 0U) ||
+		    (fw_ram_version.vminor != 0U) ||
+		    (fw_ram_version.vfixes != 0U)) {
+			api_state = UPWR_API_READY;
 
-			if ((fw_ram_version.vmajor != 0) ||
-			    (fw_ram_version.vminor != 0) ||
-			    (fw_ram_version.vfixes != 0)) {
+			/*
+			 * initialization is over:
+			 * uninstall the user callback just in case
+			 */
+			UPWR_USR_CALLB(UPWR_SG_EXCEPT, NULL);
 
-				api_state = UPWR_API_READY;
-
-				/* initialization is over:
-				   uninstall the user callback just in case */
-				UPWR_USR_CALLB(UPWR_SG_EXCEPT, NULL);
-
-				if (fw_launch_option == 0) {
-					/* launched ROM firmware:
-					 * RAM fw versions must be all 0s */
-					fw_ram_version.vmajor =
-					fw_ram_version.vminor =
-					fw_ram_version.vfixes = 0;
-				}
+			if (fw_launch_option == 0U) {
+				/*
+				 * launched ROM firmware:
+				 * RAM fw versions must be all 0s
+				 */
+				fw_ram_version.vmajor =
+				fw_ram_version.vminor =
+				fw_ram_version.vfixes = 0U;
 			}
-			else api_state = UPWR_API_INITLZED;
-
-			start_callb(msg->args.vmajor,
-			            msg->args.vminor,
-				    msg->args.vfixes);
+		} else {
+			api_state = UPWR_API_INITLZED;
 		}
-		break;
 
-		case UPWR_API_SHUTDOWN_WAIT:
-		{
-			upwr_callb user_callb = (upwr_callb)
-						  user_callback[UPWR_SG_EXCEPT];
+		start_callb(msg->args.vmajor, msg->args.vminor, msg->args.vfixes);
+	}
+	break;
 
-			upwr_shutdown_msg* msg =
-				(upwr_shutdown_msg*)&sg_rsp_msg[UPWR_SG_EXCEPT];
+	case UPWR_API_SHUTDOWN_WAIT:
+	{
+		upwr_callb user_callb = (upwr_callb)user_callback[UPWR_SG_EXCEPT];
 
-			/* message sanity check */
-			UPWR_API_ASSERT(msg->hdr.srvgrp   == UPWR_SG_EXCEPT);
-			UPWR_API_ASSERT(msg->hdr.function == UPWR_XCP_SHUTDOWN);
-			UPWR_API_ASSERT(msg->hdr.errcode  == UPWR_RESP_OK);
+		upwr_shutdown_msg *msg = (upwr_shutdown_msg *)&sg_rsp_msg[UPWR_SG_EXCEPT];
 
-			if ((upwr_resp_t)msg->hdr.errcode == UPWR_RESP_OK)
-				api_state = UPWR_API_INITLZED;
-
-			if (user_callb != NULL) user_callb(UPWR_SG_EXCEPT,
-			                                   UPWR_XCP_SHUTDOWN,
-				                           (upwr_resp_t)
-							     msg->hdr.errcode,
-			                                   0);
+		if ((upwr_resp_t)msg->hdr.errcode == UPWR_RESP_OK) {
+			api_state = UPWR_API_INITLZED;
 		}
-		break;
 
-		case UPWR_API_READY:
-		{
-			upwr_callb user_callb = (upwr_callb)
-						  user_callback[UPWR_SG_EXCEPT];
-
-			upwr_up_max_msg* msg =
-				    (upwr_up_max_msg*)&sg_rsp_msg[UPWR_SG_EXCEPT];
-
-			/* message sanity check */
-			UPWR_API_ASSERT(msg->hdr.srvgrp   == UPWR_SG_EXCEPT);
-
-			if (user_callb != NULL) user_callb(UPWR_SG_EXCEPT,
-			                                   msg->hdr.function,
-				                           (upwr_resp_t)
-							     msg->hdr.errcode,
-			                                   (int)(sg_rsp_siz[UPWR_SG_EXCEPT] == 2) ? msg->word2 : msg->hdr.ret);
+		if (user_callb != NULL) {
+			user_callb(UPWR_SG_EXCEPT, UPWR_XCP_SHUTDOWN, (upwr_resp_t)msg->hdr.errcode, 0U);
 		}
-		break;
+	}
+	break;
 
-		default:
-			UPWR_API_ASSERT(0);
-			break;
+	case UPWR_API_READY:
+	{
+		upwr_callb user_callb = (upwr_callb)user_callback[UPWR_SG_EXCEPT];
+
+		upwr_up_max_msg *msg = (upwr_up_max_msg *)&sg_rsp_msg[UPWR_SG_EXCEPT];
+
+		if (user_callb != NULL) {
+			user_callb(UPWR_SG_EXCEPT, msg->hdr.function, (upwr_resp_t)msg->hdr.errcode,
+				   (int)((sg_rsp_siz[UPWR_SG_EXCEPT] == 2U) ? msg->word2 : msg->hdr.ret));
+		}
+	}
+	break;
+
+	default:
+		break;
 	}
 }
 
@@ -675,7 +552,7 @@ void upwr_start_callb(void)
  *        -1 if failed to allocate memory, or use some other resource.
  *        -2 if any argument is invalid.
  *        -3 if failed to send the ping message.
- *        -4 if failed to receive the initialization message, or was invalid 
+ *        -4 if failed to receive the initialization message, or was invalid
  */
 
 int upwr_init(	soc_domain_t               domain,
@@ -685,62 +562,53 @@ int upwr_init(	soc_domain_t               domain,
 		const  upwr_inst_isr_ptr_t isrinstptr,
 		const  upwr_lock_ptr_t     lockptr)
 {
-	int j;
+	uint32_t j;
 
 	upwr_sg_t           sg;       /* service group number */
 	unsigned int        size;     /* in words */
-	unsigned long        dom_buffer_base = (domain == RTD_DOMAIN)?
-							   UPWR_API_BUFFER_BASE:
-                           ((UPWR_API_BUFFER_ENDPLUS + UPWR_API_BUFFER_BASE)/2);
+	unsigned long        dom_buffer_base = (domain == RTD_DOMAIN) ?
+					       UPWR_API_BUFFER_BASE :
+					       ((UPWR_API_BUFFER_ENDPLUS + UPWR_API_BUFFER_BASE) / 2U);
 
-	upwr_init_msg*      msg = (upwr_init_msg*)&sg_rsp_msg[UPWR_SG_EXCEPT];
+	upwr_init_msg *msg = (upwr_init_msg *)&sg_rsp_msg[UPWR_SG_EXCEPT];
 
-        mu = muptr;
-	mu->TCR.R = mu->RCR.R = 0; /* disable tx and rx interrupts, in case
+	mu = muptr;
+	mu->TCR.R = mu->RCR.R = 0U; /* disable tx and rx interrupts, in case
 				      not called 1st time after reset   */
 
 	os_malloc   = mallocptr;
-	os_ptr2phy  = (phyadrptr == (upwr_phyadr_ptr_t)NULL)? ptr2phys :
-                                                              phyadrptr;
-        os_lock     = lockptr;
+	os_ptr2phy  = (phyadrptr == (upwr_phyadr_ptr_t)NULL) ? ptr2phys : phyadrptr;
+
+	os_lock     = lockptr;
 	api_state   = UPWR_API_INIT_WAIT;
-        sg_busy     = 0;
+	sg_busy     = 0UL;
 	pwr_domain  = domain;
 
 	/* initialize the versions, in case they are polled */
 	fw_rom_version.soc_id =
 	fw_rom_version.vmajor =
 	fw_rom_version.vminor =
-	fw_rom_version.vfixes = 0;
+	fw_rom_version.vfixes = 0U;
 
 	fw_ram_version.soc_id =
 	fw_ram_version.vmajor =
 	fw_ram_version.vminor =
-	fw_ram_version.vfixes = 0;
+	fw_ram_version.vfixes = 0U;
 
-	mu_tx_pend     = 0;
-	sg_tx_pend     = 0;
+	mu_tx_pend     = (uint32_t)0U;
+	sg_tx_pend     = (uint32_t)0U;
 	sg_tx_curr     = UPWR_SG_COUNT; /* means none here */
 
-	/* must have enough headroom for the shared RAM API buffers */
-	UPWR_API_ASSERT((UPWR_DRAM_SHARED_ENDPLUS - dom_buffer_base) >=
-			 UPWR_API_BUFFER_SIZE);
-
-	/* UPWR_API_BUFFER_BASE must let enough buffer for both domains */
-	UPWR_API_ASSERT((UPWR_DRAM_SHARED_ENDPLUS - UPWR_API_BUFFER_BASE) >=
-			(UPWR_API_BUFFER_SIZE*2));
-
-	sh_buffer[UPWR_SG_EXCEPT ] = (void*)(unsigned long)dom_buffer_base;
-	sh_buffer[UPWR_SG_PWRMGMT] = (void*)(unsigned long)(dom_buffer_base + MAX_SG_EXCEPT_MEM_SIZE);
-	sh_buffer[UPWR_SG_DELAYM ] = NULL;
-	sh_buffer[UPWR_SG_VOLTM  ] = (void*)(unsigned long)(dom_buffer_base + MAX_SG_EXCEPT_MEM_SIZE + MAX_SG_PWRMGMT_MEM_SIZE);
-	sh_buffer[UPWR_SG_CURRM  ] = NULL;
-	sh_buffer[UPWR_SG_TEMPM  ] = NULL;
-	sh_buffer[UPWR_SG_DIAG   ] = NULL;
+	sh_buffer[UPWR_SG_EXCEPT] = (void *)(unsigned long)dom_buffer_base;
+	sh_buffer[UPWR_SG_PWRMGMT] = (void *)(unsigned long)(dom_buffer_base + MAX_SG_EXCEPT_MEM_SIZE);
+	sh_buffer[UPWR_SG_DELAYM] = NULL;
+	sh_buffer[UPWR_SG_VOLTM] = (void *)(unsigned long)(dom_buffer_base + MAX_SG_EXCEPT_MEM_SIZE + MAX_SG_PWRMGMT_MEM_SIZE);
+	sh_buffer[UPWR_SG_CURRM] = NULL;
+	sh_buffer[UPWR_SG_TEMPM] = NULL;
+	sh_buffer[UPWR_SG_DIAG] = NULL;
 	/* (no buffers service groups other than xcp and pwm for now) */
 
-	for (j = 0; j < UPWR_SG_COUNT; j++)
-	{
+	for (j = 0; j < UPWR_SG_COUNT; j++) {
 		user_callback[j] = NULL;
 	        /* service group Exception gets the initialization callbacks */
 		sgrp_callback[j] = (j == UPWR_SG_EXCEPT)? upwr_start_callb:NULL;
@@ -749,7 +617,7 @@ int upwr_init(	soc_domain_t               domain,
 		sg_rsp_msg[j].hdr.errcode = UPWR_RESP_SHUTDOWN;
 	}
 
-	if (mu->FSR.B.F0) {            /* init message already received:
+	if (mu->FSR.B.F0 != 0U) {            /* init message already received:
 		                          assume tasks are running on uPower */
 
 		/* send a ping message down to get the ROM version back */
@@ -758,9 +626,9 @@ int upwr_init(	soc_domain_t               domain,
 		ping_msg.hdr.domain   = pwr_domain;
 		ping_msg.hdr.srvgrp   = UPWR_SG_EXCEPT;
 		ping_msg.hdr.function = UPWR_XCP_PING;
-		
-		if (mu->RSR.B.RF0) { /* first clean any Rx message left over */
-			upwr_rx((char *)msg, &size);
+
+		if (mu->RSR.B.RF0 != 0U) { /* first clean any Rx message left over */
+			(void)upwr_rx((char *)msg, &size);
 		}
 
 		while (mu->TSR.R != UPWR_MU_TSR_EMPTY) {    /* wait any Tx ...
@@ -774,65 +642,74 @@ int upwr_init(	soc_domain_t               domain,
 		   do not use upwr_tx, which needs API initilized;
 		   just write to the MU TR register(s)
 		 */
-		mu->FCR.B.F0 = 1; /* flag urgency status */
-		upwr_copy2tr(mu, (uint32_t*)&ping_msg, sizeof(ping_msg)/4);
+		mu->FCR.B.F0 = 1U; /* flag urgency status */
+		upwr_copy2tr(mu, (uint32_t *)&ping_msg, sizeof(ping_msg) / 4U);
 	}
 
 	do {
 		/* poll for the MU Rx status: wait for an init message, either
 		 * 1st sent from uPower after reset or as a response to a ping
 		 */
-		while (mu->RSR.B.RF0 == (uint32_t)0)	{
+		while (mu->RSR.B.RF0 == 0U)	{
 			#ifdef UPWR_BLOCK_LEVEL
-			WAIT_CLK(1000); /* waiting loop must advance clock */
+			WAIT_CLK(1000U); /* waiting loop must advance clock */
 			#endif
 		};
 
-		mu->FCR.B.F0 = 0; /* urgency status off, in case it was set */
+		mu->FCR.B.F0 = 0U; /* urgency status off, in case it was set */
 
 		if (upwr_rx((char *)msg, &size) < 0) {
 			return -4;
 		}
 
-		if (size != (sizeof(upwr_init_msg)/4)) {
-			if (mu->FSR.B.F0) continue; /* discard left over msg */
-				     else return -4;
+		if (size != (sizeof(upwr_init_msg) / 4U)) {
+			if (mu->FSR.B.F0 != 0U) {
+				continue; /* discard left over msg */
+			} else {
+				return -4;
+			}
 		}
 
 		sg = (upwr_sg_t)msg->hdr.srvgrp;
 		if (sg != UPWR_SG_EXCEPT) {
-			if (mu->FSR.B.F0) continue; /* discard left over msg */
-				     else return -4;
+			if (mu->FSR.B.F0 != 0U) {
+				continue; /* discard left over msg */
+			} else {
+				return -4;
+			}
 		}
 
-		if ((upwr_xcp_f_t)msg->hdr.function   != UPWR_XCP_INIT) {
-			if (mu->FSR.B.F0) continue; /* discard left over msg */
-				     else return -4;
+		if ((upwr_xcp_f_t)msg->hdr.function != UPWR_XCP_INIT) {
+			if (mu->FSR.B.F0 != 0U) {
+				continue; /* discard left over msg */
+			} else {
+				return -4;
+			}
 		}
 
 		break;
-	} while (1);
+	} while (true);
 
 	fw_rom_version.soc_id = msg->args.soc;
 	fw_rom_version.vmajor = msg->args.vmajor;
 	fw_rom_version.vminor = msg->args.vminor;
 	fw_rom_version.vfixes = msg->args.vfixes;
 
-        if (upwr_rx_callback(upwr_mu_int_callback) < 0) {
+	if (upwr_rx_callback(upwr_mu_int_callback) < 0) {
 		/* catastrophic error, but is it possible to happen? */
-		UPWR_API_ASSERT(0);
 		return -1;
 	}
 
-	mu_tx_callb    = NULL; /* assigned on upwr_tx */
+	mu_tx_callb = NULL; /* assigned on upwr_tx */
 
 	/* install the ISRs and enable the interrupts */
 
-        isrinstptr(upwr_txrx_isr, upwr_exp_isr);
+	isrinstptr(upwr_txrx_isr, upwr_exp_isr);
 
-	mu->RCR.R = 1;    /* enable only RR[0] receive interrupt */
+	mu->RCR.R = 1U;    /* enable only RR[0] receive interrupt */
 
-        api_state = UPWR_API_INITLZED;
+	api_state = UPWR_API_INITLZED;
+
 	return 0;
 } /* upwr_init */
 
@@ -877,7 +754,9 @@ int upwr_start(	uint32_t                launchopt,
 {
 	upwr_start_msg txmsg = {0};
 
-	if (api_state != UPWR_API_INITLZED) return -3;
+	if (api_state != UPWR_API_INITLZED) {
+		return -3;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_EXCEPT, (upwr_callb)rdycallb);
 
@@ -885,13 +764,13 @@ int upwr_start(	uint32_t                launchopt,
 
 	txmsg.hdr.arg = fw_launch_option = launchopt;
 
-	if (upwr_tx((uint32_t*)&txmsg, sizeof(txmsg)/4, NULL) < 0) {
+	if (upwr_tx((uint32_t *)&txmsg, sizeof(txmsg) / 4U, NULL) < 0) {
 		/* catastrophic error, but is it possible to happen? */
-		UPWR_API_ASSERT(0);
 		return -1;
 	}
 
 	api_state = UPWR_API_START_WAIT;
+
 	return 0;
 } /* upwr_start */
 
@@ -934,21 +813,26 @@ int upwr_xcp_config(const upwr_xcp_config_t* config, const upwr_callb callb)
 {
 	upwr_xcp_config_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)  return -3;
-        if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
 
 	if (config == NULL) {
-		txmsg.hdr.arg = 1;         /* 1= read, txmsg.word2 ignored */
-	}
-	else {
-		txmsg.hdr.arg = 0;         /* 1= write */
+		txmsg.hdr.arg = 1U;         /* 1= read, txmsg.word2 ignored */
+	} else {
+		txmsg.hdr.arg = 0U;         /* 1= write */
 		txmsg.word2   = config->R;
 	}
+
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_EXCEPT, UPWR_XCP_CONFIG);
 
-	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -989,8 +873,13 @@ int upwr_xcp_sw_alarm(soc_domain_t     domain,
 {
 	upwr_xcp_swalarm_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)  return -3;
-	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
 
@@ -998,7 +887,7 @@ int upwr_xcp_sw_alarm(soc_domain_t     domain,
 	txmsg.hdr.domain = (uint32_t)domain;
 	txmsg.hdr.arg    = (uint32_t)code;
 
-	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -1026,8 +915,13 @@ int upwr_xcp_set_ddr_retention(soc_domain_t     domain,
 {
 	upwr_xcp_ddr_retn_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)  return -3;
-	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
 
@@ -1035,7 +929,129 @@ int upwr_xcp_set_ddr_retention(soc_domain_t     domain,
 	txmsg.hdr.domain = (uint32_t)domain;
 	txmsg.hdr.arg    = (uint32_t)enable;
 
-	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
+
+	return 0;
+}
+
+/**
+ * upwr_xcp_set_mipi_dsi_ena() - M33/A35 can use this API to set/clear mipi dsi ena
+ * @domain: identifier of the caller domain.
+ * soc_domain_t found in upower_soc_defs.h.
+ * @enable: true, means that set ddr retention, false clear ddr retention.
+ * @callb: NULL
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_EXCEPT as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ */
+
+int upwr_xcp_set_mipi_dsi_ena(soc_domain_t domain,
+			      uint32_t enable,
+			      const upwr_callb callb)
+{
+	upwr_xcp_set_mipi_dsi_ena_msg txmsg = {0};
+
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) {
+		return -1;
+	}
+
+	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
+
+	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_EXCEPT, UPWR_XCP_SET_MIPI_DSI_ENA);
+	txmsg.hdr.domain = (uint32_t)domain;
+	txmsg.hdr.arg    = (uint32_t)enable;
+
+	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
+
+	return 0;
+}
+
+/**
+ * upwr_xcp_get_mipi_dsi_ena() - M33/A35 can use this API to get mipi dsi ena status
+ * @domain: identifier of the caller domain.
+ * soc_domain_t found in upower_soc_defs.h.
+ * @callb: NULL
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_EXCEPT as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ */
+
+int upwr_xcp_get_mipi_dsi_ena(soc_domain_t domain, const upwr_callb callb)
+{
+	upwr_xcp_get_mipi_dsi_ena_msg txmsg = {0};
+
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) {
+		return -1;
+	}
+
+	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
+
+	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_EXCEPT, UPWR_XCP_GET_MIPI_DSI_ENA);
+	txmsg.hdr.domain = (uint32_t)domain;
+
+	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
+
+	return 0;
+}
+
+/**
+ * upwr_xcp_set_osc_mode() - M33/A35 can use this API to set uPower OSC mode
+ * @domain: identifier of the caller domain.
+ * soc_domain_t found in upower_soc_defs.h.
+ * @osc_mode, 0 means low frequency, not 0 means high frequency.
+ * @callb: NULL
+ *
+ * A callback may not be registered (NULL pointer), in which case polling has
+ * to be used to check the response, by calling upwr_req_status or
+ * upwr_poll_req_status, using UPWR_SG_EXCEPT as the service group argument.
+ *
+ * Context: no sleep, no locks taken/released.
+ * Return: 0 if ok,
+ *        -1 if service group is busy,
+ *        -3 if called in an invalid API state
+ */
+
+int upwr_xcp_set_osc_mode(soc_domain_t domain,
+			  uint32_t osc_mode,
+			  const upwr_callb callb)
+{
+	upwr_xcp_set_osc_mode_msg txmsg = {0};
+
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) {
+		return -1;
+	}
+
+	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
+
+	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_EXCEPT, UPWR_XCP_SET_OSC_MODE);
+	txmsg.hdr.domain = (uint32_t)domain;
+	txmsg.hdr.arg    = (uint32_t)osc_mode;
+
+	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -1044,7 +1060,7 @@ int upwr_xcp_set_ddr_retention(soc_domain_t     domain,
  * upwr_xcp_set_rtd_use_ddr() - M33 call this API to inform uPower, M33 is using ddr
  * @domain: identifier of the caller domain.
  * soc_domain_t found in upower_soc_defs.h.
- * @enable: not 0, true, means that RTD is using ddr. 0, false, means that, RTD is not using ddr.
+ * @is_use_ddr: not 0, true, means that RTD is using ddr. 0, false, means that, RTD is not using ddr.
  * @callb: NULL
  *
  * A callback may not be registered (NULL pointer), in which case polling has
@@ -1063,8 +1079,13 @@ int upwr_xcp_set_rtd_use_ddr(soc_domain_t     domain,
 {
 	upwr_xcp_rtd_use_ddr_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)  return -3;
-	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
 
@@ -1072,7 +1093,7 @@ int upwr_xcp_set_rtd_use_ddr(soc_domain_t     domain,
 	txmsg.hdr.domain = (uint32_t)domain;
 	txmsg.hdr.arg    = (uint32_t)is_use_ddr;
 
-	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -1100,8 +1121,13 @@ int upwr_xcp_set_rtd_apd_llwu(soc_domain_t     domain,
 {
 	upwr_xcp_rtd_apd_llwu_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)  return -3;
-	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
 
@@ -1109,7 +1135,7 @@ int upwr_xcp_set_rtd_apd_llwu(soc_domain_t     domain,
 	txmsg.hdr.domain = (uint32_t)domain;
 	txmsg.hdr.arg    = (uint32_t)enable;
 
-	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -1140,14 +1166,19 @@ int upwr_xcp_shutdown(const upwr_callb callb)
 {
 	upwr_xcp_shutdown_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)  return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_EXCEPT, UPWR_XCP_SHUTDOWN);
 
-	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	api_state = UPWR_API_SHUTDOWN_WAIT;
 
@@ -1184,7 +1215,7 @@ int upwr_xcp_shutdown(const upwr_callb callb)
  *
  * Sub-addressing is supported, with sub-address size determined by the argument
  * subaddr_size, up to 4 bytes. Sub-addressing is not used if subaddr_size=0.
- * 
+ *
  * Context: no sleep, no locks taken/released.
  * Return: 0 if ok,
  *        -1 if service group is busy,
@@ -1230,8 +1261,13 @@ int upwr_xcp_i2c_access(uint16_t         addr,
 	#endif
 	upwr_pwm_pmiccfg_msg  txmsg = {0};
 
-	if (api_state != UPWR_API_READY)  return -3;
-	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
 
@@ -1246,10 +1282,10 @@ int upwr_xcp_i2c_access(uint16_t         addr,
 	txmsg.ptr = upwr_ptr2offset(ptrval,
 				    UPWR_SG_EXCEPT,
 				    (size_t)sizeof(upwr_i2c_access),
-				    0,
+				    0U,
 				    i2c_acc_ptr);
 
-	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -1287,14 +1323,19 @@ int upwr_vtm_pmic_cold_reset(upwr_callb callb)
 {
 	upwr_volt_pmic_cold_reset_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_VOLTM, callb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_VOLTM, UPWR_VTM_PMIC_COLD_RESET);
 
-	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t*)&txmsg, sizeof(txmsg) / 4);
+	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -1328,16 +1369,21 @@ int upwr_vtm_set_pmic_mode(uint32_t pmic_mode, upwr_callb callb)
 {
 	upwr_volt_pmic_set_mode_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_VOLTM, callb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_VOLTM, UPWR_VTM_SET_PMIC_MODE);
 
-    txmsg.hdr.arg = pmic_mode;
+	txmsg.hdr.arg = pmic_mode;
 
-	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t*)&txmsg, sizeof(txmsg) / 4);
+	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -1374,8 +1420,13 @@ int upwr_vtm_chng_pmic_voltage(uint32_t rail, uint32_t volt, upwr_callb callb)
 {
 	upwr_volt_pmic_set_volt_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_VOLTM, callb);
 
@@ -1383,9 +1434,9 @@ int upwr_vtm_chng_pmic_voltage(uint32_t rail, uint32_t volt, upwr_callb callb)
 
 	txmsg.args.rail = rail;
 
-    txmsg.args.volt = (volt + PMIC_VOLTAGE_MIN_STEP - 1) / PMIC_VOLTAGE_MIN_STEP;
+	txmsg.args.volt = (volt + PMIC_VOLTAGE_MIN_STEP - 1U) / PMIC_VOLTAGE_MIN_STEP;
 
-	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t*)&txmsg, sizeof(txmsg) / 4);
+	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -1426,8 +1477,13 @@ int upwr_vtm_get_pmic_voltage(uint32_t rail, upwr_callb callb)
 {
 	upwr_volt_pmic_get_volt_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_VOLTM, callb);
 
@@ -1435,223 +1491,7 @@ int upwr_vtm_get_pmic_voltage(uint32_t rail, upwr_callb callb)
 
 	txmsg.args.rail = rail;
 
-	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t*)&txmsg, sizeof(txmsg) / 4);
-
-	return 0;
-}
-
-/**
- * upwr_vtm_dump_dva_info() - Dump dva information to M33/A35
- * @dump_addr: uPower dump dva information to the given address
- * @callb: response callback pointer; NULL if no callback needed.
- * (polling used instead)
- *
- * The function requests uPower to dump dva information to the given address
- * The request is executed if arguments are within range, with no protections
- * regarding the adequate voltage value for the given domain process,
- * temperature and frequency.
- *
- * A callback can be optionally registered, and will be called upon the arrival
- * of the request response from the uPower firmware, telling if it succeeded
- * or not.
- *
- * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check the response, by calling upwr_req_status or
- * upwr_poll_req_status, using UPWR_SG_VOLTM as the service group argument.
- *
- * Context: no sleep, no locks taken/released.
- * Return: 0 if ok,
- *        -1 if service group is busy,
- *        -3 if called in an invalid API state
- * Note that this is not the error response from the request itself:
- * it only tells if the request was successfully sent to the uPower.
- */
-
-int upwr_vtm_dump_dva_info(uint32_t dump_addr, upwr_callb callb)
-{
-	upwr_volt_dva_dump_info_msg txmsg = {0};
-
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) return -1;
-
-	if ((dump_addr < UPWR_DRAM_SHARED_BASE_ADDR) ||
-	    ((dump_addr - UPWR_DRAM_SHARED_BASE_ADDR) >= UPWR_DRAM_SHARED_SIZE)) {
-		return -2;
-    }
-
-	UPWR_USR_CALLB(UPWR_SG_VOLTM, callb);
-
-	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_VOLTM, UPWR_VTM_DVA_DUMP_INFO);
-
-	txmsg.args.addr_offset = dump_addr - UPWR_DRAM_SHARED_BASE_ADDR;
-
-	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t*)&txmsg, sizeof(txmsg) / 4);
-
-	return 0;
-}
-
-/**
- * upwr_vtm_dva_request() - request uPower to dva an array IDs
- * @id: id of soc components, such as A35, M33, GPU, SDHC and etc, it is a bit group, extending to two u32 types.
- * @mode: OD (over drive) mode, ND (normal drive)  mode, LD (lower drive) mode,
- * type: enum work_mode, defined in upower_defs.h
- * @callb: response callback pointer; NULL if no callback needed.
- * (polling used instead)
- *
- * The function requests uPower to dva an array IDs to the give work mode.
- * The request is executed if arguments are within range, with no protections
- * regarding the adequate voltage value for the given domain process,
- * temperature and frequency.
- *
- * A callback can be optionally registered, and will be called upon the arrival
- * of the request response from the uPower firmware, telling if it succeeded
- * or not.
- *
- * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check the response, by calling upwr_req_status or
- * upwr_poll_req_status, using UPWR_SG_VOLTM as the service group argument.
- *
- * M33/A35 need to check the execute result
- * 0 means success, 1 means hold on(A35 request LD, but GPU request OD), negative value means failure.
- * upower fw needs support cocurrent request from M33 and A35.
- * upower fw needs support multiple masters requesting different modes.
- *
- * Context: no sleep, no locks taken/released.
- * Return: 0 if ok,
- *        -1 if service group is busy,
- *        -3 if called in an invalid API state
- * Note that this is not the error response from the request itself:
- * it only tells if the request was successfully sent to the uPower.
- */
-
-int upwr_vtm_dva_request(const uint32_t id[], enum work_mode mode, upwr_callb callb)
-{
-	unsigned long ptrval = (unsigned long)sh_buffer[UPWR_SG_VOLTM];
-    upwr_dva_id_struct *dva_id_struct_ptr = (upwr_dva_id_struct *)ptrval;
-	upwr_volt_dva_req_id_msg  txmsg = {0};
-
-	if (api_state != UPWR_API_READY)  return -3;
-	if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) return -1;
-
-	UPWR_USR_CALLB(UPWR_SG_VOLTM, callb);
-
-	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_VOLTM, UPWR_VTM_DVA_REQ_ID);
-
-    memcpy(&(dva_id_struct_ptr->id_word0), &id[0], 4);
-    memcpy(&(dva_id_struct_ptr->id_word1), &id[1], 4);
-    dva_id_struct_ptr->mode = mode;
-
-	txmsg.ptr = upwr_ptr2offset(ptrval,
-				    UPWR_SG_VOLTM,
-				    (size_t)sizeof(upwr_dva_id_struct),
-				    0,
-				    dva_id_struct_ptr);
-
-	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t*)&txmsg, sizeof(txmsg)/4);
-
-	return 0;
-}
-
-/**
- * upwr_vtm_dva_request_soc() - request uPower to dva the whole SOC to the given work mode
- * @mode: OD (over drive) mode, ND (normal drive)  mode, LD (lower drive) mode,
- * type: enum work_mode, defined in upower_defs.h
- * @callb: response callback pointer; NULL if no callback needed.
- * (polling used instead)
- *
- * The function requests uPower to switch whole SOC to the given work mode.
- * The request is executed if arguments are within range, with no protections
- * regarding the adequate voltage value for the given domain process,
- * temperature and frequency.
- *
- * A callback can be optionally registered, and will be called upon the arrival
- * of the request response from the uPower firmware, telling if it succeeded
- * or not.
- *
- * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check the response, by calling upwr_req_status or
- * upwr_poll_req_status, using UPWR_SG_VOLTM as the service group argument.
- *
- * M33/A35 need to check the execute result
- * 0 means success, 1 means hold on(A35 request LD, but GPU request OD), negative value means failure.
- * upower fw needs support cocurrent request from M33 and A35.
- * upower fw needs support multiple masters requesting different modes.
- *
- * Context: no sleep, no locks taken/released.
- * Return: 0 if ok,
- *        -1 if service group is busy,
- *        -3 if called in an invalid API state
- * Note that this is not the error response from the request itself:
- * it only tells if the request was successfully sent to the uPower.
- */
-int upwr_vtm_dva_request_soc(enum work_mode mode, upwr_callb callb)
-{
-	upwr_volt_dva_req_soc_msg txmsg = {0};
-
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) return -1;
-
-	UPWR_USR_CALLB(UPWR_SG_VOLTM, callb);
-
-	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_VOLTM, UPWR_VTM_DVA_REQ_SOC);
-
-	txmsg.args.mode = mode;
-
-	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t*)&txmsg, sizeof(txmsg) / 4);
-
-	return 0;
-}
-
-
-/**
- * upwr_vtm_dva_domain_request() - request uPower to dva one domain to the given work mode
- * @domain_id: RTD, APD, LPAV, defined in upower_defs.h
- * @mode: OD (over drive) mode, ND (normal drive)  mode, LD (lower drive) mode,
- * type: enum work_mode, defined in upower_defs.h
- * @callb: response callback pointer; NULL if no callback needed.
- * (polling used instead)
- *
- * The function requests uPower to switch one domain to the given work mode.
- * The request is executed if arguments are within range, with no protections
- * regarding the adequate voltage value for the given domain process,
- * temperature and frequency.
- *
- * A callback can be optionally registered, and will be called upon the arrival
- * of the request response from the uPower firmware, telling if it succeeded
- * or not.
- *
- * A callback may not be registered (NULL pointer), in which case polling has
- * to be used to check the response, by calling upwr_req_status or
- * upwr_poll_req_status, using UPWR_SG_VOLTM as the service group argument.
- *
- * M33/A35 need to check the execute result
- * 0 means success, 1 means hold on(A35 request LD, but GPU request OD), negative value means failure.
- * upower fw needs support cocurrent request from M33 and A35.
- * upower fw needs support multiple masters requesting different modes.
- *
- * Context: no sleep, no locks taken/released.
- * Return: 0 if ok,
- *        -1 if service group is busy,
- *        -3 if called in an invalid API state
- * Note that this is not the error response from the request itself:
- * it only tells if the request was successfully sent to the uPower.
- */
-
-int upwr_vtm_dva_domain_request(uint32_t domain_id, enum work_mode mode, upwr_callb callb)
-{
-	upwr_volt_dva_req_domain_msg txmsg = {0};
-
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) return -1;
-
-	UPWR_USR_CALLB(UPWR_SG_VOLTM, callb);
-
-	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_VOLTM, UPWR_VTM_DVA_REQ_DOMAIN);
-
-	txmsg.args.mode = mode;
-	txmsg.args.domain = domain_id;
-
-	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t*)&txmsg, sizeof(txmsg) / 4);
+	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -1660,6 +1500,17 @@ int upwr_vtm_dva_domain_request(uint32_t domain_id, enum work_mode mode, upwr_ca
  * upwr_vtm_power_measure() - request uPower to measure power consumption
  * @ssel: This field determines which power switches will have their currents sampled to be accounted for a
 current/power measurement. Support 0~7
+
+SSEL bit #	Power Switch
+0	M33 core complex/platform/peripherals
+1	Fusion Core and Peripherals
+2	A35[0] core complex
+3	A35[1] core complex
+4	3DGPU
+5	HiFi4
+6	DDR Controller (PHY and PLL NOT included)
+7	PXP, EPDC
+
  * @callb: response callback pointer; NULL if no callback needed.
  * (polling used instead)
  *
@@ -1682,6 +1533,8 @@ current/power measurement. Support 0~7
  * ret (or *retptr) also returns the data written on writes.
  * upower fw needs support cocurrent request from M33 and A35.
  *
+ * Accurate to uA
+ *
  * Context: no sleep, no locks taken/released.
  * Return: 0 if ok,
  *        -1 if service group is busy,
@@ -1693,8 +1546,13 @@ int upwr_vtm_power_measure(uint32_t ssel, upwr_callb callb)
 {
 	upwr_volt_pmeter_meas_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_VOLTM, callb);
 
@@ -1702,7 +1560,7 @@ int upwr_vtm_power_measure(uint32_t ssel, upwr_callb callb)
 
 	txmsg.hdr.arg = ssel;
 
-	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t*)&txmsg, sizeof(txmsg) / 4);
+	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -1756,8 +1614,13 @@ int upwr_vtm_vmeter_measure(uint32_t vdetsel, upwr_callb callb)
 {
 	upwr_volt_vmeter_meas_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_VOLTM, callb);
 
@@ -1765,7 +1628,7 @@ int upwr_vtm_vmeter_measure(uint32_t vdetsel, upwr_callb callb)
 
 	txmsg.hdr.arg = vdetsel;
 
-	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t*)&txmsg, sizeof(txmsg) / 4);
+	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -1796,25 +1659,25 @@ int upwr_vtm_vmeter_measure(uint32_t vdetsel, upwr_callb callb)
  *
  * Sample code:
 
-// The tag value is fixed 0x706D6963, used by uPower PMIC driver to judge if the config data are valid.
+The tag value is fixed 0x706D6963, used by uPower PMIC driver to judge if the config data are valid.
 #define PMIC_CONFIG_TAG 0x706D6963
 
-// used to define reg_addr_data_arry, user can modify this value
-// or you can use variable-length array
-// or zero-length array
-// or other C language technology skills
+used to define reg_addr_data_arry, user can modify this value
+or you can use variable-length array
+or zero-length array
+or other C language technology skills
 #define PMIC_CONFIG_REG_ARRAY_SIZE  8
 
 struct pmic_reg_addr_data
 {
-    uint32_t reg;       // the target configured register of PMIC IC
-    uint32_t data;      // the value of the target configured register
+    uint32_t reg;
+    uint32_t data;
 };
 
 struct pmic_config_struct
 {
-    uint32_t cfg_tag;       // cfg_tag = PMIC_CONFIG_TAG, used to judge if the config data are valid
-    uint32_t cfg_reg_size;  // how many registers shall be configured
+    uint32_t cfg_tag;
+    uint32_t cfg_reg_size;
     struct pmic_reg_addr_data reg_addr_data_array[PMIC_CONFIG_REG_ARRAY_SIZE];
 };
 
@@ -1848,23 +1711,29 @@ int upwr_vtm_pmic_config(const void* config, uint32_t size, upwr_callb callb)
 	upwr_pwm_pmiccfg_msg txmsg = {0};
 	unsigned long ptrval = 0UL; /* needed for X86, ARM64 */
 
-	if (api_state != UPWR_API_READY)   return -3;
-	if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_VOLTM)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_VOLTM, callb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_VOLTM, UPWR_VTM_PMIC_CONFIG);
 
-	if ((ptrval = (unsigned long)os_ptr2phy(config)) == 0)
+	if ((ptrval = (unsigned long)os_ptr2phy(config)) == 0UL) {
 		return -2; /* pointer conversion failed */
+	}
 
 	txmsg.ptr = upwr_ptr2offset(ptrval,
 				    UPWR_SG_VOLTM,
 				    (size_t)size,
-				    0,
+				    0U,
 				    config);
 
-	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_VOLTM, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -1914,8 +1783,13 @@ int upwr_tpm_get_temperature(uint32_t sensor_id, upwr_callb callb)
 {
 	upwr_temp_get_cur_temp_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_TEMPM)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_TEMPM)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_TEMPM, callb);
 
@@ -1923,7 +1797,7 @@ int upwr_tpm_get_temperature(uint32_t sensor_id, upwr_callb callb)
 
 	txmsg.args.sensor_id = sensor_id;
 
-	upwr_srv_req(UPWR_SG_TEMPM, (uint32_t*)&txmsg, sizeof(txmsg) / 4);
+	upwr_srv_req(UPWR_SG_TEMPM, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -1969,8 +1843,13 @@ int upwr_dlm_get_delay_margin(uint32_t path, uint32_t index, upwr_callb callb)
 {
 	upwr_dmeter_get_delay_margin_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_DELAYM)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_DELAYM)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_DELAYM, callb);
 
@@ -1979,7 +1858,7 @@ int upwr_dlm_get_delay_margin(uint32_t path, uint32_t index, upwr_callb callb)
 	txmsg.args.path = path;
 	txmsg.args.index = index;
 
-	upwr_srv_req(UPWR_SG_DELAYM, (uint32_t*)&txmsg, sizeof(txmsg) / 4);
+	upwr_srv_req(UPWR_SG_DELAYM, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2022,8 +1901,13 @@ int upwr_dlm_set_delay_margin(uint32_t path, uint32_t index, uint32_t delay_marg
 {
 	upwr_dmeter_set_delay_margin_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_DELAYM)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_DELAYM)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_DELAYM, callb);
 
@@ -2033,7 +1917,7 @@ int upwr_dlm_set_delay_margin(uint32_t path, uint32_t index, uint32_t delay_marg
 	txmsg.args.index = index;
 	txmsg.args.dm = delay_margin;
 
-	upwr_srv_req(UPWR_SG_DELAYM, (uint32_t*)&txmsg, sizeof(txmsg) / 4);
+	upwr_srv_req(UPWR_SG_DELAYM, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2078,8 +1962,13 @@ int upwr_dlm_process_monitor(uint32_t chain_sel, upwr_callb callb)
 {
 	upwr_pmon_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_DELAYM)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_DELAYM)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_DELAYM, callb);
 
@@ -2087,7 +1976,7 @@ int upwr_dlm_process_monitor(uint32_t chain_sel, upwr_callb callb)
 
 	txmsg.args.chain_sel = chain_sel;
 
-	upwr_srv_req(UPWR_SG_DELAYM, (uint32_t*)&txmsg, sizeof(txmsg) / 4);
+	upwr_srv_req(UPWR_SG_DELAYM, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2127,17 +2016,25 @@ int upwr_pwm_dom_power_on(soc_domain_t      domain,
 {
 	upwr_pwm_dom_pwron_msg txmsg = {0};
 
-	if (pwr_domain == domain)          return -2;
-	if (api_state != UPWR_API_READY)   return -3;
-	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+	if (pwr_domain == domain) {
+		return -2;
+	}
+
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, (upwr_callb)pwroncallb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_PWRMGMT, UPWR_PWM_DOM_PWRON);
 	txmsg.hdr.domain = (uint32_t)domain;
-	txmsg.hdr.arg    = boot_start;
+	txmsg.hdr.arg    = (uint32_t)boot_start;
 
-	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2173,16 +2070,24 @@ int upwr_pwm_boot_start(soc_domain_t domain, const upwr_callb  bootcallb)
 {
 	upwr_pwm_boot_start_msg txmsg = {0};
 
-	if (pwr_domain == domain)          return -2;
-	if (api_state != UPWR_API_READY)   return -3;
-	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+	if (pwr_domain == domain) {
+		return -2;
+	}
+
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, (upwr_callb)bootcallb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_PWRMGMT, UPWR_PWM_BOOT);
 	txmsg.hdr.domain = (uint32_t)domain;
 
-	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2221,22 +2126,26 @@ int upwr_pwm_param(upwr_pwm_param_t* param, const upwr_callb  callb)
 {
 	upwr_pwm_param_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-        if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_PWRMGMT, UPWR_PWM_PARAM);
 
 	if (param == NULL) {
-		txmsg.hdr.arg = 1;        /* 1= read, txmsg.word2 ignored */
-	}
-	else {
-		txmsg.hdr.arg = 0;        /* 1= write */
+		txmsg.hdr.arg = 1U;        /* 1= read, txmsg.word2 ignored */
+	} else {
+		txmsg.hdr.arg = 0U;        /* 1= write */
 		txmsg.word2   = param->R; /* just 1 word, so that's ok */
 	}
 
-	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2274,8 +2183,13 @@ int upwr_pwm_chng_reg_voltage(uint32_t reg, uint32_t volt, upwr_callb callb)
 {
 	upwr_pwm_volt_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
 
@@ -2284,7 +2198,7 @@ int upwr_pwm_chng_reg_voltage(uint32_t reg, uint32_t volt, upwr_callb callb)
 	txmsg.args.reg = reg;
 	txmsg.args.volt = volt;
 
-	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2295,20 +2209,45 @@ int upwr_pwm_chng_reg_voltage(uint32_t reg, uint32_t volt, upwr_callb callb)
  * @domain: identifier of the domain to change frequency. Defined by
  * SoC-dependent type soc_domain_t found in upower_soc_defs.h.
  * @rail: the pmic regulator number for the target domain.
+ * @stage: DVA adjust stage
+ * refer to upower_defs.h "DVA adjust stage"
  * @target_freq: the target adjust frequency, accurate to MHz
  *
  * refer to upower_defs.h structure definition upwr_pwm_freq_msg
  *
- * In some SoC implementations this may not be needed (argument is not used),
- * if uPower can measure the current frequency by itself.
  * @callb: response callback pointer; NULL if no callback needed.
  *
+ * The DVA algorithm is broken down into two phases.
+ * The first phase uses a look up table to get a safe operating voltage
+ * for the requested frequency.
+ * This voltage is guaranteed to work over process and temperature.
+ *
+ * The second step of the second phase is to measure the temperature
+ * using the uPower Temperature Sensor module.
+ * This is accomplished by doing a binary search of the TSEL bit field
+ * in the Temperature Measurement Register (TMR).
+ * The search is repeated until the THIGH bit fields in the same register change value.
+ * There are 3 temperature sensors in 8ULP (APD, AVD, and RTD).
+ *
+ *
+ * The second phase is the fine adjust of the voltage.
+ * This stage is entered only when the new frequency requested
+ * by application was already set as well as the voltage for that frequency.
+ * The first step of the fine adjust is to find what is the current margins
+ * for the monitored critical paths, or, in other words,
+ * how many delay cells will be necessary to generate a setup-timing violation.
  * The function informs uPower that the given domain frequency has changed or
  * will change to the given value. uPower firmware will then adjust voltage and
  * bias to cope with the new frequency (if decreasing) or prepare for it
  * (if increasing). The function must be called after decreasing the frequency,
  * and before increasing it. The actual increase in frequency must not occur
  * before the service returns its response.
+ *
+ * So, for increase clock frequency case, user need to call this API twice,
+ * the first stage gross adjust and the second stage fine adjust.
+ *
+ * for reduce clock frequency case, user can only call this API once,
+ * full stage (combine gross stage and fine adjust)
  *
  * The request is executed if arguments are within range.
  *
@@ -2328,13 +2267,18 @@ int upwr_pwm_chng_reg_voltage(uint32_t reg, uint32_t volt, upwr_callb callb)
  * it only tells if the request was successfully sent to the uPower.
  */
 
-int upwr_pwm_freq_setup(soc_domain_t domain, uint32_t rail, uint32_t target_freq,
+int upwr_pwm_freq_setup(soc_domain_t domain, uint32_t rail, uint32_t stage, uint32_t target_freq,
 			upwr_callb   callb)
 {
 	upwr_pwm_freq_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
 
@@ -2342,9 +2286,10 @@ int upwr_pwm_freq_setup(soc_domain_t domain, uint32_t rail, uint32_t target_freq
 
 	txmsg.hdr.domain   = (uint32_t)domain;
 	txmsg.args.rail  = rail;
+	txmsg.args.stage  = stage;
 	txmsg.args.target_freq  = target_freq;
 
-	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2403,34 +2348,45 @@ int upwr_pwm_power_on(const uint32_t swton[],
 {
 	upwr_pwm_pwron_msg         txmsg = {0};
 	unsigned long              ptrval = 0UL; /* needed for X86, ARM64 */
-	size_t                     stsize = 0;
+	size_t                     stsize = 0U;
 
-	if (api_state != UPWR_API_READY)   return -3;
-        if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_PWRMGMT, UPWR_PWM_PWR_ON);
 
-	if (swton == NULL) txmsg.ptrs.ptr0 = 0; /* NULL pointer -> 0 offset */
-	else if ((ptrval = (unsigned long)os_ptr2phy((void*)swton)) == 0)
+	if (swton == NULL) {
+		txmsg.ptrs.ptr0 = 0; /* NULL pointer -> 0 offset */
+	} else if ((ptrval = (unsigned long)os_ptr2phy((void *)swton)) == 0U) {
 		return -2; /* pointer conversion failed */
-	else txmsg.ptrs.ptr0 = upwr_ptr2offset(ptrval,
+	} else {
+		txmsg.ptrs.ptr0 = upwr_ptr2offset(ptrval,
 					       UPWR_SG_PWRMGMT,
-					       (stsize = UPWR_PMC_SWT_WORDS*4),
-					       0,
+					       (stsize = UPWR_PMC_SWT_WORDS * 4U),
+					       0U,
 					       swton);
+	}
 
-	if (memon == NULL) txmsg.ptrs.ptr1 = 0; /* NULL pointer -> 0 offset */
-	else if ((ptrval = (unsigned long)os_ptr2phy((void*)memon)) == 0)
+	if (memon == NULL) {
+		txmsg.ptrs.ptr1 = 0; /* NULL pointer -> 0 offset */
+	} else if ((ptrval = (unsigned long)os_ptr2phy((void *)memon)) == 0U) {
 		return -2; /* pointer conversion failed */
-	else txmsg.ptrs.ptr1 = upwr_ptr2offset(ptrval,
+	} else {
+		txmsg.ptrs.ptr1 = upwr_ptr2offset(ptrval,
 					       UPWR_SG_PWRMGMT,
-					       UPWR_PMC_MEM_WORDS*4,
+					       UPWR_PMC_MEM_WORDS * 4U,
 					       stsize,
 					       memon);
+	}
 
-	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2487,32 +2443,43 @@ int upwr_pwm_power_off(const uint32_t swtoff[],
 	unsigned long              ptrval = 0UL; /* needed for X86, ARM64 */
 	size_t                     stsize = 0;
 
-	if (api_state != UPWR_API_READY)   return -3;
-    if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_PWRMGMT, UPWR_PWM_PWR_OFF);
 
-	if (swtoff == NULL) txmsg.ptrs.ptr0 = 0; /* NULL pointer -> 0 offset */
-	else if ((ptrval = (unsigned long)os_ptr2phy((void*)swtoff)) == 0)
+	if (swtoff == NULL) {
+		txmsg.ptrs.ptr0 = 0; /* NULL pointer -> 0 offset */
+	} else if ((ptrval = (unsigned long)os_ptr2phy((void *)swtoff)) == 0U) {
 		return -2; /* pointer conversion failed */
-	else txmsg.ptrs.ptr0 = upwr_ptr2offset(ptrval,
-					       UPWR_SG_PWRMGMT,
-					       (stsize = UPWR_PMC_SWT_WORDS*4),
-					       0,
-					       swtoff);
+	} else {
+		txmsg.ptrs.ptr0 = upwr_ptr2offset(ptrval,
+						  UPWR_SG_PWRMGMT,
+						  (stsize = UPWR_PMC_SWT_WORDS * 4U),
+						  0U,
+						  swtoff);
+	}
 
-	if (memoff == NULL) txmsg.ptrs.ptr1 = 0; /* NULL pointer -> 0 offset */
-	else if ((ptrval = (unsigned long)os_ptr2phy((void*)memoff)) == 0)
+	if (memoff == NULL) {
+		txmsg.ptrs.ptr1 = 0; /* NULL pointer -> 0 offset */
+	} else if ((ptrval = (unsigned long)os_ptr2phy((void *)memoff)) == 0U) {
 		return -2; /* pointer conversion failed */
-	else txmsg.ptrs.ptr1 = upwr_ptr2offset(ptrval,
-					       UPWR_SG_PWRMGMT,
-					       UPWR_PMC_MEM_WORDS*4,
-					       stsize,
-					       memoff);
+	} else {
+		txmsg.ptrs.ptr1 = upwr_ptr2offset(ptrval,
+						  UPWR_SG_PWRMGMT,
+						  UPWR_PMC_MEM_WORDS * 4U,
+						  stsize,
+						  memoff);
+	}
 
-	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2557,22 +2524,29 @@ int upwr_pwm_mem_retain(const uint32_t mem[], upwr_callb callb)
 	upwr_pwm_retain_msg        txmsg = {0};
 	unsigned long              ptrval = 0UL; /* needed for X86, ARM64 */
 
-	if (api_state != UPWR_API_READY)   return -3;
-        if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_PWRMGMT, UPWR_PWM_RETAIN);
 
-	if ((ptrval = (unsigned long)os_ptr2phy((void*)mem)) == 0)
+	if ((ptrval = (unsigned long)os_ptr2phy((void *)mem)) == 0U) {
 		return -2; /* pointer conversion failed */
+	}
 
 	txmsg.ptr = upwr_ptr2offset(ptrval,
 				    UPWR_SG_PWRMGMT,
-				    UPWR_PMC_MEM_WORDS*4,
-				    0,
+				    UPWR_PMC_MEM_WORDS * 4U,
+				    0U,
 				    mem);
-	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2641,38 +2615,45 @@ int upwr_pwm_chng_switch_mem(const struct upwr_switch_board_t  swt[],
 {
 	upwr_pwm_switch_msg        txmsg = {0};
 	unsigned long              ptrval = 0UL; /* needed for X86, ARM64 */
-	size_t                     stsize = 0;
+	size_t                     stsize = 0U;
 
-	if (api_state != UPWR_API_READY)   return -3;
-        if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_PWRMGMT, UPWR_PWM_SWITCH);
 
-	if (swt == NULL) txmsg.ptrs.ptr0 = 0; /* NULL pointer -> 0 offset */
-	else if ((ptrval = (unsigned long)os_ptr2phy((void*)swt)) == 0)
+	if (swt == NULL) {
+		txmsg.ptrs.ptr0 = 0; /* NULL pointer -> 0 offset */
+	} else if ((ptrval = (unsigned long)os_ptr2phy((void *)swt)) == 0U) {
 		return -2; /* pointer conversion failed */
-	else txmsg.ptrs.ptr0 = upwr_ptr2offset(ptrval,
-					       UPWR_SG_PWRMGMT,
-					       (stsize = UPWR_PMC_SWT_WORDS*
-					                 sizeof(struct
-						         upwr_switch_board_t)),
-					       0,
-					       swt);
+	} else {
+		txmsg.ptrs.ptr0 = upwr_ptr2offset(ptrval,
+						  UPWR_SG_PWRMGMT,
+						  (stsize = UPWR_PMC_SWT_WORDS * sizeof(struct upwr_switch_board_t)),
+						  0U,
+						  swt);
+	}
 
-	if (mem == NULL) txmsg.ptrs.ptr1 = 0; /* NULL pointer -> 0 offset */
-	else if ((ptrval = (unsigned long)os_ptr2phy((void*)mem)) == 0)
+	if (mem == NULL) {
+		txmsg.ptrs.ptr1 = 0; /* NULL pointer -> 0 offset */
+	} else if ((ptrval = (unsigned long)os_ptr2phy((void *)mem)) == 0U) {
 		return -2; /* pointer conversion failed */
-	else txmsg.ptrs.ptr1 = upwr_ptr2offset(ptrval,
-					       UPWR_SG_PWRMGMT,
-					       UPWR_PMC_MEM_WORDS*
-					       sizeof(struct
-							  upwr_mem_switches_t),
-					       stsize,
-					       mem);
+	} else {
+		txmsg.ptrs.ptr1 = upwr_ptr2offset(ptrval,
+						  UPWR_SG_PWRMGMT,
+						  UPWR_PMC_MEM_WORDS * sizeof(struct upwr_mem_switches_t),
+						  stsize,
+						  mem);
+	}
 
-	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2716,8 +2697,13 @@ int upwr_pwm_pmode_config(soc_domain_t   domain,
 	upwr_pwm_pmode_cfg_msg     txmsg = {0};
 	unsigned long              ptrval = 0UL; /* needed for X86, ARM64 */
 
-	if (api_state != UPWR_API_READY)   return -3;
-	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
 
@@ -2725,15 +2711,16 @@ int upwr_pwm_pmode_config(soc_domain_t   domain,
 	txmsg.hdr.domain = (uint32_t)domain;
 	txmsg.hdr.arg    = pmode;
 
-	if ((ptrval = (unsigned long)os_ptr2phy(config)) == 0)
+	if ((ptrval = (unsigned long)os_ptr2phy(config)) == 0U) {
 		return -2; /* pointer conversion failed */
+	}
 
 	/* upwr_pwm_pmode_config is an exception:
            use the pointer (physical addr) as is */
 
 	txmsg.ptr = (uint32_t)ptrval;
 
-	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2770,29 +2757,35 @@ int upwr_pwm_pmode_config(soc_domain_t   domain,
  * it only tells if the request was successfully sent to the uPower.
  */
 
-int upwr_pwm_reg_config(const struct upwr_reg_config_t* config,
+int upwr_pwm_reg_config(const struct upwr_reg_config_t *config,
 			upwr_callb   callb)
 {
 	upwr_pwm_regcfg_msg txmsg = {0};
 	unsigned long ptrval = 0UL; /* needed for X86, ARM64 */
 
-	if (api_state != UPWR_API_READY)   return -3;
-	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_PWRMGMT, UPWR_PWM_REGCFG);
 
-	if ((ptrval = (unsigned long)os_ptr2phy(config)) == 0)
+	if ((ptrval = (unsigned long)os_ptr2phy(config)) == 0U) {
 		return -2; /* pointer conversion failed */
+	}
 
 	txmsg.ptr = upwr_ptr2offset(ptrval,
 				    UPWR_SG_PWRMGMT,
 				    sizeof(struct upwr_reg_config_t),
-				    0,
+				    0U,
 				    config);
 
-	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2828,8 +2821,13 @@ int upwr_pwm_chng_dom_bias(const struct upwr_dom_bias_cfg_t* bias,
 {
 	upwr_pwm_dom_bias_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
 
@@ -2838,7 +2836,7 @@ int upwr_pwm_chng_dom_bias(const struct upwr_dom_bias_cfg_t* bias,
 	/* SoC-dependent argument filling, defined in upower_soc_defs.h */
 	UPWR_FILL_DOMBIAS_ARGS(txmsg.hdr.domain, bias, txmsg.args);
 
-	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2872,13 +2870,18 @@ int upwr_pwm_chng_dom_bias(const struct upwr_dom_bias_cfg_t* bias,
  */
 
 int upwr_pwm_chng_mem_bias(soc_domain_t                      domain,
-			   const struct upwr_mem_bias_cfg_t* bias,
+			   const struct upwr_mem_bias_cfg_t *bias,
 			   upwr_callb                        callb)
 {
 	upwr_pwm_mem_bias_msg txmsg = {0};
 
-	if (api_state != UPWR_API_READY)   return -3;
-	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) return -1;
+	if (api_state != UPWR_API_READY) {
+		return -3;
+	}
+
+	if (UPWR_SG_BUSY(UPWR_SG_PWRMGMT)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_PWRMGMT, callb);
 
@@ -2889,7 +2892,7 @@ int upwr_pwm_chng_mem_bias(soc_domain_t                      domain,
 	/* SoC-dependent argument filling, defined in upower_soc_defs.h */
 	UPWR_FILL_MEMBIAS_ARGS(bias, txmsg.args);
 
-	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_PWRMGMT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2933,14 +2936,16 @@ int upwr_xcp_reg_access(const struct upwr_reg_access_t* access,
 	upwr_xcp_access_msg txmsg = {0};
 	unsigned long ptrval = 0UL;; /* needed for X86, ARM64 */
 
-	if (api_state != UPWR_API_READY)           return -3;
-	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT))          return -1;
+	if (api_state != UPWR_API_READY)
+		return -3;
+	if (UPWR_SG_BUSY(UPWR_SG_EXCEPT))
+		return -1;
 
 	UPWR_USR_CALLB(UPWR_SG_EXCEPT, callb);
 
 	UPWR_MSG_HDR(txmsg.hdr, UPWR_SG_EXCEPT, UPWR_XCP_SPARE_15);
 
-	if ((ptrval = (unsigned long)os_ptr2phy(access)) == 0)
+	if ((ptrval = (unsigned long)os_ptr2phy(access)) == 0U)
 		return -2; /* pointer conversion failed */
 
 	txmsg.ptr = UPWR_DRAM_SHARED_BASE_ADDR +
@@ -2950,7 +2955,7 @@ int upwr_xcp_reg_access(const struct upwr_reg_access_t* access,
                                     0,
 				    access);
 
-	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_EXCEPT, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -2987,7 +2992,9 @@ int upwr_dgn_mode(upwr_dgn_mode_t mode, const upwr_callb callb)
 {
 	upwr_dgn_mode_msg txmsg = {0};
 
-    if (UPWR_SG_BUSY(UPWR_SG_DIAG)) return -1;
+	if (UPWR_SG_BUSY(UPWR_SG_DIAG)) {
+		return -1;
+	}
 
 	UPWR_USR_CALLB(UPWR_SG_DIAG, callb);
 
@@ -2995,7 +3002,7 @@ int upwr_dgn_mode(upwr_dgn_mode_t mode, const upwr_callb callb)
 
 	txmsg.hdr.arg = mode;
 
-	upwr_srv_req(UPWR_SG_DIAG, (uint32_t*)&txmsg, sizeof(txmsg)/4);
+	upwr_srv_req(UPWR_SG_DIAG, (uint32_t *)&txmsg, sizeof(txmsg) / 4U);
 
 	return 0;
 }
@@ -3053,7 +3060,7 @@ uint32_t upwr_ram_version(uint32_t* vminor, uint32_t* vfixes)
 /**
  * upwr_req_status() - tells the status of the service group request, and
  *                     returns a request return value, if any.
- * @sg: service group of the request 
+ * @sg: service group of the request
  * @sgfptr: pointer to the variable that will hold the function id of
  * the last request completed; can be NULL, in which case it is not used.
  * @errptr: pointer to the variable that will hold the error code;
@@ -3079,13 +3086,21 @@ upwr_req_status_t upwr_req_status(upwr_sg_t     sg,
 	upwr_req_status_t status;
 
 	upwr_lock(1);
-	if (sgfptr != NULL) *sgfptr =(uint32_t)    sg_rsp_msg[sg].hdr.function;
-	if (errptr != NULL) *errptr =(upwr_resp_t) sg_rsp_msg[sg].hdr.errcode;
-	if (retptr != NULL) *retptr =(int) (sg_rsp_siz[sg] == 2)?
-							sg_rsp_msg[sg].word2:
-							sg_rsp_msg[sg].hdr.ret;
+	if (sgfptr != NULL) {
+		*sgfptr = (uint32_t)sg_rsp_msg[sg].hdr.function;
+	}
 
-	status = (sg_busy & (1 << sg))?                        UPWR_REQ_BUSY :
+	if (errptr != NULL) {
+		*errptr = (upwr_resp_t)sg_rsp_msg[sg].hdr.errcode;
+	}
+
+	if (retptr != NULL) {
+		*retptr = (int)((sg_rsp_siz[sg] == 2U) ?
+							sg_rsp_msg[sg].word2:
+							sg_rsp_msg[sg].hdr.ret);
+	}
+
+	status = ((sg_busy & (1UL << sg)) == 1U) ? UPWR_REQ_BUSY :
 	         (sg_rsp_msg[sg].hdr.errcode == UPWR_RESP_OK)? UPWR_REQ_OK   :
 							       UPWR_REQ_ERR  ;
 	upwr_lock(0);
@@ -3095,7 +3110,7 @@ upwr_req_status_t upwr_req_status(upwr_sg_t     sg,
 /**
  * upwr_poll_req_status() - polls the status of the service group request, and
  *                          returns a request return value, if any.
- * @sg: service group of the request 
+ * @sg: service group of the request
  * @sgfptr: pointer to the variable that will hold the function id of
  * the last request completed; can be NULL, in which case it is not used.
  * @errptr: pointer to the variable that will hold the error code;
@@ -3126,10 +3141,9 @@ upwr_req_status_t upwr_poll_req_status(upwr_sg_t     sg,
 	uint32_t          i;
 	upwr_req_status_t ret;
 
-	if (attempts == 0)
+	if (attempts == 0U)
 	{
-		while ((ret = upwr_req_status(sg, sgfptr, errptr, retptr)) ==
-		       UPWR_REQ_BUSY)
+		while ((ret = upwr_req_status(sg, sgfptr, errptr, retptr)) == UPWR_REQ_BUSY)
 		{
 			#ifdef UPWR_BLOCK_LEVEL
 			WAIT_CLK(10); /* waiting loop must advance clock */
@@ -3138,11 +3152,11 @@ upwr_req_status_t upwr_poll_req_status(upwr_sg_t     sg,
 		return ret;
 	}
 
-	for (i = 0; i < attempts; i++)
+	for (i = 0U; i < attempts; i++)
 	{
-		if ((ret = upwr_req_status(sg, sgfptr, errptr, retptr)) !=
-		    UPWR_REQ_BUSY) break;
-
+		if ((ret = upwr_req_status(sg, sgfptr, errptr, retptr)) != UPWR_REQ_BUSY) {
+			break;
+	}
 		#ifdef UPWR_BLOCK_LEVEL
 		WAIT_CLK(10); /* waiting loop must advance clock */
 		#endif
@@ -3159,9 +3173,9 @@ upwr_req_status_t upwr_poll_req_status(upwr_sg_t     sg,
  * Return: alarm code, as defined by the type upwr_alarm_t in upwr_soc_defines.h
  */
 
-upwr_alarm_t upwr_alarm_code()
+upwr_alarm_t upwr_alarm_code(void)
 {
-	return (upwr_alarm_t)(3 & (mu->FSR.R >> 1)); /* FSR[2:1] */
+	return (upwr_alarm_t)(3U & (mu->FSR.R >> 1U)); /* FSR[2:1] */
 }
 
 /**---------------------------------------------------------------
@@ -3178,7 +3192,9 @@ upwr_alarm_t upwr_alarm_code()
 
 void upwr_copy2tr(struct MU_tag* local_mu, const uint32_t* msg, unsigned int size)
 {
-	for (int i = size - 1; i > -1; i--) local_mu->TR[i].R = msg[i];
+	for (int i = (int)size - 1; i > -1; i--) {
+		local_mu->TR[i].R = msg[i];
+	}
 }
 
 /**
@@ -3197,22 +3213,28 @@ void upwr_copy2tr(struct MU_tag* local_mu, const uint32_t* msg, unsigned int siz
  *         -2 if any argument is invalid (like size off-range)
  */
 
-int upwr_tx(const uint32_t*         msg,
-            unsigned int            size,
-            UPWR_TX_CALLB_FUNC_T    callback)
+int upwr_tx(const uint32_t *msg,
+	    unsigned int size,
+	    UPWR_TX_CALLB_FUNC_T callback)
 {
-	if (size >  UPWR_MU_MSG_SIZE) return -2;
-	if (size ==                0) return -2;
+	if (size > UPWR_MU_MSG_SIZE) {
+		return -2;
+	}
 
-	if (mu->TSR.R != UPWR_MU_TSR_EMPTY)
+	if (size == 0U) {
+		return -2;
+	}
+
+	if (mu->TSR.R != UPWR_MU_TSR_EMPTY) {
 		return -1;  /* not all TE bits in 1: some data to send still */
+	}
 
 	mu_tx_callb = callback;
 
 	upwr_copy2tr(mu, msg, size);
-	mu->TCR.R = 1 << (size - 1);
+	mu->TCR.R = 1UL << (size - 1UL);
 
-	mu_tx_pend = 1;
+	mu_tx_pend = 1UL;
 
 	return 0;
 }
@@ -3235,27 +3257,32 @@ int upwr_rx(char *msg, unsigned int *size)
 {
 	unsigned int len = mu->RSR.R;
 
-	len = (len == 0x0)? 0:
-	      (len == 0x1)? 1:
+	len = (len == 0x0U) ? 0U :
+	      (len == 0x1U) ? 1U :
 	      #if UPWR_MU_MSG_SIZE > 1
-	      (len == 0x3)? 2:
+	      (len == 0x3U) ? 2U :
 	      #if UPWR_MU_MSG_SIZE > 2
-	      (len == 0x7)? 3:
+	      (len == 0x7U) ? 3U :
 	      #if UPWR_MU_MSG_SIZE > 3
-	      (len == 0xF)? 4:
+	      (len == 0xFU) ? 4U :
 	      #endif
 	      #endif
 	      #endif
-	                    0xFFFFFFFF; /* something wrong */
+	      0xFFFFFFFFU; /* something wrong */
 
-	if (len  == 0xFFFFFFFF) return -3;
-	if ((*size = len) == 0) return -1;
+	if (len  == 0xFFFFFFFFU) {
+		return -3;
+	}
+
+	if ((*size = len) == 0U) {
+		return -1;
+	}
 
 	/* copy the received message to the rx queue,
          * so the interrupts are cleared;*/
-    msg_copy(msg, (char *)&mu->RR[0], len);
+	msg_copy(msg, (char *)&mu->RR[0], len);
 
-	mu->RCR.R = 1; /* enable only RR[0] receive interrupt */
+	mu->RCR.R = 1U; /* enable only RR[0] receive interrupt */
 
 	return 0;
 }
@@ -3272,7 +3299,7 @@ int upwr_rx(char *msg, unsigned int *size)
  * Return: 0 if ok; -2 if any argument is invalid (mu off-range).
  */
 
-int upwr_rx_callback(UPWR_RX_CALLB_FUNC_T    callback)
+int upwr_rx_callback(UPWR_RX_CALLB_FUNC_T callback)
 {
 	mu_rx_callb = callback;
 
@@ -3294,7 +3321,7 @@ int upwr_rx_callback(UPWR_RX_CALLB_FUNC_T    callback)
 
 void msg_copy(char *dest, char *src, unsigned int size)
 {
-    for (uint32_t i = 0; i < size * sizeof(uint32_t); i++)
+    for (uint32_t i = 0U; i < size * sizeof(uint32_t); i++)
     {
         dest[i] = src[i];
     }
