@@ -379,7 +379,8 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 		imx_apd_ctx_save(cpu);
 	} else if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
 		/* only enable th necessary wakeup for DSL mode */
-		mmio_write_32(IMX_SIM1_BASE + 0x3c + 0x4 * cpu, BIT(14) | BIT(17) | BIT(20) | BIT(26) | BIT(27));
+		mmio_write_32(IMX_SIM1_BASE + 0x3c + 0x4 * cpu,
+			      BIT(14) | BIT(17) | BIT(20) | BIT(26) | BIT(27) | BIT(8) | BIT(6));
 
 		mmio_write_32(IMX_CMC1_BASE + 0x10, 0x7);
 		mmio_write_32(IMX_CMC1_BASE + 0x20, 0x3);
