@@ -109,9 +109,24 @@ void check_dfi_init_complete(void)
 void dram_enter_retention(void)
 {
 	uint32_t val;
+	int eccen = 0;
+	uint32_t waitflag = 0;
+
+	eccen = !!(mmio_read_32(REG_ERR_EN) & 0x40000000);
+
+	if(eccen && ((mmio_read_32(REG_DDR_TX_CFG_1) & 0xF) != 0)){
+		mmio_clrbits_32(REG_DDR_TX_CFG_1, 0xF);
+	}
+
+	if(eccen){
+		waitflag = 0xC0000000;
+	}
+	else{
+		waitflag = 0x80000000;
+	}
 
 	/* 2. Polling for DDRDSR_2[IDLE] to be set */
-	check_ddrc_idle(0, 0x80000000);
+	check_ddrc_idle(0, waitflag);
 
 	/* HALT the ddrc axi port */
 	mmio_setbits_32(DDR_SDRAM_CFG, BIT(1));
