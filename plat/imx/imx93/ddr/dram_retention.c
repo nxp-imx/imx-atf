@@ -307,5 +307,8 @@ void dram_exit_retention(void)
 	/* 5. Reload the ddrc config */
 	ddrc_init(timing_info);
 
+	/* set SR_FAST_WK_EN to 1 by default */
+	mmio_setbits_32(REG_DDR_SDRAM_CFG_3, BIT(1));
+
 	NOTICE("exit retention done\n");
 }
