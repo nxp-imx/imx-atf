@@ -913,6 +913,18 @@ static int trusty_ffa_id_get(u_register_t flags, u_register_t *idp)
 }
 
 /**
+ * trusty_ffa_rx_release - FFA_RX_RELEASE implementation.
+ * @client:             Client state.
+ *
+ * Return: 0 on success, error code on failure.
+ */
+static long trusty_ffa_rx_release(struct trusty_shmem_client_state *client)
+{
+	/* Trusty SPD doesn't track mailbox state */
+	return 0;
+}
+
+/**
  * trusty_ffa_version - FFA_VERSION implementation.
  * @client:     Client state.
  * @version_in: Version supported by client.
@@ -1088,6 +1100,10 @@ uintptr_t spmd_ffa_smc_handler(uint32_t smc_fid,
 
 	case FFA_RXTX_UNMAP:
 		ret = trusty_ffa_rxtx_unmap(client, w1);
+		break;
+
+	case FFA_RX_RELEASE:
+		ret = trusty_ffa_rx_release(client);
 		break;
 
 	case FFA_ID_GET:
