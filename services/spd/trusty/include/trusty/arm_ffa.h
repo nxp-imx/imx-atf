@@ -268,6 +268,25 @@ struct ffa_mem_relinquish_descriptor {
 STATIC_ASSERT(sizeof(struct ffa_mem_relinquish_descriptor) == 16);
 
 /**
+ * struct ffa_partition_info - FFA partition info descriptor.
+ * @id:
+ *         16-bit ID of the partition
+ * @execution_ctx_count:
+ *         Number of execution contexts implemented by this partition
+ * @properties:
+ *         Flags to determine partition properties. Like direct/indirect
+ *         messages send/receive capabilities.
+ */
+struct ffa_partition_info {
+	uint16_t id;
+	uint16_t execution_ctx_count;
+#define FFA_PART_PROP_RECV_DIRECT (1U)
+#define FFA_PART_PROP_SEND_DIRECT (1U << 1)
+#define FFA_PART_PROP_VM_MSGS (1U << 6)
+	uint32_t properties;
+};
+
+/**
  * typedef ffa_features2_t - FFA_FEATURES values returned in w2
  *
  * * @FFA_FEATURES2_RXTX_MAP_BUF_SIZE_MASK

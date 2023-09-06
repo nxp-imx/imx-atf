@@ -913,6 +913,49 @@ static int trusty_ffa_id_get(u_register_t flags, u_register_t *idp)
 }
 
 /**
+ * trusty_ffa_partition_info_get - FFA_PARTITION_INFO_GET implementation.
+ * @client:             Client state
+ * @uuid_0:             uuid 0
+ * @uuid_1:             uuid 1
+ * @uuid_2              uuid 2
+ * @uuid_3:             uuid 3
+ * @ret2:               Pointer to return value2 on success. Contains partition
+ *                      count in case of UUID match.
+ * @ret3:               Pointer to return value3 on success. Contains the size
+ *                      of each partition descriptor
+ *
+ * Return: 0 on success, error code on failure.
+ */
+static long trusty_ffa_partition_info_get(
+				  struct trusty_shmem_client_state *client,
+				  uint32_t uuid_0,
+				  uint32_t uuid_1,
+				  uint32_t uuid_2,
+				  uint32_t uuid_3,
+				  u_register_t *ret2,
+				  u_register_t *ret3)
+{
+	uint32_t uuid[4] = { uuid_0, uuid_1, uuid_2, uuid_3 };
+
+	if (!memcmp(trusty_sp.uuid, uuid, sizeof(uuid)) ||
+	  (uuid[0] == 0 && uuid[1] == 0 && uuid[2] == 0 && uuid[3] == 0)) {
+		struct ffa_partition_info *info;
+
+		info = (struct ffa_partition_info *)client->rx_buf;
+
+		info->id = trusty_sp.sp_id;
+		info->execution_ctx_count = PLATFORM_CORE_COUNT;
+		info->properties = trusty_sp.properties;
+
+		*ret2 = 1;
+		*ret3 = sizeof(info);
+		return 0;
+	}
+
+	return -ENOENT;
+}
+
+/**
  * trusty_ffa_rx_release - FFA_RX_RELEASE implementation.
  * @client:             Client state.
  *
@@ -1104,6 +1147,11 @@ uintptr_t spmd_ffa_smc_handler(uint32_t smc_fid,
 
 	case FFA_RX_RELEASE:
 		ret = trusty_ffa_rx_release(client);
+		break;
+
+	case FFA_PARTITION_INFO_GET:
+		ret = trusty_ffa_partition_info_get(client, w1, w2, w3, w4,
+						    &ret_reg2, &ret_reg3);
 		break;
 
 	case FFA_ID_GET:
