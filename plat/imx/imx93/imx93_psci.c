@@ -54,6 +54,7 @@
 #define DDR_RETENTION		(SRC_BASE + 0x58)
 #define DDR_RETENTION_A55_FLAG	BIT(0)
 #define DDR_RETENTION_M33_FLAG	BIT(1)
+#define DDR_RETENTION_PLL_LPM	BIT(2) /* PLL can use LPM mode when DDR is in retention, CM33 has configured its PLLs PLM setting */
 
 
 #define CORE_PWR_STATE(state) ((state)->pwr_domain_state[MPIDR_AFFLVL0])
@@ -67,6 +68,8 @@
 
 enum ccm_clock_root {
 	M33_ROOT = 3,
+	BUS_WAKUP_ROOT = 5,
+	BUS_AON_ROOT = 6,
 	WAKEUP_AXI_ROOT = 7,
 	CAN1_ROOT = 23,
 	CAN2_ROOT = 24,
@@ -131,7 +134,8 @@ static struct gpio_ctx wakeupmix_gpio_ctx[3] = {
 	GPIO_CTX(GPIO4_BASE | BIT(28), 28),
 };
 
-static uint32_t clock_root[4];
+static uint32_t clock_root[6];
+
 /*
  * Empty implementation of these hooks avoid setting the GICR_WAKER.Sleep bit
  * on ARM GICv3 implementations without LPI support.
@@ -672,6 +676,8 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 			clock_root[1] = mmio_read_32(CCM_ROOT_SLICE(WAKEUP_AXI_ROOT));
 			clock_root[2] = mmio_read_32(CCM_ROOT_SLICE(HSIO_CLK_ROOT));
 			clock_root[3] = mmio_read_32(CCM_ROOT_SLICE(NIC_CLK_ROOT));
+			clock_root[4] = mmio_read_32(CCM_ROOT_SLICE(BUS_WAKUP_ROOT));
+			clock_root[5] = mmio_read_32(CCM_ROOT_SLICE(BUS_AON_ROOT));
 
 			/* slow down WAKEUP AXI to rate / DIV5 */
 			mmio_clrsetbits_32(CCM_ROOT_SLICE(WAKEUP_AXI_ROOT), 0xff, 0x4);
@@ -680,6 +686,11 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 			mmio_clrbits_32(CCM_ROOT_SLICE(HSIO_CLK_ROOT), ROOT_MUX_MASK);
 
 			sema42_unlock(0);
+
+			if (mmio_read_32(DDR_RETENTION) & DDR_RETENTION_PLL_LPM) {
+				pll_pwr_down(true);
+			}
+
 		} else {
 			/*
 			 * for the A55 cluster, the cache disable/flushing is controlled by HW,
@@ -739,11 +750,15 @@ void imx_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 		gpc_rosc_off(false);
 		peripheral_qchannel_hsk(false);
 		if (is_m33_active()) {
+			pll_pwr_down(false);
+
 			sema42_lock(0);
 
 			mmio_write_32(CCM_ROOT_SLICE(WAKEUP_AXI_ROOT), clock_root[1]);
 			mmio_write_32(CCM_ROOT_SLICE(HSIO_CLK_ROOT), clock_root[2]);
 			mmio_write_32(CCM_ROOT_SLICE(NIC_CLK_ROOT), clock_root[3]);
+			mmio_write_32(CCM_ROOT_SLICE(BUS_WAKUP_ROOT), clock_root[4]);
+			mmio_write_32(CCM_ROOT_SLICE(BUS_AON_ROOT), clock_root[5]);
 
 			if (mmio_read_32(DDR_RETENTION) & DDR_RETENTION_M33_FLAG) {
 				dram_exit_retention();
