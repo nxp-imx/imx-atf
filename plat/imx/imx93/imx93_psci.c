@@ -500,10 +500,17 @@ void wakeupmix_pwr_up(void)
 		mmio_setbits_32(CCM_ROOT_SLICE(M33_ROOT), clock_root[0] & ROOT_MUX_MASK);
 		/* keep wakeupmix on when exit from system suspend */
 		src_mix_set_lpm(SRC_WKUP, 0x3, CM_MODE_SUSPEND);
+		mmio_clrbits_32(SRC_BASE + 0xc00 + 0x4, BIT(2));
 		trdc_w_reinit();
 		wakeupmix_qos_init();
 		gpio_restore(wakeupmix_gpio_ctx, 3);
 	}
+
+	/*
+	 * after wakeup, revert back to ‘true‘, so next time
+	 * evaluation for wakeupmix on/off can work well.
+	 */
+	no_wakeup_enabled = true;
 }
 
 int imx_validate_ns_entrypoint(uintptr_t ns_entrypoint)
