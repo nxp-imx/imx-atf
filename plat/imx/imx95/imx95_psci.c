@@ -94,36 +94,43 @@ static struct scmi_cpu_pd_info cpu_info[] = {
 		{
 		.cpu_id = IMX9_SCMI_CPU_A55C0,
 		.cpu_pd_id = SCMI_PWR_MIX_SLICE_IDX_A55C0,
+		.nmem = 1,
 		.cpu_mem_pd_id = (uint32_t []){SCMI_PWR_MEM_SLICE_IDX_A55C0},
 		},
 		{
 		.cpu_id = IMX9_SCMI_CPU_A55C1,
 		.cpu_pd_id = SCMI_PWR_MIX_SLICE_IDX_A55C1,
+		.nmem = 1,
 		.cpu_mem_pd_id = (uint32_t []){SCMI_PWR_MEM_SLICE_IDX_A55C1},
 		},
 		{
 		.cpu_id = IMX9_SCMI_CPU_A55C2,
 		.cpu_pd_id = SCMI_PWR_MIX_SLICE_IDX_A55C2,
+		.nmem = 1,
 		.cpu_mem_pd_id = (uint32_t []){SCMI_PWR_MEM_SLICE_IDX_A55C2},
 		},
 		{
 		.cpu_id = IMX9_SCMI_CPU_A55C3,
 		.cpu_pd_id = SCMI_PWR_MIX_SLICE_IDX_A55C3,
+		.nmem = 1,
 		.cpu_mem_pd_id = (uint32_t []){SCMI_PWR_MEM_SLICE_IDX_A55C3},
 		},
 		{
 		.cpu_id = IMX9_SCMI_CPU_A55C4,
 		.cpu_pd_id = SCMI_PWR_MIX_SLICE_IDX_A55C4,
+		.nmem = 1,
 		.cpu_mem_pd_id = (uint32_t []){SCMI_PWR_MEM_SLICE_IDX_A55C4},
 		},
 		{
 		.cpu_id = IMX9_SCMI_CPU_A55C5,
 		.cpu_pd_id = SCMI_PWR_MIX_SLICE_IDX_A55C5,
+		.nmem = 1,
 		.cpu_mem_pd_id = (uint32_t []){SCMI_PWR_MEM_SLICE_IDX_A55C5},
 		},
 		{
 		.cpu_id = IMX9_SCMI_CPU_A55P,
 		.cpu_pd_id = SCMI_PWR_MIX_SLICE_IDX_A55P,
+		.nmem = 1,
 		.cpu_mem_pd_id = (uint32_t []){SCMI_PWR_MEM_SLICE_IDX_A55L3},
 		}
 };
@@ -319,13 +326,12 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 				0},
 				{
 				SCMI_PWR_MIX_SLICE_IDX_NOC,
-				SCMI_CPU_PD_LPM_ON_RUN_WAIT_STOP,
+				SCMI_CPU_PD_LPM_ON_ALWAYS,
 				0},
 				{
 				SCMI_PWR_MIX_SLICE_IDX_WAKEUP,
 				SCMI_CPU_PD_LPM_ON_ALWAYS,
 				0}};
-
 		for (int i = 0; i < cpu_info[IMX95_A55P_IDX].nmem; i++) {
 			cpu_lpm_cfg[0].retentionmask |= (1 << cpu_info[IMX95_A55P_IDX].cpu_mem_pd_id[i]);
 		}
