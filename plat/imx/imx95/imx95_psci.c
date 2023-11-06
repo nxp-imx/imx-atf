@@ -16,6 +16,8 @@
 #include <drivers/arm/gicv3.h>
 #include "../drivers/arm/gic/v3/gicv3_private.h"
 
+#include <drivers/arm/css/scmi.h>
+
 #include <plat_imx8.h>
 #include <scmi_imx9.h>
 
@@ -409,12 +411,38 @@ void __dead2 imx_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state)
 
 void __dead2 imx_system_reset(void)
 {
+	int ret;
+
+	/* TODO: temp workaround for GIC to let reset done */
+	gicd_clr_ctlr(PLAT_GICD_BASE,
+		      CTLR_ENABLE_G0_BIT |
+		      CTLR_ENABLE_G1S_BIT |
+		      CTLR_ENABLE_G1NS_BIT,
+		      RWP_TRUE);
+
+	/* Force: work, Gracefull: not work */
+	ret = scmi_sys_pwr_state_set(imx95_scmi_handle,
+				     SCMI_SYS_PWR_FORCEFUL_REQ,
+				     SCMI_SYS_PWR_COLD_RESET);
+	if (ret) {
+		VERBOSE("%s failed: %d\n", __func__, ret);
+	}
+
 	while (true)
 		;
 }
 
 void __dead2 imx_system_off(void)
 {
+	int ret;
+
+	ret = scmi_sys_pwr_state_set(imx95_scmi_handle,
+				     SCMI_SYS_PWR_FORCEFUL_REQ,
+				     SCMI_SYS_PWR_SHUTDOWN);
+	if (ret) {
+		NOTICE("%s failed: %d\n", __func__, ret);
+	}
+
 	while (1)
 		;
 }
