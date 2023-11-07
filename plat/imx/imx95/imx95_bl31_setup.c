@@ -18,6 +18,7 @@
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/common/platform.h>
 
+#include <ele_api.h>
 #include <imx8_lpuart.h>
 #include <platform_def.h>
 #include <plat_imx8.h>
@@ -120,6 +121,9 @@ void bl31_platform_setup(void)
 	/* Ensure to mark the core as asleep, required for reset case. */
 	plat_gic_cpuif_disable();
 	plat_gic_init();
+
+	/* get soc info */
+	ele_get_soc_info();
 
 	extern void plat_imx95_setup(void);
 	plat_imx95_setup();
