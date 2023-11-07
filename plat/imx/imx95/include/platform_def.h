@@ -85,7 +85,7 @@
 #define TRDC_H_BASE			U(0x4c040000)
 #define TRDC_V_BASE			U(0x4c440000)
 
-#define ELE_MU_BASE			U(0x47520000)
+#define ELE_MU_BASE			U(0x47540000)
 
 #define TRDC_x_SISE			U(0x20000)
 

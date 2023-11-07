@@ -12,6 +12,8 @@
 #include <imx_sip_svc.h>
 #include <drivers/scmi-msg.h>
 
+#include <ele_api.h>
+
 static int32_t imx_sip_setup(void)
 {
 	return 0;
@@ -97,6 +99,10 @@ static uintptr_t imx_sip_handler(unsigned int smc_fid,
 	case IMX_SIP_SRC:
 		SMC_RET1(handle, imx_src_handler(smc_fid, x1, x2, x3, handle));
 		break;
+#endif
+#if defined(PLAT_imx95)
+	case IMX_SIP_GET_SOC_INFO:
+		return imx9_soc_info_handler(smc_fid, handle);
 #endif
 #if defined(PLAT_imx8qm) && defined(SPD_trusty)
 	case IMX_SIP_CONFIGURE_MEM_FOR_VPU:
