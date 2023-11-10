@@ -19,6 +19,7 @@
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/common/platform.h>
 
+#include <ele_api.h>
 #include <dram.h>
 #include <imx8_lpuart.h>
 #include <plat_common.h>
@@ -151,6 +152,9 @@ void bl31_plat_arch_setup(void)
 void bl31_platform_setup(void)
 {
 	generic_delay_timer_init();
+
+	/* get soc info */
+	ele_get_soc_info();
 
 	/* Init the dram info */
 	dram_info_init(SAVED_DRAM_TIMING_BASE);
