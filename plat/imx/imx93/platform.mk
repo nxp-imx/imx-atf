@@ -36,6 +36,7 @@ BL31_SOURCES		+=	plat/common/aarch64/crash_console_helpers.S   \
 				plat/imx/imx93/src.c			\
 				plat/imx/common/imx_sip_svc.c			\
 				plat/imx/common/imx_sip_handler.c			\
+				plat/imx/common/ele_api.c			\
 				lib/cpus/aarch64/cortex_a55.S			\
 				drivers/delay_timer/delay_timer.c		\
 				drivers/delay_timer/generic_delay_timer.c	\
