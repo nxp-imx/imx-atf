@@ -152,6 +152,9 @@ enum ccm_clock_root {
 };
 
 enum ccm_lpcg {
+	WDOG3_LPCG = 14,
+	WDOG4_LPCG = 15,
+	WDOG5_LPCG = 16,
 	MUB_LPCG = 20,
 	GPIO1_LPCG = 34,
 	GPIO2_LPCG = 35,
@@ -201,6 +204,8 @@ static struct gpio_ctx wakeupmix_gpio_ctx[3] = {
 };
 
 static uint32_t clock_root[6];
+/* context save/restore for wdog3-5 in wakeupmix */
+static uint32_t wdog_val[3][2];
 
 /*
  * Empty implementation of these hooks avoid setting the GICR_WAKER.Sleep bit
@@ -611,8 +616,56 @@ void gpio_restore(struct gpio_ctx *ctx, int port_num)
 	set_gpio_secure(false);
 }
 
+void wdog_save(uintptr_t base, uint32_t index)
+{
+	/* enable wdog clock */
+	mmio_write_32(LPCG(WDOG3_LPCG + index), 0x1);
+
+	/* save the CS & TOVAL regiter */
+	wdog_val[index][0] = mmio_read_32(base);
+	wdog_val[index][1] = mmio_read_32(base + 0x8);
+
+	mmio_write_32(LPCG(WDOG3_LPCG + index), 0x0);
+}
+
+void wdog_restore(uintptr_t base, uint32_t index)
+{
+	uint32_t cs, toval;
+
+	/* enable wdog clock */
+	mmio_write_32(LPCG(WDOG3_LPCG + index), 0x1);
+
+	cs = mmio_read_32(base);
+	toval = mmio_read_32(base + 0x8);
+
+	if (cs == wdog_val[index][0] &&
+	    toval == wdog_val[index][1]) {
+		return;
+	}
+
+	/* reconfig the CS */
+	mmio_write_32(base, wdog_val[index][0]);
+	/* set the tiemout value */
+	mmio_write_32(base + 0x8, wdog_val[index][1]);
+
+	/* wait for the lock status */
+	while((mmio_read_32(base) & BIT(11))) {
+		;
+	}
+
+	/* wait for the config done */
+	while(!(mmio_read_32(base) & BIT(10))) {
+		;
+	}
+
+	mmio_write_32(LPCG(WDOG3_LPCG + index), 0x0);
+}
+
 void wakeupmix_pwr_down(void)
 {
+	wdog_save(WDOG3_BASE, 0);
+	wdog_save(WDOG4_BASE, 1);
+	wdog_save(WDOG5_BASE, 2);
 	gpio_save(wakeupmix_gpio_ctx, 3);
 	if (no_wakeup_enabled) {
 		/* m33 root need to switch to 24M OSC when wakeupmix power down */
@@ -639,6 +692,9 @@ void wakeupmix_pwr_up(void)
 		trdc_w_reinit();
 		wakeupmix_qos_init();
 		gpio_restore(wakeupmix_gpio_ctx, 3);
+		wdog_restore(WDOG3_BASE, 0);
+		wdog_restore(WDOG4_BASE, 1);
+		wdog_restore(WDOG5_BASE, 2);
 	}
 
 	/*
@@ -726,7 +782,7 @@ void imx_pwr_domain_on_finish(const psci_power_state_t *target_state)
 	/* switch to GIC wakeup source */
 	mmio_setbits_32(IMX_GPC_BASE + A55C0_CMC_OFFSET + 0x800 * core_id + CM_MISC, IRQ_MUX);
 
-	if (boot_stage) { 
+	if (boot_stage) {
 		/* SRC MIX & MEM slice config for cores */
 		/* MEM LPM */
 		mmio_setbits_32(IMX_SRC_BASE + A55C0_MEM + 0x400 * core_id + 0x4, MEM_LP_EN);
