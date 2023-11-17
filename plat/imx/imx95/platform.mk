@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-ENABLE_SCMI_SM := 0
+ENABLE_SCMI_SM := 1
 
 PLAT_INCLUDES		:=	-Iplat/imx/common/include		\
 				-Iplat/imx/imx95/include		\
