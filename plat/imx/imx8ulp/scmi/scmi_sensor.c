@@ -1,8 +1,6 @@
 /*
  * Copyright 2021 NXP
  *
- * Peng Fan <peng.fan@nxp.com>
- *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
