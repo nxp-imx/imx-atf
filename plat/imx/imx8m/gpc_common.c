@@ -185,7 +185,7 @@ void imx_set_cluster_powerdown(unsigned int last_core, uint8_t power_state)
 {
 	uint32_t val;
 
-	if (!is_local_state_run(power_state)) {
+	if (is_local_state_off(power_state)) {
 		/* config C0~1's LPM, enable a53 clock off in LPM */
 		mmio_clrsetbits_32(IMX_GPC_BASE + LPCR_A53_BSC, A53_CLK_ON_LPM,
 			LPM_MODE(power_state));
