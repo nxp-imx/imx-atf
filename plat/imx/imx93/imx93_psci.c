@@ -128,7 +128,21 @@ struct plat_gic_ctx imx_gicv3_ctx;
 static uintptr_t secure_entrypoint;
 
 static bool boot_stage = true;
-static bool no_wakeup_enabled = true;
+
+/*
+ * GPC IRQ mask used to check if any the below interrupt is enabled
+ * as wakeup source;
+ *
+ * lpuart3-6: 68-70,flexcan2: 51, usdhc1: 86, usdhc2: 87; fec: 181,
+ * eqos: 183, usdhc3: 205, lpuart7: 210, lpaurt:211.
+ */
+static uint32_t wakeupmix_irq_mask[] = {
+	0x0, 0x80000, 0xC00000, 0xF0,
+	0x0, 0xA00000, 0xC2000, 0x0,
+	0x0
+};
+static bool gpio_wakeup;
+static bool has_wakeup_irq;
 
 static uint32_t gpio_ctrl_offset[GPIO_CTRL_REG_NUM] = { 0xc, 0x10, 0x14, 0x18, 0x1c, 0x40, 0x54, 0x58 };
 static struct gpio_ctx wakeupmix_gpio_ctx[3] = {
@@ -319,6 +333,14 @@ void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
 			irq_mask = 0xFFFFFFFF;
 		}
 
+		/*
+		 * if any of the non gpio is enabled, that means wakeupmix
+		 * should be keep on to make sure these irqs can wakeup system
+		 * successfully.
+		 */
+		if (irq_mask & wakeupmix_irq_mask[i]) {
+			has_wakeup_irq = true;
+		}
 		/* set the mask into core & cluster GPC IMR */
 		gpc_set_irq_mask(CPU_A55C0, i, irq_mask);
 		gpc_set_irq_mask(CPU_A55_PLAT, i, irq_mask);
@@ -442,7 +464,7 @@ void gpio_save(struct gpio_ctx *ctx, int port_num)
 
 			/* check if any gpio irq is enabled as wakeup source */
 			if (ctx->gpio_icr[j]) {
-				no_wakeup_enabled = false;
+				gpio_wakeup = true;
 			}
 		}
 
@@ -532,7 +554,7 @@ void wakeupmix_pwr_down(void)
 	wdog_save(WDOG4_BASE, 1);
 	wdog_save(WDOG5_BASE, 2);
 	gpio_save(wakeupmix_gpio_ctx, 3);
-	if (no_wakeup_enabled) {
+	if (!(gpio_wakeup || has_wakeup_irq)) {
 		/* m33 root need to switch to 24M OSC when wakeupmix power down */
 		clock_root[0] = mmio_read_32(CCM_ROOT_SLICE(M33_ROOT));
 		mmio_clrbits_32(CCM_ROOT_SLICE(M33_ROOT), ROOT_MUX_MASK);
@@ -549,7 +571,7 @@ void wakeupmix_pwr_down(void)
 
 void wakeupmix_pwr_up(void)
 {
-	if (no_wakeup_enabled) {
+	if (!(gpio_wakeup || has_wakeup_irq)) {
 		mmio_setbits_32(CCM_ROOT_SLICE(M33_ROOT), clock_root[0] & ROOT_MUX_MASK);
 		/* keep wakeupmix on when exit from system suspend */
 		src_mix_set_lpm(SRC_WKUP, 0x3, CM_MODE_SUSPEND);
@@ -563,10 +585,11 @@ void wakeupmix_pwr_up(void)
 	}
 
 	/*
-	 * after wakeup, revert back to ‘true‘, so next time
+	 * after wakeup, revert back to ‘false‘, so next time
 	 * evaluation for wakeupmix on/off can work well.
 	 */
-	no_wakeup_enabled = true;
+	has_wakeup_irq = false;
+	gpio_wakeup = false;
 }
 
 int imx_validate_ns_entrypoint(uintptr_t ns_entrypoint)
