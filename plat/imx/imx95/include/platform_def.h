@@ -40,11 +40,16 @@
 #define PLAT_GICD_BASE			U(0x48000000)
 #define PLAT_GICR_BASE			U(0x48060000)
 
-#define PLAT_VIRT_ADDR_SPACE_SIZE	(ULL(1) << 32)
-#define PLAT_PHY_ADDR_SPACE_SIZE	(ULL(1) << 32)
+#define PLAT_VIRT_ADDR_SPACE_SIZE	(ULL(1) << 36)
+#define PLAT_PHY_ADDR_SPACE_SIZE	(ULL(1) << 36)
 
+#ifdef SPD_trusty
+#define MAX_XLAT_TABLES			17
+#define MAX_MMAP_REGIONS		35
+#else
 #define MAX_XLAT_TABLES			14
 #define MAX_MMAP_REGIONS		32
+#endif
 
 #ifdef IMX_EMU
 #define IMX_LPUART_BASE			0x42570000
@@ -93,5 +98,8 @@
 #define MU_GCR_OFF			0x114
 
 #define COUNTER_FREQUENCY		24000000
+
+#define IMX_TRUSTY_STACK_SIZE 0x100
+#define TRUSTY_SHARED_MEMORY_OBJ_SIZE (12 * 1024)
 
 #endif /* platform_def.h */

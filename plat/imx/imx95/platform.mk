@@ -44,9 +44,18 @@ BL31_SOURCES		+=	drivers/arm/css/scmi/scmi_common.c		\
 				${IMX_GIC_SOURCES}				\
 				${XLAT_TABLES_LIB_SRCS}
 
+ifeq (${SPD},trusty)
+	BL31_SOURCES += plat/imx/common/ffa_shared_mem.c
+endif
+
 RESET_TO_BL31		:=	1
 HW_ASSISTED_COHERENCY	:= 	1
 USE_COHERENT_MEM	:=	0
 PROGRAMMABLE_RESET_ADDRESS := 1
 COLD_BOOT_SINGLE_CPU := 1
 ERRATA_A55_1530923 := 1
+
+BL32_BASE               ?=      0x8C000000
+BL32_SIZE               ?=      0x02000000
+$(eval $(call add_define,BL32_BASE))
+$(eval $(call add_define,BL32_SIZE))

@@ -23,6 +23,8 @@
 #include <platform_def.h>
 #include <plat_imx8.h>
 
+#define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
+
 extern void imx9_init_scmi_server();
 
 static const mmap_region_t imx_mmap[] = {
@@ -76,6 +78,21 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.pc = PLAT_NS_IMAGE_OFFSET;
 	bl33_image_ep_info.spsr = get_spsr_for_bl33_entry();
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
+
+#ifdef SPD_trusty
+	/* Populate entry point information for BL32 */
+	SET_PARAM_HEAD(&bl32_image_ep_info, PARAM_EP, VERSION_1, 0);
+	SET_SECURITY_STATE(bl32_image_ep_info.h.attr, SECURE);
+	bl32_image_ep_info.pc = BL32_BASE;
+	bl32_image_ep_info.spsr = 0;
+
+	/* Pass TEE base and size to bl33 */
+	bl33_image_ep_info.args.arg1 = BL32_BASE;
+	bl33_image_ep_info.args.arg2 = BL32_SIZE;
+
+	bl32_image_ep_info.args.arg0 = BL32_SIZE;
+	bl32_image_ep_info.args.arg1 = BL32_BASE;
+#endif
 }
 
 void bl31_plat_arch_setup(void)
@@ -105,6 +122,10 @@ void bl31_plat_arch_setup(void)
 		MT_MEMORY | MT_RW | MT_SECURE);
 	mmap_add_region(BL_CODE_BASE, BL_CODE_BASE, (BL_CODE_END - BL_CODE_BASE),
 		MT_MEMORY | MT_RO | MT_SECURE);
+
+#ifdef SPD_trusty
+	mmap_add_region(BL32_BASE, BL32_BASE, BL32_SIZE, MT_MEMORY | MT_RW);
+#endif
 
 	mmap_add(imx_mmap);
 
@@ -144,3 +165,11 @@ unsigned int plat_get_syscnt_freq2(void)
 {
 	return COUNTER_FREQUENCY;
 }
+
+#ifdef SPD_trusty
+void plat_trusty_set_boot_args(aapcs64_params_t *args) {
+	args->arg0 = BL32_SIZE;
+	args->arg1 = BL32_BASE;
+	args->arg2 = TRUSTY_PARAMS_LEN_BYTES;
+}
+#endif
