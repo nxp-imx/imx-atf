@@ -28,13 +28,9 @@
 #define PLAT_MAX_OFF_STATE		U(4)
 #define PLAT_MAX_RET_STATE		U(2)
 
-/* OCRAM region 128KB */
-#define BL31_BASE			U(0x204A0000)
-#define BL31_LIMIT			U(0x204c0000)
-
-#define IMX_SEPARATE_XLAT_TABLE 1
-#define IMX_SEPARATE_NOBITS_BASE    U(0x204C0000)
-#define IMX_SEPARATE_NOBITS_LIMIT   U(0x204D0000)
+/* DDR region 256KB */
+#define BL31_BASE			U(0x8A200000)
+#define BL31_LIMIT			U(0x8A240000)
 
 /* non-secure uboot base */
 /* TODO */
@@ -89,7 +85,7 @@
 
 #define TRDC_x_SISE			U(0x20000)
 
-#define SMT_BUFFER_BASE			U(0x204d6000)
+#define SMT_BUFFER_BASE			U(0x8A246000)
 #define SMT_BUFFER_SIZE			0x1000
 
 #define IMX95_SCMI_PAYLOAD_BASE		0x44221000
