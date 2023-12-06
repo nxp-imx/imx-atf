@@ -16,9 +16,10 @@
 #include "jobdesc.h"
 #include "sec_hw_specific.h"
 
+struct job_descriptor desc __aligned(CACHE_WRITEBACK_GRANULE);
 
 /* Callback function after Instantiation descriptor is submitted to SEC */
-static void rng_done(uint32_t *desc, uint32_t status, void *arg,
+static void rng_done(uint32_t *descr, uint32_t status, void *arg,
 		     void *job_ring)
 {
 	INFO("RNG Desc SUCCESS with status %x\n", status);
@@ -97,7 +98,6 @@ static void kick_trng(int ent_delay)
 static int instantiate_rng(void)
 {
 	int ret = 0;
-	struct job_descriptor desc __aligned(CACHE_WRITEBACK_GRANULE);
 	struct job_descriptor *jobdesc = &desc;
 
 	jobdesc->arg = NULL;
@@ -130,13 +130,12 @@ hw_rng_generate(uint32_t *add_input, uint32_t add_input_len,
 		uint8_t *out, uint32_t out_len, uint32_t state_handle)
 {
 	int ret = 0;
-	struct job_descriptor desc __aligned(CACHE_WRITEBACK_GRANULE);
 	struct job_descriptor *jobdesc = &desc;
 
 	jobdesc->arg = NULL;
 	jobdesc->callback = rng_done;
 
-#if defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
+#if defined(IMX_CAAM_ENABLE) || defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
 	inv_dcache_range((uintptr_t)out, out_len);
 	dmbsy();
 #endif
@@ -155,6 +154,11 @@ hw_rng_generate(uint32_t *add_input, uint32_t add_input_len,
 		ERROR("Error in running descriptor\n");
 		ret = -1;
 	}
+
+#if defined(IMX_CAAM_ENABLE) || defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
+	inv_dcache_range((uintptr_t)out, out_len);
+	dmbsy();
+#endif
 
 out:
 	return ret;
@@ -222,6 +226,12 @@ int get_rand_bytes_hw(uint8_t *bytes, int byte_len)
 	 *  then the hash_drbg will not already be instantiated.
 	 * Therefore, before generating data, instantiate the hash_drbg
 	 */
+#if defined(IMX_IMAGE_8Q)
+	/* ATF has no permission to operate the CAAM's universal registers on 8Q.
+	 * In addition to JR-specific registers
+	 */
+	state_handle = 0;
+#else
 	ret_code = is_hw_rng_instantiated(&state_handle);
 	if (ret_code == 0) {
 		INFO("Instantiating the HW RNG\n");
@@ -240,6 +250,7 @@ int get_rand_bytes_hw(uint8_t *bytes, int byte_len)
 		ERROR("HW RNG is in an Error state, and cannot be used\n");
 		return -1;
 	}
+#endif
 	/* Generate a random 256-bit value, as 32 bytes */
 	ret_code = hw_rng_generate(0, 0, bytes, byte_len, state_handle);
 	if (ret_code != 0) {

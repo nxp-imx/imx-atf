@@ -32,23 +32,33 @@ extern int g_job_rings_no;
 static inline void hw_set_input_ring_start_addr(struct jobring_regs *regs,
 						phys_addr_t *start_addr)
 {
+#if !defined(NXP_SEC_LE)
 #if defined(CONFIG_PHYS_64BIT)
 	sec_out32(&regs->irba_h, PHYS_ADDR_HI(start_addr));
 #else
 	sec_out32(&regs->irba_h, 0);
-#endif
+#endif  /* CONFIG_PHYS_64BIT */
 	sec_out32(&regs->irba_l, PHYS_ADDR_LO(start_addr));
+#else
+	sec_out32(&regs->irba_l, PHYS_ADDR_HI(start_addr));
+	sec_out32(&regs->irba_h, PHYS_ADDR_LO(start_addr));
+#endif  /* NXP_SEC_LE */
 }
 
 static inline void hw_set_output_ring_start_addr(struct jobring_regs *regs,
 						 phys_addr_t *start_addr)
 {
+#if !defined(NXP_SEC_LE)
 #if defined(CONFIG_PHYS_64BIT)
 	sec_out32(&regs->orba_h, PHYS_ADDR_HI(start_addr));
 #else
 	sec_out32(&regs->orba_h, 0);
-#endif
+#endif  /* CONFIG_PHYS_64BIT */
 	sec_out32(&regs->orba_l, PHYS_ADDR_LO(start_addr));
+#else
+	sec_out32(&regs->orba_l, PHYS_ADDR_HI(start_addr));
+	sec_out32(&regs->orba_h, PHYS_ADDR_LO(start_addr));
+#endif  /* NXP_SEC_LE */
 }
 
 /* ORJR - Output Ring Jobs Removed Register shows how many jobs were
@@ -445,7 +455,7 @@ int hw_poll_job_ring(struct sec_job_ring_t *job_ring, int32_t limit)
 	uintptr_t current_desc_addr;
 	phys_addr_t current_desc_loc;
 
-#if defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
+#if defined(IMX_CAAM_ENABLE) || defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
 	inv_dcache_range((uintptr_t)job_ring->register_base_addr, sizeof(struct jobring_regs));
 	dmbsy();
 #endif
@@ -479,7 +489,7 @@ int hw_poll_job_ring(struct sec_job_ring_t *job_ring, int32_t limit)
 
 	while (jobs_no_to_notify > notified_descs_no) {
 
-#if defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
+#if defined(IMX_CAAM_ENABLE) || defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
 		inv_dcache_range(
 			(uintptr_t)(&job_ring->output_ring[job_ring->cidx]),
 			sizeof(struct sec_outring_entry));

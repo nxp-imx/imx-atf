@@ -52,7 +52,7 @@ void *init_job_ring(uint8_t jr_mode,
 
 	dsb();
 
-#if defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
+#if defined(IMX_CAAM_ENABLE) || defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
 	flush_dcache_range((uintptr_t)(job_ring->input_ring),
 				       SEC_DMA_MEM_INPUT_RING_SIZE),
 	flush_dcache_range((uintptr_t)(job_ring->output_ring),
@@ -221,7 +221,7 @@ int enq_jr_desc(void *job_ring_handle, struct job_descriptor *jobdescr)
 
 	dsb();
 
-#if defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
+#if defined(IMX_CAAM_ENABLE) || defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
 	flush_dcache_range((uintptr_t)(&job_ring->input_ring[job_ring->pidx]),
 			   sizeof(phys_addr_t));
 

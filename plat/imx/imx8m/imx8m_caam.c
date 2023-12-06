@@ -9,6 +9,10 @@
 
 #include <imx8m_caam.h>
 
+#ifdef IMX_CAAM_ENABLE
+#include "caam.h"
+#endif
+
 #define HAB_JR0_DID	U(0x8011)
 
 void imx8m_caam_init(void)
@@ -45,4 +49,11 @@ void imx8m_caam_init(void)
 	sm_cmd = (1 << SMC_PAGE_SHIFT | 0 << SMC_PART_SHIFT |
 			SMC_CMD_ALLOC_PAGE);
 	mmio_write_32(SM_CMD, sm_cmd);
+
+#ifdef IMX_CAAM_ENABLE
+	/*
+	 * caam initialization
+	 */
+	sec_init(IMX_CAAM_BASE);
+#endif
 }

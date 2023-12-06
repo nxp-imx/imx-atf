@@ -12,14 +12,35 @@
 #include "sec_jr_driver.h"
 
 
+#if defined(IMX_IMAGE_8M)
+/* Job ring 0 is reserved for usage by sec firmware */
+#define DEFAULT_JR	0
+#elif defined(IMX_IMAGE_8Q)
+/* Job ring 3 is reserved for usage by sec firmware */
+#define DEFAULT_JR      3
+#elif defined(IMX_IMAGE_8ULP)
+/* Job ring 2 is reserved for usage by sec firmware */
+#define DEFAULT_JR	2
+#else
 /* Job ring 3 is reserved for usage by sec firmware */
 #define DEFAULT_JR	3
+#endif
 
-#if defined(CONFIG_CHASSIS_3_2) || defined(CONFIG_CHASSIS_3) || defined(CONFIG_CHASSIS_2)
+#if defined(CONFIG_CHASSIS_3_2) || defined(CONFIG_CHASSIS_3) || defined(CONFIG_CHASSIS_2) \
+	|| defined(IMX_IMAGE_8Q)
 #define CAAM_JR0_OFFSET			0x10000
 #define CAAM_JR1_OFFSET			0x20000
 #define CAAM_JR2_OFFSET			0x30000
 #define CAAM_JR3_OFFSET			0x40000
+#elif defined(IMX_IMAGE_8M)
+#define CAAM_JR0_OFFSET			0x1000
+#define CAAM_JR1_OFFSET			0x2000
+#define CAAM_JR2_OFFSET			0x3000
+#elif defined(IMX_IMAGE_8ULP)
+#define CAAM_JR0_OFFSET			0x1000
+#define CAAM_JR1_OFFSET			0x2000
+#define CAAM_JR2_OFFSET			0x3000
+#define CAAM_JR3_OFFSET			0x4000
 #endif
 
 enum sig_alg {

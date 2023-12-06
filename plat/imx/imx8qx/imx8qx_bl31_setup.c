@@ -30,6 +30,9 @@
 #include <sec_rsrc.h>
 #include <imx_sip_svc.h>
 #include <string.h>
+#ifdef IMX_CAAM_ENABLE
+#include "caam.h"
+#endif
 
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
 int data_section_restore_flag = 0x1;
@@ -491,6 +494,12 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 #endif
 #endif
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
+#ifdef IMX_CAAM_ENABLE
+	/*
+	 * caam initialization
+	 */
+	sec_init(IMX_CAAM_BASE);
+#endif
 }
 
 void bl31_plat_arch_setup(void)

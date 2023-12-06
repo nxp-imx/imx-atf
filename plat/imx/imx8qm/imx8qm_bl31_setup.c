@@ -33,6 +33,9 @@
 #if defined(SPD_trusty)
 #include <imx8qm_bl31_setup.h>
 #endif
+#if defined(IMX_CAAM_ENABLE)
+#include "caam.h"
+#endif
 
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
 int data_section_restore_flag = 0x1;
@@ -696,6 +699,12 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	cci_enable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(read_mpidr_el1()));
 #else
 	NOTICE("bl31_early_platform_setup: skipping cci_enable_snoop_dvm_reqs()\n");
+#endif
+#ifdef IMX_IMAGE_8Q
+	/*
+	 * caam initialization
+	 */
+	sec_init(IMX_CAAM_BASE);
 #endif
 }
 

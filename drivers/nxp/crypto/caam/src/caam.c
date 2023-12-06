@@ -30,6 +30,7 @@ uintptr_t get_caam_addr(void)
 	return g_nxp_caam_addr;
 }
 
+#if !defined(IMX_IMAGE_8Q)
 /* This function sets the TZ bit for the Job ring number passed as @num */
 static void config_tz(int num)
 {
@@ -52,15 +53,18 @@ static void config_tz(int num)
 		sec_out32(g_nxp_caam_addr + SEC_REG_JR2ICIDR_MS_OFFSET,
 			  jricid | JRICID_MS_TZ);
 		break;
+#if !defined(IMX_IMAGE_8M)
 	case 3:
 		jricid = sec_in32(g_nxp_caam_addr + SEC_REG_JR3ICIDR_MS_OFFSET);
 		sec_out32(g_nxp_caam_addr + SEC_REG_JR3ICIDR_MS_OFFSET,
 			  jricid | JRICID_MS_TZ);
 		break;
+#endif
 	default:
 		break;
 	}
 }
+#endif
 
 /* This function checks if Virtualization is enabled for JR and
  * accordingly sets the bot for starting JR<num> in JRSTARTR register
@@ -94,9 +98,11 @@ static inline void start_jr(int num)
 		case 2:
 			tmp |= JRSTARTR_STARTJR2;
 			break;
+#if !defined(IMX_IMAGE_8M)
 		case 3:
 			tmp |= JRSTARTR_STARTJR3;
 			break;
+#endif
 		default:
 			break;
 		}
@@ -122,9 +128,11 @@ static int configure_jr(int num)
 	case 2:
 		reg_base_addr = (void *)(g_nxp_caam_addr + CAAM_JR2_OFFSET);
 		break;
+#if !defined(IMX_IMAGE_8M)
 	case 3:
 		reg_base_addr = (void *)(g_nxp_caam_addr + CAAM_JR3_OFFSET);
 		break;
+#endif
 	default:
 		break;
 	}
@@ -136,7 +144,9 @@ static int configure_jr(int num)
 		return -1;
 	}
 
+#if !defined(IMX_IMAGE_8Q)
 	start_jr(num);
+#endif
 
 	/* Do HW configuration of the JR */
 	job_ring = init_job_ring(SEC_NOTIFICATION_TYPE_POLL, 0, 0,
@@ -171,6 +181,7 @@ int sec_init(uintptr_t nxp_caam_addr)
  * - Configures the default Job ring assigned to TZ /secure world
  * - Instantiates the RNG
  */
+#if !defined(IMX_IMAGE_8Q)
 int config_sec_block(void)
 {
 	int ret = 0;
@@ -229,6 +240,18 @@ int config_sec_block(void)
 
 	return ret;
 }
+#else
+/* ATF has no permission to operate the CAAM's universal registers on 8Q.
+ * In addition to JR-specific registers
+ */
+int config_sec_block(void)
+{
+	int ret = 0;
+
+	ret = configure_jr(DEFAULT_JR);
+	return ret;
+}
+#endif
 
 /* This function is used for sumbitting job to the Job Ring
  * [param] [in] - jobdesc to be submitted
@@ -248,7 +271,7 @@ int run_descriptor_jr(struct job_descriptor *jobdesc)
 	}
 	dsb();
 
-#if defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
+#if defined(IMX_CAAM_ENABLE) || defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
 	flush_dcache_range((uintptr_t)desc_addr, desc_len * 4);
 	dmbsy();
 	dsbsy();
