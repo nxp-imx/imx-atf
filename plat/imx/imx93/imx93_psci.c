@@ -329,6 +329,10 @@ void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
 		if (pdn) {
 			/* set the wakeup irq base GIC */
 			irq_mask = ~gicd_read_isenabler(gicd_base, 32 * (i + 1));
+			/* IRQ220 controlled by IMR6 should be enabled in system sleep mode */
+			if (i == 6U) {
+				irq_mask &= ~(1 << 28);
+			}
 		} else {
 			irq_mask = 0xFFFFFFFF;
 		}

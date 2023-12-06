@@ -13,6 +13,7 @@
 	.globl	plat_my_core_pos
 	.globl	plat_calc_core_pos
 	.globl	platform_mem_init
+	.globl  plat_reset_handler
 
 	/* ------------------------------------------------------
 	 * Helper macro that reads the part number of the current
@@ -72,3 +73,33 @@ endfunc plat_calc_core_pos
 func platform_mem_init
 	ret
 endfunc platform_mem_init
+
+func plat_reset_handler
+	/* check if IRQ22 is pending in GPC */
+	mov x0, #0x44470000
+	ldr w1, [x0, #0x968]
+	tbnz w1, #28, suspend
+	ret
+suspend:
+	/* clear the s401 halt_ack req */
+	mov x0, #0x444f0000
+	mov w1, #0x100
+	str w1, [x0, #0x134]
+	nop
+	nop
+	str wzr, [x0, #0x134]
+
+	/* enable core power down */
+	mrs	x0, CORTEX_A55_CPUPWRCTLR_EL1
+	orr	x0, x0, #CORTEX_A55_CORE_PWRDN_EN_MASK
+	msr	CORTEX_A55_CPUPWRCTLR_EL1, x0
+	isb
+
+	/* enable cluster power down */
+	mrs	x0, CLUSTERPWRDN_EL1
+	orr	x0, x0, #DSU_CLUSTER_PWR_OFF | BIT(1)
+	msr	CLUSTERPWRDN_EL1, x0
+	isb
+
+	wfi
+endfunc plat_reset_handler
