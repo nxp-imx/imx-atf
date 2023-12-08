@@ -38,6 +38,7 @@ static uint32_t cmc1_srie;
 
 /* TPM5: global timer */
 static uint32_t tpm5[3];
+static uint32_t tpm6[3];
 
 static uint32_t wdog3[2];
 
@@ -304,6 +305,20 @@ void tpm5_restore(void)
 	mmio_write_32(IMX_TPM5_BASE + 0x20, tpm5[2]);
 }
 
+void tpm6_save(void)
+{
+	tpm6[0] = mmio_read_32(0x29820010);
+	tpm6[1] = mmio_read_32(0x29820018);
+	tpm6[2] = mmio_read_32(0x29820020);
+}
+
+void tpm6_restore(void)
+{
+	mmio_write_32(0x29820010, tpm6[0]);
+	mmio_write_32(0x29820018, tpm6[1]);
+	mmio_write_32(0x29820020, tpm6[2]);
+}
+
 void wdog3_save(void)
 {
 	/* enable wdog3 clock */
@@ -498,6 +513,10 @@ void imx_apd_ctx_save(unsigned int proc_num)
 
 	tpm5_save();
 
+#if defined(IMX8ULP_TPM_TIMERS)
+	tpm6_save();
+#endif
+
 	lpuart_save();
 
 	/*
@@ -559,6 +578,10 @@ void imx_apd_ctx_restore(unsigned int proc_num)
 	iomuxc_restore();
 
 	tpm5_restore();
+
+#if defined(IMX8ULP_TPM_TIMERS)
+	tpm6_restore();
+#endif
 
 	xrdc_reinit();
 
