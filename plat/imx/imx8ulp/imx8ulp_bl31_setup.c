@@ -59,6 +59,13 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	mmio_write_32(IMX_PCC3_BASE + 0xd0, 0x92000000);
 	mmio_write_32(IMX_PCC3_BASE + 0xd0, 0xd2000000);
 
+#if defined(IMX8ULP_TPM_TIMERS)
+	/* config the TPM6 clock */
+	mmio_write_32(IMX_CGC1_BASE + 0x908, 0x3);
+	mmio_write_32(IMX_PCC4_BASE + 0x08, 0x93000000);
+	mmio_write_32(IMX_PCC4_BASE + 0x08, 0xd3000000);
+#endif
+
 	/* enable the GPIO D,E,F non-secure access by default */
 	mmio_write_32(IMX_PCC4_BASE + 0x78, 0xc0000000);
 	mmio_write_32(IMX_PCC4_BASE + 0x7c, 0xc0000000);

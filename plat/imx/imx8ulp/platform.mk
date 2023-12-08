@@ -84,6 +84,10 @@ ifdef IMX8ULP_DSL_SUPPORT
 $(eval $(call add_define,IMX8ULP_DSL_SUPPORT))
 endif
 
+ifdef IMX8ULP_TPM_TIMERS
+$(eval $(call add_define,IMX8ULP_TPM_TIMERS))
+endif
+
 ifeq (${SPD},trusty)
 	BL31_CFLAGS    +=      -DPLAT_XLAT_TABLES_DYNAMIC=1
 endif
