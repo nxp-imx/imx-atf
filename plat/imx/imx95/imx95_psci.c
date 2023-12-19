@@ -260,7 +260,7 @@ void imx_pwr_domain_on_finish(const psci_power_state_t *target_state)
 	uint32_t core_id = MPIDR_AFFLVL1_VAL(mpidr);
 
 	scmi_core_set_sleep_mode(imx95_scmi_handle, cpu_info[core_id].cpu_id,
-				 SCMI_GIC_WAKEUP, SCMI_CPU_SLEEP_RUN);
+				 SCMI_GIC_WAKEUP, SCMI_CPU_SLEEP_SUSPEND);
 
 	plat_gic_pcpu_init();
 	plat_gic_cpuif_enable();
@@ -300,27 +300,10 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 				       SCMI_CPU_VEC_FLAGS_RESUME);
 
 		plat_gic_cpuif_disable();
-
-		/*
-		 * Set core/custer to GIC wakeup source since NOCMIX is not
-		 * powered down, config the target mode to SUSPEND
-		 */
-		scmi_core_set_sleep_mode(imx95_scmi_handle,
-					 scmi_cpu_id[core_id], SCMI_GIC_WAKEUP,
-					 SCMI_CPU_SLEEP_SUSPEND);
 	}
 
 	/* do cluster level config */
 	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state))) {
-		/*
-		 * Set core/custer to GIC wakeup source since NOCMIX is not
-		 * powered down, config the target mode to SUSPEND
-		 */
-		scmi_core_set_sleep_mode(imx95_scmi_handle,
-					 scmi_cpu_id[IMX95_A55P_IDX],
-					 SCMI_GIC_WAKEUP,
-					 SCMI_CPU_SLEEP_SUSPEND);
-
 		/* config DSU for cluster power down */
 		val = read_clusterpwrdn();
 		val &= ~DSU_CLUSTER_PWR_MASK;
@@ -332,6 +315,7 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 
 		write_clusterpwrdn(val);
 	}
+
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
 		nocmix_pwr_down(core_id);
 		nocmix_pwr_down(IMX95_A55P_IDX);
@@ -408,10 +392,6 @@ void imx_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 
 	/* cluster level */
 	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state))) {
-		scmi_core_set_sleep_mode(imx95_scmi_handle,
-					 scmi_cpu_id[IMX95_A55P_IDX],
-					 SCMI_GIC_WAKEUP, SCMI_CPU_SLEEP_RUN);
-
 		/*
 		 * clear DSU cluster power down if cluster power off is
 		 * aborted by wakeup
@@ -424,10 +404,6 @@ void imx_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 
 	/* do core level */
 	if (is_local_state_off(CORE_PWR_STATE(target_state))) {
-		scmi_core_set_sleep_mode(imx95_scmi_handle,
-					 scmi_cpu_id[core_id],
-					 SCMI_GIC_WAKEUP, SCMI_CPU_SLEEP_RUN);
-
 		plat_gic_cpuif_enable();
 	}
 }
@@ -517,7 +493,7 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 		{
 			cpu_info[IMX95_A55P_IDX].cpu_pd_id,
 			SCMI_CPU_PD_LPM_ON_RUN_WAIT_STOP,
-			0
+			BIT_32(SCMI_PWR_MEM_SLICE_IDX_A55L3)
 		},
 		{
 			SCMI_PWR_MIX_SLICE_IDX_NOC,
@@ -536,6 +512,20 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			       cpu_info[IMX95_A55P_IDX].cpu_id,
 			       sizeof(cpu_lpm_cfg)/sizeof(struct scmi_lpm_config),
 			       cpu_lpm_cfg);
+
+	/*
+	 * Set core/custer to GIC wakeup source since NOCMIX is not
+	 * powered down, config the target mode to SUSPEND
+	 */
+	scmi_core_set_sleep_mode(imx95_scmi_handle, scmi_cpu_id[0],
+				 SCMI_GIC_WAKEUP, SCMI_CPU_SLEEP_SUSPEND);
+
+	/*
+	 * Set core/custer to GIC wakeup source since NOCMIX is not
+	 * powered down, config the target mode to SUSPEND
+	 */
+	scmi_core_set_sleep_mode(imx95_scmi_handle, scmi_cpu_id[IMX95_A55P_IDX],
+				 SCMI_GIC_WAKEUP, SCMI_CPU_SLEEP_SUSPEND);
 
 	*psci_ops = &imx_plat_psci_ops;
 
