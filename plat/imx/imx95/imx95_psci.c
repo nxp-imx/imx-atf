@@ -76,7 +76,7 @@
 #define SCMI_PWR_MEM_SLICE_IDX_HSIO          13U
 #define SCMI_PWR_MEM_SLICE_IDX_M7            14U
 #define SCMI_PWR_MEM_SLICE_IDX_NETC          15U
-#define SCMI_PWR_MEM_SLICE_IDX_NOC1          16U
+#define SCMI_PWR_MEM_SLICE_IDX_NOC_OCRAM     16U
 #define SCMI_PWR_MEM_SLICE_IDX_NOC2          17U
 #define SCMI_PWR_MEM_SLICE_IDX_NPU           18U
 #define SCMI_PWR_MEM_SLICE_IDX_VPU           19U
@@ -145,8 +145,13 @@ static uintptr_t secure_entrypoint;
 void imx_set_sys_wakeup(uint32_t last_core, bool pdn)
 {
 	uint32_t i;
-	uint32_t irq_mask[IMR_NUM];
-	uint32_t wakeup_src;
+	uint32_t irq_mask[IMR_NUM] = {
+		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff
+	};
+
+	uint32_t wakeup_flags;
 	uint32_t mode;
 	uintptr_t gicd_base = PLAT_GICD_BASE;
 
@@ -155,31 +160,40 @@ void imx_set_sys_wakeup(uint32_t last_core, bool pdn)
 		 * If NOCMIX power down, need to switch the primary core &
 		 * cluster wakeup source to GPC as GIC will be power down.
 		 */
-		wakeup_src = SCMI_GPC_WAKEUP;
+		wakeup_flags = SCMI_GPC_WAKEUP;
 		mode = SCMI_CPU_SLEEP_SUSPEND;
 	} else {
 		/* switch to GIC wakeup source for last_core and cluster */
-		wakeup_src = SCMI_GIC_WAKEUP;
+		wakeup_flags = SCMI_GIC_WAKEUP;
 		mode = SCMI_CPU_SLEEP_RUN;
 	}
+
+	/*
+	 * Set IRQ wakeup mask for last core. As a workaorund for HW bug all wakeup
+	 * interrupts are directed to the cluster
+	 */
+	scmi_core_Irq_wake_set(imx95_scmi_handle, cpu_info[last_core].cpu_id,
+			       0, IMR_NUM, irq_mask);
 
 	/* Set the GPC IMRs based on GIC IRQ mask setting */
 	for (i = 0; i < IMR_NUM; i++) {
 		if (pdn) {
-			/* set the wakeup irq base GIC */
+			/* set the wakeup irq based on GIC */
 			irq_mask[i] =
 				~gicd_read_isenabler(gicd_base, 32 * (i + 1));
-		} else {
-			irq_mask[i] = 0xFFFFFFFF;
 		}
 	}
-	/* Set IRQ wakeup mask for both last core and cluster. */
-	scmi_core_Irq_wake_set(imx95_scmi_handle, cpu_info[last_core].cpu_id,
+
+	/* Set IRQ wakeup mask for the cluster */
+	scmi_core_Irq_wake_set(imx95_scmi_handle, cpu_info[IMX95_A55P_IDX].cpu_id,
 			       0, IMR_NUM, irq_mask);
+
 
 	/* switch to GPC wakeup source, config the target mode to SUSPEND */
 	scmi_core_set_sleep_mode(imx95_scmi_handle, scmi_cpu_id[last_core],
-				 wakeup_src, mode);
+				 wakeup_flags | SCMI_RESUME_CPU, mode);
+	scmi_core_set_sleep_mode(imx95_scmi_handle, scmi_cpu_id[IMX95_A55P_IDX],
+				 wakeup_flags, mode);
 }
 
 void nocmix_pwr_down(uint32_t core_id)
@@ -277,6 +291,8 @@ void imx_pwr_domain_off(const psci_power_state_t *target_state)
 	};
 
 	plat_gic_cpuif_disable();
+	/* Ensure the cluster can be powered off. */
+	write_clusterpwrdn(DSU_CLUSTER_PWR_OFF);
 
 	/*
 	 * mask all the GPC IRQ wakeup to make sure no IRQ can wakeup this core
@@ -318,34 +334,21 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
 		nocmix_pwr_down(core_id);
-		nocmix_pwr_down(IMX95_A55P_IDX);
 		/*
-		 * Setup NOCMIX to power down when Linux suspends.
-		 * This is needs to be updated when wakeupmix can be powered
-		 * down too.
+		 * Setup NOC and WAKEUP MIX to power down when Linux suspends.
 		 */
 		struct scmi_lpm_config cpu_lpm_cfg[] = {
 			{
-				cpu_info[IMX95_A55P_IDX].cpu_pd_id,
-				SCMI_CPU_PD_LPM_ON_RUN_WAIT_STOP,
-				0
-			},
-			{
 				SCMI_PWR_MIX_SLICE_IDX_NOC,
-				SCMI_CPU_PD_LPM_ON_ALWAYS,
-				0
+				SCMI_CPU_PD_LPM_ON_RUN_WAIT_STOP,
+				BIT_32(SCMI_PWR_MEM_SLICE_IDX_NOC_OCRAM)
 			},
 			{
 				SCMI_PWR_MIX_SLICE_IDX_WAKEUP,
-				SCMI_CPU_PD_LPM_ON_ALWAYS,
+				SCMI_CPU_PD_LPM_ON_RUN_WAIT_STOP,
 				0
 			}
 		};
-
-		for (int i = 0; i < cpu_info[IMX95_A55P_IDX].nmem; i++) {
-			cpu_lpm_cfg[0].retentionmask |=
-				(1 << cpu_info[IMX95_A55P_IDX].cpu_mem_pd_id[i]);
-		}
 
 		/* Set the default LPM state for suspend/hotplug */
 		scmi_core_lpm_mode_set(imx95_scmi_handle,
@@ -363,14 +366,8 @@ void imx_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 
 	/* system level */
 	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
-		nocmix_pwr_up(IMX95_A55P_IDX);
 		nocmix_pwr_up(core_id);
 		struct scmi_lpm_config cpu_lpm_cfg[] = {
-			{
-				cpu_info[IMX95_A55P_IDX].cpu_pd_id,
-				SCMI_CPU_PD_LPM_ON_RUN_WAIT_STOP,
-				0
-			},
 			{
 				SCMI_PWR_MIX_SLICE_IDX_NOC,
 				SCMI_CPU_PD_LPM_ON_ALWAYS,

@@ -59,7 +59,7 @@
 
 #define SCMI_GPC_WAKEUP 			0
 #define SCMI_GIC_WAKEUP				1
-
+#define SCMI_RESUME_CPU				BIT(1)
 
 struct scmi_cpu_reset_addr_a2p {
 	uint32_t cpu_id;
