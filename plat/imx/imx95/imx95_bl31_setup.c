@@ -23,6 +23,9 @@
 #include <platform_def.h>
 #include <plat_imx8.h>
 
+#include <drivers/arm/gicv3.h>
+#include "../drivers/arm/gic/v3/gicv3_private.h"
+
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
 
 extern void imx9_init_scmi_server();
@@ -136,11 +139,21 @@ void bl31_plat_arch_setup(void)
 
 void bl31_platform_setup(void)
 {
+	uint32_t gicr_ctlr;
+	uintptr_t gicr_base;
+	int i;
+
 	generic_delay_timer_init();
 
 	plat_gic_driver_init();
 	/* Ensure to mark the core as asleep, required for reset case. */
 	plat_gic_cpuif_disable();
+	/* Clear LPIs */
+	for (i = 0; i < PLATFORM_CORE_COUNT; i++) {
+		gicr_base = gicv3_driver_data->rdistif_base_addrs[i];
+		gicr_ctlr = gicr_read_ctlr(gicr_base);
+		gicr_write_ctlr(gicr_base, gicr_ctlr & ~(GICR_CTLR_EN_LPIS_BIT));
+	}
 	plat_gic_init();
 
 	/* get soc info */
