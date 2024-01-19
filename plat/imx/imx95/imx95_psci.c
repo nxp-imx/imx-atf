@@ -308,7 +308,6 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 {
 	uint64_t mpidr = read_mpidr_el1();
 	uint32_t core_id = MPIDR_AFFLVL1_VAL(mpidr);
-	uint32_t val;
 
 	/* do cpu level config */
 	if (is_local_state_off(CORE_PWR_STATE(target_state))) {
@@ -320,19 +319,15 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 
 	/* do cluster level config */
 	if (!is_local_state_run(CLUSTER_PWR_STATE(target_state))) {
-		/* config DSU for cluster power down */
-		val = read_clusterpwrdn();
-		val &= ~DSU_CLUSTER_PWR_MASK;
-		val = DSU_CLUSTER_PWR_OFF;
 		/* L3 retention */
 		if (is_local_state_retn(CLUSTER_PWR_STATE(target_state))) {
-			val |= BIT(1);
+			write_clusterpwrdn(DSU_CLUSTER_PWR_OFF | BIT(1));
+		} else {
+			write_clusterpwrdn(DSU_CLUSTER_PWR_OFF);
 		}
-
-		write_clusterpwrdn(val);
 	}
 
-	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
+	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
 		nocmix_pwr_down(core_id);
 		/*
 		 * Setup NOC and WAKEUP MIX to power down when Linux suspends.
@@ -365,7 +360,7 @@ void imx_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 	uint32_t val;
 
 	/* system level */
-	if (is_local_state_retn(SYSTEM_PWR_STATE(target_state))) {
+	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
 		nocmix_pwr_up(core_id);
 		struct scmi_lpm_config cpu_lpm_cfg[] = {
 			{
@@ -412,9 +407,6 @@ void imx_get_sys_suspend_power_state(psci_power_state_t *req_state)
 	for (i = IMX_PWR_LVL0; i <= PLAT_MAX_PWR_LVL; i++) {
 		req_state->pwr_domain_state[i] = PLAT_MAX_OFF_STATE;
 	}
-
-	SYSTEM_PWR_STATE(req_state) = PLAT_MAX_RET_STATE;
-	CLUSTER_PWR_STATE(req_state) = PLAT_MAX_RET_STATE;
 }
 
 void __dead2 imx_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state)
