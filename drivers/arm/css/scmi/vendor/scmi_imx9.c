@@ -200,8 +200,54 @@ int scmi_core_lpm_mode_set(void *p, uint32_t cpu_id, uint32_t num_configs,
 
 	/* Get the return values */
 	SCMI_PAYLOAD_RET_VAL1(mbx_mem->payload, ret);
-	assert(mbx_mem->len == IMX9_SCMI_CORE_SETIRQWAKESET_RESP_LEN);
+	assert(mbx_mem->len == IMX9_SCMI_CORE_LPMMODESET_RESP_LEN);
 	assert(token == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
+
+	scmi_put_channel(ch);
+
+	return ret;
+}
+
+int scmi_per_lpm_mode_set(void *p, uint32_t cpu_id, uint32_t num_configs,
+		struct scmi_per_lpm_config *cfg)
+{
+	mailbox_mem_t *mbx_mem;
+	unsigned int token = 0;
+	int ret;
+	scmi_channel_t *ch = (scmi_channel_t *)p;
+	struct scmi_per_lpm_config *tmp = cfg;
+
+	validate_scmi_channel(ch);
+
+	scmi_get_channel(ch);
+
+	do {
+		mbx_mem = (mailbox_mem_t *)(ch->info->scmi_mbx_mem);
+		mbx_mem->msg_header = SCMI_MSG_CREATE(IMX9_SCMI_CORE_PROTO_ID,
+				IMX9_SCMI_PER_LPMMODESET_MSG, token);
+		mbx_mem->len = IMX9_SCMI_PER_LPMMODESET_MSG_LEN + (num_configs * sizeof(struct scmi_per_lpm_config));
+		mbx_mem->flags = SCMI_FLAG_RESP_POLL;
+		SCMI_PAYLOAD_ARG2(mbx_mem->payload, cpu_id, num_configs);
+
+		int j = 2;
+		for (int i = 0; i < num_configs; i++){
+			mmio_write_32((uintptr_t)&mbx_mem->payload[j++], cfg[i].perId);
+			mmio_write_32((uintptr_t)&mbx_mem->payload[j++], cfg[i].lpmSetting);
+		}
+		scmi_send_sync_command(ch);
+
+		/* Get the return values */
+		SCMI_PAYLOAD_RET_VAL1(mbx_mem->payload, ret);
+		assert(mbx_mem->len == IMX9_SCMI_PER_LPMMODESET_RESP_LEN);
+		assert(token == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
+
+		if (num_configs > MAX_PER_LPI_CONFIGS_PER_CMD) {
+			num_configs -= MAX_PER_LPI_CONFIGS_PER_CMD;
+			tmp += MAX_PER_LPI_CONFIGS_PER_CMD;
+		} else {
+			break;
+		}
+	}while(num_configs);
 
 	scmi_put_channel(ch);
 

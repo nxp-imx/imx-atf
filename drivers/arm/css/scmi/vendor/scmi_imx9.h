@@ -21,6 +21,30 @@
 #define SCMI_CPU_PD_LPM_ON_RUN_WAIT_STOP	3U
 #define SCMI_CPU_PD_LPM_ON_ALWAYS		4U
 
+#define CPU_PER_LPI_IDX_GPIO1 			0U
+#define CPU_PER_LPI_IDX_GPIO2 			1U
+#define CPU_PER_LPI_IDX_GPIO3 			2U
+#define CPU_PER_LPI_IDX_GPIO4 			3U
+#define CPU_PER_LPI_IDX_GPIO5 			4U
+#define CPU_PER_LPI_IDX_CAN1 			5U
+#define CPU_PER_LPI_IDX_CAN2 			6U
+#define CPU_PER_LPI_IDX_CAN3 			7U
+#define CPU_PER_LPI_IDX_CAN4 			8U
+#define CPU_PER_LPI_IDX_CAN5 			9U
+#define CPU_PER_LPI_IDX_LPUART1 		10U
+#define CPU_PER_LPI_IDX_LPUART2 		11U
+#define CPU_PER_LPI_IDX_LPUART3 		12U
+#define CPU_PER_LPI_IDX_LPUART4 		13U
+#define CPU_PER_LPI_IDX_LPUART5 		14U
+#define CPU_PER_LPI_IDX_LPUART6 		15U
+#define CPU_PER_LPI_IDX_LPUART7 		16U
+#define CPU_PER_LPI_IDX_LPUART8 		17U
+#define CPU_PER_LPI_IDX_WDOG3 			18U
+#define CPU_PER_LPI_IDX_WDOG4 			19U
+#define CPU_PER_LPI_IDX_WDOG5 			20U
+
+#define MAX_PER_LPI_CONFIGS_PER_CMD		9
+
 #define IMX9_SCMI_PERF_PROTO_ID			0x13
 
 #define IMX9_SCMI_CORE_PERFLEVELSET_MSG		0x7
@@ -53,6 +77,9 @@
 #define IMX9_SCMI_CORE_LPMMODESET_MSG_LEN	12
 #define IMX9_SCMI_CORE_LPMMODESET_RESP_LEN	8
 
+#define IMX9_SCMI_PER_LPMMODESET_MSG		0xB
+#define IMX9_SCMI_PER_LPMMODESET_MSG_LEN	12
+#define IMX9_SCMI_PER_LPMMODESET_RESP_LEN	8
 
 #define SCMI_CPU_VEC_FLAGS_BOOT			BIT(30)
 #define SCMI_CPU_VEC_FLAGS_RESUME		BIT(31)
@@ -101,6 +128,15 @@ struct scmi_cpu_pd_info {
 	uint32_t *cpu_mem_pd_id;
 };
 
+/*
+ * SCMI CPU peripheral LPM configuration
+ */
+struct scmi_per_lpm_config
+ {
+    uint32_t perId;
+    uint32_t lpmSetting;
+};
+
 int scmi_core_set_reset_addr(void *p, uint64_t reset_addr, uint32_t cpu_id, uint32_t attr);
 int scmi_core_start(void *p, uint32_t cpu_id);
 int scmi_core_stop(void *p, uint32_t cpu_id);
@@ -109,6 +145,8 @@ int scmi_core_Irq_wake_set(void *p, uint32_t cpu_id, uint32_t mask_idx,
 			   uint32_t num_mask, uint32_t *mask);
 int scmi_core_lpm_mode_set(void *p, uint32_t cpu_id, uint32_t num_configs,
 			   struct scmi_lpm_config *cfg);
+int scmi_per_lpm_mode_set(void *p, uint32_t cpu_id, uint32_t num_configs,
+			   struct scmi_per_lpm_config *cfg);
 int scmi_perf_mode_set(void *p, uint32_t domain_id, uint32_t perf_level);
 
 #endif /* SCMI_IMX9_H */

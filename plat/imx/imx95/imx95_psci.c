@@ -142,6 +142,76 @@ struct plat_gic_ctx imx_gicv3_ctx;
 /* platfrom secure warm boot entry */
 static uintptr_t secure_entrypoint;
 
+static struct qchannel_hsk_config {
+	const uint32_t per_idx;
+	const unsigned int wakeup_irq;
+	bool active_wakeup;
+} hsk_config[] = {
+	{ CPU_PER_LPI_IDX_CAN1, 8 },
+	{ CPU_PER_LPI_IDX_CAN2, 38 },
+	{ CPU_PER_LPI_IDX_CAN3, 40 },
+	{ CPU_PER_LPI_IDX_CAN4, 42 },
+	{ CPU_PER_LPI_IDX_CAN5, 44 },
+
+	{ CPU_PER_LPI_IDX_LPUART1, 19 },
+	{ CPU_PER_LPI_IDX_LPUART4, 65 },
+	{ CPU_PER_LPI_IDX_LPUART5, 66 },
+	{ CPU_PER_LPI_IDX_LPUART6, 67 },
+	{ CPU_PER_LPI_IDX_LPUART7, 68 },
+	{ CPU_PER_LPI_IDX_LPUART8, 69 },
+
+	{ CPU_PER_LPI_IDX_GPIO2},
+	{ CPU_PER_LPI_IDX_GPIO3},
+	{ CPU_PER_LPI_IDX_GPIO4},
+	{ CPU_PER_LPI_IDX_GPIO5},
+};
+
+static inline void is_wakeup_source(unsigned int gic_irq_mask, uint32_t idx)
+{
+	for (uint32_t i = 0; i < ARRAY_SIZE(hsk_config); i++) {
+		if (hsk_config[i].wakeup_irq && (idx == hsk_config[i].wakeup_irq / 32))
+			hsk_config[i].active_wakeup =
+						!(gic_irq_mask & ( 1 << hsk_config[i].wakeup_irq %32));
+	}
+}
+
+/*
+ * For peripherals like CANs, GPIOs & UARTs that need to support async wakeup
+ * when clock is gated, LPCGs of these IPs need to be changed to CPU LPM
+ * controlled, and for CANs &UARTs, we also need to make sure its ROOT clock
+ * slice is enabled.
+ */
+void peripheral_qchannel_hsk(bool en, uint32_t last_core)
+{
+	unsigned int i;
+	struct scmi_per_lpm_config per_lpm[ARRAY_SIZE(hsk_config)];
+	uint32_t num_hsks_enabled = 0;
+
+	for (i = 0; i < ARRAY_SIZE(hsk_config); i++) {
+		if (en) {
+			/* Only enable the qchannel handshake for active wakeup used by A55 */
+			if (!hsk_config[i].wakeup_irq) {
+				 hsk_config[i].active_wakeup = true;
+			}
+			if (hsk_config[i].active_wakeup) {
+				per_lpm[num_hsks_enabled].perId = hsk_config[i].per_idx;
+				per_lpm[num_hsks_enabled].lpmSetting = SCMI_CPU_PD_LPM_ON_RUN_WAIT_STOP;
+				num_hsks_enabled++;
+			} else {
+				hsk_config[i].active_wakeup = false;
+			}
+		} else if (hsk_config[i].active_wakeup) {
+			/* restore the initial config */
+			per_lpm[num_hsks_enabled].perId = hsk_config[i].per_idx;
+			per_lpm[num_hsks_enabled].lpmSetting = SCMI_CPU_PD_LPM_ON_ALWAYS;
+			num_hsks_enabled++;
+		}
+	}
+
+	scmi_per_lpm_mode_set(imx95_scmi_handle, scmi_cpu_id[last_core],
+			num_hsks_enabled, per_lpm);
+}
+
 void imx_set_sys_wakeup(uint32_t last_core, bool pdn)
 {
 	uint32_t i;
@@ -181,6 +251,7 @@ void imx_set_sys_wakeup(uint32_t last_core, bool pdn)
 			/* set the wakeup irq based on GIC */
 			irq_mask[i] =
 				~gicd_read_isenabler(gicd_base, 32 * (i + 1));
+			is_wakeup_source(irq_mask[i], i);
 		}
 	}
 
@@ -188,12 +259,14 @@ void imx_set_sys_wakeup(uint32_t last_core, bool pdn)
 	scmi_core_Irq_wake_set(imx95_scmi_handle, cpu_info[IMX95_A55P_IDX].cpu_id,
 			       0, IMR_NUM, irq_mask);
 
-
 	/* switch to GPC wakeup source, config the target mode to SUSPEND */
 	scmi_core_set_sleep_mode(imx95_scmi_handle, scmi_cpu_id[last_core],
 				 wakeup_flags | SCMI_RESUME_CPU, mode);
 	scmi_core_set_sleep_mode(imx95_scmi_handle, scmi_cpu_id[IMX95_A55P_IDX],
 				 wakeup_flags, mode);
+
+	/* Configure low power wakeup source interface */
+	peripheral_qchannel_hsk(pdn, IMX95_A55P_IDX);
 }
 
 void nocmix_pwr_down(uint32_t core_id)
