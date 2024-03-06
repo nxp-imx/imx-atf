@@ -17,6 +17,7 @@ USE_GIC_DRIVER=3
 GICV3_SUPPORT_GIC600  :=      1
 
 BL31_SOURCES		+=	drivers/arm/css/scmi/scmi_common.c		\
+				drivers/arm/css/scmi/scmi_base_proto.c		\
 				drivers/arm/css/scmi/scmi_pwr_dmn_proto.c	\
 				drivers/arm/css/scmi/scmi_sys_pwr_proto.c	\
 				drivers/delay_timer/delay_timer.c		\
@@ -38,6 +39,7 @@ BL31_SOURCES		+=	drivers/arm/css/scmi/scmi_common.c		\
 				plat/imx/imx9/common/aarch64/plat_helpers.S	\
 				plat/imx/imx9/common/plat_topology.c		\
 				plat/imx/imx9/imx95/imx95_bl31_setup.c		\
+				plat/imx/imx9/imx95/imx95_m7.c			\
 				plat/imx/imx9/imx95/imx95_psci.c		\
 				lib/cpus/aarch64/cortex_a55.S			\
 				${IMX_GIC_SOURCES}				\
