@@ -306,3 +306,45 @@ void imx_system_reset(void)
 		VERBOSE("%s failed: %d\n", __func__, ret);
 	}
 }
+
+int imx_system_reset2(int is_vendor, int reset_type, u_register_t cookie)
+{
+	int ret;
+
+	/* TODO: temp workaround for GIC to let reset done */
+	gicd_clr_ctlr(PLAT_GICD_BASE,
+		      CTLR_ENABLE_G0_BIT |
+		      CTLR_ENABLE_G1S_BIT |
+		      CTLR_ENABLE_G1NS_BIT,
+		      RWP_TRUE);
+
+	switch(reset_type) {
+	case PSCI_RESET2_SYSTEM_WARM_RESET:
+		/* Force: work, Gracefull: not work */
+		ret = scmi_sys_pwr_state_set(imx9_scmi_handle,
+					     SCMI_SYS_PWR_FORCEFUL_REQ,
+					     SCMI_SYS_PWR_WARM_RESET);
+		break;
+	case PSCI_RESET2_SYSTEM_COLD_RESET:
+		/* Force: work, Gracefull: not work */
+		ret = scmi_sys_pwr_state_set(imx9_scmi_handle,
+					     SCMI_SYS_PWR_FORCEFUL_REQ,
+					     SCMI_SYS_PWR_COLD_RESET);
+		break;
+	case PSCI_RESET2_SYSTEM_BOARD_RESET:
+		/* Force: work, Gracefull: not work */
+		ret = scmi_sys_pwr_state_set(imx9_scmi_handle,
+					     SCMI_SYS_PWR_FORCEFUL_REQ,
+					     SCMI_SYS_STATE_FULL_RESET);
+		break;
+	default:
+		ret = PSCI_E_INVALID_PARAMS;
+	}
+
+	if (ret) {
+		VERBOSE("%s failed: %d\n", __func__, ret);
+	}
+
+	while (true)
+		;
+}

@@ -101,6 +101,7 @@
 #define SCMI_SYS_PWR_WARM_RESET			0x2
 #define SCMI_SYS_PWR_POWER_UP			0x3
 #define SCMI_SYS_PWR_SUSPEND			0x4
+#define SCMI_SYS_STATE_FULL_RESET		0x80000002U
 
 /*
  * Macros to describe the bit-fields of the `attribute` of AP core protocol
