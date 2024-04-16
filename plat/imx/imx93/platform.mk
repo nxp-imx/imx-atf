@@ -6,6 +6,7 @@
 
 PLAT_INCLUDES		:=	-Iplat/imx/common/include		\
 				-Iplat/imx/imx93/include		\
+				-Iplat/imx/imx9/include		\
 				-Iplat/imx/common
 # Translation tables library
 include lib/xlat_tables_v2/xlat_tables.mk
