@@ -75,6 +75,14 @@ func platform_mem_init
 endfunc platform_mem_init
 
 func plat_reset_handler
+#if defined(PLAT_imx91)
+	/* set L3PCTL 4 lines to improve 91 performance */
+	mrs x0, CORTEX_A55_CPUECTLR_EL1
+	bic x0, x0, #0x1C00
+	orr x0, x0, #0x1800
+	msr CORTEX_A55_CPUECTLR_EL1, x0
+	isb
+#endif
 	/* check if IRQ22 is pending in GPC */
 	mov x0, #0x44470000
 	ldr w1, [x0, #0x968]
