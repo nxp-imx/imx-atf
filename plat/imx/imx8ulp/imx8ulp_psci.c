@@ -312,7 +312,6 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 		mmio_write_32(IMX_SIM1_BASE + 0x3c + 0x4 * cpu, 0x7fffffe3);
 	} else {
 		/* for core standby/retention mode */
-		mmio_write_32(IMX_CMC1_BASE + 0x50 + 0x4 * cpu, 0x1);
 		mmio_write_32(IMX_SIM1_BASE + 0x3c + 0x4 * cpu, 0x7fffffe3);
 		dsb();
 		write_scr_el3(read_scr_el3() | SCR_FIQ_BIT);
@@ -406,12 +405,6 @@ void imx_domain_suspend_finish(const psci_power_state_t *target_state)
 	while (mmio_read_32(DRAM_LPM_STATUS) != 0) {
 		;
 	}
-
-	/*
-	 * when resume from low power mode, need to delay for a while
-	 * before access the CMC register.
-	 */
-	udelay(5);
 
 	/* clear cluster's LPM setting. */
 	mmio_write_32(IMX_CMC1_BASE + 0x20, 0x0);
