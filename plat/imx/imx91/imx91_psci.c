@@ -163,9 +163,6 @@ static struct qchannel_hsk_config {
 	uint32_t lpcg_auth;
 	bool active_wakeup;
 } hsk_config[] = {
-	{ CAN1_LPCG, CAN1_ROOT, 8 },
-	{ CAN2_LPCG, CAN2_ROOT, 51 },
-
 	{ UART1_LPCG, UART1_ROOT, 19 },
 	{ UART2_LPCG, UART2_ROOT, 20 },
 	{ UART3_LPCG, UART3_ROOT, 68 },
