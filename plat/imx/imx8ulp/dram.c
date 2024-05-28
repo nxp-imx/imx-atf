@@ -25,11 +25,13 @@
 
 #define IMX_DDRC_BASE			U(0x2E060000)
 #define SAVED_DRAM_DATA_BASE		U(0x20055000)
+#define DENALI_CTL_137			U(0x224)
 #define DENALI_CTL_143			U(0x23C)
 #define DENALI_CTL_144			U(0x240)
 #define DENALI_CTL_146			U(0x248)
 #define LP_STATE_CS_IDLE		U(0x404000)
 #define LP_STATE_CS_PD_CG		U(0x4F4F00)
+#define DENALI_CTL_148			U(0x250)
 #define LPI_WAKEUP_EN_SHIFT		U(8)
 #define IMX_LPAV_SIM_BASE		0x2DA50000
 #define LPDDR_CTRL			0x14
@@ -125,7 +127,7 @@ struct dram_timing_info {
 #define PI_NUM		U(298)
 #define PHY_NUM		U(1654)
 #define PHY_DIFF_NUM	U(49)
-#define AUTO_LP_NUM	U(3)
+#define AUTO_LP_NUM	U(4)
 struct dram_cfg {
 	uint32_t ctl_cfg[CTL_NUM];
 	uint32_t pi_cfg[PI_NUM];
@@ -140,7 +142,7 @@ struct dram_cfg *dram_timing_cfg;
 /* mark if dram cfg is already saved */
 static bool dram_cfg_saved;
 static bool dram_auto_lp_true;
-static uint32_t dram_class, dram_ctl_143;
+static uint32_t dram_class;
 
 /* PHY register index for frequency diff */
 uint32_t freq_specific_reg_array[PHY_DIFF_NUM] = {
@@ -214,26 +216,24 @@ static void ddr_init(void)
 
 void dram_lp_auto_disable(void)
 {
-	uint32_t lp_auto_en;
+	uint32_t lp_auto_en, tmp;
 
 	dram_timing_cfg = (struct dram_cfg *)(SAVED_DRAM_DATA_BASE +
 					      sizeof(struct dram_timing_info));
-	lp_auto_en = (mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_146) & (LP_AUTO_ENTRY_EN << 24));
-	/* Save initial config */
-	dram_ctl_143 = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_143);
-
-	/* Set LPI_SRPD_LONG_MCCLK_GATE_WAKEUP_F2 to Maximum */
-	mmio_setbits_32(IMX_DDRC_BASE + DENALI_CTL_143, 0xF << 24);
+	lp_auto_en = (mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_146) & (0xF << 24));
 
 	if (lp_auto_en && !dram_auto_lp_true) {
 		/* 0.a Save DDRC auto low-power mode parameter */
-		dram_timing_cfg->auto_lp_cfg[0] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_144);
-		dram_timing_cfg->auto_lp_cfg[1] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_147);
-		dram_timing_cfg->auto_lp_cfg[2] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_146);
+		dram_timing_cfg->auto_lp_cfg[0] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_147);
+		dram_timing_cfg->auto_lp_cfg[1] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_148);
+		dram_timing_cfg->auto_lp_cfg[2] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_144);
+		dram_timing_cfg->auto_lp_cfg[3] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_146);
+		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_148, 0);
 		/* 0.b Disable DDRC auto low-power mode interface */
-		mmio_clrbits_32(IMX_DDRC_BASE + DENALI_CTL_146, LP_AUTO_ENTRY_EN << 24);
+		mmio_clrbits_32(IMX_DDRC_BASE + DENALI_CTL_146, 0xF << 24);
 		/* 0.c Read any location to get DRAM out of Self-refresh */
-		mmio_read_32(DEVICE2_BASE);
+		tmp = mmio_read_32(DEVICE2_BASE);
+		mmio_write_32(DEVICE2_BASE, tmp);
 		/* 0.d Confirm DRAM is out of Self-refresh */
 		while ((mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_146) &
 			LP_STATE_CS_PD_CG) != LP_STATE_CS_IDLE) {
@@ -248,11 +248,12 @@ void dram_lp_auto_disable(void)
 
 void dram_lp_auto_enable(void)
 {
-	/* restore ctl config */
-	mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_143, dram_ctl_143);
+	uint32_t tmp;
 
 	/* Switch back to Auto Low-power mode */
 	if (dram_auto_lp_true) {
+		tmp = mmio_read_32(DEVICE2_BASE);
+		mmio_write_32(DEVICE2_BASE, tmp);
 		/* 12.a Confirm DRAM is out of Self-refresh */
 		while ((mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_146) &
 			LP_STATE_CS_PD_CG) != LP_STATE_CS_IDLE) {
@@ -267,10 +268,12 @@ void dram_lp_auto_enable(void)
 		 * 12.d Reconfigure DENALI_CTL_144 [LPI_WAKEUP_EN[5:0]] bit
 		 * LPI_WAKEUP_EN[3] = 1b'1.
 		 */
-		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_144, dram_timing_cfg->auto_lp_cfg[0]);
-		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_147, dram_timing_cfg->auto_lp_cfg[1]);
+		/* 12.d Reconfigure DENALI_CTL_144 [LPI_WAKEUP_EN[5:0]] bit LPI_WAKEUP_EN[3] = 1b'1. */
+		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_147, dram_timing_cfg->auto_lp_cfg[0]);
+		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_148, dram_timing_cfg->auto_lp_cfg[1]);
+		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_144, dram_timing_cfg->auto_lp_cfg[2]);
 		/* 12.e Re-enable DDRC auto low-power mode interface */
-		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_146, dram_timing_cfg->auto_lp_cfg[2]);
+		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_146, dram_timing_cfg->auto_lp_cfg[3]);
 		/* dram low power mode flag */
 		dram_auto_lp_true = false;
 	}
@@ -365,6 +368,7 @@ void dram_enter_retention(void)
 			dram_timing_cfg->ctl_cfg[i] = mmio_read_32(IMX_DDRC_BASE + i * 4);
 		}
 		dram_timing_cfg->ctl_cfg[0] = dram_timing_cfg->ctl_cfg[0] & 0xFFFFFFFE;
+		dram_timing_cfg->ctl_cfg[144] = dram_timing_cfg->ctl_cfg[144] & 0xFFFFC0FF;
 
 		/* save the PI registers */
 		for (i = 0U; i < PI_NUM; i++) {
@@ -545,7 +549,6 @@ void dram_exit_retention(void)
 		mmio_setbits_32(IMX_DDRC_BASE + DENALI_PI_33, 0x10000); /* RDGATE */
 		mmio_setbits_32(IMX_DDRC_BASE + DENALI_PI_33, 0x100); /* RDQLVL */
 		mmio_setbits_32(IMX_DDRC_BASE + DENALI_PI_65, 0x10000); /* WDQLVL */
-
 		/* 11. Wait for trainings to get complete by polling PI_INT_STATUS */
 		while ((mmio_read_32(IMX_DDRC_BASE + DENALI_PI_77) & 0x07E00000) != 0x07E00000) {
 			;
@@ -647,13 +650,15 @@ int lpddr4_dfs(uint32_t freq_index)
 		upower_pmic_i2c_write(0x22, 0x28);
 	}
 
+	dram_lp_auto_disable();
+
 	/* Enable LPI_WAKEUP_EN */
 	ddr_ctl_144 = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_144);
 	mmio_setbits_32(IMX_DDRC_BASE + DENALI_CTL_144, LPI_WAKEUP_EN);
 
 	/* put DRAM into long self-refresh & clock gating */
 	lpddr_ctrl = mmio_read_32(AVD_SIM_LPDDR_CTRL);
-	lpddr_ctrl = (lpddr_ctrl & ~((0x3f << 15) | (0x3 << 9))) | (0x28 << 15) | (freq_index << 9);
+	lpddr_ctrl = (lpddr_ctrl & ~((0x3f << 15) | (0x3 << 9))) | (0x14 << 15) | (freq_index << 9);
 	mmio_write_32(AVD_SIM_LPDDR_CTRL, lpddr_ctrl);
 
 	/* Gating the clock */
@@ -682,7 +687,7 @@ int lpddr4_dfs(uint32_t freq_index)
 			mmio_clrsetbits_32(AVD_SIM_LPDDR_CTRL, SOC_FREQ_CHG_REQ, SOC_FREQ_CHG_ACK);
 			continue;
 		}
-	} while ((lpddr_ctrl & LPDDR_DONE) != 0); /* several try? */
+	} while (!(lpddr_ctrl & LPDDR_DONE)); /* several try? */
 
 	/* restore the original setting */
 	mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_144, ddr_ctl_144);
@@ -703,6 +708,9 @@ int lpddr4_dfs(uint32_t freq_index)
 	}
 
 	/* DFS done successfully */
+
+	dram_lp_auto_enable();
+
 	return 0;
 }
 
