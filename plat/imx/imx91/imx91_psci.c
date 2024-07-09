@@ -315,7 +315,7 @@ void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
 		 * should be keep on to make sure these irqs can wakeup system
 		 * successfully.
 		 */
-		if (irq_mask & wakeupmix_irq_mask[i]) {
+		if (~irq_mask & wakeupmix_irq_mask[i]) {
 			has_wakeup_irq = true;
 		}
 		/* set the mask into core & cluster GPC IMR */
