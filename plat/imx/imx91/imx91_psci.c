@@ -59,6 +59,7 @@
 	{.base = (addr), .pin_num = (num), }
 
 enum ccm_clock_root {
+	M33_ROOT = 3,
 	WAKEUP_AXI_ROOT = 7,
 	CAN1_ROOT = 23,
 	CAN2_ROOT = 24,
@@ -532,6 +533,9 @@ void wakeupmix_pwr_down(void)
 	wdog_save(WDOG5_BASE, 2);
 	gpio_save(wakeupmix_gpio_ctx, 3);
 	if (!(gpio_wakeup || has_wakeup_irq)) {
+		clock_root[0] = mmio_read_32(CCM_ROOT_SLICE(M33_ROOT));
+		mmio_clrbits_32(CCM_ROOT_SLICE(M33_ROOT), ROOT_MUX_MASK);
+
 		/* wakeup mix controlled by A55 cluster power down: domain3 only */
 		src_mix_set_lpm(SRC_WKUP, 0x3, CM_MODE_WAIT);
 		src_authen_config(SRC_WKUP, 0x8, 0x1);
@@ -545,6 +549,7 @@ void wakeupmix_pwr_down(void)
 void wakeupmix_pwr_up(void)
 {
 	if (!(gpio_wakeup || has_wakeup_irq)) {
+		mmio_setbits_32(CCM_ROOT_SLICE(M33_ROOT), clock_root[0] & ROOT_MUX_MASK);
 		/* keep wakeupmix on when exit from system suspend */
 		src_mix_set_lpm(SRC_WKUP, 0x3, CM_MODE_SUSPEND);
 		mmio_clrbits_32(SRC_BASE + 0xc00 + 0x4, BIT(2));
