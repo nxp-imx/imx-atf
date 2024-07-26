@@ -188,6 +188,8 @@ int ddr_swffc(struct dram_timing_info *info, unsigned int pstat)
 	if(pstat == cur_state)
 		return 0;
 
+	udelay(5);
+
 	ecc_en = !!(mmio_read_32(REG_ERR_EN) & ECC_EN);
 	less_533mts = info->fsp_table[cur_state] <= 533 ? true : false;
 
