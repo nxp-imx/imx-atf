@@ -387,6 +387,7 @@ void imx_domain_suspend(const psci_power_state_t *target_state)
 		mmio_write_32(IMX_SIM1_BASE + 0x3c + 0x4 * cpu,
 			      BIT(14) | BIT(17) | BIT(20) | BIT(26) | BIT(27) | BIT(8) | BIT(6));
 
+		mmio_write_32(IMX_CMC1_BASE + 0x50 + 0x4 * cpu, 0x1);
 		mmio_write_32(IMX_CMC1_BASE + 0x10, 0x7);
 		mmio_write_32(IMX_CMC1_BASE + 0x20, 0x3);
 
