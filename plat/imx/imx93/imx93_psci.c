@@ -137,9 +137,8 @@ static bool boot_stage = true;
  * eqos: 183, usdhc3: 205, lpuart7: 210, lpaurt:211.
  */
 static uint32_t wakeupmix_irq_mask[] = {
-	0x0, 0x80000, 0xC00000, 0xF0,
+	0x0, 0x80000, 0xC000F0, 0x0,
 	0x0, 0xA00000, 0xC2000, 0x0,
-	0x0
 };
 static bool gpio_wakeup;
 static bool has_wakeup_irq;
