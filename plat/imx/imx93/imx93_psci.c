@@ -564,7 +564,16 @@ void wakeupmix_pwr_down(void)
 
 		/* wakeup mix controlled by A55 cluster power down: domain3 only */
 		src_mix_set_lpm(SRC_WKUP, 0x3, CM_MODE_WAIT);
-		src_authen_config(SRC_WKUP, 0x8, 0x1);
+
+		/*
+		 * Keep wakeupmix voted by m33 lpm if m33 is enabled as m33 may
+		 * use resource from the it.
+		 */
+		if (is_m33_disabled()) {
+			src_authen_config(SRC_WKUP, 0x8, 0x1);
+		} else {
+			src_authen_config(SRC_WKUP, 0xc, 0x1);
+		}
 		/* wakeupmix mem off */
 		src_mem_lpm_en(SRC_WKUP_MEM, MEM_OFF);
 		/* enable the handshake between sentinel & wakeupmix */
