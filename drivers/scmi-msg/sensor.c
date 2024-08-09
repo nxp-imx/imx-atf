@@ -44,7 +44,7 @@ uint32_t plat_scmi_sensor_reg(unsigned int agent_id __unused,
 
 int32_t plat_scmi_sensor_reading_get(uint32_t agent_id __unused,
 				     uint16_t sensor_id __unused,
-				     uint32_t *val __unused)
+				     struct scmi_sensor_val *val __unused)
 {
 	if (sensor_ops.sensor_reading_get != NULL) {
 		return sensor_ops.sensor_reading_get(agent_id, sensor_id, val);
@@ -234,7 +234,7 @@ static void scmi_sensor_reading_get(struct scmi_msg *msg)
 	}
 
 	ret = plat_scmi_sensor_reading_get(msg->agent_id, sensor_id,
-					  (uint32_t *)&return_values.val);
+					   &return_values.val);
 	if (ret) {
 		scmi_status_response(msg, SCMI_HARDWARE_ERROR);
 		return;

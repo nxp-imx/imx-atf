@@ -97,7 +97,7 @@ typedef struct {
 	uint8_t (*sensor_max_request)(unsigned int agent_id);
 	uint32_t (*get_sensor_req)(unsigned int agent_id, unsigned int *addr);
 	int32_t (*sensor_reading_get)(uint32_t agent_id, uint16_t sensor_id,
-				      uint32_t *val);
+				      struct scmi_sensor_val *val);
 	uint32_t (*sensor_description_get)(unsigned int agent_id, uint16_t sensor_id,
 					  struct scmi_sensor_desc *desc);
 	uint32_t (*sensor_update_interval)(uint32_t agent_id, uint16_t sensor_id);
