@@ -68,4 +68,10 @@ void pwr_sys_init(void)
 	mmio_setbits_32(BLK_CTRL_S_BASE + HW_LP_HANDHSK, BIT(24) | BIT(23));
 	mmio_setbits_32(LPCG(3) + 0x10, BIT(13) | BIT (12));
 	mmio_setbits_32(LPCG(3) + 0x30, BIT(2));
+
+        /*Init wakeupmix and nocmix to always on by default */
+	mmio_write_32(SRC_SLICE(SRC_WKUP) + SRC_LPM_SETTING1, 0x44444444);
+	mmio_write_32(SRC_SLICE(SRC_WKUP) + SRC_LPM_SETTING2, 0x44444444);
+	mmio_write_32(SRC_SLICE(SRC_NIC) + SRC_LPM_SETTING1, 0x44444444);
+	mmio_write_32(SRC_SLICE(SRC_NIC) + SRC_LPM_SETTING2, 0x44444444);
 }
