@@ -12,6 +12,66 @@
 #include "scmi_imx9.h"
 #include <scmi_private.h>
 
+int scmi_lmm_shutdown(void *p, uint32_t lm_id, uint32_t flags)
+{
+	mailbox_mem_t *mbx_mem;
+	int ret;
+	scmi_channel_t *ch = (scmi_channel_t *)p;
+
+	validate_scmi_channel(ch);
+
+	scmi_get_channel(ch);
+
+	mbx_mem = (mailbox_mem_t *)(ch->info->scmi_mbx_mem);
+	mbx_mem->msg_header = SCMI_MSG_CREATE(IMX9_SCMI_LMM_PROTO_ID,
+					      IMX9_SCMI_LMM_SHUTDOWN_MSG, 0x0);
+	mbx_mem->len = IMX9_SCMI_LMM_SHUTDOWN_MSG_LEN;
+	mbx_mem->flags = SCMI_FLAG_RESP_POLL;
+
+	SCMI_PAYLOAD_ARG2(mbx_mem->payload, lm_id, flags);
+
+	scmi_send_sync_command(ch);
+
+	/* get return values */
+	SCMI_PAYLOAD_RET_VAL1(mbx_mem->payload, ret);
+	assert(mbx_mem->len == IMX9_SCMI_LMM_SHUTDOWN_RESP_LEN);
+	assert(0x0 == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
+
+	scmi_put_channel(ch);
+
+	return ret;
+}
+
+int scmi_lmm_boot(void *p, uint32_t lm_id)
+{
+	mailbox_mem_t *mbx_mem;
+	int ret;
+	scmi_channel_t *ch = (scmi_channel_t *)p;
+
+	validate_scmi_channel(ch);
+
+	scmi_get_channel(ch);
+
+	mbx_mem = (mailbox_mem_t *)(ch->info->scmi_mbx_mem);
+	mbx_mem->msg_header = SCMI_MSG_CREATE(IMX9_SCMI_LMM_PROTO_ID,
+					      IMX9_SCMI_LMM_BOOT_MSG, 0x0);
+	mbx_mem->len = IMX9_SCMI_LMM_BOOT_MSG_LEN;
+	mbx_mem->flags = SCMI_FLAG_RESP_POLL;
+
+	SCMI_PAYLOAD_ARG1(mbx_mem->payload, lm_id);
+
+	scmi_send_sync_command(ch);
+
+	/* get return values */
+	SCMI_PAYLOAD_RET_VAL1(mbx_mem->payload, ret);
+	assert(mbx_mem->len == IMX9_SCMI_LMM_BOOT_RESP_LEN);
+	assert(token == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
+
+	scmi_put_channel(ch);
+
+	return ret;
+}
+
 /*
  * API to set the SCMI AP core reset address and attributes
  */

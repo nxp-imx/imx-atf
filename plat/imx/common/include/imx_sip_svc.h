@@ -77,6 +77,10 @@ int imx_kernel_entry_handler(uint32_t smc_fid, u_register_t x1,
 
 #define IMX_SIP_HIFI_XRDC		0xC200000E
 
+#define IMX_SIP_LMM			0xC200000F
+#define IMX_SIP_LMM_BOOT		0x0
+#define IMX_SIP_LMM_SHUTDOWN		0x1
+
 #if defined(PLAT_imx8qm) && defined(SPD_trusty)
 #define IMX_SIP_CONFIGURE_MEM_FOR_VPU       0xC2000010
 #define IMX_SIP_GET_PARTITION_NUMBER        0xC2000011
@@ -156,6 +160,8 @@ int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 #endif
 #if defined(PLAT_imx95)
 int imx_src_handler(uint32_t smc_fid, u_register_t x1,
+		    u_register_t x2, u_register_t x3, void *handle);
+int imx_lmm_handler(uint32_t smc_fid, u_register_t x1,
 		    u_register_t x2, u_register_t x3, void *handle);
 #endif
 #endif /* __IMX_SIP_SVC_H__ */
