@@ -50,6 +50,14 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 	}
 
 	switch(x1) {
+	case IMX_SIP_SRC_M4_RESET_ADDR_SET:
+		ret = scmi_core_set_reset_addr(imx9_scmi_handle, x2,
+					       IMX9_SCMI_CPU_M7P,
+					       x3);
+		if (ret)
+			return ret;
+
+		break;
 	case IMX_SIP_SRC_M4_START:
 		ret = scmi_core_set_reset_addr(imx9_scmi_handle, x2,
 					       IMX9_SCMI_CPU_M7P,
