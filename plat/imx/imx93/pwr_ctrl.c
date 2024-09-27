@@ -74,4 +74,8 @@ void pwr_sys_init(void)
 	mmio_write_32(SRC_SLICE(SRC_WKUP) + SRC_LPM_SETTING2, 0x44444444);
 	mmio_write_32(SRC_SLICE(SRC_NIC) + SRC_LPM_SETTING1, 0x44444444);
 	mmio_write_32(SRC_SLICE(SRC_NIC) + SRC_LPM_SETTING2, 0x44444444);
+
+	/* Set the PMIC STBY OFF delay to 1.5ms by default */
+	mmio_clrsetbits_32(GPC_GLOBAL_BASE + PMIC_STBY_ACK_CTRL, 0xFFF << 16,
+			   0x31 << 16);
 }
