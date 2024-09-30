@@ -81,8 +81,6 @@ static struct trusty_cpu_ctx trusty_cpu_ctx[PLATFORM_CORE_COUNT];
 struct smc_args trusty_init_context_stack(void **sp, void *new_stack);
 struct smc_args trusty_context_switch_helper(void **sp, void *smc_params);
 
-static uint32_t current_vmid;
-
 static bool trusty_ctx_valid(struct trusty_cpu_ctx *ctx) {
 	return !!ctx->saved_sp;
 }
@@ -266,7 +264,6 @@ static uintptr_t trusty_smc_handler(uint32_t smc_fid,
 			 u_register_t flags)
 {
 	struct smc_args ret;
-	uint32_t vmid = 0U;
 	entry_point_info_t *ep_info = bl31_plat_get_next_image_ep_info(SECURE);
 
 	/*
@@ -313,21 +310,8 @@ static uintptr_t trusty_smc_handler(uint32_t smc_fid,
 				SMC_RET1(handle, SMC_UNK);
 			}
 
-			if (is_hypervisor_mode())
-				vmid = SMC_GET_GP(handle, CTX_GPREG_X7);
-
-			if ((current_vmid != 0) && (current_vmid != vmid)) {
-				/* This message will cause SMC mechanism
-				 * abnormal in multi-guest environment.
-				 * Change it to WARN in case you need it.
-				 */
-				VERBOSE("Previous SMC not finished.\n");
-				SMC_RET1(handle, SM_ERR_BUSY);
-			}
-			current_vmid = vmid;
 			ret = trusty_context_switch(NON_SECURE, smc_fid, x1,
 				x2, x3);
-			current_vmid = 0;
 			SMC_RET1(handle, ret.r0);
 		}
 	}
