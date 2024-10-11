@@ -48,6 +48,6 @@
 #define REG_AUTO_CG_CTRL	(DDRMIX_BLK_CTRL_BASE + 0x10)
 
 #define REG_ERR_EN              (DDRC_BASE_ADDR + 0x1000)
-#define ECC_EN			BIT(31)
+#define ECC_EN			BIT(30)
 
 #endif /*IMX_DDRC_H */
