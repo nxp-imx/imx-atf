@@ -28,7 +28,9 @@
 #include <drivers/arm/tzc380.h>
 #endif
 
+#if TRUSTY_SPM
 void trusty_shared_mem_init(const uuid_t *trusty_uuid);
+#endif
 
 /* Trusty UID: RFC-4122 compliant UUID version 4 */
 DEFINE_SVC_UUID2(trusty_uuid,
@@ -516,7 +518,9 @@ static int32_t trusty_setup(void)
 		VERBOSE("trusty: failed to register fiq handler, ret = %d\n", ret);
 	}
 
+#if TRUSTY_SPM
 	trusty_shared_mem_init(&trusty_uuid);
+#endif
 
 	if (aarch32) {
 		entry_point_info_t *ns_ep_info;
