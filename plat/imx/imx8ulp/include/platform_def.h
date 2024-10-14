@@ -106,7 +106,7 @@
 
 #define BL32_FDT_OVERLAY_ADDR		0x9d000000
 
-#define IMX_TRUSTY_STACK_SIZE 0x100
+#define IMX_TRUSTY_STACK_SIZE 0x200
 #define TRUSTY_SHARED_MEMORY_OBJ_SIZE (12 * 1024)
 
 /* system memory map define */

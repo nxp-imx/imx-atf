@@ -124,7 +124,7 @@
 
 #define COUNTER_FREQUENCY		24000000
 
-#define IMX_TRUSTY_STACK_SIZE 0x100
+#define IMX_TRUSTY_STACK_SIZE 0x200
 #define TRUSTY_SHARED_MEMORY_OBJ_SIZE (12 * 1024)
 
 #endif /* platform_def.h */
