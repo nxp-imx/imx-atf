@@ -80,6 +80,7 @@ static struct trusty_cpu_ctx trusty_cpu_ctx[PLATFORM_CORE_COUNT];
 
 struct smc_args trusty_init_context_stack(void **sp, void *new_stack);
 struct smc_args trusty_context_switch_helper(void **sp, void *smc_params);
+void trusty_clear_tfp(void);
 
 static bool trusty_ctx_valid(struct trusty_cpu_ctx *ctx) {
 	return !!ctx->saved_sp;
@@ -440,6 +441,11 @@ static void trusty_cpu_resume(uint32_t on)
 {
 	struct smc_args ret;
 
+	/*
+	 * The state of CPTR.TFP bit may be lost after suspend, clear it here
+	 * before any further operations which may touch fp registers.
+	 */
+	trusty_clear_tfp();
 	ret = trusty_context_switch(NON_SECURE, SMC_FC_CPU_RESUME, on, 0, 0);
 	if (ret.r0 != 0U) {
 		INFO("%s: cpu %d, SMC_FC_CPU_RESUME returned unexpected value, %" PRId64 "\n",

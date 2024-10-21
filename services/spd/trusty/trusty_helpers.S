@@ -67,3 +67,11 @@ func trusty_init_context_stack
 	str	x1, [x0]
 	ret
 endfunc trusty_init_context_stack
+
+	.global trusty_clear_tfp
+func trusty_clear_tfp
+	mrs x0, cptr_el3
+	bic w0, w0, #TFP_BIT
+	msr cptr_el3, x0
+	ret
+endfunc trusty_clear_tfp
