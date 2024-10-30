@@ -663,12 +663,14 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	 */
 	mx8_partition_resources();
 
+#ifdef IMX_CAAM_ENABLE
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_CAAM_JR3, SC_PM_PW_MODE_ON);
+	sc_pm_set_resource_power_mode(ipc_handle, SC_R_CAAM_JR3_OUT, SC_PM_PW_MODE_ON);
 #ifdef SPD_trusty
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_CAAM_JR2, SC_PM_PW_MODE_ON);
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_CAAM_JR2_OUT, SC_PM_PW_MODE_ON);
-	sc_pm_set_resource_power_mode(ipc_handle, SC_R_CAAM_JR3, SC_PM_PW_MODE_ON);
-	sc_pm_set_resource_power_mode(ipc_handle, SC_R_CAAM_JR3_OUT, SC_PM_PW_MODE_ON);
 	sc_pm_set_resource_power_mode(ipc_handle, SC_R_MU_4A, SC_PM_PW_MODE_ON);
+#endif
 #endif
 
 	bl33_image_ep_info.pc = PLAT_NS_IMAGE_OFFSET;
@@ -700,7 +702,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 #else
 	NOTICE("bl31_early_platform_setup: skipping cci_enable_snoop_dvm_reqs()\n");
 #endif
-#ifdef IMX_IMAGE_8Q
+#ifdef IMX_CAAM_ENABLE
 	/*
 	 * caam initialization
 	 */
