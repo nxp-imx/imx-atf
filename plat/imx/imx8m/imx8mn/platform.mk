@@ -122,7 +122,7 @@ $(eval $(call add_define,NXP_SEC_LE))
 IMX_CAAM_ENABLE		:=	1
 $(eval $(call add_define,IMX_CAAM_ENABLE))
 IMX_CAAM_32BIT		:=	1
-$(eval $(call add_define,32BIT))
+$(eval $(call add_define,IMX_CAAM_32BIT))
 IMX_IMAGE_8M		:=	1
 $(eval $(call add_define,IMX_IMAGE_8M))
 CACHE_WRITEBACK_GRANULE :=	64
