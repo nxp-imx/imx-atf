@@ -32,7 +32,7 @@
 
  /* Struct representing various job ring registers */
 struct jobring_regs {
-#ifdef NXP_SEC_BE
+#if defined(NXP_SEC_BE) || defined(IMX_CAAM_ENABLE)
 	unsigned int irba_h;
 	unsigned int irba_l;
 #else
@@ -45,7 +45,7 @@ struct jobring_regs {
 	unsigned int irsa;
 	unsigned int rsvd3;
 	unsigned int irja;
-#ifdef NXP_SEC_BE
+#if defined(NXP_SEC_BE)  || defined(IMX_CAAM_ENABLE)
 	unsigned int orba_h;
 	unsigned int orba_l;
 #else

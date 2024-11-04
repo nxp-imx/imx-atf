@@ -32,33 +32,23 @@ extern int g_job_rings_no;
 static inline void hw_set_input_ring_start_addr(struct jobring_regs *regs,
 						phys_addr_t *start_addr)
 {
-#if !defined(NXP_SEC_LE)
 #if defined(CONFIG_PHYS_64BIT)
 	sec_out32(&regs->irba_h, PHYS_ADDR_HI(start_addr));
 #else
 	sec_out32(&regs->irba_h, 0);
-#endif  /* CONFIG_PHYS_64BIT */
+#endif
 	sec_out32(&regs->irba_l, PHYS_ADDR_LO(start_addr));
-#else
-	sec_out32(&regs->irba_l, PHYS_ADDR_HI(start_addr));
-	sec_out32(&regs->irba_h, PHYS_ADDR_LO(start_addr));
-#endif  /* NXP_SEC_LE */
 }
 
 static inline void hw_set_output_ring_start_addr(struct jobring_regs *regs,
 						 phys_addr_t *start_addr)
 {
-#if !defined(NXP_SEC_LE)
 #if defined(CONFIG_PHYS_64BIT)
 	sec_out32(&regs->orba_h, PHYS_ADDR_HI(start_addr));
 #else
 	sec_out32(&regs->orba_h, 0);
-#endif  /* CONFIG_PHYS_64BIT */
+#endif
 	sec_out32(&regs->orba_l, PHYS_ADDR_LO(start_addr));
-#else
-	sec_out32(&regs->orba_l, PHYS_ADDR_HI(start_addr));
-	sec_out32(&regs->orba_h, PHYS_ADDR_LO(start_addr));
-#endif  /* NXP_SEC_LE */
 }
 
 /* ORJR - Output Ring Jobs Removed Register shows how many jobs were
