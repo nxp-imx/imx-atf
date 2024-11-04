@@ -32,6 +32,7 @@
 #define LP_STATE_CS_IDLE		U(0x404000)
 #define LP_STATE_CS_PD_CG		U(0x4F4F00)
 #define DENALI_CTL_148			U(0x250)
+#define DENALI_CTL_153			U(0x264)
 #define LPI_WAKEUP_EN_SHIFT		U(8)
 #define IMX_LPAV_SIM_BASE		0x2DA50000
 #define LPDDR_CTRL			0x14
@@ -126,8 +127,8 @@ struct dram_timing_info {
 #define CTL_NUM		U(680)
 #define PI_NUM		U(298)
 #define PHY_NUM		U(1654)
-#define PHY_DIFF_NUM	U(49)
-#define AUTO_LP_NUM	U(4)
+#define PHY_DIFF_NUM	U(117)
+#define AUTO_LP_NUM	U(5)
 struct dram_cfg {
 	uint32_t ctl_cfg[CTL_NUM];
 	uint32_t pi_cfg[PI_NUM];
@@ -145,12 +146,18 @@ static bool dram_auto_lp_true;
 static uint32_t dram_class;
 
 /* PHY register index for frequency diff */
-uint32_t freq_specific_reg_array[PHY_DIFF_NUM] = {
-90, 92, 93, 96, 97, 100, 101, 102, 103, 104, 114,
-346, 348, 349, 352, 353, 356, 357, 358, 359, 360,
-370, 602, 604, 605, 608, 609, 612, 613, 614, 615,
-616, 626, 858, 860, 861, 864, 865, 868, 869, 870,
-871, 872, 882, 1063, 1319, 1566, 1624, 1625
+uint32_t freq_specific_reg_array[PHY_DIFF_NUM]= {
+88, 89, 90, 92, 93, 96, 97, 100, 101, 102, 103, 104, 105,
+106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 344,
+345, 346, 348, 349, 352, 353, 356, 357, 358, 359, 360,
+361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371,
+600, 601, 602, 604, 605, 608, 609, 612, 613, 614, 615,
+616, 617, 618, 619, 620, 621, 622, 623, 624, 625, 626,
+627, 856, 857, 858, 860, 861, 864, 865, 868, 869, 870,
+871, 872, 873, 874, 875, 876, 877, 878, 879, 880, 881,
+882, 883, 1056, 1057, 1058, 1059, 1060, 1061, 1063,
+1312, 1313, 1314, 1315, 1316, 1317, 1319, 1566, 1624,
+1625, 1627, 1628, 1629, 1630, 1631, 1632, 1633, 1634
 };
 
 /* lock used for DDR DVFS */
@@ -224,10 +231,11 @@ void dram_lp_auto_disable(void)
 
 	if (lp_auto_en && !dram_auto_lp_true) {
 		/* 0.a Save DDRC auto low-power mode parameter */
-		dram_timing_cfg->auto_lp_cfg[0] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_147);
-		dram_timing_cfg->auto_lp_cfg[1] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_148);
-		dram_timing_cfg->auto_lp_cfg[2] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_144);
-		dram_timing_cfg->auto_lp_cfg[3] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_146);
+		dram_timing_cfg->auto_lp_cfg[0] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_153);
+		dram_timing_cfg->auto_lp_cfg[1] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_147);
+		dram_timing_cfg->auto_lp_cfg[2] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_148);
+		dram_timing_cfg->auto_lp_cfg[3] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_144);
+		dram_timing_cfg->auto_lp_cfg[4] = mmio_read_32(IMX_DDRC_BASE + DENALI_CTL_146);
 		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_148, 0);
 		/* 0.b Disable DDRC auto low-power mode interface */
 		mmio_clrbits_32(IMX_DDRC_BASE + DENALI_CTL_146, 0xF << 24);
@@ -269,11 +277,12 @@ void dram_lp_auto_enable(void)
 		 * LPI_WAKEUP_EN[3] = 1b'1.
 		 */
 		/* 12.d Reconfigure DENALI_CTL_144 [LPI_WAKEUP_EN[5:0]] bit LPI_WAKEUP_EN[3] = 1b'1. */
-		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_147, dram_timing_cfg->auto_lp_cfg[0]);
-		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_148, dram_timing_cfg->auto_lp_cfg[1]);
-		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_144, dram_timing_cfg->auto_lp_cfg[2]);
+		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_153, dram_timing_cfg->auto_lp_cfg[0]);
+		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_147, dram_timing_cfg->auto_lp_cfg[1]);
+		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_148, dram_timing_cfg->auto_lp_cfg[2]);
+		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_144, dram_timing_cfg->auto_lp_cfg[3]);
 		/* 12.e Re-enable DDRC auto low-power mode interface */
-		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_146, dram_timing_cfg->auto_lp_cfg[3]);
+		mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_146, dram_timing_cfg->auto_lp_cfg[4]);
 		/* dram low power mode flag */
 		dram_auto_lp_true = false;
 	}
@@ -511,11 +520,12 @@ void dram_exit_retention(void)
 	mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_25, 0x00020100);
 
 	/* PD disable */
-	mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_153, 0x04040000);
 	/*
 	 * 5. Disable automatic LP entry and PCPCS modes LP_AUTO_ENTRY_EN
 	 * to 1b'0, PCPCS_PD_EN to 1b'0
 	 */
+	mmio_write_32(IMX_DDRC_BASE + DENALI_CTL_153, 0x04040101);
+	/* 5. Disable automatic LP entry and PCPCS modes LP_AUTO_ENTRY_EN to 1b'0, PCPCS_PD_EN to 1b'0 */
 
 	upwr_xcp_set_ddr_retention(APD_DOMAIN, 0, NULL);
 	upower_wait_resp();
