@@ -222,6 +222,8 @@ void imx8_partition_resources(void)
 
 #if defined(SPD_trusty)
 	sc_rm_pt_t dpu_part;
+	sc_rm_mr_t mr_drm = 64;
+	sc_rm_mr_t mr_vpu = 64;
 #endif
 
 	uint32_t cpu_id, cpu_rev = 0x1; /* Set Rev B as default */
@@ -273,6 +275,36 @@ void imx8_partition_resources(void)
 		ERROR("set parent for dpu part failed err=%d\n",err);
 	/* end */
 	global_dpu_part = dpu_part;
+
+	err = sc_rm_find_memreg(ipc_handle, &mr_drm, SECURE_HEAP_BASE, SECURE_HEAP_BASE + SECURE_HEAP_LIMIT - 1);
+	if (err) {
+		ERROR("secure memory region find failed err=%d\n",err);
+	} else {
+		NOTICE("find secure memory region %u\n", mr_drm);
+		// frag it from mr
+		err = sc_rm_memreg_frag(ipc_handle, &mr, SECURE_HEAP_BASE, SECURE_HEAP_BASE + SECURE_HEAP_LIMIT - 1);
+		if (err) {
+			ERROR("frag secure memory failed err=%d\n", err);
+		} else {
+			mr_drm = mr;
+		}
+
+	}
+
+	err = sc_rm_find_memreg(ipc_handle, &mr_vpu, VPU_FIRMWARE_BASE, VPU_FIRMWARE_BASE + VPU_FIRMWARE_LIMIT - 1);
+	if (err) {
+		ERROR("vpu memory region find failed err=%d\n",err);
+	} else {
+		NOTICE("find vpu memory %u\n", mr_drm);
+		// frag it from mr
+		err = sc_rm_memreg_frag(ipc_handle, &mr, VPU_FIRMWARE_BASE, VPU_FIRMWARE_BASE + VPU_FIRMWARE_LIMIT - 1);
+		if (err) {
+			ERROR("frag vpu memory failed err=%d\n", err);
+		} else {
+			mr_vpu = mr;
+		}
+
+	}
 #endif
 
 	for (mr = 0; mr < 64; mr++) {
@@ -290,6 +322,11 @@ void imx8_partition_resources(void)
 #if defined(SPD_opteed) || defined(SPD_trusty)
 				else if (BL32_BASE >= start && (BL32_LIMIT -1) <= end) {
 					mr_tee = mr;
+				}
+#endif
+#if defined(SPD_trusty)
+				else if ((mr == mr_drm) || (mr == mr_vpu)){
+					continue;
 				}
 #endif
 				else if (cpu_rev >= 1 && 0 >= start && (OCRAM_BASE + OCRAM_ALIAS_SIZE - 1) <= end) {
