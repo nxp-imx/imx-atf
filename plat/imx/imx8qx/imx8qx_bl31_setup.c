@@ -33,6 +33,9 @@
 #ifdef IMX_CAAM_ENABLE
 #include "caam.h"
 #endif
+#if defined(SPD_trusty)
+#include <imx8qx_bl31_setup.h>
+#endif
 
 #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
 int data_section_restore_flag = 0x1;
@@ -43,6 +46,12 @@ IMPORT_SYM(unsigned long, __DATA_END__, BL31_DATA_END);
 
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
+
+#if defined(SPD_trusty)
+int mem_region_owned_os_part[64] = {0};
+int index = 0;
+sc_rm_pt_t global_dpu_part = 0, global_os_part = 0;
+#endif
 
 /* Default configuration for i.MX8QM/QXP MEK */
 #if defined(IMX_USE_UART0)
@@ -210,6 +219,11 @@ void imx8_partition_resources(void)
 	bool mr_tee_atf_same = false;
 	sc_faddr_t reg_start;
 #endif
+
+#if defined(SPD_trusty)
+	sc_rm_pt_t dpu_part;
+#endif
+
 	uint32_t cpu_id, cpu_rev = 0x1; /* Set Rev B as default */
 
 	if (imx_get_cpu_rev(&cpu_id, &cpu_rev) != 0)
@@ -218,9 +232,14 @@ void imx8_partition_resources(void)
 	err = sc_rm_get_partition(ipc_handle, &secure_part);
 	if (err)
 		ERROR("sc_rm_get_partition failed: %u\n", err);
-
+#if defined(SPD_trusty)
+	err = sc_rm_partition_alloc(ipc_handle, &os_part, false, false,
+		false, true, false);
+	global_os_part = os_part;
+#else
 	err = sc_rm_partition_alloc(ipc_handle, &os_part, false, false,
 		false, false, false);
+#endif
 	if (err)
 		ERROR("sc_rm_partition_alloc failed: %u\n", err);
 
@@ -242,6 +261,20 @@ void imx8_partition_resources(void)
 	 * sc_rm_set_memreg_permissions
 	 * sc_rm_set_pin_movable
 	 */
+#if defined(SPD_trusty)
+	/* allocate dpu parition */
+	err = sc_rm_partition_alloc(ipc_handle, &dpu_part, false, true,
+				false, true, false);
+	if (err)
+		ERROR("dpu part allocate failed err=%d\n",err);
+
+	err = sc_rm_set_parent(ipc_handle, dpu_part, secure_part);
+	if (err)
+		ERROR("set parent for dpu part failed err=%d\n",err);
+	/* end */
+	global_dpu_part = dpu_part;
+#endif
+
 	for (mr = 0; mr < 64; mr++) {
 		owned = sc_rm_is_memreg_owned(ipc_handle, mr);
 		if (owned) {
@@ -264,8 +297,17 @@ void imx8_partition_resources(void)
 				}
 				else {
 					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+#if defined(SPD_trusty)
+					if (err) {
+						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 ", err %d\n", start, end, err);
+					} else {
+						mem_region_owned_os_part[index] = mr;
+						index++;
+					}
+#else
 					if (err)
 						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 ", err %d\n", start, end, err);
+#endif
 				}
 			}
 		}
@@ -283,8 +325,17 @@ void imx8_partition_resources(void)
 					ERROR("sc_rm_memreg_frag failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL32_LIMIT, end);
 				} else {
 					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+#if defined(SPD_trusty)
+					if (err) {
+						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL32_LIMIT, end);
+					} else {
+						mem_region_owned_os_part[index] = mr;
+						index++;
+					}
+#else
 					if (err)
 						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL32_LIMIT, end);
+#endif
 				}
 			}
 
@@ -294,8 +345,17 @@ void imx8_partition_resources(void)
 					ERROR("sc_rm_memreg_frag failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", start, (sc_faddr_t)BL32_BASE - 1);
 				} else {
 					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+#if defined(SPD_trusty)
+					if (err) {
+						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", start, (sc_faddr_t)BL32_BASE - 1);
+					} else {
+						mem_region_owned_os_part[index] = mr;
+						index++;
+					}
+#else
 					if (err)
 						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", start, (sc_faddr_t)BL32_BASE - 1);
+#endif
 				}
 			}
 		}
@@ -322,8 +382,17 @@ void imx8_partition_resources(void)
 					ERROR("sc_rm_memreg_frag failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL31_LIMIT, reg_end);
 				} else {
 					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+#if defined(SPD_trusty)
+					if (err) {
+						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL31_LIMIT, reg_end);
+					} else {
+						mem_region_owned_os_part[index] = mr;
+						index++;
+					}
+#else
 					if (err)
 						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)BL31_LIMIT, reg_end);
+#endif
 				}
 			}
 #if defined(SPD_opteed) || defined(SPD_trusty)
@@ -335,8 +404,17 @@ void imx8_partition_resources(void)
 						ERROR("sc_rm_memreg_frag failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", reg_start, reg_end);
 					} else {
 						err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+#if defined(SPD_trusty)
+						if (err) {
+							ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", reg_start, reg_end);
+						} else {
+							mem_region_owned_os_part[index] = mr;
+							index++;
+						}
+#else
 						if (err)
 							ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", reg_start, reg_end);
+#endif
 					}
 				}
 			}
@@ -348,9 +426,19 @@ void imx8_partition_resources(void)
 					ERROR("sc_rm_memreg_frag failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
 						start, (sc_faddr_t)BL31_BASE - 1);
 				err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+#if defined(SPD_trusty)
+				if (err) {
+					ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
+					start, (sc_faddr_t)BL31_BASE - 1);
+				} else {
+					mem_region_owned_os_part[index] = mr;
+					index++;
+				}
+#else
 				if (err)
 					ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n",
 						start, (sc_faddr_t)BL31_BASE - 1);
+#endif
 			}
 		}
 	}
@@ -367,8 +455,17 @@ void imx8_partition_resources(void)
 					ERROR("sc_rm_memreg_frag failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
 				} else {
 					err = sc_rm_assign_memreg(ipc_handle, os_part, mr);
+#if defined(SPD_trusty)
+					if (err) {
+						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
+					} else {
+						mem_region_owned_os_part[index] = mr;
+						index++;
+					}
+#else
 					if (err)
 						ERROR("Memreg assign failed, 0x%" PRIx64 " -- 0x%" PRIx64 "\n", (sc_faddr_t)OCRAM_BASE + OCRAM_ALIAS_SIZE, reg_end);
+#endif
 				}
 			}
 		}
@@ -408,11 +505,45 @@ void imx8_partition_resources(void)
 				ret %u\n", ns_access_allowed[i], err);
 	}
 
+#if defined(SPD_trusty)
+	/* configure normal memory to dpu part */
+	for (i = 0; i < index; i++) {
+		err = sc_rm_set_memreg_permissions(ipc_handle, mem_region_owned_os_part[i], dpu_part, SC_RM_PERM_FULL);
+		if (err)
+			ERROR("configure normal memory permission for dpu part failed err=%d\n",err);
+	}
+#endif
 	if (err)
 		NOTICE("Partitioning Failed\n");
 	else
 		NOTICE("Non-secure Partitioning Succeeded\n");
 }
+
+#if defined(SPD_trusty)
+int configure_memory_region_owned_by_os_part(int vpu_part) {
+	int i ;
+	sc_err_t err;
+	for (i = 0; i < index; i++) {
+		err = sc_rm_set_memreg_permissions(ipc_handle, mem_region_owned_os_part[i], vpu_part, SC_RM_PERM_FULL);
+		if (err) {
+			ERROR("set normal memory permission for vpu part err=%d\n",err);
+			return err;
+		}
+	}
+	return 0;
+}
+
+int get_partition_number(int* os_part, int* dpu_part) {
+	if ((global_os_part != 0) && (global_dpu_part != 0)) {
+		*os_part = global_os_part;
+		*dpu_part = global_dpu_part;
+		return 0;
+	} else {
+		ERROR("Get DPU and OS partition number failed\n");
+		return -1;
+	}
+}
+#endif
 
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 				u_register_t arg2, u_register_t arg3)

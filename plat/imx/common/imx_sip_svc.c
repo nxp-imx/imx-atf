@@ -112,7 +112,7 @@ static uintptr_t imx_sip_handler(unsigned int smc_fid,
 		SMC_RET1(handle, imx_lmm_handler(smc_fid, x1, x2, x3, handle));
 		break;
 #endif
-#if defined(PLAT_imx8qm) && defined(SPD_trusty)
+#if (defined(PLAT_imx8qm) || defined(PLAT_imx8qx)) && defined(SPD_trusty)
 	case IMX_SIP_CONFIGURE_MEM_FOR_VPU:
 		return imx_configure_memory_for_vpu(handle, x1);
 	case IMX_SIP_GET_PARTITION_NUMBER:

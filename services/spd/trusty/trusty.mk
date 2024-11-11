@@ -14,6 +14,9 @@ ifeq (${PLAT}, imx8qm)
         SPD_INCLUDES            +=	-Iplat/imx/imx8qm/include
 endif
 
+ifeq (${PLAT}, imx8qx)
+        SPD_INCLUDES		+=	-Iplat/imx/imx8qx/include
+endif
 
 SPD_SOURCES		:=	services/spd/trusty/trusty.c		\
 				services/spd/trusty/trusty_helpers.S
