@@ -138,12 +138,26 @@ struct trdc_mbc_config trdc_n_mbc[] = {
 	{ 3, 3, 1, 4, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
 	{ 3, 3, 1, 5, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
 
+	{ 3, 5, 0, MBC_BLK_ALL, 0, true }, /* MBC3 OCRAM for DID5 */
+	{ 3, 5, 1, MBC_BLK_ALL, 0, true }, /* MBC3 OCRAM for DID5 */
+
+	{ 3, 6, 0, MBC_BLK_ALL, 0, true }, /* MBC3 OCRAM for DID6 */
+	{ 3, 6, 1, MBC_BLK_ALL, 0, true }, /* MBC3 OCRAM for DID6 */
+
 	{ 0, 7, 1, MBC_BLK_ALL, 0, false }, /* MBC0 AIPS4 for eDMA DID7 */
 	{ 0, 7, 2, MBC_BLK_ALL, 0, false }, /* MBC0 MEDIAMIX for eDMA DID7 */
 	{ 0, 7, 3, MBC_BLK_ALL, 0, false }, /* MBC0 HSIOMIX for eDMA DID7 */
 
+	{ 3, 7, 0, MBC_BLK_ALL, 0, true }, /* MBC3 OCRAM for DID7 */
+	{ 3, 7, 1, MBC_BLK_ALL, 0, true }, /* MBC3 OCRAM for DID7 */
+
 	{ 3, 10, 0, MBC_BLK_ALL, 0, false }, /* MBC3 OCRAM for DID10 */
 	{ 3, 10, 1, MBC_BLK_ALL, 0, false }, /* MBC3 OCRAM for DID10 */
+	{ 3, 10, 0, 8, 0, true }, /* MBC3 OCRAM for DID10 */
+	{ 3, 10, 1, 8, 0, true }, /* MBC3 OCRAM for DID10 */
+
+	{ 3, 11, 0, MBC_BLK_ALL, 0, true }, /* MBC3 OCRAM for DID11 */
+	{ 3, 11, 1, MBC_BLK_ALL, 0, true }, /* MBC3 OCRAM for DID11 */
 };
 
 struct trdc_glbac_config trdc_n_mrc_glbac[] = {
