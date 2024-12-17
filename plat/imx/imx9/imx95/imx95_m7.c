@@ -14,6 +14,10 @@
 #include <imx_sip_svc.h>
 
 #define IMX9_SCMI_CPU_M7P		1
+#define CPU_RUN_MODE_START		0
+#define CPU_RUN_MODE_HOLD		1
+#define CPU_RUN_MODE_STOP		2
+#define CPU_RUN_MODE_SLEEP		3
 
 int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 		    u_register_t x3, void *handle)
@@ -73,15 +77,12 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 	case IMX_SIP_SRC_M4_STARTED:
 		ret = scmi_core_info_get(imx9_scmi_handle, IMX9_SCMI_CPU_M7P, &run,
 					 &sleep, &vector);
-		/* M7 may not allow to be query, report booted up */
-		if (ret)
-			return 1;
 
 		/* WAIT MODE means M7 is not running */
-		if (run == 1)
-			return 0;
-		else
+		if ((run == CPU_RUN_MODE_START) || (run == CPU_RUN_MODE_SLEEP))
 			return 1;
+		else
+			return 0;
 
 	case IMX_SIP_SRC_M4_STOP:
 		ret = scmi_core_stop(imx9_scmi_handle, IMX9_SCMI_CPU_M7P);
