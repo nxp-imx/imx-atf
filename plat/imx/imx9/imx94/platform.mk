@@ -39,6 +39,7 @@ BL31_SOURCES		+=	drivers/arm/css/scmi/scmi_common.c		\
 				plat/imx/imx9/common/aarch64/plat_helpers.S	\
 				plat/imx/imx9/common/plat_topology.c		\
 				plat/imx/imx9/imx94/imx94_bl31_setup.c		\
+				plat/imx/imx9/imx94/imx94_m7.c			\
 				plat/imx/imx9/imx94/imx94_psci.c		\
 				lib/cpus/aarch64/cortex_a55.S			\
 				${IMX_GIC_SOURCES}				\

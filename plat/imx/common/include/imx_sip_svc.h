@@ -163,4 +163,9 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1,
 int imx_lmm_handler(uint32_t smc_fid, u_register_t x1,
 		    u_register_t x2, u_register_t x3, void *handle);
 #endif
+#if defined(PLAT_imx94)
+int imx_src_handler(uint32_t smc_fid, u_register_t x1,
+		    u_register_t x2, u_register_t x3,
+		    u_register_t x4, void *handle);
+#endif
 #endif /* __IMX_SIP_SVC_H__ */
