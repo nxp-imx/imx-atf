@@ -58,3 +58,8 @@ $(eval $(call add_define,SYS_PWR_FULL_CTRL))
 HAS_XSPI_SUPPORT := 1
 $(eval $(call assert_boolean,HAS_XSPI_SUPPORT))
 $(eval $(call add_define,HAS_XSPI_SUPPORT))
+
+BL32_BASE               ?=      0x8C000000
+BL32_SIZE               ?=      0x02000000
+$(eval $(call add_define,BL32_BASE))
+$(eval $(call add_define,BL32_SIZE))
