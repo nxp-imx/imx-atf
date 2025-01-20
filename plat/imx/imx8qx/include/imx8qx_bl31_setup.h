@@ -1,3 +1,9 @@
+/*
+ * Copyright 2024 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #ifndef IMX8QX_BL31_SETUP_H
 #define IMX8QX_BL31_SETUP_H
 
