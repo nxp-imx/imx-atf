@@ -117,8 +117,9 @@ void bl31_plat_arch_setup(void)
 		MAP_BL31_RO,
 #ifdef SPD_trusty
 		/* Map Tee memory */
-		MAP_BL32_TOTAL
+		MAP_BL32_TOTAL,
 #endif
+		{0}
 	};
 
 	/* Assign all the GPIO pins to non-secure world by default */
