@@ -44,11 +44,16 @@
 #define PLAT_ARM_GICR_BASE		PLAT_GICR_BASE
 #define PLAT_ARM_GICD_BASE		PLAT_GICD_BASE
 
-#define PLAT_VIRT_ADDR_SPACE_SIZE	(ULL(1) << 32)
-#define PLAT_PHY_ADDR_SPACE_SIZE	(ULL(1) << 32)
+#define PLAT_VIRT_ADDR_SPACE_SIZE	(ULL(1) << 36)
+#define PLAT_PHY_ADDR_SPACE_SIZE	(ULL(1) << 36)
 
+#ifdef SPD_trusty
+#define MAX_XLAT_TABLES			17U
+#define MAX_MMAP_REGIONS		35U
+#else
 #define MAX_XLAT_TABLES			14U
 #define MAX_MMAP_REGIONS		32U
+#endif
 
 #define IMX_LPUART_BASE			0x44380000
 
@@ -95,6 +100,9 @@
 
 #define COUNTER_FREQUENCY		24000000
 
+#define TRUSTY_PARAMS_LEN_BYTES		(4096*2)
+#define IMX_TRUSTY_STACK_SIZE		0x200
+#define TRUSTY_SHARED_MEMORY_OBJ_SIZE	(12 * 1024)
 /*
  * Define a list of Group 1 Secure and Group 0 interrupt properties
  * as per GICv3 terminology.
