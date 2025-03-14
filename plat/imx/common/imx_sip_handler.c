@@ -17,6 +17,7 @@
 #include <lib/el3_runtime/context_mgmt.h>
 #include <lib/mmio.h>
 #include <sci/sci.h>
+#include <drivers/arm/gic_common.h>
 #if defined(PLAT_imx8qm)
 #include <imx8qm_bl31_setup.h>
 #endif
@@ -34,8 +35,8 @@
 #endif
 
 #if defined(PLAT_imx8qm) || defined(PLAT_imx8qx) || defined(PLAT_imx8dx) || defined(PLAT_imx8dxl)
-
 #ifdef PLAT_imx8qm
+uint32_t wakeup_irq[] = {235, 236, 237, 258, 262, 267, 271, 345, 346, 347, 348};
 static const int ap_cluster_index[PLATFORM_CLUSTER_COUNT] = {
 #if (defined COCKPIT_A53)
 	SC_R_A53,
@@ -45,6 +46,10 @@ static const int ap_cluster_index[PLATFORM_CLUSTER_COUNT] = {
 	SC_R_A53, SC_R_A72,
 #endif
 };
+#elif defined(PLAT_imx8qx) || defined(PLAT_imxdx)
+uint32_t wakeup_irq[] = {235, 236, 237, 258, 262, 267, 271, 345, 346, 347, 348};
+#elif PLAT_imx8dxl
+uint32_t wakeup_irq[] = {228, 160, 163, 235, 236, 237, 229, 230, 231, 238, 239, 240, 166, 169};
 #endif
 
 static int imx_srtc_set_time(uint32_t year_mon,
@@ -161,7 +166,15 @@ int imx_wakeup_src_handler(uint32_t smc_fid,
 {
 	switch (x1) {
 	case IMX_SIP_WAKEUP_SRC_IRQSTEER:
-		wakeup_src_irqsteer = true;
+		wakeup_src_irqsteer = false;
+		for (int i = 0; i < ARRAY_SIZE(wakeup_irq); i++) {
+			uint32_t irq_num = wakeup_irq[i];
+			uint32_t offset = GICD_ISENABLER + ((irq_num + 32) / 32) * 4;
+			if ((1 << (irq_num % 32)) & mmio_read_32(PLAT_GICD_BASE + offset)) {
+				wakeup_src_irqsteer = true;
+				break;
+			}
+		}
 		break;
 	case IMX_SIP_WAKEUP_SRC_SCU:
 		wakeup_src_irqsteer = false;
