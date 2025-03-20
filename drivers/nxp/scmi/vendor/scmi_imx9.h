@@ -72,6 +72,10 @@
 
 #define IMX9_SCMI_LMM_PROTO_ID			0x80
 
+#define IMX9_SCMI_LMM_POWER_ON                  0xB
+#define IMX9_SCMI_LMM_POWER_ON_MSG_LEN          0x8
+#define IMX9_SCMI_LMM_POWER_ON_PRES_LEN         0x8
+
 #define IMX9_SCMI_LMM_BOOT_MSG                  0x4
 #define IMX9_SCMI_LMM_BOOT_MSG_LEN              0x8
 #define IMX9_SCMI_LMM_BOOT_RESP_LEN             0x8
@@ -80,8 +84,12 @@
 #define IMX9_SCMI_LMM_SHUTDOWN_MSG_LEN		0xc
 #define IMX9_SCMI_LMM_SHUTDOWN_RESP_LEN		0x8
 
-#define IMX9_SCMI_LMM_SHUTDOWN_FLAG_FORCE	BIT(0)
-#define IMX9_SCMI_LMM_SHUTDOWN_FLAG_GRACEFUL	BIT(1)
+#define IMX9_SCMI_LMM_SHUTDOWN_FLAG_FORCE	0
+#define IMX9_SCMI_LMM_SHUTDOWN_FLAG_GRACEFUL	1
+
+#define IMX9_SCMI_LMM_RESET_VECTOR              0xC
+#define IMX9_SCMI_LMM_RESET_VECTOR_MSG_LEN      0x18
+#define IMX9_SCMI_LMM_RESET_VECTOR_RESP_LEN     0x8
 
 #define SCMI_GPC_WAKEUP				0
 #define SCMI_GIC_WAKEUP				1
@@ -174,6 +182,9 @@ int scmi_core_lpm_mode_set(void *p, uint32_t cpu_id, uint32_t num_configs,
 int scmi_per_lpm_mode_set(void *p, uint32_t cpu_id, uint32_t num_configs,
 			   struct scmi_per_lpm_config *cfg);
 int scmi_perf_mode_set(void *p, uint32_t domain_id, uint32_t perf_level);
+int scmi_lmm_protocol_attributes(void *p, uint32_t *num_lm);
+int scmi_lmm_set_reset_vector(void *p, uint32_t lm_id, uint32_t cpuid, uint64_t addr);
+int scmi_lmm_power_on(void *p, uint32_t lm_id);
 int scmi_lmm_boot(void *p, uint32_t lm_id);
 int scmi_lmm_shutdown(void *p, uint32_t lm_id, uint32_t flags);
 

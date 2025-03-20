@@ -13,6 +13,9 @@
 #include <common/debug.h>
 #include <imx_sip_svc.h>
 
+#define IMX95_PD_M7			17
+#define LM_ID_M7			1
+
 #define IMX9_SCMI_CPU_M7P		1
 #define CPU_RUN_MODE_START		0
 #define CPU_RUN_MODE_HOLD		1
@@ -29,6 +32,8 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 	char *agent_m7_name = "M7";
 	uint32_t num_protocols, num_agents;
 	static uint32_t agent_id_resp = -1U;
+	/* num_lm: 2 means mx95alt, 3 means mx95evkrpmsg */
+	static uint32_t num_lm = 0U;
 
 	if (agent_id_resp == -1U) {
 		ret = scmi_base_protocol_attributes(imx9_scmi_handle,
@@ -53,6 +58,13 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 			agent_id_resp = -1U;
 	}
 
+	if (num_lm == 0U) {
+		ret = scmi_lmm_protocol_attributes(imx9_scmi_handle, &num_lm);
+		if (ret)
+			return ret;
+		INFO("num_lm %x\n", num_lm);
+	}
+
 	switch(x1) {
 	case IMX_SIP_SRC_M4_RESET_ADDR_SET:
 		ret = scmi_core_set_reset_addr(imx9_scmi_handle, x2,
@@ -63,6 +75,21 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 
 		break;
 	case IMX_SIP_SRC_M4_START:
+		if (num_lm != 2) {
+			INFO("start reset vector to %lx\n", x2);
+			ret = scmi_lmm_set_reset_vector(imx9_scmi_handle, LM_ID_M7,
+							IMX9_SCMI_CPU_M7P, x2);
+			if (ret)
+				return ret;
+
+			INFO("reset vector %lx\n", x2);
+
+			ret = scmi_lmm_boot(imx9_scmi_handle, LM_ID_M7);
+			if (ret)
+				return ret;
+			INFO("LM Booted: %d\n", LM_ID_M7);
+			break;
+		}
 		ret = scmi_core_set_reset_addr(imx9_scmi_handle, x2,
 					       IMX9_SCMI_CPU_M7P,
 					       SCMI_CPU_VEC_FLAGS_BOOT);
@@ -85,6 +112,14 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 			return 0;
 
 	case IMX_SIP_SRC_M4_STOP:
+		if (num_lm != 2) {
+			ret = scmi_lmm_shutdown(imx9_scmi_handle, LM_ID_M7,
+						IMX9_SCMI_LMM_SHUTDOWN_FLAG_FORCE);
+			if (ret)
+				return ret;
+			INFO("stopped\n");
+			break;
+		}
 		ret = scmi_core_stop(imx9_scmi_handle, IMX9_SCMI_CPU_M7P);
 		if (ret)
 			return ret;
@@ -93,6 +128,27 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 			return ret;
 		SMC_SET_GP(handle, CTX_GPREG_X1, 0);
 		break;
+	case IMX_SIP_SRC_M4_PREP:
+		if (num_lm != 2) {
+			ret = scmi_lmm_power_on(imx9_scmi_handle, IMX9_SCMI_CPU_M7P);
+			if (ret)
+				return ret;
+			INFO("prep ready\n");
+		};
+		break;
+	case IMX_SIP_SRC_M4_PREPED:
+		uint32_t state = 1;
+		ret = scmi_pwr_state_get(imx9_scmi_handle, IMX95_PD_M7,
+					 &state);
+		if (ret)
+			return ret;
+
+		INFO("prepared? state=%d, 0 means on\n", state);
+		/* state 0 means on, prepared */
+		if (state == 0)
+			return 1;
+		else
+			return 0;
 	default:
 		return SMC_UNK;
 	};
