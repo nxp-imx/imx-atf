@@ -23,7 +23,7 @@ int imx_lmm_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 		break;
 	case IMX_SIP_LMM_SHUTDOWN:
 		ret = scmi_lmm_shutdown(imx9_scmi_handle, x2,
-					IMX9_SCMI_LMM_SHUTDOWN_FLAG_GRACEFUL);
+					IMX9_SCMI_LMM_SHUTDOWN_FLAG_FORCE);
 		if (ret)
 			return ret;
 		break;
