@@ -105,5 +105,6 @@ endif
 $(eval $(call add_define,IMX_BOOT_UART_BASE))
 
 ifeq (${IMX_ANDROID_BUILD},true)
+LOG_LEVEL := 0
 $(eval $(call add_define,IMX_ANDROID_BUILD))
 endif
