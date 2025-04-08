@@ -131,7 +131,7 @@ static struct imx_rdc_cfg rdc[] = {
 
 static const struct imx_csu_cfg csu_cfg[] = {
 	/* peripherals csl setting */
-	CSU_CSLx(CSU_CSL_RDC, CSU_SEC_LEVEL_3, LOCKED),
+	CSU_CSLx(CSU_CSL_RDC, CSU_SEC_LEVEL_0, LOCKED),
 	CSU_CSLx(CSU_CSL_TZASC, CSU_SEC_LEVEL_5, LOCKED),
 	CSU_CSLx(CSU_CSL_CSU, CSU_SEC_LEVEL_5, LOCKED),
 
