@@ -28,7 +28,7 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 	uint32_t run, sleep;
 	uint64_t vector;
 	int i, ret;
-	char name[16];
+	char name[SCMI_BASE_DISCOVER_AGENT_RESP_LEN - 8];
 	char *agent_m7_name = "M7";
 	uint32_t num_protocols, num_agents;
 	static uint32_t agent_id_resp = -1U;
