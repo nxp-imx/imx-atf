@@ -122,7 +122,7 @@ int scmi_lmm_set_reset_vector(void *p, uint32_t lm_id, uint32_t cpuid, uint64_t 
 	mbx_mem->len = IMX9_SCMI_LMM_RESET_VECTOR_MSG_LEN;
 	mbx_mem->flags = SCMI_FLAG_RESP_POLL;
 
-	SCMI_PAYLOAD_ARG5(mbx_mem->payload, lm_id, cpuid, 0, addr && 0xFFFFFFFF, addr >> 32);
+	SCMI_PAYLOAD_ARG5(mbx_mem->payload, lm_id, cpuid, 0, addr & 0xFFFFFFFF, addr >> 32);
 
 	scmi_send_sync_command(ch);
 
