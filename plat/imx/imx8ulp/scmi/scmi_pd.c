@@ -195,31 +195,33 @@ unsigned int plat_scmi_pd_get_state(unsigned int agent_id __unused,
 extern void upower_wait_resp(void);
 int upwr_pwm_power(const uint32_t swton[], const uint32_t memon[], bool on)
 {
+	uint32_t retry = 10U;
+	upwr_resp_t err;
 	int ret_val;
 	int ret;
 
-	if (on == true) {
-		ret = upwr_pwm_power_on(swton, memon, NULL);
-	} else {
-		ret = upwr_pwm_power_off(swton, memon, NULL);
-	}
-
-	if (ret != 0U) {
-		WARN("%s failed: ret: %d, state: %x\n", __func__, ret, on);
-		return ret;
-	}
-
-	upower_wait_resp();
-
-	ret = upwr_poll_req_status(UPWR_SG_PWRMGMT, NULL, NULL, &ret_val, 1000);
-	if (ret != UPWR_REQ_OK) {
-		WARN("Failure %d, %s\n", ret, __func__);
-		if (ret == UPWR_REQ_BUSY) {
-			return -EBUSY;
+	do {
+		if (on == true) {
+			ret = upwr_pwm_power_on(swton, memon, NULL);
 		} else {
-			return -EINVAL;
+			ret = upwr_pwm_power_off(swton, memon, NULL);
 		}
-	}
+
+		if (ret != 0U) {
+			WARN("%s failed: ret: %d, state: %x\n", __func__, ret, on);
+			return ret;
+		}
+
+		upower_wait_resp();
+
+		ret = upwr_poll_req_status(UPWR_SG_PWRMGMT, NULL, &err, &ret_val, 1000);
+		if (ret != UPWR_REQ_OK) {
+			WARN("Failure %d, %d, %s\n", ret, err, __func__);
+			if (err != UPWR_RESP_RESOURCE) {
+				return ret == UPWR_REQ_BUSY ? -EBUSY : -EINVAL;
+			}
+		}
+	} while (err == UPWR_RESP_RESOURCE && retry--);
 
 	return 0;
 }
