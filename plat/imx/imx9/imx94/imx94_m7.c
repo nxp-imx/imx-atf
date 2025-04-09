@@ -18,10 +18,14 @@
 #define CPU_RUN_MODE_STOP		2
 #define CPU_RUN_MODE_SLEEP		3
 
+#define IMX9_SCMI_CPU_M70		1U
+#define IMX9_SCMI_CPU_M71		7U
+#define IMX9_SCMI_CPU_M33S		8U
+
 #define MCORE_IDX(x)	(((x) < 7 ) ? ((x) - 1) : ((x) - 6))
 
 struct mcore_agents {
-	char name[16];
+	char name[SCMI_BASE_DISCOVER_AGENT_RESP_LEN - 8];
 	uint32_t agent_id;
 } agents[] = {
 	{ .name = "M7", .agent_id = -1 },
@@ -29,16 +33,21 @@ struct mcore_agents {
 	{ .name = "M33S-S", .agent_id = -1 },
 };
 
-//static char *mcore_agent_name[] = { "M7", "M71", "M33S-S" };
 int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 		    u_register_t x3, u_register_t x4, void *handle)
 {
 	uint32_t run, sleep;
 	uint64_t vector;
 	int i, ret = 0;
-	char name[16];
+	char name[SCMI_BASE_DISCOVER_AGENT_RESP_LEN - 8];
 	uint32_t num_protocols, num_agents;
 	uint32_t agent_id_resp = -1;
+
+	/* Check if the core id is valid */
+	if (x3 != IMX9_SCMI_CPU_M70 && x3 != IMX9_SCMI_CPU_M71 &&
+	    x3 != IMX9_SCMI_CPU_M33S) {
+		return SMC_DENIED;
+	}
 
 	if (agents[MCORE_IDX(x3)].agent_id == -1) {
 		ret = scmi_base_protocol_attributes(imx9_scmi_handle,
