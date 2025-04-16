@@ -99,7 +99,7 @@ int scmi_lmm_boot(void *p, uint32_t lm_id)
 	/* get return values */
 	SCMI_PAYLOAD_RET_VAL1(mbx_mem->payload, ret);
 	assert(mbx_mem->len == IMX9_SCMI_LMM_BOOT_RESP_LEN);
-	assert(token == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
+	assert(0x0 == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
 
 	scmi_put_channel(ch);
 
@@ -129,7 +129,7 @@ int scmi_lmm_set_reset_vector(void *p, uint32_t lm_id, uint32_t cpuid, uint64_t 
 	/* get return values */
 	SCMI_PAYLOAD_RET_VAL1(mbx_mem->payload, ret);
 	assert(mbx_mem->len == IMX9_SCMI_LMM_RESET_VECTOR_RESP_LEN);
-	assert(token == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
+	assert(0x0 == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
 
 	scmi_put_channel(ch);
 
@@ -159,7 +159,7 @@ int scmi_lmm_power_on(void *p, uint32_t lm_id)
 	/* get return values */
 	SCMI_PAYLOAD_RET_VAL1(mbx_mem->payload, ret);
 	assert(mbx_mem->len == IMX9_SCMI_LMM_POWER_ON_RESP_LEN);
-	assert(token == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
+	assert(0x0 == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
 
 	scmi_put_channel(ch);
 

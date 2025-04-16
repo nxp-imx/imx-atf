@@ -74,7 +74,7 @@
 
 #define IMX9_SCMI_LMM_POWER_ON                  0xB
 #define IMX9_SCMI_LMM_POWER_ON_MSG_LEN          0x8
-#define IMX9_SCMI_LMM_POWER_ON_PRES_LEN         0x8
+#define IMX9_SCMI_LMM_POWER_ON_RESP_LEN         0x8
 
 #define IMX9_SCMI_LMM_BOOT_MSG                  0x4
 #define IMX9_SCMI_LMM_BOOT_MSG_LEN              0x8
