@@ -182,7 +182,7 @@ static void ddr_init(void)
 	}
 
 
-	 /* restore all PHY registers for all the fsp. */
+	/* restore all PHY registers for all the fsp. */
 	mmio_write_32(IMX_DDRC_BASE + DENALI_PHY_1537, 0x100);
 	/* restore all the phy configs */
 	for (i = 0U; i < PHY_NUM; i++) {
@@ -412,8 +412,9 @@ void dram_enter_retention(void)
 			}
 		} else {
 			/* LPDDR3, only f1 need to save */
-			for (i = 0U; i < info->phy_f1_cfg_num; i++) {
-				info->phy_f1_cfg[i].val = mmio_read_32(info->phy_f1_cfg[i].reg);
+			mmio_write_32(IMX_DDRC_BASE + DENALI_PHY_1537, 0x100);
+			for (i = 0U; i < PHY_NUM; i++) {
+				dram_timing_cfg->phy_full[i] = mmio_read_32(IMX_DDRC_BASE + 0x4000 + i * 4);
 			}
 		}
 
