@@ -204,7 +204,7 @@ static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
 
 #if defined (CSU_RDC_TEST)
-static void csu_rdc_test(void);
+static void csu_rdc_test(unsigned int console_base);
 #endif
 
 /* get SPSR for BL33 entry */
@@ -301,7 +301,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	enable_snvs_privileged_access();
 #endif
 #if defined (CSU_RDC_TEST)
-	csu_rdc_test();
+	csu_rdc_test(console_base);
 #endif
 }
 
@@ -393,7 +393,7 @@ void plat_trusty_set_boot_args(aapcs64_params_t *args)
 #endif
 
 #if defined (CSU_RDC_TEST)
-static const struct imx_rdc_cfg rdc_for_test[] = {
+static struct imx_rdc_cfg rdc_for_test[] = {
 	/* Master domain assignment */
 
 	/* peripherals domain permission */
@@ -420,9 +420,9 @@ static const struct imx_csu_cfg csu_cfg_for_test[] = {
 	{0}
 };
 
-static void csu_rdc_test(void)
+static void csu_rdc_test(unsigned int console_base)
 {
 	imx_csu_init(csu_cfg_for_test);
-	imx_rdc_init(rdc_for_test);
+	imx_rdc_init(rdc_for_test, console_base);
 }
 #endif
