@@ -8,6 +8,7 @@
 
 #include <lib/utils_def.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
+#include <plat/common/common_def.h>
 
 #define PLATFORM_LINKER_FORMAT		"elf64-littleaarch64"
 #define PLATFORM_LINKER_ARCH		aarch64
@@ -29,7 +30,8 @@
 #define PLAT_MAX_RET_STATE		U(2)
 
 #define BL31_BASE			U(0x204E0000)
-#define BL31_LIMIT			U(0x20520000)
+#define BL31_LIMIT			U(0x2051C000)
+#define BL31_SIZE			SZ_256K
 
 #define SAVED_DRAM_TIMING_BASE		U(0x2051c000)
 
