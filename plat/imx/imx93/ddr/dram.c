@@ -182,6 +182,29 @@ int check_ddrc_idle(int waitus, uint32_t flag){
 void ddrc_mrs(uint32_t cs_sel, uint32_t opcode, uint32_t mr)
 {
 	uint32_t regval;
+	uint32_t dyn_ref_rate_en;
+
+	dyn_ref_rate_en = (mmio_read_32(REG_DDR_SDRAM_CFG_3) & BIT(7));
+
+	/* If DYN_REF is enabled, it must first be disabled before performing
+	   any SW initiated mode register operations.  In addition, a DYN_REF
+	   MR4 read may already be in progress when DYN_REF is disabled as
+	   disabling DYN_REF only prevents future MR4 reads from occurring.
+	   To prevent an MR4 read collision with a subsequent mode register
+	   operation, we must first clear and poll (for set)
+	   DDR_SDRAM_MPR5[MPR_VLD] to ensure the last MR4 read has completed
+	   and then immediately disable DYN_REF to prevent future MR4 reads.
+	 */
+	if (dyn_ref_rate_en) {
+		mmio_write_32(REG_DDR_SDRAM_MPR5, 0x0);
+		while ((mmio_read_32(REG_DDR_SDRAM_MPR5) & 0x1) == 0) {
+		};
+		mmio_clrbits_32(REG_DDR_SDRAM_MPR5, BIT(7));
+	}
+
+	/* Ensure DDR_SDRAM_MD_CNTL[MD_EN] is cleared before any MRR and MRS peration */
+	while ((mmio_read_32(REG_DDR_SDRAM_MD_CNTL) & 0x80000000) == 0x80000000) {
+	};
 
 	regval = (cs_sel << 28) | (opcode << 6) | (mr);
 	mmio_write_32(REG_DDR_SDRAM_MD_CNTL, regval);
@@ -190,6 +213,10 @@ void ddrc_mrs(uint32_t cs_sel, uint32_t opcode, uint32_t mr)
 	while((mmio_read_32(REG_DDR_SDRAM_MD_CNTL) & 0x80000000) == 0x80000000) {
 	}
 	check_ddrc_idle(3, 0x80000000);
+
+	if (dyn_ref_rate_en) {
+		mmio_setbits_32(REG_DDR_SDRAM_CFG_3, BIT(7));
+	}
 }
 
 int ddrc_apply_reg_config(enum reg_type type, struct dram_cfg_param *reg_config){
