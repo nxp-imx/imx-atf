@@ -405,17 +405,10 @@ void plat_trusty_set_boot_args(aapcs64_params_t *args)
 static int32_t trusty_init(void)
 {
 	entry_point_info_t *ep_info;
-	uint32_t core;
 
 	NOTICE("trusty_init\n");
 	if (trusty_initialized) {
 		WARN("trusty: Tried to initialise more than once\n");
-		return -1;
-	}
-
-	core = plat_my_core_pos();
-	if (core != 0) {
-		WARN("trusty: Tried to initialize on core %d\n", core);
 		return -1;
 	}
 
