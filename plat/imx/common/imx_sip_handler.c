@@ -46,7 +46,7 @@ static const int ap_cluster_index[PLATFORM_CLUSTER_COUNT] = {
 	SC_R_A53, SC_R_A72,
 #endif
 };
-#elif defined(PLAT_imx8qx) || defined(PLAT_imxdx)
+#elif defined(PLAT_imx8qx) || defined(PLAT_imx8dx)
 uint32_t wakeup_irq[] = {235, 236, 237, 258, 262, 267, 271, 345, 346, 347, 348};
 #elif PLAT_imx8dxl
 uint32_t wakeup_irq[] = {228, 160, 163, 235, 236, 237, 229, 230, 231, 238, 239, 240, 166, 169};
