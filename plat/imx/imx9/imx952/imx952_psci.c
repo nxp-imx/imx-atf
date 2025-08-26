@@ -427,6 +427,9 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
 		nocmix_pwr_down(core_id);
 		keep_wakupmix_on = has_wakeup_irq;
+#if IMX_CRRM
+		keep_wakupmix_on = true;
+#endif
 		/*
 		 * Setup NOCMIX to power down when Linux suspends.
 		 * This is needs to be updated when wakeupmix can be powered down too.
