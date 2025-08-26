@@ -72,9 +72,8 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 	.get_sys_suspend_power_state = imx_get_sys_suspend_power_state,
 	.pwr_domain_pwr_down = imx_pwr_domain_pwr_down,
 	.system_reset = imx_system_reset,
+	.system_reset2 = imx_system_reset2,
 	.system_off = imx_system_off,
-
-
 };
 
 /* export the platform specific psci ops */
