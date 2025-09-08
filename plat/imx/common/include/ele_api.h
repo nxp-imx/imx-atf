@@ -8,6 +8,8 @@
 
 #define ELE_GET_INFO_REQ	U(0x17DA0406)
 #define ELE_RELEASE_GMID	U(0x17E40106)
+#define ELE_GET_RNG		U(0x17CD0407)
+#define ELE_GET_TRNG_STATE	U(0x17A40106)
 
 struct ele_soc_info {
 	uint32_t hdr;
@@ -24,6 +26,7 @@ struct ele_soc_info {
 
 void ele_get_soc_info(void);
 void ele_release_gmid(void);
+int ele_get_trng(void* addr, uint32_t len);
 int imx9_soc_info_handler(uint32_t smc_fid, void *handle);
 
 #endif /* ELE_API_H */
