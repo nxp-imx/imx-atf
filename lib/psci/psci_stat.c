@@ -181,6 +181,10 @@ static int psci_get_stat(u_register_t target_cpu, unsigned int power_state,
 	psci_power_state_t state_info = { {PSCI_LOCAL_STATE_RUN} };
 	plat_local_state_t local_state;
 
+	/* Validate the target cpu */
+	if (!is_valid_mpidr(target_cpu))
+		return PSCI_E_INVALID_PARAMS;
+
 	/* Determine the cpu index */
 	target_idx = (unsigned int) plat_core_pos_by_mpidr(target_cpu);
 

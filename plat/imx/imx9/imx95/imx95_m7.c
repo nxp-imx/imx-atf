@@ -34,6 +34,7 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 	static uint32_t agent_id_resp = -1U;
 	/* num_lm: 2 means mx95alt, 3 means mx95evkrpmsg */
 	static uint32_t num_lm = 0U;
+	uint32_t state = 1;
 
 	if (agent_id_resp == -1U) {
 		ret = scmi_base_protocol_attributes(imx9_scmi_handle,
@@ -137,7 +138,6 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1, u_register_t x2,
 		};
 		break;
 	case IMX_SIP_SRC_M4_PREPED:
-		uint32_t state = 1;
 		ret = scmi_pwr_state_get(imx9_scmi_handle, IMX95_PD_M7,
 					 &state);
 		if (ret)

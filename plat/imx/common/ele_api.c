@@ -59,3 +59,81 @@ void ele_release_gmid(void)
 	resp = mmio_read_32(ELE_MU_RRx(1));
 	NOTICE("msg : %x, resp: %x\n", msg, resp);
 }
+
+#define IMX_ELE_TRNG_STATUS_READY 0x3
+#define IMX_ELE_CSAL_STATUS_READY 0x2
+static int ele_get_trng_state(void)
+{
+	uint32_t msg, resp, state;
+
+	mmio_write_32(ELE_MU_TRx(0), ELE_GET_TRNG_STATE);
+
+	do {
+		resp = mmio_read_32(ELE_MU_RSR);
+	} while ((resp & 0x3) != 0x3);
+
+	msg = mmio_read_32(ELE_MU_RRx(0));
+	resp = mmio_read_32(ELE_MU_RRx(1));
+	state = mmio_read_32(ELE_MU_RRx(2));
+	VERBOSE("msg : %x, resp: %x\n", msg, resp);
+
+	if (resp != 0xd6 ||
+	    ((state >> 0) & 0xff) != IMX_ELE_TRNG_STATUS_READY ||
+	    ((state >> 8) & 0xff) != IMX_ELE_CSAL_STATUS_READY)
+		return -1;
+	return 0;
+}
+
+#define ELE_TRNG_MAX_SIZE 16
+int ele_get_trng(void* addr, uint32_t len)
+{
+	uint32_t msg, resp;
+	/* Natural Alignment to 64 Bit */
+	uint64_t buffer[ELE_TRNG_MAX_SIZE/(sizeof(uint64_t))] = {0};
+	uint8_t* current_pos = addr;
+
+	if (addr == NULL || len == 0) {
+		return -1;
+	}
+
+	if (ele_get_trng_state() != 0)
+	{
+		NOTICE("TRNG is not ready, EXIT!\n");
+		return -1;
+	}
+
+	do {
+		flush_dcache_range((uint64_t)buffer, ELE_TRNG_MAX_SIZE);
+
+		mmio_write_32(ELE_MU_TRx(0), ELE_GET_RNG);
+		mmio_write_32(ELE_MU_TRx(1), 0x2);
+		mmio_write_32(ELE_MU_TRx(2), ((uint64_t)buffer) & 0xffffffff);
+		mmio_write_32(ELE_MU_TRx(3), ELE_TRNG_MAX_SIZE);
+
+		do {
+			resp = mmio_read_32(ELE_MU_RSR);
+		} while ((resp & 0x3) != 0x3);
+
+		msg = mmio_read_32(ELE_MU_RRx(0));
+		resp = mmio_read_32(ELE_MU_RRx(1));
+		VERBOSE("msg : %x, resp: %x\n", msg, resp);
+
+		if (resp != 0xd6)
+		{
+			NOTICE("TRNG generated failed!\n");
+			return -1;
+		}
+
+		if (len <= ELE_TRNG_MAX_SIZE) {
+			memcpy(current_pos, buffer, len);
+			break;
+		} else {
+			memcpy(current_pos, buffer, ELE_TRNG_MAX_SIZE);
+			current_pos += ELE_TRNG_MAX_SIZE;
+			len -= ELE_TRNG_MAX_SIZE;
+		}
+
+	} while (1);
+
+	return 0;
+}

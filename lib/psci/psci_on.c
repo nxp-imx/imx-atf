@@ -61,7 +61,14 @@ int psci_cpu_on_start(u_register_t target_cpu,
 {
 	int rc;
 	aff_info_state_t target_aff_state;
-	unsigned int target_idx = (unsigned int)plat_core_pos_by_mpidr(target_cpu);
+	unsigned int target_idx;
+
+	/* Validate the target cpu */
+	if (!is_valid_mpidr(target_cpu))
+		return PSCI_E_INVALID_PARAMS;
+
+	/* Determine the cpu index */
+	target_idx = (unsigned int) plat_core_pos_by_mpidr(target_cpu);
 
 	/*
 	 * This function must only be called on platforms where the

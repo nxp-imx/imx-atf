@@ -140,8 +140,6 @@ void bl31_plat_arch_setup(void)
 	enable_mmu_el3(0);
 }
 
-extern void ele_release_gmid(void);
-
 void bl31_platform_setup(void)
 {
 	uint32_t gicr_ctlr;
@@ -166,8 +164,6 @@ void bl31_platform_setup(void)
 
 	/* get soc info */
 	ele_get_soc_info();
-
-	ele_release_gmid();
 
 	plat_imx9_scmi_setup();
 }

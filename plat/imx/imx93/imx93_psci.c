@@ -147,7 +147,7 @@ static uint32_t gpio_ctrl_offset[GPIO_CTRL_REG_NUM] = { 0xc, 0x10, 0x14, 0x18, 0
 static struct gpio_ctx wakeupmix_gpio_ctx[3] = {
 	GPIO_CTX(GPIO2_BASE | BIT(28), 30),
 	GPIO_CTX(GPIO3_BASE | BIT(28), 32),
-	GPIO_CTX(GPIO4_BASE | BIT(28), 28),
+	GPIO_CTX(GPIO4_BASE | BIT(28), 30),
 };
 
 static uint32_t clock_root[6];

@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2016-2024, Arm Limited and Contributors. All rights reserved.
  * Copyright (c) 2020, NVIDIA Corporation. All rights reserved.
+ * Copyright 2022, 2024 NXP.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */

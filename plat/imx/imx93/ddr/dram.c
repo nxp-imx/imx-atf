@@ -182,6 +182,78 @@ int check_ddrc_idle(int waitus, uint32_t flag){
 void ddrc_mrs(uint32_t cs_sel, uint32_t opcode, uint32_t mr)
 {
 	uint32_t regval;
+	uint32_t dyn_ref_rate_en;
+	uint32_t interval_old, interval;
+	uint32_t ref_rate, ref_rate0, ref_rate1, temp;
+
+	dyn_ref_rate_en = (mmio_read_32(REG_DDR_SDRAM_CFG_3) & BIT(7));
+
+	/* If DYN_REF is enabled, it must first be disabled before performing
+	   any SW initiated mode register operations.  In addition, a DYN_REF
+	   MR4 read may already be in progress when DYN_REF is disabled as
+	   disabling DYN_REF only prevents future MR4 reads from occurring.
+	   To prevent an MR4 read collision with a subsequent mode register
+	   operation, we must first clear and poll (for set)
+	   DDR_SDRAM_MPR5[MPR_VLD] to ensure the last MR4 read has completed
+	   and then immediately disable DYN_REF to prevent future MR4 reads.
+	 */
+
+	/* Get DDR_SDRAM_INTERVAL[REFINT] to restore later */
+	interval_old = mmio_read_32(REG_DDR_SDRAM_INTERVAL) >> 16U;
+	if (dyn_ref_rate_en) {
+		/*
+		 * When DYN_REF is disabled, the DRAM refresh rate is
+		 * reverted back to nominal (1x). However, if the DRAM
+		 * requires a higher refresh rate at elevated temperatures,
+		 * we need to adjust the DDR_SDRAM_INTERVAL[REFINT] to
+		 * compensate for this while DYN_REF is disabled and then
+		 * restore the original value when re-enabling DYN_REF.
+		 * Get original REFINT to re-store later in case DYN_REF enable
+		 */
+
+		/* variable to change REFINT in DYN_REF enabled */
+		interval = interval_old;
+
+		/*
+		 * Determine if REF_RATE reported by the DRAM MR4 is greater
+		 * than nominal
+		 */
+		ref_rate = mmio_read_32(REG_DDR_SDRAM_REF_RATE);
+		ref_rate1 = ref_rate & 0xFU;
+		ref_rate0 = (ref_rate >> 8U) & 0xFU;
+
+		/* Get the maximum reported refresh rate */
+		if (ref_rate0 > ref_rate1)
+		{
+			ref_rate = ref_rate0;
+		} else {
+			ref_rate = ref_rate1;
+		}
+
+		/* Adjust refresh rate based on refRate value */
+		if (ref_rate == 0x4U) {
+			/* When refRate (MR4) is 0x4, set to 0.5x refresh */
+			interval = interval / 2U;
+		} else if (ref_rate > 0x4U) {
+			/* When refRate (MR4) > 0x4, set to 0.25x refresh */
+			interval = interval / 4U;
+		}
+
+		mmio_write_32(REG_DDR_SDRAM_MPR5, 0x0);
+		while ((mmio_read_32(REG_DDR_SDRAM_MPR5) & 0x1) == 0) {
+		};
+		mmio_clrbits_32(REG_DDR_SDRAM_CFG_3, BIT(7));
+
+		/* Update DDR_SDRAM_INTERVAL[REFINT] */
+		temp = mmio_read_32(REG_DDR_SDRAM_INTERVAL);
+		temp &= 0x0000FFFFU;
+		temp |= interval << 16U;
+		mmio_write_32(REG_DDR_SDRAM_INTERVAL, temp);
+	}
+
+	/* Ensure DDR_SDRAM_MD_CNTL[MD_EN] is cleared before any MRR and MRS peration */
+	while ((mmio_read_32(REG_DDR_SDRAM_MD_CNTL) & 0x80000000) == 0x80000000) {
+	};
 
 	regval = (cs_sel << 28) | (opcode << 6) | (mr);
 	mmio_write_32(REG_DDR_SDRAM_MD_CNTL, regval);
@@ -190,6 +262,17 @@ void ddrc_mrs(uint32_t cs_sel, uint32_t opcode, uint32_t mr)
 	while((mmio_read_32(REG_DDR_SDRAM_MD_CNTL) & 0x80000000) == 0x80000000) {
 	}
 	check_ddrc_idle(3, 0x80000000);
+
+	if (dyn_ref_rate_en) {
+		/* Update DDR_SDRAM_INTERVAL[REFINT] back to original value */
+		temp = mmio_read_32(REG_DDR_SDRAM_INTERVAL);
+		temp &= 0x0000FFFFU;
+		temp |= interval_old << 16U;
+		mmio_write_32(REG_DDR_SDRAM_INTERVAL, temp);
+
+		/* Re-enable DYN_REF */
+		mmio_setbits_32(REG_DDR_SDRAM_CFG_3, BIT(7));
+	}
 }
 
 int ddrc_apply_reg_config(enum reg_type type, struct dram_cfg_param *reg_config){

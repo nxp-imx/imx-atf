@@ -7,6 +7,8 @@
 #define ELE_API_H
 
 #define ELE_GET_INFO_REQ	U(0x17DA0406)
+#define ELE_GET_RNG		U(0x17CD0407)
+#define ELE_GET_TRNG_STATE	U(0x17A40106)
 
 struct ele_soc_info {
 	uint32_t hdr;
@@ -23,5 +25,6 @@ struct ele_soc_info {
 
 int imx9_soc_info_handler(uint32_t smc_fid, void *handle);
 void ele_get_soc_info(void);
+int ele_get_trng(void* addr, uint32_t len);
 
 #endif /* ELE_API_H */

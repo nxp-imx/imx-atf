@@ -369,6 +369,7 @@ void wdog_restore(uintptr_t base, uint32_t index)
 	}
 }
 
+#if !IMX_CRRM
 static uint32_t xspi_mto[2];
 
 void xspi_save(void)
@@ -385,6 +386,11 @@ void xspi_restore(void)
 	mmio_write_32(XSPI1_BASE + XSPI_MTO, xspi_mto[0]);
 	mmio_write_32(XSPI2_BASE + XSPI_MTO, xspi_mto[1]);
 }
+
+#else
+void xspi_save(void) {}
+void xspi_restore(void) {}
+#endif
 
 void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
 {
@@ -610,6 +616,10 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 		wdog_save(WDOG4_BASE, 1U);
 		keep_wakupmix_on = (gpio_wakeup || has_wakeup_irq);
 
+#if IMX_CRRM
+		/* Keep XSPI always on to avoid setting lost */
+		keep_wakupmix_on = true;
+#endif
 		/*
 		 * Setup NOCMIX to power down when Linux suspends.
 		 * This is needs to be updated when wakeupmix can be powered down too.
@@ -735,6 +745,48 @@ void __dead2 imx_system_reset(void)
 		;
 }
 
+int __dead2 imx_system_reset2(int is_vendor, int reset_type, u_register_t cookie)
+{
+	int ret;
+
+	/* TODO: temp workaround for GIC to let reset done */
+	gicd_clr_ctlr(PLAT_GICD_BASE,
+		      CTLR_ENABLE_G0_BIT |
+		      CTLR_ENABLE_G1S_BIT |
+		      CTLR_ENABLE_G1NS_BIT,
+		      RWP_TRUE);
+
+	switch(reset_type) {
+	case PSCI_RESET2_SYSTEM_WARM_RESET:
+		/* Force: work, Gracefull: not work */
+		ret = scmi_sys_pwr_state_set(imx9_scmi_handle,
+					     SCMI_SYS_PWR_FORCEFUL_REQ,
+					     SCMI_SYS_PWR_WARM_RESET);
+		break;
+	case PSCI_RESET2_SYSTEM_COLD_RESET:
+		/* Force: work, Gracefull: not work */
+		ret = scmi_sys_pwr_state_set(imx9_scmi_handle,
+					     SCMI_SYS_PWR_FORCEFUL_REQ,
+					     SCMI_SYS_PWR_COLD_RESET);
+		break;
+	case PSCI_RESET2_SYSTEM_BOARD_RESET:
+		/* Force: work, Gracefull: not work */
+		ret = scmi_sys_pwr_state_set(imx9_scmi_handle,
+					     SCMI_SYS_PWR_FORCEFUL_REQ,
+					     SCMI_SYS_STATE_FULL_RESET);
+		break;
+	default:
+		ret = PSCI_E_INVALID_PARAMS;
+	}
+
+	if (ret) {
+		VERBOSE("%s failed: %d\n", __func__, ret);
+	}
+
+	while (true)
+		;
+}
+
 void __dead2 imx_system_off(void)
 {
 	int ret;
@@ -761,6 +813,7 @@ static const plat_psci_ops_t imx_plat_psci_ops = {
 	.get_sys_suspend_power_state = imx_get_sys_suspend_power_state,
 	.pwr_domain_pwr_down_wfi = imx_pwr_domain_pwr_down_wfi,
 	.system_reset = imx_system_reset,
+	.system_reset2 = imx_system_reset2,
 	.system_off = imx_system_off,
 };
 
