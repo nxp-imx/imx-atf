@@ -141,6 +141,14 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	scmi_core_set_sleep_mode(imx9_scmi_handle, IMX9_SCMI_CPU_A55P,
 			        SCMI_GIC_WAKEUP, SCMI_CPU_SLEEP_WAIT);
 
+	/* Enable the wdog3 per handshake */
+	struct scmi_per_lpm_config per_lpm[1] = {
+		{ CPU_PER_LPI_IDX_WDOG3, SCMI_CPU_PD_LPM_ON_RUN_WAIT_STOP },
+	};
+
+	scmi_per_lpm_mode_set(imx9_scmi_handle, IMX9_SCMI_CPU_A55P,
+			      1U, per_lpm);
+
 	*psci_ops = &imx_plat_psci_ops;
 
 	return 0;
