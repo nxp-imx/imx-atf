@@ -6,10 +6,21 @@
 #ifndef ELE_API_H
 #define ELE_API_H
 
+#define ELE_SUCCESS_STATUS	(0xD6)
+
 #define ELE_GET_INFO_REQ	U(0x17DA0406)
 #define ELE_RELEASE_GMID	U(0x17E40106)
 #define ELE_GET_RNG		U(0x17CD0407)
 #define ELE_GET_TRNG_STATE	U(0x17A40106)
+#define ELE_PROGRAM_BBSM_REQ	U(0x17BB0406)
+
+/* ELE Program BBSM API operation flags */
+#define ELE_PROGRAM_BBSM_OP_READ_REG			(0x6A)
+#define ELE_PROGRAM_BBSM_OP_WRITE_REG			(0x71)
+#define ELE_PROGRAM_BBSM_OP_SET_BBSM_EVENT_POLICIES	(0xCA)
+#define ELE_PROGRAM_BBSM_OP_CLEAR_INTERRUPT		(0xFE)
+/* BBSM register offset for reading if any external tamper event reported */
+#define BBSM_REG_OFFSET_EXT_TAMPER_ACTIVITY		(0x18)
 
 struct ele_soc_info {
 	uint32_t hdr;
@@ -27,6 +38,8 @@ struct ele_soc_info {
 void ele_get_soc_info(void);
 void ele_release_gmid(void);
 int ele_get_trng(void* addr, uint32_t len);
+int ele_program_bbsm(uint8_t operation, uint16_t policy_mask, uint32_t reg_offset,
+		     uint32_t reg_value, uint32_t *resp, uint32_t *ret_reg_value);
 int imx9_soc_info_handler(uint32_t smc_fid, void *handle);
 
 #endif /* ELE_API_H */

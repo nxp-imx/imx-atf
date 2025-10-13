@@ -80,6 +80,7 @@
 #define GPIO_SIZE			U(0x30000)
 #define S400_MU_BASE			U(0x47520000)
 #define ELE_MU_BASE			S400_MU_BASE
+#define ELE_RT_MU_BASE			U(0x47540000)
 #define DDRMIX_BASE			U(0x4E000000)
 #define DDRMIX_SIZE			U(0x400000)
 

@@ -24,7 +24,9 @@
 #if defined(PLAT_imx8qx)
 #include <imx8qx_bl31_setup.h>
 #endif
-
+#if defined(PLAT_imx93)
+#include <ele_api.h>
+#endif
 #if defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
 /*
  * Defined in
@@ -358,3 +360,32 @@ int imx_get_partition_number(void *handle) {
 }
 #endif
 
+#if defined(PLAT_imx93)
+int imx_bbsm_handler(uint32_t smc_fid, u_register_t x1, void *handle)
+{
+	int ret;
+	uint32_t resp_reg_value = 0, is_tamper_detected = 0;
+
+	switch (x1) {
+	case IMX_SIP_BBSM_CLEAR_INTERRUPT:
+		ret = ele_program_bbsm(ELE_PROGRAM_BBSM_OP_CLEAR_INTERRUPT,
+				       0, 0, 0, NULL, NULL);
+		SMC_RET1(handle, ret);
+		break;
+	case IMX_SIP_BBSM_READ_TAMPER_STATUS:
+		ret = ele_program_bbsm(ELE_PROGRAM_BBSM_OP_READ_REG, 0,
+				       BBSM_REG_OFFSET_EXT_TAMPER_ACTIVITY,
+				       0, NULL, &resp_reg_value);
+		if (resp_reg_value)
+			is_tamper_detected = 1;
+		SMC_RET2(handle, ret, is_tamper_detected);
+		break;
+	default:
+		ret = SMC_UNK;
+		SMC_RET1(handle, ret);
+		break;
+	}
+
+	return ret;
+}
+#endif
