@@ -176,12 +176,48 @@ struct trdc_mbc_config trdc_n_mbc[] = {
 	{ 3, 3, 0, 3, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
 	{ 3, 3, 0, 4, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
 	{ 3, 3, 0, 5, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 6, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 7, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 8, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 9, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 10, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 11, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 12, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 13, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 14, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 15, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 16, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 17, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 18, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 19, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 20, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 21, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 22, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 0, 23, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
 	{ 3, 3, 1, 0, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
 	{ 3, 3, 1, 1, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
 	{ 3, 3, 1, 2, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
 	{ 3, 3, 1, 3, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
 	{ 3, 3, 1, 4, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
 	{ 3, 3, 1, 5, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 6, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 7, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 8, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 9, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 10, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 11, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 12, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 13, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 14, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 15, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 16, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 17, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 18, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 19, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 20, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 21, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 22, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
+	{ 3, 3, 1, 23, 0, false  }, /* MBC3 OCRAM for A55 DID3 */
 
 	{ 3, 5, 0, MBC_BLK_ALL, 0, true }, /* MBC3 OCRAM for DID5 */
 	{ 3, 5, 1, MBC_BLK_ALL, 0, true }, /* MBC3 OCRAM for DID5 */
