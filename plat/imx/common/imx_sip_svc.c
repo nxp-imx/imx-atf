@@ -98,7 +98,8 @@ static uintptr_t imx_sip_handler(unsigned int smc_fid,
 	case IMX_SIP_DDR_DVFS:
 		return dram_dvfs_handler(smc_fid, handle, x1, x2, x3);
 #endif
-#if defined(PLAT_imx93) || defined(PLAT_imx91) || defined(PLAT_imx95) || defined(PLAT_imx94)
+#if defined(PLAT_imx93) || defined(PLAT_imx91) || defined(PLAT_imx95) || defined(PLAT_imx94) || \
+    defined(PLAT_imx952)
 	case IMX_SIP_GET_SOC_INFO:
 		return imx9_soc_info_handler(smc_fid, handle);
 #endif
