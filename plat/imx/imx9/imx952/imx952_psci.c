@@ -80,6 +80,8 @@
 #define DEBUG_WAKEUP_MASK BIT(1)
 #define EVENT_WAKEUP_MASK BIT(0)
 
+extern void ele_release_gmid(void);
+
 static bool boot_stage[6] = {false, true, true, true, true, true};
 static unsigned int scmi_cpu_id[] = {
 	IMX9_SCMI_CPU_A55C0, IMX9_SCMI_CPU_A55C1,
@@ -211,6 +213,27 @@ void peripheral_qchannel_hsk(bool en, uint32_t last_core)
 	scmi_per_lpm_mode_set(imx9_scmi_handle, scmi_cpu_id[last_core],
 			num_hsks_enabled, per_lpm);
 }
+
+#if !IMX_CRRM
+
+static uint32_t xspi_mto;
+
+void xspi_save(void)
+{
+	/* Save the XSPI MTO register */
+	xspi_mto  = mmio_read_32(XSPI1_BASE + XSPI_MTO);
+}
+
+void xspi_restore(void)
+{
+	/* request the GMID first */
+	ele_release_gmid();
+	mmio_write_32(XSPI1_BASE + XSPI_MTO, xspi_mto);
+}
+#else
+void xspi_save(void) {}
+void xspi_restore(void){}
+#endif
 
 void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
 {
@@ -426,6 +449,7 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 
 	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
 		nocmix_pwr_down(core_id);
+		xspi_save();
 		keep_wakupmix_on = has_wakeup_irq;
 #if IMX_CRRM
 		keep_wakupmix_on = true;
@@ -468,6 +492,7 @@ void imx_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 	/* system level */
 	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
 		nocmix_pwr_up(core_id);
+		xspi_restore();
 		struct scmi_lpm_config cpu_lpm_cfg[] = {
 			{
 				cpu_info[IMX9_A55P_IDX].cpu_pd_id,
