@@ -40,6 +40,7 @@ BL31_SOURCES		+=	drivers/arm/css/scmi/scmi_common.c		\
 				plat/imx/imx9/common/plat_topology.c		\
 				plat/imx/imx9/imx952/imx952_bl31_setup.c	\
 				plat/imx/imx9/imx952/imx952_psci.c		\
+				plat/imx/imx9/imx952/imx952_m7.c		\
 				lib/cpus/aarch64/cortex_a55.S			\
 				${XLAT_TABLES_LIB_SRCS}
 
