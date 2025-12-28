@@ -80,6 +80,12 @@
 #define DEBUG_WAKEUP_MASK BIT(1)
 #define EVENT_WAKEUP_MASK BIT(0)
 
+#define GPIO_S_BASE(x)		((x) | BIT(28))
+#define GPIO_CTRL_REG_NUM	U(8)
+#define GPIO_PIN_MAX_NUM	U(32)
+#define GPIO_CTX(addr, num)	\
+	{.base = (addr), .pin_num = (num), }
+
 extern void ele_release_gmid(void);
 
 static bool boot_stage[6] = {false, true, true, true, true, true};
@@ -140,6 +146,7 @@ static uint32_t wakeup_irq_mask[IMR_NUM] = {
 	0x0, 0x10000
 };
 
+static bool gpio_wakeup;
 static bool has_wakeup_irq;
 
 static struct qchannel_hsk_config {
@@ -163,6 +170,22 @@ static struct qchannel_hsk_config {
 	{ CPU_PER_LPI_IDX_GPIO3 },
 	{ CPU_PER_LPI_IDX_GPIO4 },
 	{ CPU_PER_LPI_IDX_GPIO5 },
+};
+
+static uint32_t gpio_ctrl_offset[GPIO_CTRL_REG_NUM] = { 0xc, 0x10, 0x14, 0x18, 0x1c, 0x40, 0x54, 0x58 };
+struct gpio_ctx {
+	/* gpio base */
+	uintptr_t base;
+	/* port control */
+	uint32_t port_ctrl[GPIO_CTRL_REG_NUM];
+	/* GPIO ICR, Max 32 */
+	uint32_t pin_num;
+	uint32_t gpio_icr[GPIO_PIN_MAX_NUM];
+} wakeupmix_gpio_ctx[4] = {
+	GPIO_CTX(GPIO2_BASE,  32),
+	GPIO_CTX(GPIO3_BASE,  32),
+	GPIO_CTX(GPIO4_BASE,  30),
+	GPIO_CTX(GPIO5_BASE,  18),
 };
 
 static inline void is_wakeup_source(unsigned int gic_irq_mask,
@@ -212,6 +235,71 @@ void peripheral_qchannel_hsk(bool en, uint32_t last_core)
 
 	scmi_per_lpm_mode_set(imx9_scmi_handle, scmi_cpu_id[last_core],
 			num_hsks_enabled, per_lpm);
+}
+
+void gpio_save(struct gpio_ctx *ctx, unsigned int port_num)
+{
+	unsigned int i, j;
+
+	for (i = 0; i < port_num; i++) {
+		/* save the port control setting */
+		for (j = 0; j < GPIO_CTRL_REG_NUM; j++) {
+			if (j < 4) {
+				ctx->port_ctrl[j] = mmio_read_32(ctx->base + gpio_ctrl_offset[j]);
+				/*
+				 * clear the permission setting to read the GPIO non-secure world setting.
+				*/
+				mmio_write_32(ctx->base + gpio_ctrl_offset[j], 0x0);
+			} else {
+				ctx->port_ctrl[j] = mmio_read_32(ctx->base + gpio_ctrl_offset[j]);
+			}
+		}
+
+		/* save the gpio icr setting */
+		for (j = 0; j < ctx->pin_num; j++) {
+			ctx->gpio_icr[j] = mmio_read_32(ctx->base + 0x80 + j * 4);
+
+			/* check if any gpio irq is enabled as wakeup source */
+			if (ctx->gpio_icr[j]) {
+				gpio_wakeup = true;
+				INFO("gpio:%lx, %d has wakeup enabled\n", ctx->base, j);
+			}
+		}
+
+		/* permission config retore back */
+		for (j = 0; j < 4; j++) {
+			mmio_write_32(ctx->base + gpio_ctrl_offset[j], ctx->port_ctrl[j]);
+		}
+
+		ctx++;
+	}
+}
+
+void gpio_restore(struct gpio_ctx *ctx, int port_num)
+{
+	unsigned int i, j;
+
+	for (i = 0; i < port_num; i++) {
+		/* permission config retore back */
+		for (j = 0; j < 4; j++) {
+			mmio_write_32(ctx->base + gpio_ctrl_offset[j], 0x0);
+		}
+
+		for (j = 0; j < ctx->pin_num; j++)
+			mmio_write_32(ctx->base + 0x80 + j * 4, ctx->gpio_icr[j]);
+
+		for (j = 4; j < GPIO_CTRL_REG_NUM; j++)
+			mmio_write_32(ctx->base + gpio_ctrl_offset[j], ctx->port_ctrl[j]);
+
+		/* permission config retore last */
+		for (j = 0; j < 4; j++) {
+			mmio_write_32(ctx->base + gpio_ctrl_offset[j], ctx->port_ctrl[j]);
+		}
+
+		ctx++;
+	}
+
+	gpio_wakeup = false;
 }
 
 #if !IMX_CRRM
@@ -450,7 +538,8 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
 		nocmix_pwr_down(core_id);
 		xspi_save();
-		keep_wakupmix_on = has_wakeup_irq;
+		gpio_save(wakeupmix_gpio_ctx, 4);
+		keep_wakupmix_on = gpio_wakeup || has_wakeup_irq;
 #if IMX_CRRM
 		keep_wakupmix_on = true;
 #endif
@@ -493,6 +582,7 @@ void imx_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
 		nocmix_pwr_up(core_id);
 		xspi_restore();
+		gpio_restore(wakeupmix_gpio_ctx, 4);
 		struct scmi_lpm_config cpu_lpm_cfg[] = {
 			{
 				cpu_info[IMX9_A55P_IDX].cpu_pd_id,
