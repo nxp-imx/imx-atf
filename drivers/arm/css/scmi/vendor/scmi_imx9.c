@@ -496,7 +496,7 @@ int scmi_core_info_get(void *p, uint32_t cpu_id, uint32_t *runmode,
 	SCMI_PAYLOAD_RET_VAL5(mbx_mem->payload, ret, *runmode, *sleepmode,
 			      lo_addr, hi_addr);
 	*vector = lo_addr | (uint64_t)hi_addr << 32;
-	assert(mbx_mem->len == IMX9_SCMI_CORE_START_RESP_LEN);
+	assert(mbx_mem->len == IMX9_SCMI_CORE_GETINFO_RESP_LEN);
 	assert(token == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
 
 	scmi_put_channel(ch);
