@@ -34,7 +34,7 @@ int scmi_base_protocol_attributes(void *p, uint32_t *num_protocols, uint32_t *nu
 
 	/* Get the return values */
 	SCMI_PAYLOAD_RET_VAL2(mbx_mem->payload, ret, attr);
-	assert(mbx_mem->len == SCMI_BASE_RESET_AGENT_CONFIGURATION_RESP_LEN);
+	assert(mbx_mem->len == SCMI_PROTO_ATTR_RESP_LEN);
 	assert(token == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
 
 	scmi_put_channel(ch);
