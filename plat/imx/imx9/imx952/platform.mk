@@ -48,6 +48,10 @@ BL31_SOURCES		+=	drivers/arm/css/scmi/scmi_common.c		\
 				${IMX_GIC_SOURCES}				\
 				${XLAT_TABLES_LIB_SRCS}
 
+ifeq (${SPD},trusty)
+	BL31_SOURCES += plat/imx/common/ffa_shared_mem.c
+endif
+
 RESET_TO_BL31		:=	1
 HW_ASSISTED_COHERENCY	:= 	1
 USE_COHERENT_MEM	:=	0
