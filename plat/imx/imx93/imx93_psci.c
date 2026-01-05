@@ -155,6 +155,14 @@ static uint32_t clock_root[6];
 static uint32_t wdog_val[3][2];
 
 /*
+ * Flag used to check if the system is suspend while M33 is not active.
+ * If so, we need to restore all the configs done by A55 to make sure
+ * the suspend/resume flow is correct as the M33 may in active status
+ * while A55 is doing resume.
+ */
+bool restore_all = false;
+
+/*
  * Empty implementation of these hooks avoid setting the GICR_WAKER.Sleep bit
  * on ARM GICv3 implementations without LPI support.
  */
@@ -809,6 +817,7 @@ void imx_pwr_domain_suspend(const psci_power_state_t *target_state)
 
 			/* power down PLL */
 			pll_pwr_down(true);
+			restore_all = true;
 		}
 
 		peripheral_qchannel_hsk(true);
@@ -847,7 +856,7 @@ void imx_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 		/* Disable OSC power down */
 		gpc_rosc_off(false);
 		peripheral_qchannel_hsk(false);
-		if (is_m33_active()) {
+		if (is_m33_active() && !restore_all) {
 			pll_pwr_down(false);
 
 			sema42_lock(0);
@@ -866,6 +875,7 @@ void imx_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 
 			sema42_unlock(0);
 		} else {
+			restore_all = false;
 			/* power down PLL */
 			pll_pwr_down(false);
 			nicmix_pwr_up(core_id);

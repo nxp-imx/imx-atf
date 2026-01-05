@@ -69,6 +69,12 @@
 
 #define IMX_SIP_MISC_SET_TEMP		0xC200000C
 
+#if defined(PLAT_imx93)
+#define IMX_SIP_BBSM			0xC200000D
+#define IMX_SIP_BBSM_CLEAR_INTERRUPT	0x01
+#define IMX_SIP_BBSM_READ_TAMPER_STATUS 0x02
+#endif
+
 #define IMX_SIP_AARCH32			0xC20000FD
 
 int imx_kernel_entry_handler(uint32_t smc_fid, u_register_t x1,
@@ -158,6 +164,7 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1,
 		    u_register_t x2, u_register_t x3, void *handle);
 int dram_dvfs_handler(uint32_t smc_fid, void *handle,
 	u_register_t x1, u_register_t x2, u_register_t x3);
+int imx_bbsm_handler(uint32_t smc_fid, u_register_t x1, void *handle);
 #endif
 #if defined(PLAT_imx95)
 int imx_src_handler(uint32_t smc_fid, u_register_t x1,

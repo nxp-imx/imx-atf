@@ -137,3 +137,52 @@ int ele_get_trng(void* addr, uint32_t len)
 
 	return 0;
 }
+
+#if defined(PLAT_imx93)
+#define ELE_RT_MU_RSR		(ELE_RT_MU_BASE + 0x12c)
+#define ELE_RT_MU_TRx(i)	(ELE_RT_MU_BASE + 0x200 + (i) * 4)
+#define ELE_RT_MU_RRx(i)	(ELE_RT_MU_BASE + 0x280 + (i) * 4)
+/*
+ * During Interrupt Handling for Tamper interrupt, need to send this Program
+ * BBSM API command for Clear Interrupt operation, as result of SMC call.
+ * Already allocated MU(s) (Normal, Trust) cannot be used for this task,
+ * as this command may overwrite their existing MU data, hence using RT MU here.
+ */
+int ele_program_bbsm(uint8_t operation, uint16_t policy_mask, uint32_t reg_offset,
+		     uint32_t reg_value, uint32_t *resp, uint32_t *ret_reg_value)
+{
+	int ret = 0;
+	uint32_t msg_op_policy, rsr_status, resp_hdr, resp_code, resp_reg_value;
+
+	msg_op_policy = (policy_mask << 16) | operation;
+
+	mmio_write_32(ELE_RT_MU_TRx(0), ELE_PROGRAM_BBSM_REQ);
+	mmio_write_32(ELE_RT_MU_TRx(1), msg_op_policy);
+	mmio_write_32(ELE_RT_MU_TRx(2), reg_offset);
+	mmio_write_32(ELE_RT_MU_TRx(3), reg_value);
+
+	do {
+		rsr_status = mmio_read_32(ELE_RT_MU_RSR);
+	} while ((rsr_status & 0x7) != 0x7);
+
+	resp_hdr = mmio_read_32(ELE_RT_MU_RRx(0));
+	resp_code = mmio_read_32(ELE_RT_MU_RRx(1));
+	resp_reg_value = mmio_read_32(ELE_RT_MU_RRx(2));
+
+	VERBOSE("resp_hdr: %x, resp_code: %x, resp_reg_value %x\n",
+		resp_hdr, resp_code, resp_reg_value);
+
+	if (resp_code != ELE_SUCCESS_STATUS) {
+		NOTICE("Program BBSM API operation failed!\n");
+		ret = -1;
+	}
+
+	if (resp)
+		*resp = resp_code;
+
+	if (ret_reg_value)
+		*ret_reg_value = resp_reg_value;
+
+	return ret;
+}
+#endif
