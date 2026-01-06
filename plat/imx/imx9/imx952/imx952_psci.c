@@ -108,6 +108,7 @@ sleep_mode[7:4] - sleep mode performance level
 	{.base = (addr), .pin_num = (num), }
 
 #define NETC_IREC_PCI_INT_X0	304
+#define NETC_IREC_PCI_INT_X1	305
 
 extern void ele_release_gmid(void);
 
@@ -163,12 +164,12 @@ static uint32_t wdog_val[2][2];
  * enabled as the wakeup source:
  * lpuart3-8: 64-69, flexcan2,3: 38, 40
  * usdhc1,2,3: 86, 87, 191
- * netc: 304
+ * netc: 304,305
  */
 static uint32_t wakeup_irq_mask[IMR_NUM] = {
 	0x0, 0x0140, 0xc0003f, 0x0,
 	0x0, 0x80000000, 0x0, 0x0,
-	0x0, 0x10000
+	0x0, 0x30000
 };
 
 static bool gpio_wakeup;
@@ -422,11 +423,17 @@ void imx_set_sys_wakeup(unsigned int last_core, bool pdn)
 
 		if ((irq_mask[i] & wakeup_irq_mask[i]) != wakeup_irq_mask[i]) {
 			/* Check whether netc irec pci int_x0 is allowed for wakeup */
-			if ((i == (NETC_IREC_PCI_INT_X0 >> 5)) &&
-			    (wakeup_irq_mask[i] & (1 << (NETC_IREC_PCI_INT_X0 % 32))))
+			if ((i == (NETC_IREC_PCI_INT_X1 >> 5)) &&
+			    (~irq_mask[i] & (1 << (NETC_IREC_PCI_INT_X1 % 32)))) {
 				has_netc_irq = true;
-			else
+				/* 2.5G requires keep GPIO state */
+				gpio_wakeup = true;
+			} else if ((i == (NETC_IREC_PCI_INT_X0 >> 5)) &&
+			    (~irq_mask[i] & (1 << (NETC_IREC_PCI_INT_X0 % 32)))) {
+				has_netc_irq = true;
+			} else {
 				has_wakeup_irq = true;
+			}
 		}
 	}
 
