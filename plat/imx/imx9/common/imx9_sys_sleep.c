@@ -182,6 +182,13 @@ void imx_set_sys_wakeup(uint32_t last_core, bool pdn)
 			if (i == IRQ_MASK(NETC_IREC_PCI_INT_X0) &&
 			    (wakeup_irq_mask[i] & IRQ_SHIFT(NETC_IREC_PCI_INT_X0))) {
 				has_netc_irq = true;
+#if defined(PLAT_imx952)
+			} else if (i == IRQ_MASK(NETC_IREC_PCI_INT_X1) &&
+			    (wakeup_irq_mask[i] & IRQ_SHIFT(NETC_IREC_PCI_INT_X1))) {
+				has_netc_irq = true;
+				/* 2.5G requires keep GPIO state */
+				gpio_wakeup = true;
+#endif
 			} else {
 				has_wakeup_irq = true;
 			}
