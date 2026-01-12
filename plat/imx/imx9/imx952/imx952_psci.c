@@ -215,6 +215,14 @@ struct gpio_ctx {
 	GPIO_CTX(GPIO5_BASE,  18),
 };
 
+/* Serve as GPIO2 permission check by setting CPU_PER_LPI_IDX_GPIO2*/
+static struct scmi_per_lpm_config gpio2_lpm = {
+	.perId = CPU_PER_LPI_IDX_GPIO2,
+	.lpmSetting = SCMI_CPU_PD_LPM_ON_RUN_WAIT_STOP,
+};
+
+static bool gpio2_owned = true;
+
 static inline void is_wakeup_source(unsigned int gic_irq_mask,
 				    uint32_t idx)
 {
@@ -269,6 +277,8 @@ void gpio_save(struct gpio_ctx *ctx, unsigned int port_num)
 	unsigned int i, j;
 
 	for (i = 0; i < port_num; i++) {
+		if (ctx->base == GPIO2_BASE && gpio2_owned == false)
+			continue;
 		/* save the port control setting */
 		for (j = 0; j < GPIO_CTRL_REG_NUM; j++) {
 			if (j < 4) {
@@ -307,6 +317,8 @@ void gpio_restore(struct gpio_ctx *ctx, int port_num)
 	unsigned int i, j;
 
 	for (i = 0; i < port_num; i++) {
+		if (ctx->base == GPIO2_BASE && gpio2_owned == false)
+			continue;
 		/* permission config retore back */
 		for (j = 0; j < 4; j++) {
 			mmio_write_32(ctx->base + gpio_ctrl_offset[j], 0x0);
@@ -822,6 +834,7 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			const plat_psci_ops_t **psci_ops)
 {
 	uint32_t mask = DEBUG_WAKEUP_MASK | EVENT_WAKEUP_MASK;
+	int ret;
 
 	/* sec_entrypoint is used for warm reset */
 	secure_entrypoint = sec_entrypoint;
@@ -888,6 +901,17 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			      1, per_lpm);
 
 	*psci_ops = &imx_plat_psci_ops;
+
+	ret = scmi_per_lpm_mode_set(imx9_scmi_handle, scmi_cpu_id[IMX9_A55P_IDX], 1, &gpio2_lpm);
+	if (ret) {
+		gpio2_owned = false;
+		NOTICE("GPIO2 not owned by ATF\n");
+	} else {
+		mmio_write_32(GPIO2_BASE + 0x10, 0xffffffff);
+		mmio_write_32(GPIO2_BASE + 0x14, 0x3);
+		mmio_write_32(GPIO2_BASE + 0x18, 0xffffffff);
+		mmio_write_32(GPIO2_BASE + 0x1c, 0x3);
+	}
 
 	return 0;
 }
