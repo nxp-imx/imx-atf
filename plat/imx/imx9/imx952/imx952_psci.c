@@ -7,10 +7,16 @@
 #include <lib/psci/psci.h>
 #include <scmi_imx9.h>
 
+#include <common/debug.h>
+
+#include <lib/mmio.h>
+
 #include <imx9_psci_common.h>
 #include <imx9_sys_sleep.h>
 #include <imx_scmi_client.h>
 #include <plat_imx8.h>
+
+extern bool gpio2_owned;
 
 uint32_t mask_all[IMR_NUM] = {
 	0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
@@ -61,6 +67,12 @@ struct wdog_ctx wdogs[WDOG_NUM] = {
 	{ WDOG4_BASE },
 };
 
+/* Serve as GPIO2 permission check by setting CPU_PER_LPI_IDX_GPIO2*/
+static struct scmi_per_lpm_config gpio2_lpm = {
+	.perId = CPU_PER_LPI_IDX_GPIO2,
+	.lpmSetting = SCMI_CPU_PD_LPM_ON_RUN_WAIT_STOP,
+};
+
 static const plat_psci_ops_t imx_plat_psci_ops = {
 	.validate_ns_entrypoint = imx_validate_ns_entrypoint,
 	.validate_power_state = imx_validate_power_state,
@@ -81,6 +93,7 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			const plat_psci_ops_t **psci_ops)
 {
 	uint32_t mask = DEBUG_WAKEUP_MASK | EVENT_WAKEUP_MASK;
+	int ret;
 
 	/* sec_entrypoint is used for warm reset */
 	secure_entrypoint = sec_entrypoint;
@@ -149,6 +162,17 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			      1U, per_lpm);
 
 	*psci_ops = &imx_plat_psci_ops;
+
+	ret = scmi_per_lpm_mode_set(imx9_scmi_handle, IMX9_SCMI_CPU_A55P, 1, &gpio2_lpm);
+	if (ret) {
+		gpio2_owned = false;
+		NOTICE("GPIO2 not owned by ATF\n");
+	} else {
+		mmio_write_32(GPIO2_BASE + 0x10, 0xffffffff);
+		mmio_write_32(GPIO2_BASE + 0x14, 0x3);
+		mmio_write_32(GPIO2_BASE + 0x18, 0xffffffff);
+		mmio_write_32(GPIO2_BASE + 0x1c, 0x3);
+	}
 
 	return 0;
 }
