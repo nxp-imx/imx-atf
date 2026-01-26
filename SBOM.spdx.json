@@ -2,28 +2,16 @@
   "SPDXID": "SPDXRef-DOCUMENT",
   "spdxVersion": "SPDX-2.3",
   "creationInfo": {
-    "created": "2025-08-24T08:07:16Z",
+    "created": "2025-11-12T06:53:45Z",
     "creators": [
       "Organization: NXP"
     ],
     "licenseListVersion": "3.20"
   },
-  "name": "imx-atf-LF_6.12.34_2.1.0",
+  "name": "imx-atf-LF_6.12.49_2.2.0",
   "dataLicense": "CC0-1.0",
-  "documentNamespace": "https://nxp.com/spdx/ae0b3235-3bb5-4eea-aebb-398608df74e6",
+  "documentNamespace": "https://nxp.com/spdx/9fb067d2-3b85-4268-823e-5b3a411ac09c",
   "packages": [
-    {
-      "SPDXID": "SPDXRef-package-ae0b3235-3bb5-4eea-aebb-398608df74e6",
-      "name": "imx-atf",
-      "versionInfo": "LF_6.12.34_2.1.0",
-      "licenseConcluded": "(BSD-3-Clause)",
-      "licenseDeclared": "(BSD-3-Clause)",
-      "downloadLocation": "https://github.com/nxp-imx/imx-atf -b lf-6.12.34-2.1.0",
-      "originator": "Organization: NXP",
-      "supplier": "NOASSERTION",
-      "externalRefs": [],
-      "filesAnalyzed": false
-    },
     {
       "SPDXID": "SPDXRef-package-103a6b4f-8a81-4816-9cbb-dea11270f99c",
       "name": "arm-trusted-firmware",
@@ -111,23 +99,35 @@
         }
       ],
       "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-9fb067d2-3b85-4268-823e-5b3a411ac09c",
+      "name": "imx-atf",
+      "versionInfo": "LF_6.12.49_2.2.0",
+      "licenseConcluded": "(BSD-3-Clause)",
+      "licenseDeclared": "(BSD-3-Clause)",
+      "downloadLocation": "https://github.com/nxp-imx/imx-atf -b lf-6.12.49-2.2.0",
+      "originator": "Organization: NXP",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
     }
   ],
   "relationships": [
     {
-      "spdxElementId": "SPDXRef-DOCUMENT",
-      "relationshipType": "DESCRIBES",
-      "relatedSpdxElement": "SPDXRef-package-ae0b3235-3bb5-4eea-aebb-398608df74e6"
-    },
-    {
-      "spdxElementId": "SPDXRef-package-ae0b3235-3bb5-4eea-aebb-398608df74e6",
+      "spdxElementId": "SPDXRef-package-9fb067d2-3b85-4268-823e-5b3a411ac09c",
       "relationshipType": "CONTAINS",
       "relatedSpdxElement": "SPDXRef-package-103a6b4f-8a81-4816-9cbb-dea11270f99c"
     },
     {
-      "spdxElementId": "SPDXRef-package-ae0b3235-3bb5-4eea-aebb-398608df74e6",
+      "spdxElementId": "SPDXRef-package-9fb067d2-3b85-4268-823e-5b3a411ac09c",
       "relationshipType": "CONTAINS",
       "relatedSpdxElement": "SPDXRef-package-8a06482c-8810-4d2b-8883-13fb809d6045"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-package-9fb067d2-3b85-4268-823e-5b3a411ac09c"
     }
   ]
 }

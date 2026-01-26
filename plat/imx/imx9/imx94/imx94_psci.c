@@ -186,10 +186,10 @@ static struct qchannel_hsk_config {
 /*
  * IRQ masks used to check if any of the below IRQ is
  * enabled as the wakeup source:
- * lpuart1: 21, flexcan2-5: 40, 42, 44, 46, usdhc1-3: 96, 97, 116
+ * flexcan2-5: 40, 42, 44, 46, usdhc1-3: 96, 97, 116
  */
 static uint32_t wakeupmix_irq_mask[IMR_NUM] = {
-	0x600000, 0x5500, 0xFFC0, 0x100003, 0x0, 0x0, 0x0, 0x0,
+	0x0, 0x5500, 0xFFC0, 0x100003, 0x0, 0x0, 0x0, 0x0,
 	0x0, 0x0, 0x0, 0x80,
 };
 
