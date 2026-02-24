@@ -37,6 +37,11 @@ static entry_point_info_t bl33_image_ep_info;
 extern const mmap_region_t imx_mmap[];
 extern uintptr_t gpio_base[GPIO_NUM];
 
+uintptr_t gicr_base_addrs[2] = {
+	PLAT_ARM_GICR_BASE,	/* GICR Base address of the primary CPU */
+	0U			/* Zero Termination */
+};
+
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		u_register_t arg2, u_register_t arg3)
 {
@@ -126,6 +131,10 @@ void bl31_platform_setup(void)
 		gicr_ctlr = gicr_read_ctlr(gicr_base);
 		gicr_write_ctlr(gicr_base, gicr_ctlr & ~(GICR_CTLR_EN_LPIS_BIT));
 	}
+
+extern void gic_set_gicr_frames(const uintptr_t *plat_gicr_frames);
+
+	gic_set_gicr_frames(gicr_base_addrs);
 
 	/* get soc info */
 	ele_get_soc_info();
