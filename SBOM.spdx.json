@@ -2,16 +2,28 @@
   "SPDXID": "SPDXRef-DOCUMENT",
   "spdxVersion": "SPDX-2.3",
   "creationInfo": {
-    "created": "2025-11-12T06:53:45Z",
+    "created": "2026-01-26T02:07:30Z",
     "creators": [
       "Organization: NXP"
     ],
-    "licenseListVersion": "3.20"
+    "licenseListVersion": "3.26"
   },
-  "name": "imx-atf-LF_6.12.49_2.2.0",
+  "name": "imx-atf-LF_6.18.2_1.0.0",
   "dataLicense": "CC0-1.0",
-  "documentNamespace": "https://nxp.com/spdx/9fb067d2-3b85-4268-823e-5b3a411ac09c",
+  "documentNamespace": "https://nxp.com/spdx/533dd8b7-0ff3-4d5d-821a-f98747c8a966",
   "packages": [
+    {
+      "SPDXID": "SPDXRef-package-533dd8b7-0ff3-4d5d-821a-f98747c8a966",
+      "name": "imx-atf",
+      "versionInfo": "LF_6.18.2_1.0.0",
+      "licenseConcluded": "(BSD-3-Clause)",
+      "licenseDeclared": "(BSD-3-Clause)",
+      "downloadLocation": "https://github.com/nxp-imx/imx-atf -b lf-6.18.2-1.0.0",
+      "originator": "Organization: NXP",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
     {
       "SPDXID": "SPDXRef-package-103a6b4f-8a81-4816-9cbb-dea11270f99c",
       "name": "arm-trusted-firmware",
@@ -24,8 +36,18 @@
       "supplier": "NOASSERTION",
       "externalRefs": [
         {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "9d6aa262-5f01-46cb-b1e3-d7e7008d0193",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
           "referenceCategory": "SECURITY",
-          "referenceLocator": "cpe:2.3:a:arm:trusted_firmware-a:2.12:*:*:*:*:*:*:*",
+          "referenceLocator": "cpe:2.3:a:arm:arm_trusted_firmware:2.12.0:*:*:*:*:*:*:*",
+          "referenceType": "cpe23Type"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceLocator": "cpe:2.3:a:arm:arm_trusted_firmware:2.12:*:*:*:*:*:*:*",
           "referenceType": "cpe23Type"
         },
         {
@@ -35,7 +57,7 @@
         },
         {
           "referenceCategory": "SECURITY",
-          "referenceLocator": "cpe:2.3:a:arm:arm_trusted_firmware:2.12.0:*:*:*:*:*:*:*",
+          "referenceLocator": "cpe:2.3:a:arm:trusted_firmware-a:2.12:*:*:*:*:*:*:*",
           "referenceType": "cpe23Type"
         },
         {
@@ -44,19 +66,9 @@
           "referenceType": "cpe23Type"
         },
         {
-          "referenceCategory": "SECURITY",
-          "referenceLocator": "cpe:2.3:a:arm:arm_trusted_firmware:2.12:*:*:*:*:*:*:*",
-          "referenceType": "cpe23Type"
-        },
-        {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceLocator": "pkg:github/ARM-software/arm-trusted-firmware@v2.12.0",
           "referenceType": "purl"
-        },
-        {
-          "referenceCategory": "OTHER",
-          "referenceLocator": "9d6aa262-5f01-46cb-b1e3-d7e7008d0193",
-          "referenceType": "BlackDuck-ComponentOrigin"
         }
       ],
       "filesAnalyzed": false
@@ -74,17 +86,17 @@
       "externalRefs": [
         {
           "referenceCategory": "SECURITY",
-          "referenceLocator": "cpe:2.3:a:almalinux_package:mingw64-zlib-static:1.3.1:*:*:*:*:*:*:*",
-          "referenceType": "cpe23Type"
-        },
-        {
-          "referenceCategory": "SECURITY",
           "referenceLocator": "cpe:2.3:a:almalinux_package:mingw32-zlib-static:1.3.1:*:*:*:*:*:*:*",
           "referenceType": "cpe23Type"
         },
         {
           "referenceCategory": "SECURITY",
           "referenceLocator": "cpe:2.3:a:almalinux_package:mingw32-zlib:1.3.1:*:*:*:*:*:*:*",
+          "referenceType": "cpe23Type"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceLocator": "cpe:2.3:a:almalinux_package:mingw64-zlib-static:1.3.1:*:*:*:*:*:*:*",
           "referenceType": "cpe23Type"
         },
         {
@@ -99,35 +111,23 @@
         }
       ],
       "filesAnalyzed": false
-    },
-    {
-      "SPDXID": "SPDXRef-package-9fb067d2-3b85-4268-823e-5b3a411ac09c",
-      "name": "imx-atf",
-      "versionInfo": "LF_6.12.49_2.2.0",
-      "licenseConcluded": "(BSD-3-Clause)",
-      "licenseDeclared": "(BSD-3-Clause)",
-      "downloadLocation": "https://github.com/nxp-imx/imx-atf -b lf-6.12.49-2.2.0",
-      "originator": "Organization: NXP",
-      "supplier": "NOASSERTION",
-      "externalRefs": [],
-      "filesAnalyzed": false
     }
   ],
   "relationships": [
     {
-      "spdxElementId": "SPDXRef-package-9fb067d2-3b85-4268-823e-5b3a411ac09c",
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-package-533dd8b7-0ff3-4d5d-821a-f98747c8a966"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-533dd8b7-0ff3-4d5d-821a-f98747c8a966",
       "relationshipType": "CONTAINS",
       "relatedSpdxElement": "SPDXRef-package-103a6b4f-8a81-4816-9cbb-dea11270f99c"
     },
     {
-      "spdxElementId": "SPDXRef-package-9fb067d2-3b85-4268-823e-5b3a411ac09c",
+      "spdxElementId": "SPDXRef-package-533dd8b7-0ff3-4d5d-821a-f98747c8a966",
       "relationshipType": "CONTAINS",
       "relatedSpdxElement": "SPDXRef-package-8a06482c-8810-4d2b-8883-13fb809d6045"
-    },
-    {
-      "spdxElementId": "SPDXRef-DOCUMENT",
-      "relationshipType": "DESCRIBES",
-      "relatedSpdxElement": "SPDXRef-package-9fb067d2-3b85-4268-823e-5b3a411ac09c"
     }
   ]
 }
