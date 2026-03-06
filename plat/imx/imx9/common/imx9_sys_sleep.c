@@ -15,7 +15,7 @@
 #include <imx_scmi_client.h>
 #include <plat_imx8.h>
 
-#define IRQ_MASK(x)	irq_mask[(x) / 32U]
+#define IRQ_MASK(x)	((x) / 32U)
 #define IRQ_SHIFT(x)	(1U << (x) % 32U)
 
 static uint32_t irq_mask[IMR_NUM] = { 0x0 };
@@ -174,6 +174,10 @@ void imx_set_sys_wakeup(uint32_t last_core, bool pdn)
 {
 	uintptr_t gicd_base = PLAT_GICD_BASE;
 
+	/* Clear the wakeup and netc irq enabled flags */
+	has_wakeup_irq = false;
+	has_netc_irq = false;
+
 	/* Set the GPC IMRs based on GIC IRQ mask setting */
 	for (uint32_t i = 0U; i < IMR_NUM; i++) {
 		if (pdn) {
@@ -268,6 +272,4 @@ void imx9_sys_sleep_unprepare(uint32_t core_id)
 	}
 
 	imx_set_sys_wakeup(core_id, false);
-
-	has_wakeup_irq = false;
 }
