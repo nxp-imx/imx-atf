@@ -205,6 +205,14 @@ static void __dead2 imx_wdog_restart(bool external_reset)
 		val |= WDOG_WCR_SRS;
 	} else {
 		/*
+		 * Set the core's RVBARADDR to ROM entry as these register can not
+		 * be reset if WDOG internal reset is used.
+		 */
+		for (int i = 0U; i < PLATFORM_CORE_COUNT; i++) {
+			imx_set_cpu_secure_entry(i, 0x0U);
+		}
+
+		/*
 		 * To assert Software Reset Signal (internal reset) we have
 		 * to set SRS bit to 0 (already set in previous step).
 		 * SRE bit is required to be set to 1 when used in
