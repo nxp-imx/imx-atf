@@ -29,6 +29,8 @@
 #include <plat_imx8.h>
 #include <platform_def.h>
 
+#define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
+
 extern gicv3_driver_data_t gic_data;
 
 static entry_point_info_t bl32_image_ep_info;
