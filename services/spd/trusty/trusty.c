@@ -27,7 +27,7 @@
 #include <tools_share/uuid.h>
 #include <trusty/smcall.h>
 #include <trusty/sm_err.h>
-#if defined(PLAT_imx8mq) || defined(PLAT_imx8mm) || defined(PLAT_imx8mn) ||defined(PLAT_imx8mp)
+#ifdef PLAT_imx8mq
 #include <drivers/arm/tzc380.h>
 #endif
 
@@ -540,10 +540,11 @@ static int32_t trusty_setup(void)
 	(void)mmap_remove_dynamic_region(ep_info->pc, PAGE_SIZE);
 #endif
 
-	/* configure tzc380 for imx8m */
-#if defined(PLAT_imx8mq) || defined(PLAT_imx8mm) || defined(PLAT_imx8mn) || defined(PLAT_imx8mp)
-	tzc380_configure_region(1, (BL32_BASE - IMX_DRAM_BASE), TZC_ATTR_REGION_SIZE(TZC_REGION_SIZE_32M) |
-			TZC_ATTR_REGION_EN_MASK | TZC_ATTR_SP_S_RW);
+	/* This is a placeholder to make the linker happy, it does
+	 * nothing other than init internal tzc380 data structure.
+	 */
+#ifdef PLAT_imx8mq
+	tzc380_init(IMX_TZASC_BASE);
 #endif
 
 	SET_PARAM_HEAD(ep_info, PARAM_EP, VERSION_1, SECURE | EP_ST_ENABLE);
