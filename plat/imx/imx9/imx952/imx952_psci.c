@@ -49,10 +49,10 @@ struct per_hsk_cfg per_hsk_cfg[] = {
 	{ CPU_PER_LPI_IDX_LPUART7, 68 },
 	{ CPU_PER_LPI_IDX_LPUART8, 69 },
 
-	{ CPU_PER_LPI_IDX_GPIO2 },
-	{ CPU_PER_LPI_IDX_GPIO3 },
-	{ CPU_PER_LPI_IDX_GPIO4 },
-	{ CPU_PER_LPI_IDX_GPIO5 },
+	{ CPU_PER_LPI_IDX_GPIO2, 49 },
+	{ CPU_PER_LPI_IDX_GPIO3, 51 },
+	{ CPU_PER_LPI_IDX_GPIO4, 53 },
+	{ CPU_PER_LPI_IDX_GPIO5, 55 },
 };
 
 struct gpio_ctx gpios[GPIO_NUM] = {
