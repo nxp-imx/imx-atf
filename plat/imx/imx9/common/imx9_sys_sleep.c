@@ -144,7 +144,7 @@ static void wdog_restore(struct wdog_ctx *wdog)
 
 static inline bool active_wakeup_irq(uint32_t irq)
 {
-	return !(IRQ_MASK(irq) & IRQ_SHIFT(irq));
+	return !(irq_mask[IRQ_MASK(irq)] & IRQ_SHIFT(irq));
 }
 
 /*
@@ -158,6 +158,11 @@ static void peripheral_qchannel_hsk(bool en)
 	uint32_t num_hsks = 0U;
 
 	for (uint32_t i = 0U; i < ARRAY_SIZE(per_hsk_cfg); i++) {
+		/* We assume the per_hsk_cfg array valid entry ends if wakeup_irq = 0 */
+		if (per_hsk_cfg[i].wakeup_irq == 0U) {
+			break;
+		}
+
 		if (active_wakeup_irq(per_hsk_cfg[i].wakeup_irq)) {
 			per_lpm[num_hsks].perId = per_hsk_cfg[i].per_idx;
 			per_lpm[num_hsks].lpmSetting = en ? SCMI_CPU_PD_LPM_ON_RUN_WAIT_STOP :
