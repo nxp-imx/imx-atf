@@ -5,6 +5,8 @@
  */
 
 #include <stdbool.h>
+#include <string.h>
+
 #include <common/runtime_svc.h>
 #include <drivers/arm/css/scmi.h>
 
