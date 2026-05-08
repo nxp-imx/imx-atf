@@ -33,7 +33,7 @@ static bool has_wakeup_irq;
 static bool gpio_wakeup;
 bool keep_wakeupmix_on;
 #if defined(PLAT_imx952)
-bool gpio2_owned;
+bool gpio2_owned = true;
 #endif
 
 #if HAS_XSPI_SUPPORT && !IMX_CRRM
