@@ -187,7 +187,7 @@ int psci_cpu_suspend_start(unsigned int idx,
 
 	if (is_power_down_state != 0U) {
 		max_off_lvl = psci_find_max_off_lvl(state_info);
-		psci_suspend_to_pwrdown_start(idx, end_pwrlvl, end_pwrlvl, state_info);
+		psci_suspend_to_pwrdown_start(idx, end_pwrlvl, max_off_lvl, state_info);
 	}
 
 #if USE_GIC_DRIVER

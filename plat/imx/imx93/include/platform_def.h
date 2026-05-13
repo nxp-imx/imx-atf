@@ -7,7 +7,6 @@
 #define PLATFORM_DEF_H
 
 #include <lib/utils_def.h>
-#include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/common/common_def.h>
 
 #define PLATFORM_LINKER_FORMAT		"elf64-littleaarch64"
