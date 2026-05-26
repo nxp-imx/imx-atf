@@ -32,7 +32,7 @@ bool has_netc_irq;
 static uint32_t wakeup_mark_count;
 static bool gpio_wakeup;
 bool keep_wakeupmix_on;
-#if defined(PLAT_imx952)
+#if defined(PLAT_imx952) || defined(PLAT_imx937)
 bool gpio2_owned = true;
 #endif
 
@@ -202,7 +202,7 @@ void imx_set_sys_wakeup(uint32_t last_core, bool pdn)
 		/* If mask is not zero, increase the mark_count */
 		wakeup_mark_count++;
 
-#if defined(PLAT_imx952)
+#if defined(PLAT_imx952) || defined(PLAT_imx937)
 		if (i == IRQ_MASK(NETC_IREC_PCI_INT_X1) &&
 		    (mask & IRQ_SHIFT(NETC_IREC_PCI_INT_X1))) {
 			has_netc_irq = true;
@@ -241,7 +241,7 @@ void imx9_sys_sleep_prepare(uint32_t core_id)
 
 	/* Save contex of gpios in wakeupmix */
 	for (uint32_t i = 0U; i < GPIO_NUM; i++) {
-#if defined(PLAT_imx952)
+#if defined(PLAT_imx952) || defined(PLAT_imx937)
 		if (gpios[i].base == GPIO2_BASE && gpio2_owned == false)
 			continue;
 #endif
@@ -277,7 +277,7 @@ void imx9_sys_sleep_unprepare(uint32_t core_id)
 #endif
 	/* Restore contex of gpios in wakeupmix */
 	for (uint32_t i = 0U; i < GPIO_NUM; i++) {
-#if defined(PLAT_imx952)
+#if defined(PLAT_imx952) || defined(PLAT_imx937)
 		if (gpios[i].base == GPIO2_BASE && gpio2_owned == false)
 			continue;
 #endif

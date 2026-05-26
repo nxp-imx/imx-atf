@@ -90,10 +90,10 @@ void bl31_plat_arch_setup(void)
 {
 	unsigned int gpio_num;
 
-#if defined(PLAT_imx952)
+#if defined(PLAT_imx952) || defined(PLAT_imx937)
 	/*
 	 * GPIO2 configuration should be skipped at this stage
-	 * for i.MX952.
+	 * for i.MX952 and i.MX937.
 	 */
 	gpio_num = GPIO_NUM - 1U;
 #else
