@@ -45,6 +45,10 @@ void ele_get_soc_info(void)
 	msg = mmio_read_32(ELE_MU_RRx(0));
 	resp = mmio_read_32(ELE_MU_RRx(1));
 	VERBOSE("msg : %x, resp: %x\n", msg, resp);
+
+#if defined(PLAT_imx95)
+	soc_info.soc &= 0xFFFFFF00;
+#endif
 }
 
 void ele_release_gmid(void)
