@@ -29,7 +29,7 @@ static const uint32_t gpio_ctrl_offset[GPIO_CTRL_REG_NUM] = {
 struct plat_gic_ctx imx_gicv3_ctx;
 
 bool has_netc_irq;
-static bool has_wakeup_irq;
+static uint32_t wakeup_mark_count;
 static bool gpio_wakeup;
 bool keep_wakeupmix_on;
 #if defined(PLAT_imx952)
@@ -178,9 +178,10 @@ static void peripheral_qchannel_hsk(bool en)
 void imx_set_sys_wakeup(uint32_t last_core, bool pdn)
 {
 	uintptr_t gicd_base = PLAT_GICD_BASE;
+	uint32_t mask;
 
 	/* Clear the wakeup and netc irq enabled flags */
-	has_wakeup_irq = false;
+	wakeup_mark_count = 0;
 	has_netc_irq = false;
 
 	/* Set the GPC IMRs based on GIC IRQ mask setting */
@@ -193,20 +194,32 @@ void imx_set_sys_wakeup(uint32_t last_core, bool pdn)
 			irq_mask[i] = 0xFFFFFFFF;
 		}
 
-		if (~irq_mask[i] & wakeup_irq_mask[i]) {
-			if (i == IRQ_MASK(NETC_IREC_PCI_INT_X0) &&
-			    (wakeup_irq_mask[i] & IRQ_SHIFT(NETC_IREC_PCI_INT_X0))) {
-				has_netc_irq = true;
+		mask = ~irq_mask[i] & wakeup_irq_mask[i];
+
+		if (!mask)
+			continue;
+
+		/* If mask is not zero, increase the mark_count */
+		wakeup_mark_count++;
+
 #if defined(PLAT_imx952)
-			} else if (i == IRQ_MASK(NETC_IREC_PCI_INT_X1) &&
-			    (wakeup_irq_mask[i] & IRQ_SHIFT(NETC_IREC_PCI_INT_X1))) {
-				has_netc_irq = true;
-				/* 2.5G requires keep GPIO state */
-				gpio_wakeup = true;
+		if (i == IRQ_MASK(NETC_IREC_PCI_INT_X1) &&
+		    (mask & IRQ_SHIFT(NETC_IREC_PCI_INT_X1))) {
+			has_netc_irq = true;
+			/* SGMII requires keep GPIO state */
+			gpio_wakeup = true;
+		}
 #endif
-			} else {
-				has_wakeup_irq = true;
-			}
+
+		if (i == IRQ_MASK(NETC_IREC_PCI_INT_X0) &&
+		    (mask & IRQ_SHIFT(NETC_IREC_PCI_INT_X0))) {
+			/*
+			 * If only this NETC interrupt in the mask, no need
+			 * enable wakeupmix wakeup
+			 */
+			if (mask == IRQ_SHIFT(NETC_IREC_PCI_INT_X0))
+				wakeup_mark_count--;
+			has_netc_irq = true;
 		}
 	}
 
@@ -245,7 +258,7 @@ void imx9_sys_sleep_prepare(uint32_t core_id)
 #endif
 	imx_set_sys_wakeup(core_id, true);
 
-	keep_wakeupmix_on = gpio_wakeup || has_wakeup_irq;
+	keep_wakeupmix_on = gpio_wakeup || wakeup_mark_count;
 
 #if IMX_CRRM
 	/* Keep XSPI always on to avoid setting lost */
