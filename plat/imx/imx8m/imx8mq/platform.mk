@@ -108,3 +108,9 @@ ifeq (${IMX_ANDROID_BUILD},true)
 LOG_LEVEL := 0
 $(eval $(call add_define,IMX_ANDROID_BUILD))
 endif
+
+ifeq (${SPD},trusty)
+
+DDR_SIZE		?=	0xC0000000ULL
+$(eval $(call add_define,DDR_SIZE))
+endif

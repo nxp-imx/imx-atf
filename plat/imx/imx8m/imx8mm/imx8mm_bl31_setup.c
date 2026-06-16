@@ -329,6 +329,7 @@ void plat_trusty_set_boot_args(aapcs64_params_t *args)
 	args->arg0 = BL32_SIZE;
 	args->arg1 = BL32_BASE;
 	args->arg2 = TRUSTY_PARAMS_LEN_BYTES;
+	args->arg3 = DDR_SIZE;
 }
 #endif
 

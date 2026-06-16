@@ -202,6 +202,9 @@ IMX_SEPARATE_XLAT_TABLE :=	1
 BL31_SOURCES += plat/imx/common/ffa_shared_mem.c
 
 $(eval $(call add_define,IMX_SEPARATE_XLAT_TABLE))
+
+DDR_SIZE		?=	0x180000000ULL
+$(eval $(call add_define,DDR_SIZE))
 endif
 
 ifeq (${IMX_ANDROID_BUILD},true)
