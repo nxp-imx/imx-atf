@@ -356,7 +356,7 @@ void trdc_setup(struct trdc_config_info *cfg)
 			trdc_mrc_set_control(cfg->trdc_base,
 					     cfg->mrc_glbac[i].mbc_mrc_id,
 					     cfg->mrc_glbac[i].glbac_id,
-					     cfg->mrc_glbac[i].glbac_val | GLBAC_SETTING_MASK);
+					     cfg->mrc_glbac[i].glbac_val & GLBAC_SETTING_MASK);
 		}
 
 		/* set each MRC region access policy */
@@ -378,7 +378,7 @@ void trdc_setup(struct trdc_config_info *cfg)
 			trdc_mbc_set_control(cfg->trdc_base,
 					     cfg->mbc_glbac[i].mbc_mrc_id,
 					     cfg->mbc_glbac[i].glbac_id,
-					     cfg->mbc_glbac[i].glbac_val | GLBAC_SETTING_MASK);
+					     cfg->mbc_glbac[i].glbac_val & GLBAC_SETTING_MASK);
 		}
 
 		for (i = 0U; i < cfg->num_mbc_cfg; i++) {
