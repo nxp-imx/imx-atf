@@ -416,22 +416,25 @@ int scmi_per_lpm_mode_set(void *p, uint32_t cpu_id, uint32_t num_configs,
 	scmi_get_channel(ch);
 
 	do {
+		uint32_t xfer_configs = (num_configs > MAX_PER_LPI_CONFIGS_PER_CMD) ?
+				       MAX_PER_LPI_CONFIGS_PER_CMD : num_configs;
+
 		mbx_mem = (mailbox_mem_t *)(ch->info->scmi_mbx_mem);
 		mbx_mem->msg_header = SCMI_MSG_CREATE(IMX9_SCMI_CORE_PROTO_ID,
 				IMX9_SCMI_PER_LPMMODESET_MSG, token);
 		mbx_mem->len = IMX9_SCMI_PER_LPMMODESET_MSG_LEN +
-			       (num_configs * sizeof(struct scmi_per_lpm_config));
+			       (xfer_configs * sizeof(struct scmi_per_lpm_config));
 		mbx_mem->flags = SCMI_FLAG_RESP_POLL;
-		SCMI_PAYLOAD_ARG2(mbx_mem->payload, cpu_id, num_configs);
+		SCMI_PAYLOAD_ARG2(mbx_mem->payload, cpu_id, xfer_configs);
 
 		/* The lpm config starts from byte 2 in the payload memory */
 		unsigned int j = 2U;
 
-		for (unsigned int i = 0U; i < num_configs; i++) {
+		for (unsigned int i = 0U; i < xfer_configs; i++) {
 			mmio_write_32((uintptr_t)&mbx_mem->payload[j++],
-				      cfg[i].perId);
+				      tmp[i].perId);
 			mmio_write_32((uintptr_t)&mbx_mem->payload[j++],
-				      cfg[i].lpmSetting);
+				      tmp[i].lpmSetting);
 		}
 		scmi_send_sync_command(ch);
 
@@ -440,12 +443,8 @@ int scmi_per_lpm_mode_set(void *p, uint32_t cpu_id, uint32_t num_configs,
 		assert(mbx_mem->len == IMX9_SCMI_PER_LPMMODESET_RESP_LEN);
 		assert(token == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
 
-		if (num_configs > MAX_PER_LPI_CONFIGS_PER_CMD) {
-			num_configs -= MAX_PER_LPI_CONFIGS_PER_CMD;
-			tmp += MAX_PER_LPI_CONFIGS_PER_CMD;
-		} else {
-			break;
-		}
+		num_configs -= xfer_configs;
+		tmp += xfer_configs;
 	} while (num_configs);
 
 	scmi_put_channel(ch);
