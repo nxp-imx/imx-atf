@@ -63,6 +63,10 @@ BL31_SOURCES		+=	drivers/nxp/crypto/caam/src/caam.c		\
 				drivers/nxp/timer/nxp_timer.c
 endif
 
+ifeq (${IMX8MN_ISI_OVERRUN_FIX}, true)
+BL31_SOURCES		+=	plat/imx/imx8m/imx8mn/isi_rdc_update.c
+endif
+
 ENABLE_PIE		:=	1
 USE_COHERENT_MEM	:=	1
 RESET_TO_BL31		:=	1
@@ -113,6 +117,10 @@ BL31_SOURCES += plat/imx/common/ffa_shared_mem.c
 
 DDR_SIZE		?=	0x80000000ULL
 $(eval $(call add_define,DDR_SIZE))
+endif
+
+ifeq (${IMX8MN_ISI_OVERRUN_FIX},true)
+$(eval $(call add_define,IMX8MN_ISI_OVERRUN_FIX))
 endif
 
 ifeq (${IMX_ANDROID_BUILD},true)

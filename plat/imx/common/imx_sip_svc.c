@@ -128,6 +128,14 @@ static uintptr_t imx_sip_handler(unsigned int smc_fid,
 	case IMX_SIP_GET_PARTITION_NUMBER:
 		return imx_get_partition_number(handle);
 #endif
+#if defined(PLAT_imx8mn) && defined(IMX8MN_ISI_OVERRUN_FIX)
+	case IMX_ISI_MEM_COMMIT:
+		SMC_RET1(handle, isi_commit_mem_region(x1, x2));
+		break;
+	case IMX_ISI_RDC_SETUP:
+		SMC_RET1(handle, isi_setup_rdc_policy(x1));
+		break;
+#endif
 	default:
 		WARN("Unimplemented i.MX SiP Service Call: 0x%x\n", smc_fid);
 		SMC_RET1(handle, SMC_UNK);

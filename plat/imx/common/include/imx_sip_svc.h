@@ -177,4 +177,12 @@ int imx_src_handler(uint32_t smc_fid, u_register_t x1,
 		    u_register_t x2, u_register_t x3,
 		    u_register_t x4, void *handle);
 #endif
+
+#if defined(PLAT_imx8mn) && defined(IMX8MN_ISI_OVERRUN_FIX)
+#define IMX_ISI_MEM_COMMIT 0xC2000020
+#define IMX_ISI_RDC_SETUP  0xC2000021
+int isi_commit_mem_region(u_register_t x1, u_register_t x2);
+int isi_setup_rdc_policy(u_register_t x1);
+#endif
+
 #endif /* __IMX_SIP_SVC_H__ */
