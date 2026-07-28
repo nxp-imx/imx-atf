@@ -150,6 +150,9 @@ extern void gic_set_gicr_frames(const uintptr_t *plat_gicr_frames);
 
 	gic_set_gicr_frames(gicr_base_addrs);
 
+	/* Set back to 0 to avoid assertion failure in DEBUG build */
+	gic_data.gicr_base = 0;
+
 	/* get soc info */
 	ele_get_soc_info();
 
