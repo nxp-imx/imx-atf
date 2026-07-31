@@ -72,6 +72,11 @@ struct scmi_sensor_config_get_p2a {
 	uint32_t sensor_config;
 };
 
+struct scmi_sensor_config_set_a2p {
+	uint32_t sensor_id;
+	uint32_t sensor_config;
+};
+
 /*
  * Sensor Reading Get
  */
@@ -101,14 +106,17 @@ typedef struct {
 	uint32_t (*sensor_description_get)(unsigned int agent_id, uint16_t sensor_id,
 					  struct scmi_sensor_desc *desc);
 	uint32_t (*sensor_update_interval)(uint32_t agent_id, uint16_t sensor_id);
-	uint32_t (*sensor_state)(uint32_t agent_id, uint16_t sensor_id);
+	uint32_t (*sensor_state_get)(uint32_t agent_id, uint16_t sensor_id);
+	int32_t (*sensor_state_set)(uint32_t agent_id, uint16_t sensor_id,
+				    uint32_t sensor_config);
 	uint16_t (*sensor_timestamped)(uint32_t agent_id, uint16_t sensor_id);
 } plat_scmi_sensor_ops_t;
 
 #define REGISTER_SCMI_SENSOR_OPS(_sensor_count, _sensor_max_request, \
 				 _get_sensor_req, _sensor_reading_get, \
 				 _sensor_description_get, _sensor_update_interval, \
-				 _sensor_state, _sensor_timestamped) \
+				 _sensor_state_get, _sensor_state_set, \
+				 _sensor_timestamped) \
 	const plat_scmi_sensor_ops_t sensor_ops = { \
 		.sensor_count = _sensor_count, \
 		.sensor_max_request = _sensor_max_request, \
@@ -116,7 +124,8 @@ typedef struct {
 		.sensor_reading_get = _sensor_reading_get, \
 		.sensor_description_get = _sensor_description_get, \
 		.sensor_update_interval = _sensor_update_interval, \
-		.sensor_state = _sensor_state, \
+		.sensor_state_get = _sensor_state_get, \
+		.sensor_state_set = _sensor_state_set, \
 		.sensor_timestamped = _sensor_timestamped, \
 	}
 

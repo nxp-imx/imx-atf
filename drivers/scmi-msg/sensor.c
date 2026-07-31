@@ -74,14 +74,25 @@ uint32_t plat_scmi_sensor_update_interval(uint32_t agent_id __unused,
 	return 0U;
 }
 
-uint32_t plat_scmi_sensor_state(uint32_t agent_id __unused,
-				uint16_t sensor_id __unused)
+uint32_t plat_scmi_sensor_state_get(uint32_t agent_id __unused,
+				    uint16_t sensor_id __unused)
 {
-	if (sensor_ops.sensor_state != NULL) {
-		return sensor_ops.sensor_state(agent_id, sensor_id);
+	if (sensor_ops.sensor_state_get != NULL) {
+		return sensor_ops.sensor_state_get(agent_id, sensor_id);
 	}
 
 	return 0U;
+}
+
+int32_t plat_scmi_sensor_state_set(uint32_t agent_id __unused,
+				   uint16_t sensor_id __unused,
+				   uint32_t sensor_config __unused)
+{
+	if (sensor_ops.sensor_state_set != NULL) {
+		return sensor_ops.sensor_state_set(agent_id, sensor_id, sensor_config);
+	}
+
+	return SCMI_NOT_SUPPORTED;
 }
 
 uint32_t plat_scmi_sensor_timestamped(uint32_t agent_id __unused,
@@ -205,11 +216,37 @@ static void scmi_sensor_config_get(struct scmi_msg *msg)
 	}
 
 	update_interval = plat_scmi_sensor_update_interval(msg->agent_id, sensor_id);
-	state = plat_scmi_sensor_state(msg->agent_id, sensor_id);
+	state = plat_scmi_sensor_state_get(msg->agent_id, sensor_id);
 	timestamped = plat_scmi_sensor_timestamped(msg->agent_id, sensor_id);
 	return_values.sensor_config = (update_interval << 11) | (timestamped << 1) | state;
 
 	scmi_write_response(msg, &return_values, sizeof(return_values));
+}
+
+static void scmi_sensor_config_set(struct scmi_msg *msg)
+{
+	const struct scmi_sensor_config_set_a2p *in_args = (void *)msg->in;
+	unsigned int sensor_id = 0U;
+	unsigned int sensor_config = 0U;
+	int32_t status;
+
+	if (msg->in_size != sizeof(*in_args)) {
+		scmi_status_response(msg, SCMI_PROTOCOL_ERROR);
+		return;
+	}
+
+	sensor_id = SPECULATION_SAFE_VALUE(in_args->sensor_id);
+	sensor_config = SPECULATION_SAFE_VALUE(in_args->sensor_config);
+
+	if (sensor_id >= plat_scmi_sensor_count(msg->agent_id)) {
+		scmi_status_response(msg, SCMI_INVALID_PARAMETERS);
+		return;
+	}
+
+	status = plat_scmi_sensor_state_set(msg->agent_id, sensor_id,
+					      sensor_config);
+
+	scmi_status_response(msg, status);
 }
 
 static void scmi_sensor_reading_get(struct scmi_msg *msg)
@@ -255,6 +292,7 @@ static const scmi_msg_handler_t scmi_sensor_handler_table[SCMI_SENSOR_MAX] = {
 	[SCMI_PROTOCOL_MESSAGE_ATTRIBUTES] = report_message_attributes,
 	[SCMI_SENSOR_DESCRIPTION_GET] = scmi_sensor_description_get,
 	[SCMI_SENSOR_CONFIG_GET] = scmi_sensor_config_get,
+	[SCMI_SENSOR_CONFIG_SET] = scmi_sensor_config_set,
 	[SCMI_SENSOR_LIST_UPDATE_INTERVALS] = scmi_sensor_list_update_intervals,
 	[SCMI_SENSOR_READING_GET] = scmi_sensor_reading_get,
 };

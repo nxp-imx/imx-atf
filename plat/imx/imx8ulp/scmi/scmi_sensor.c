@@ -60,9 +60,16 @@ int imx_scmi_sensor_reading_get(uint32_t agent_id __unused, uint16_t sensor_id _
 
 #define SCMI_SENSOR_NAME_LENGTH_MAX	16U
 
-uint32_t imx_scmi_sensor_state(uint32_t agent_id __unused, uint16_t sensor_id __unused)
+uint32_t imx_scmi_sensor_state_get(uint32_t agent_id __unused, uint16_t sensor_id __unused)
 {
 	return 1U;
+}
+
+int32_t imx_scmi_sensor_state_set(uint32_t agent_id __unused,
+				  uint16_t sensor_id __unused,
+				  uint32_t sensor_cfg __unused)
+{
+	return SCMI_SUCCESS;
 }
 
 uint32_t imx_scmi_sensor_description_get(uint32_t agent_id __unused, uint16_t desc_index __unused,
@@ -88,5 +95,6 @@ REGISTER_SCMI_SENSOR_OPS(imx_scmi_sensor_count,
 			 imx_scmi_sensor_reading_get,
 			 imx_scmi_sensor_description_get,
 			 NULL,
-			 imx_scmi_sensor_state,
+			 imx_scmi_sensor_state_get,
+			 imx_scmi_sensor_state_set,
 			 NULL);
