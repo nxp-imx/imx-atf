@@ -2,63 +2,48 @@
   "SPDXID": "SPDXRef-DOCUMENT",
   "spdxVersion": "SPDX-2.3",
   "creationInfo": {
-    "created": "2026-06-02T02:43:48Z",
+    "created": "2026-08-25T03:32:18Z",
     "creators": [
       "Organization: NXP"
     ],
-    "licenseListVersion": "3.26"
+    "licenseListVersion": "3.28"
   },
-  "name": "imx-atf-lf-6.18.20-2.0.0",
+  "name": "imx-atf-lf-6.18.37-2.1.0",
   "dataLicense": "CC0-1.0",
-  "documentNamespace": "https://nxp.com/spdx/061f4cd3-86c3-4324-9587-04e4c6139159",
+  "documentNamespace": "https://nxp.com/spdx/cb58333e-7828-48d2-8cd0-6bec8bc9f099",
   "packages": [
     {
-      "SPDXID": "SPDXRef-package-061f4cd3-86c3-4324-9587-04e4c6139159",
+      "SPDXID": "SPDXRef-package-cb58333e-7828-48d2-8cd0-6bec8bc9f099",
       "name": "imx-atf",
-      "versionInfo": "lf-6.18.20-2.0.0",
+      "versionInfo": "lf-6.18.37-2.1.0",
       "licenseConcluded": "BSD-3-Clause",
       "licenseDeclared": "BSD-3-Clause",
-      "downloadLocation": "https://github.com/nxp-imx/imx-atf -b lf-6.18.20-2.0.0",
+      "downloadLocation": "https://github.com/nxp-imx/imx-atf -b lf-6.18.37-2.1.0",
       "originator": "Organization: NXP",
       "supplier": "NOASSERTION",
       "externalRefs": [],
       "filesAnalyzed": false
     },
     {
-      "SPDXID": "SPDXRef-package-061f4cd3-86c3-4324-9587-04e4c6139159---f605f865-821f-4d4c-8af3-80c499eecb07",
+      "SPDXID": "SPDXRef-package-cb58333e-7828-48d2-8cd0-6bec8bc9f099---143f814d-92cb-44a0-9c80-532bee605353",
       "name": "arm-trusted-firmware",
-      "versionInfo": "v2.14",
+      "versionInfo": "2.14.1",
       "licenseConcluded": "BSD-3-Clause",
       "licenseDeclared": "BSD-3-Clause",
       "homepage": "https://github.com/ARM-software/arm-trusted-firmware",
       "downloadLocation": "NOASSERTION",
-      "originator": "Organization: arm-trusted-firmware",
+      "originator": "Organization: fedora",
       "supplier": "NOASSERTION",
       "externalRefs": [
         {
-          "referenceCategory": "SECURITY",
-          "referenceLocator": "cpe:2.3:a:arm:arm_trusted_firmware:2.14:*:*:*:*:*:*:*",
-          "referenceType": "cpe23Type"
+          "referenceCategory": "OTHER",
+          "referenceLocator": "e877ee78-767a-46fe-8deb-968f8c8bf712",
+          "referenceType": "BlackDuck-ComponentOrigin"
         },
         {
-          "referenceCategory": "SECURITY",
-          "referenceLocator": "cpe:2.3:a:arm:trusted_firmware-a:2.14:*:*:*:*:*:*:*",
-          "referenceType": "cpe23Type"
-        },
-        {
-          "referenceCategory": "SECURITY",
-          "referenceLocator": "cpe:2.3:o:arm:arm-trusted-firmware:2.14:*:*:*:*:*:*:*",
-          "referenceType": "cpe23Type"
-        },
-        {
-          "referenceCategory": "SECURITY",
-          "referenceLocator": "cpe:2.3:o:arm:arm_trusted_firmware:2.14:*:*:*:*:*:*:*",
-          "referenceType": "cpe23Type"
-        },
-        {
-          "referenceCategory": "SECURITY",
-          "referenceLocator": "cpe:2.3:o:arm:trusted_firmware-a:2.14:*:*:*:*:*:*:*",
-          "referenceType": "cpe23Type"
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:rpm/fedora/arm-trusted-firmware@2.14.1-2.fc44?arch=i686",
+          "referenceType": "purl"
         }
       ],
       "filesAnalyzed": false
@@ -68,12 +53,12 @@
     {
       "spdxElementId": "SPDXRef-DOCUMENT",
       "relationshipType": "DESCRIBES",
-      "relatedSpdxElement": "SPDXRef-package-061f4cd3-86c3-4324-9587-04e4c6139159"
+      "relatedSpdxElement": "SPDXRef-package-cb58333e-7828-48d2-8cd0-6bec8bc9f099"
     },
     {
-      "spdxElementId": "SPDXRef-package-061f4cd3-86c3-4324-9587-04e4c6139159",
-      "relationshipType": "CONTAINS",
-      "relatedSpdxElement": "SPDXRef-package-061f4cd3-86c3-4324-9587-04e4c6139159---f605f865-821f-4d4c-8af3-80c499eecb07"
+      "spdxElementId": "SPDXRef-package-cb58333e-7828-48d2-8cd0-6bec8bc9f099",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-cb58333e-7828-48d2-8cd0-6bec8bc9f099---143f814d-92cb-44a0-9c80-532bee605353"
     }
   ]
 }
